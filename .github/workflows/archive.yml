@@ -27,10 +27,17 @@ jobs:
           token: ${{ secrets.AUTO_DOWNLOAD_ARCHIVE }}
           ref: ${{ github.ref }}
 
-      - name: Download File
-        run: wget ‐‐directory-prefix="$(echo "${URL}" | sed -E 's/^https?:\/\///')" "${URL}"; exit # incomplete
+      - name: Determine Target Directory
+        id: target-directory
+        run: echo "path=$(echo "${URL}" | sed -E 's/^https?:\/\///')" | tee -a "${GITHUB_OUTPUT}"
         env:
           URL: ${{ inputs.url }}
+
+      - name: Download File
+        run: wget ‐‐directory-prefix="${DIR}" --recursive "${URL}"
+        env:
+          URL: ${{ inputs.url }}
+          DIR: ${{ steps.target-directory.outputs.path }}
 
       - name: DEBUG
         run: ls -R
@@ -68,10 +75,17 @@ jobs:
           token: ${{ secrets.AUTO_DOWNLOAD_ARCHIVE }}
           ref: ${{ github.ref }}
 
-      - name: Download File
-        run: wget ‐‐directory-prefix="$(dirname "$(echo "${URL}" | sed -E 's/^https?:\/\///')")" "${URL}"; exit # incomplete
+      - name: Determine Target Directory
+        id: target-directory
+        run: echo "path=$(echo "${URL}" | sed -E 's/^https?:\/\///')" | tee -a "${GITHUB_OUTPUT}"
         env:
           URL: ${{ inputs.url }}
+
+      - name: Download File
+        run: wget ‐‐directory-prefix="${DIR}" "${URL}"
+        env:
+          URL: ${{ inputs.url }}
+          DIR: ${{ steps.target-directory.outputs.path }}
 
       - name: DEBUG
         run: ls -R
