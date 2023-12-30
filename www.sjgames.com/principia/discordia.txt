@@ -1,0 +1,154 @@
+#!/usr/bin/perl
+##############################################################################
+#
+#
+# ddate - Discordian date
+# Version FIVE
+#
+# This program takes no arguments.  It doesn't take shit from _anyone_.
+#
+# It returns today's date in the Discordian calendar format.  It also
+# tells you if today is a Holyday.
+#
+# This program is written in perl to maximize the amount of chaos in
+# the implementation.  Kallisti (K) 1993, Screaming Lizard Propulsion
+# Systems.  All rights reversed.  Mess with this program.  Call it your
+# own.  Hail Eris.  -><-
+#
+#                       Hugs and Kisses,
+#                       Reverend I. C. Puckett, Durham Discordian Glee Club
+#                       Prince of the Southern Provinces
+#
+#
+##############################################################################
+
+# Say, how 'bout them month things?
+@days_in_the_months = (31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31);
+
+# Use the groovy perl time interface.
+($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime;
+
+# Fix the screwed up results from the groovy perl time interface.
+$mon++;
+$year += 1900;
+
+# And convert to Discordian calendar.
+@greyface_date = ($mday, $mon, $year);
+@discordian_date = do convert_date(@greyface_date);
+
+# Print the result.
+do print_discordian_date(@discordian_date);
+
+# To run a self-test of all the days in the year, set this bad boy
+# true.
+if (4==5) {
+    print "\nTesting...\n";
+    for ($month = 1; $month <= 12; $month++) {
+	for ($day = 1; $day <= @days_in_the_months[$month-1]; $day++) {
+	    do print_discordian_date(do convert_date(($day,$month,1995)));
+	    # Test St. Tib's day
+	    if (($day == 28) && ($month == 2)) {
+		do print_discordian_date(do convert_date((29,2,1995)));
+	    }
+	}
+    }
+}
+
+sub convert_date {
+    local($gday, $gmon, $gyear) = @_;
+    local($dweekday, $dday, $dseason, $dyear) = (-5, -5, -5, -5);
+    local($fnord);
+
+    # Figure out the correct year.  Easy peasy.
+    $dyear = $gyear + 1166;
+
+    # Now what day of the year is this?
+    local($day_of_year) = $gday;
+    for (1 .. ($gmon - 1)) {
+	$day_of_year += @days_in_the_months[$_ - 1];
+    }
+
+######    print "Day of year:  $day_of_year\n";
+
+    # What season is it?  Seasons are seventy-three days long.  There
+    # are _five_ seasons in a year.  Seven minus three is four, which is
+    # two squared.  Take one of those twos, and add it to the three:
+    # you get _five_.  Take the other two, subtract it from the seven:
+    # you get _five_.
+    $dseason = int(($day_of_year-1) / 73) + 1;
+
+    if (($gmon == 2) && ($gday == 29))
+    {
+	# Happy St. Tib's day!  Time for Jello (tm).
+	$dweekday = 0;
+	$dday = 0;
+    }
+    else
+    {
+	# St. Tib will have to wait.
+	$dweekday = (($day_of_year - 1) % 5) + 1;
+	$dday = (($day_of_year - 1) % 73) + 1;
+    }
+
+    return ($dweekday, $dday, $dseason, $dyear);
+}
+
+sub print_discordian_date {
+    local ($dweekday, $dday, $dseason, $dyear);
+    $dweekday = (
+		 "Saint Tib's Day",
+		 "Sweetmorn",
+		 "Boomtime",
+		 "Pungenday",
+		 "Prickle-Prickle",
+		 "Setting Orange",
+		 )[@_[0]];
+    if (@_[1] == 0)
+    {
+	$dday = "between 59 and 60";
+    }
+    else
+    {
+	$dday = @_[1];
+    }
+
+    $dseason = (
+	     "Chaos",
+	     "Discord",
+	     "Confusion",
+	     "Bureaucracy",
+	     "The Aftermath",
+	     )[@_[2] - 1];
+    $dyear = @_[3];
+
+    print "Today is $dweekday, day $dday in the season of $dseason,
+$dyear.\n";
+######    print "\t@_[0]\t@_[1]\t@_[2]\t@_[3]\n";
+
+    # Handle the Apostle Holydays.  Rejoice rejoice.  Whee.
+    if ($dday == 5)		# is today a holy day?  huh?
+    {
+	local($aholyday)=(
+			  "Mungday",
+			  "Mojoday",
+			  "Syaday",
+			  "Zaraday",
+			  "Maladay",
+			  )[@_[2] - 1];
+	print "It is the sacred Apostle Holyday of $aholyday.\n";
+    }
+
+    # Handle the Season Holydays.  The crowd goes wild.  Who celebrates
+    # these things anyway?
+    if ($dday == 50)		# is today a holy day?  huh?
+    {
+	local($sholyday)=(
+			  "Chaoflux",
+			  "Discoflux",
+			  "Confuflux",
+			  "Bureflux",
+			  "Afflux",
+			  )[@_[2] - 1];
+	print "It is the sacred Season Holyday of $sholyday.\n";
+    }
+}
