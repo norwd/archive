@@ -33,8 +33,13 @@ jobs:
         env:
           URL: ${{ inputs.url }}
 
+      - name: Create Target Directory
+        run: mkdir -p "${DIR}"
+        env:
+          DIR: ${{ steps.target-directory.outputs.path }}
+
       - name: Download File
-        run: wget ‐‐directory-prefix="${DIR}" --recursive "${URL}"
+        run: wget ‐‐directory-prefix "${DIR}" --recursive "${URL}"
         env:
           URL: ${{ inputs.url }}
           DIR: ${{ steps.target-directory.outputs.path }}
@@ -81,8 +86,13 @@ jobs:
         env:
           URL: ${{ inputs.url }}
 
+      - name: Create Target Directory
+        run: mkdir -p "${DIR}"
+        env:
+          DIR: ${{ steps.target-directory.outputs.path }}
+
       - name: Download File
-        run: wget ‐‐directory-prefix="${DIR}" "${URL}"
+        run: wget ‐‐directory-prefix "${DIR}" "${URL}"
         env:
           URL: ${{ inputs.url }}
           DIR: ${{ steps.target-directory.outputs.path }}
