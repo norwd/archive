@@ -32,13 +32,23 @@ jobs:
           grep --invert "^#" << EOF | tee -a "${GITHUB_OUTPUT}"
 
           # Get the directory to save the file into
-          directory=$(dirname "$(echo "${URL}" | sed -E 's/^https?:\/\///')")
+          directory=$(
+            dirname "$(
+              echo "${URL}" |
+                sed -E 's/^https?:\/\/web.archive.org\/web\/[0-9]+\/(https?:\/\/)?/https:\/\//' |
+                sed -E 's/^https?:\/\///'
+            )"
+          )
 
           # Get the name of the file being saved  
-          file=$(basename "${URL}")
+          file=$(
+            basename "${URL}"
+          )
 
           # Get the url of the file (with any sanitisation)
-          url=$(echo "${URL}")
+          url=$(
+            echo "${URL}"
+          )
 
           EOF
 
