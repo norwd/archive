@@ -1,0 +1,49 @@
+<html>
+<head>
+<title>The Modula-3 Program: TPK.m3</title>
+<!-- Automatically created by 'sgml2html'. -->
+</head>
+<body>
+<h1>The Modula-3 Program: TPK.m3</h1>
+<pre>
+<b><i><font color=#BB1212>(* TPK.m3 -- Knuth's TPK program in Modula-3 *)</font></i></b>
+
+<b><font color=#228B22>MODULE</font></b> TPK <b><font color=#228B22>EXPORTS</font></b> Main;
+
+<b><font color=#228B22>IMPORT</font></b> Math;         <b><i><font color=#BB1212>(* Math interface to C math library. *)</font></i></b>
+<b><font color=#228B22>IMPORT</font></b> IO;           <b><i><font color=#BB1212>(* Standard module for input/output. *)</font></i></b>
+
+<b><i><font color=#BB1212>(* f(x) = sqrt(|x|) + 5*x**3 *)</font></i></b>
+<b><font color=#228B22>PROCEDURE</font></b> f (x: LONGREAL): LONGREAL =
+   <b><font color=#228B22>BEGIN</font></b>
+      <b><font color=#228B22>RETURN</font></b> (Math.sqrt (ABS(x)) + 5.0D0*Math.pow(x,3.0D0));
+   <b><font color=#228B22>END</font></b> f;
+
+<b><font color=#228B22>VAR</font></b>
+   A: <b><font color=#228B22>ARRAY</font></b> [0 .. 10] <b><font color=#228B22>OF</font></b> LONGREAL;
+
+<b><font color=#228B22>BEGIN</font></b>
+   <b><i><font color=#BB1212>(*  Read in the values of the array "A"  *)</font></i></b>
+   <b><font color=#228B22>FOR</font></b> i := FIRST(A) <b><font color=#228B22>TO</font></b> LAST(A) <b><font color=#228B22>DO</font></b>
+      A[i] := FLOAT (IO.GetReal (), LONGREAL);
+   <b><font color=#228B22>END</font></b>;
+
+   <b><i><font color=#BB1212>(*  In reverse order, apply "f" to each element of "A" and print *)</font></i></b>
+   <b><font color=#228B22>FOR</font></b> i := LAST(A) <b><font color=#228B22>TO</font></b> FIRST(A) <b><font color=#228B22>BY</font></b> -1 <b><font color=#228B22>DO</font></b>
+      <b><font color=#228B22>WITH</font></b>
+         y = f (A[i])
+      <b><font color=#228B22>DO</font></b>
+         IO.PutInt (i);
+         IO.Put ("  ");
+         <b><font color=#228B22>IF</font></b> (y &#62; 400.0D0) <b><font color=#228B22>THEN</font></b>
+            IO.Put ("too large\n");
+         <b><font color=#228B22>ELSE</font></b>
+            IO.PutReal (FLOAT(y));
+            IO.Put ("\n");
+         <b><font color=#228B22>END</font></b>;
+      <b><font color=#228B22>END</font></b>;
+   <b><font color=#228B22>END</font></b>;
+<b><font color=#228B22>END</font></b> TPK.
+</pre>
+</body>
+</html>
