@@ -14,9 +14,6 @@ on:
 
           By default, only the file specified will be archived.
 
-env:
-  URL: ${{ inputs.url }}
-
 jobs:
   archive-file:
     name: Archive File
@@ -28,21 +25,31 @@ jobs:
           token: ${{ secrets.AUTO_DOWNLOAD_ARCHIVE }}
           ref: ${{ github.ref }}
 
-      - name: Determine Target Directory
-        id: target-directory
-        run: echo "path=$(dirname "$(echo "${URL}" | sed -E 's/^https?:\/\///')")" | tee -a "${GITHUB_OUTPUT}"
+      - name: Determine Target
+        id: target
+        env: { URL: '${{ inputs.url }}' }
+        run: |
+          tee -a "${GITHUB_OUTPUT}" << EOF
+
+          # Get the directory to save the file into
+          directory=$(dirname "$(echo "${URL}" | sed -E 's/^https?:\/\///')")
+
+          # Get the name of the file being saved  
+          file=$(basename "${URL}")
+
+          # Get the url of the file (with any sanitisation)
+          url=$(echo "${URL}")
+
+          EOF
 
       - name: Create Target Directory
         run: mkdir -p "${DIR}"
         env:
-          DIR: ${{ steps.target-directory.outputs.path }}
+          DIR: ${{ steps.target.outputs.directory }}
 
       - name: Download File
-        working-directory: ${{ steps.target-directory.outputs.path }}
-        run: wget "${URL}"
-
-      - name: DEBUG
-        run: ls -R
+        working-directory: ${{ steps.target.outputs.directory }}
+        run: wget "${URL}"; ls -R
 
       #- name: Setup GPG Keys
       #  uses: crazy-max/ghaction-import-gpg@v5
@@ -62,6 +69,8 @@ jobs:
           commit_user_email: 106889957+norwd@users.noreply.github.com
           #commit_options: -s -S
           commit_message: |
+            Archive ${{ steps.target.outputs.directory }}
+
             Original source: ${{ inputs.url }}
 
             This is an automatic commit. See the archive workflow.
