@@ -25,9 +25,12 @@ jobs:
           ref: ${{ github.ref }}
 
       - name: Download File
-        run: echo wget ‐‐directory-prefix="$(echo "${URL}" | sed -E 's/^https?:\/\///')" "${URL}"; exit # incomplete
+        run: wget ‐‐directory-prefix="$(echo "${URL}" | sed -E 's/^https?:\/\///')" "${URL}"; exit # incomplete
         env:
           URL: ${{ inputs.url }}
+
+      - name: DEBUG
+        run: ls -R
 
       - name: Setup GPG Keys
         uses: crazy-max/ghaction-import-gpg@v5
@@ -63,9 +66,12 @@ jobs:
           ref: ${{ github.ref }}
 
       - name: Download File
-        run: echo wget ‐‐directory-prefix="$(dirname "$(echo "${URL}" | sed -E 's/^https?:\/\///')")" "${URL}"; exit # incomplete
+        run: wget ‐‐directory-prefix="$(dirname "$(echo "${URL}" | sed -E 's/^https?:\/\///')")" "${URL}"; exit # incomplete
         env:
           URL: ${{ inputs.url }}
+
+      - name: DEBUG
+        run: ls -R
 
       - name: Setup GPG Keys
         uses: crazy-max/ghaction-import-gpg@v5
