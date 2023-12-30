@@ -10,70 +10,15 @@ on:
         required: true
         type: string
         description: |
-          The url of the asset to archive.
+          The url to archive.
 
           By default, only the file specified will be archived.
-          To archive a directory and all its contents, append `/.`, i.e. slashdot, to the url.
 
 env:
   URL: ${{ inputs.url }}
 
 jobs:
-  archive-directory:
-    if: ${{ endsWith(inputs.url, '/.') }}
-    name: Archive Directory
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.AUTO_DOWNLOAD_ARCHIVE }}
-          ref: ${{ github.ref }}
-
-      - name: Determine Target
-        id: target
-        run: |
-          echo "directory=$(echo "${URL}" | sed -E 's/^https?:\/\///' | sed -E 's/\/.$//')" | tee -a "${GITHUB_OUTPUT}"
-          echo "url=$(echo "${URL}" | sed -E 's/\/.$//')" | tee -a "${GITHUB_OUTPUT}"
-
-      - name: Create Target Directory
-        run: mkdir -p "${DIR}"
-        env:
-          DIR: ${{ steps.target.outputs.directory }}
-
-      - name: Download File
-        working-directory: ${{ steps.target-directory.outputs.path }}
-        run: wget --no-parent --recursive "${URL}"
-        env:
-          URL: ${{ steps.target.outputs.url }}
-
-      - name: DEBUG
-        run: ls -R
-
-      - name: Setup GPG Keys
-        uses: crazy-max/ghaction-import-gpg@v5
-        with:
-          gpg_private_key: ${{ secrets.AUTO_COMMIT_GPG_PRIVATE_KEY_ARCHIVE }}
-          passphrase: ${{ secrets.AUTO_COMMIT_GPG_PASSPHRASE_ARCHIVE }}
-          git_user_signingkey: true
-          git_commit_gpgsign: true
-
-      - name: Push Changes
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          file_pattern: .
-          skip_dirty_check: true
-          commit_author: norwd <106889957+norwd@users.noreply.github.com>
-          commit_user_name: norwd
-          commit_user_email: 106889957+norwd@users.noreply.github.com
-          commit_options: -s -S
-          commit_message: |
-            Original source: ${{ inputs.url }}
-
-            This is an automatic commit. See the archive workflow.
-
   archive-file:
-    if: ${{ !endsWith(inputs.url, '/.') }}
     name: Archive File
     runs-on: ubuntu-latest
     steps:
