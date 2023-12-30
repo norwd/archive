@@ -1,0 +1,51 @@
+<html>
+<head>
+<title>The Ada Program: tpk.adb</title>
+<!-- Automatically created by 'sgml2html'. -->
+</head>
+<body>
+<h1>The Ada Program: tpk.adb</h1>
+<pre>
+<font size=-1>  1</font> <b><i><font color=#BB1212>-- tpk.adb:  Knuth's TPK program in Ada95</font></i></b>
+<font size=-1>  2</font> 
+<font size=-1>  3</font> <b><font color=#228B22>with</font></b>
+<font size=-1>  4</font>    <a href="http://www.adahome.com/rm95/rm9x-A-10-01.html">Ada.Text_IO</a>,  <a href="http://www.adahome.com/rm95/rm9x-A-10-08.html#20">Ada.Integer_Text_IO</a>, <a href="http://www.adahome.com/rm95/rm9x-A-10-09.html#32">Ada.Float_Text_IO</a>,
+<font size=-1>  5</font>    <a href="http://www.adahome.com/rm95/rm9x-A-05-01.html">Ada.Numerics.Elementary_Functions</a>;
+<font size=-1>  6</font> 
+<font size=-1>  7</font> <b><font color=#228B22>use</font></b>
+<font size=-1>  8</font>    Ada, Ada.Numerics.Elementary_Functions;
+<font size=-1>  9</font> 
+<font size=-1> 10</font> <b><font color=#228B22>procedure</font></b> TPK <b><font color=#228B22>is</font></b>
+<font size=-1> 11</font> 
+<font size=-1> 12</font>    <b><i><font color=#BB1212>-- f(x) = sqrt(|x|) + 5*x**3</font></i></b>
+<font size=-1> 13</font>    <b><font color=#228B22>function</font></b> f (x: <font color=#8B008B>Float</font>) <b><font color=#228B22>return</font></b> <font color=#8B008B>Float</font> <b><font color=#228B22>is</font></b>
+<font size=-1> 14</font>    <b><font color=#228B22>begin</font></b>
+<font size=-1> 15</font>       <b><font color=#228B22>return</font></b> (Sqrt (Abs x) + <font color=#008B8B>5.0</font>*x**<font color=#008B8B>3</font>);
+<font size=-1> 16</font>    <b><font color=#228B22>end</font></b> f;
+<font size=-1> 17</font> 
+<font size=-1> 18</font>    A: <b><font color=#228B22>array</font></b> (<font color=#008B8B>0</font> .. <font color=#008B8B>10</font>) <b><font color=#228B22>of</font></b> <font color=#8B008B>Float</font>;
+<font size=-1> 19</font> 
+<font size=-1> 20</font> <b><font color=#228B22>begin</font></b>
+<font size=-1> 21</font>    <b><i><font color=#BB1212>-- Read in the values of the array "A"</font></i></b>
+<font size=-1> 22</font>    <b><font color=#228B22>for</font></b> I <b><font color=#228B22>in</font></b> A<font color=#8B008B>'Range</font> <b><font color=#228B22>loop</font></b>
+<font size=-1> 23</font>       Float_Text_IO.Get (A (I));
+<font size=-1> 24</font>    <b><font color=#228B22>end</font></b> <b><font color=#228B22>loop</font></b>;
+<font size=-1> 25</font> 
+<font size=-1> 26</font>    <b><i><font color=#BB1212>-- In reverse order, apply "f" to each element of "A" and print</font></i></b>
+<font size=-1> 27</font>    <b><font color=#228B22>for</font></b> I <b><font color=#228B22>in</font></b> <b><font color=#228B22>reverse</font></b> A<font color=#8B008B>'Range</font> <b><font color=#228B22>loop</font></b>
+<font size=-1> 28</font>       <b><font color=#228B22>declare</font></b>
+<font size=-1> 29</font>          Y: <b><font color=#228B22>constant</font></b> <font color=#8B008B>Float</font> := f (A (I));
+<font size=-1> 30</font>       <b><font color=#228B22>begin</font></b>
+<font size=-1> 31</font>          Integer_Text_IO.Put (I);
+<font size=-1> 32</font>          <b><font color=#228B22>if</font></b> (Y &#62; <font color=#008B8B>400.0</font>) <b><font color=#228B22>then</font></b>
+<font size=-1> 33</font>             Text_IO.Put_Line (<font color=#008B8B>" too large"</font>);
+<font size=-1> 34</font>          <b><font color=#228B22>else</font></b>
+<font size=-1> 35</font>             Float_Text_IO.Put (Y);
+<font size=-1> 36</font>             Text_IO.New_Line;
+<font size=-1> 37</font>          <b><font color=#228B22>end</font></b> <b><font color=#228B22>if</font></b>;
+<font size=-1> 38</font>       <b><font color=#228B22>end</font></b>;
+<font size=-1> 39</font>    <b><font color=#228B22>end</font></b> <b><font color=#228B22>loop</font></b>;
+<font size=-1> 40</font> <b><font color=#228B22>end</font></b> TPK;
+</pre>
+</body>
+</html>
