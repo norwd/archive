@@ -15,6 +15,9 @@ on:
           By default, only the file specified will be archived.
           To archive a directory and all its contents, append `/.`, i.e. slashdot, to the url.
 
+env:
+  URL: ${{ inputs.url }}
+
 jobs:
   archive-directory:
     if: ${{ endsWith(inputs.url, '/.') }}
@@ -27,22 +30,22 @@ jobs:
           token: ${{ secrets.AUTO_DOWNLOAD_ARCHIVE }}
           ref: ${{ github.ref }}
 
-      - name: Determine Target Directory
-        id: target-directory
-        run: echo "path=$(echo "${URL}" | sed -E 's/^https?:\/\///')" | tee -a "${GITHUB_OUTPUT}"
-        env:
-          URL: ${{ inputs.url }}
+      - name: Determine Target
+        id: target
+        run: |
+          echo "directory=$(echo "${URL}" | sed -E 's/^https?:\/\///')" | tee -a "${GITHUB_OUTPUT}"
+          echo "url=$(echo "${URL}" | sed -E 's/\/.$//')" | tee -a "${GITHUB_OUTPUT}"
 
       - name: Create Target Directory
         run: mkdir -p "${DIR}"
         env:
-          DIR: ${{ steps.target-directory.outputs.path }}
+          DIR: ${{ steps.targe.outputs.directory }}
 
       - name: Download File
         working-directory: ${{ steps.target-directory.outputs.path }}
         run: wget --no-parent --recursive "${URL}"
         env:
-          URL: ${{ inputs.url }}
+          URL: ${{ steps.target.outputs.url }}
 
       - name: DEBUG
         run: ls -R
@@ -83,8 +86,6 @@ jobs:
       - name: Determine Target Directory
         id: target-directory
         run: echo "path=$(dirname "$(echo "${URL}" | sed -E 's/^https?:\/\///')")" | tee -a "${GITHUB_OUTPUT}"
-        env:
-          URL: ${{ inputs.url }}
 
       - name: Create Target Directory
         run: mkdir -p "${DIR}"
@@ -94,8 +95,6 @@ jobs:
       - name: Download File
         working-directory: ${{ steps.target-directory.outputs.path }}
         run: wget "${URL}"
-        env:
-          URL: ${{ inputs.url }}
 
       - name: DEBUG
         run: ls -R
