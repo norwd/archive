@@ -39,10 +39,10 @@ jobs:
           DIR: ${{ steps.target-directory.outputs.path }}
 
       - name: Download File
-        run: wget ‐‐directory-prefix "${DIR}" --recursive "${URL}"
+        working-directory: ${{ steps.target-directory.outputs.path }}
+        run: wget --recursive "${URL}"
         env:
           URL: ${{ inputs.url }}
-          DIR: ${{ steps.target-directory.outputs.path }}
 
       - name: DEBUG
         run: ls -R
@@ -92,10 +92,10 @@ jobs:
           DIR: ${{ steps.target-directory.outputs.path }}
 
       - name: Download File
-        run: wget ‐‐directory-prefix "${DIR}" "${URL}"
+        working-directory: ${{ steps.target-directory.outputs.path }}
+        run: wget "${URL}"
         env:
           URL: ${{ inputs.url }}
-          DIR: ${{ steps.target-directory.outputs.path }}
 
       - name: DEBUG
         run: ls -R
