@@ -68,6 +68,12 @@ jobs:
           URL: ${{ steps.target.outputs.url }}
           FILE: ${{ steps.target.outputs.file }}
 
+      - name: Extract Tarball
+        if: ${{ endsWith(steps.target.outputs.file, '.tar.gz') }}
+        run: tar -xvf "${FILE}"
+        env:
+          FILE: ${{ steps.target.outputs.file }}
+
       #- name: Setup GPG Keys
       #  uses: crazy-max/ghaction-import-gpg@v5
       #  with:
