@@ -1,0 +1,164 @@
+Path: nntp-server.caltech.edu!fnnews.fnal.gov!news.imsa.edu!chi-news.cic.net!news.michiana.org!aonline!news.u.washington.edu!uw-beaver!cornellcs!newsstand.cit.cornell.edu!portc01.blue.aol.com!news-peer.gsl.net!news.gsl.net!howland.erols.net!surfnet.nl!sun4nl!uw03!hp01!not-for-mail
+From: Marcin Klimowski <marcin@usk.pk.edu.pl>
+Newsgroups: alt.humor.best-of-usenet
+Subject: [comp.mail.sendmail] Silly (ab)uses of sendmail
+Followup-To: alt.humor.best-of-usenet.d
+Date: 23 Oct 1996 13:15:05 +0100
+Organization: best of usenet humor
+Lines: 148
+Sender: rob@redwood.nl
+Approved: ahbou-mod@acpub.duke.edu
+Message-ID: <54l289$lju@hp01.redwood.nl>
+NNTP-Posting-Host: hp01.redwood.nl
+X-Disclaimer: the "Approved" header verifies header information for article transmission and does not imply approval of content.  See .sig below.
+X-Submissions-To: ahbou-sub@acpub.duke.edu
+
+~Subject: Silly (ab)uses of sendmail
+~From: mjs@atml.co.uk (Matthew Slattery)
+~Newsgroups: comp.mail.sendmail
+
+As a bit of light relief from all the questions about virtual domains,
+check_* rulesets, and the like, I would like to present this:
+
+----------snip----------
+
+################################################
+################################################
+####                                        ####
+####  Simple calculator in sendmail.cf      ####
+####                                        ####
+####  by Matthew Slattery <mjs@atml.co.uk>  ####
+####                                        ####
+####  version 0.03 (4th October 1996)       ####
+####                                        ####
+################################################
+################################################
+
+
+#
+#  Invoke as follows:
+#
+#    /usr/lib/sendmail -bt -C<filename>
+#
+#  ...where <filename> is this file.
+#
+#  Then you should enter sums prefixed with "9 ",  e.g.
+#
+#    > 9 1+2
+#    > 9 20-6
+#    > 9 5*-4
+#
+#  More complex expressions (e.g. '1+2*3-4') work too.
+#
+#  Addition (+), subtraction (-), multiplication (*, x or X), integer division
+#  (/) and modulus (%) are supported.  Brackets are not.  Expressions are
+#  evaluated strictly from left to right (i.e. no operator priorities).
+#
+#  If numbers become to large, strange things may happen e.g. "Infinite
+#  loop" or "Expansion too long" errors.  With my sendmail, 100 recursive
+#  calls is considered infinite, so a result of greater than 99 will cause
+#  problems (but you can calculate with larger numbers -- "125-50" works).
+#
+#
+
+V5
+Do.:%@!^/[]0123456789+-*xX
+CX 0 1 2 3 4 5 6 7 8 9
+CY + - * / % !
+CZ 0 1 2 3 4 5 6 7 8 9 + - * / %
+S9
+R$*x$*			$1*$2
+R$*X$*			$1*$2
+R$*$~Z$*		$1$3
+R$*$=Y			$1
+R$*			$:!$1!
+R!!			$@0
+R$*$=Y$=X$*		$1$2[$3$4
+R$*$=X$=Y$*		$1$2]$3$4
+R!$*[$*]$*!		$1[$2]$3
+R$*			$:$>5$1
+R$*[$*]$*[$*]$*		$>7$1[$2]$3[$4].$5
+R$*[]$*			$@0
+R$*-[$*]$*		$:-$2
+R$*[$*]$*		$:$2
+R$*			$:$1:0
+R$*@:$*			$>6$1:$2
+R$*:$*			$@$1$2
+S8
+R$*<$*$=X$*>$*		$:$1<$2.$3$4>$5
+R$*<$*.0$*>$*		$:$>8$1<$2$2$2$2$2$2$2$2$2$2$3>$4
+R$*<$*.1$*>$*		$:$>8$1<$2$2$2$2$2$2$2$2$2$2@$3>$4
+R$*<$*.2$*>$*		$:$>8$1<$2$2$2$2$2$2$2$2$2$2@@$3>$4
+R$*<$*.3$*>$*		$:$>8$1<$2$2$2$2$2$2$2$2$2$2@@@$3>$4
+R$*<$*.4$*>$*		$:$>8$1<$2$2$2$2$2$2$2$2$2$2@@@@$3>$4
+R$*<$*.5$*>$*		$:$>8$1<$2$2$2$2$2$2$2$2$2$2@@@@@$3>$4
+R$*<$*.6$*>$*		$:$>8$1<$2$2$2$2$2$2$2$2$2$2@@@@@@$3>$4
+R$*<$*.7$*>$*		$:$>8$1<$2$2$2$2$2$2$2$2$2$2@@@@@@@$3>$4
+R$*<$*.8$*>$*		$:$>8$1<$2$2$2$2$2$2$2$2$2$2@@@@@@@@$3>$4
+R$*<$*.9$*>$*		$:$>8$1<$2$2$2$2$2$2$2$2$2$2@@@@@@@@@$3>$4
+S5
+R$*[$=X$*]$*		$:$1<$2$3>$4
+R$*			$:$>8$1 
+R$*<$*>$*		$:$1[$2]$3
+R$*$=X$*		$@$>5$1$2$3
+S7
+R$*--$*			$1+$2
+R$*+-$*			$1-$2
+R$*-+$*			$1-$2
+R$*++$*			$1+$2
+R+$*			$1
+R[$*]+[$*].$*		$@[$1$2]$3
+R-[$*]-[$*].$*		$@-[$1$2]$3
+R-[$*]+[$*].$*		$:[$2]-[$1].$3
+R[$*@]-[@$*].$*		[$1]-[$2].$3
+R[$*]-[].$*		$@[$1]$2
+R[]-[$*].$*		$@-[$1]$2
+R-[$*]*-[$*].$*		$:[$1]*[$2].$3
+R[$*]*-[$*].$*		$:-[$1]*[$2].$3
+R$*[]*[$*].$*		$@$1[]$3
+R$*[$*]*[$*].$*		$:$1[$2]*[$3!].$4
+R$*[$*@]*[$*!$*].$*	$1[$2]*[$3!$3$4].$5
+R$*[]*[$*!$*].$*	$@$1[$3]$4
+R-[$*]/-[$*].$*		$:[$1]/[$2].$3
+R[$*]/-[$*].$*		$:-[$1]/[$2].$3
+R$*[$*]/[].$*		$#error $@ USAGE $: "Division by zero"
+R$*[$*]/[$*].$*		$:$1[$2]/[$3!$3!].$4
+R$*[$+]/[$*!$*!$*].$*	$>4$1[$2]/[$3!$4!$5].$6
+R$*[$*]/[$*!$*!$*].$*	$@$1[$5]$6
+R$*[$*!$*!$*].$*	$@$1[$2]$5
+R-[$*]%-[$*].$*		$:[$1]%[$2].$3
+R[$*]%-[$*].$*		$:-[$1]%[$2].$3
+R$*[$*]%[].$*		$#error $@ USAGE $: "Division by zero"
+R$*[$*]%[$*].$*		$:$1[$2]/[$3!$3!].$4
+R$*[$+]/[$*!$*!$*].$*	$>4$1[$2]/[$3!$4!$5].$6
+R$*[$*]/[$*!$*!$*].$*	$@$1[]$6
+R$*[$*!$*!$*].$*	$@$1[$4]$5
+S6
+R$*:			$@$1:1
+R$*:$*0			$@$1:$2 1
+R$*:$*1			$@$1:$2 2
+R$*:$*2			$@$1:$2 3
+R$*:$*3			$@$1:$2 4
+R$*:$*4			$@$1:$2 5
+R$*:$*5			$@$1:$2 6
+R$*:$*6			$@$1:$2 7
+R$*:$*7			$@$1:$2 8
+R$*:$*8			$@$1:$2 9
+R$*:$*9			$:$>6$1:$2
+R$*:$*			$@$1:$2 0
+S4
+R$*[$*@]/[@$*!$*!$*].$*	$1[$2]/[$3!$4!$5].$6
+R$*[]/[$+!$*!$*].$*	$:$1[$4!$2!$3].$5
+R$*[$*]/[$*!$*!$*].$*	$@$1[$2]/[$4!$4!@$5].$6
+R$*[$*!$*@!$*@].$*	$1[$2!$3!$4].$5
+
+----------snip----------
+
+Enjoy!
+
+--
+Moderators accept or reject articles based solely on the criteria posted
+in the Frequently Asked Questions. Article content is the responsibility
+of the submittor.  Submit articles to ahbou-sub@acpub.duke.edu. To write 
+to the moderators, send mail to ahbou-mod@acpub.duke.edu. 
+
