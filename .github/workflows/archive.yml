@@ -92,6 +92,10 @@ jobs:
         env:
           FILE: ${{ steps.target.outputs.file }}
 
+      - name: Verify Changed files
+        id: changes
+        uses: tj-actions/verify-changed-files@v17
+
       #- name: Setup GPG Keys
       #  uses: crazy-max/ghaction-import-gpg@v5
       #  with:
@@ -101,6 +105,7 @@ jobs:
       #    git_commit_gpgsign: true
 
       - name: Push Changes
+        if: steps.changes.outputs.files_changed == 'true'
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           file_pattern: .
@@ -113,5 +118,6 @@ jobs:
             Archive ${{ steps.target.outputs.file }}
 
             Original source: ${{ inputs.url }}
+            File(s): ${{ steps.changes.outputs.changed_files }}
 
-            This is an automatic commit. See the archive workflow.
+            *NOTE:** This is an automatic commit. See the archive workflow.
