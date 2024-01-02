@@ -1,0 +1,117 @@
+.TH UBROWSE 1 "Aug 2022"
+.LO 1
+.SH NAME
+ubrowse \- a Unicode character browser for the terminal
+.SH SYNOPSIS
+.B ubrowse
+[OPTIONS] [CHAR | CODEPOINT | STRING]
+.SH DESCRIPTION
+.B ubrowse
+displays the printable Unicode characters in an interactive table,
+allowing to search for specific characters or just see how various
+codepoints appear in the terminal.
+.P
+.B ubrowse
+can be made to jump to a specific point in the table at startup by
+providing a command-line argument that is either an explicit single
+character, or a valid codepoint of the form
+.RI [U+] XXXX
+(where
+.I XXXX
+can be any hexadecimal number). Otherwise, a command-line argument
+will be interpreted as a substring to search for in the list of
+codepoint names. If no command-line arguments are provided,
+.B ubrowse
+will start at the beginning of the table, with U+0020.
+.SH OPTIONS
+.TP
+\fB\-a\fR, \fB\-\-accent\fR=\fICH\fR
+Specify character
+.I CH
+to use when rendering a combining accent character. The default
+character to use is U+00B7 "middle dot".
+.TP
+\fB\-A\fR, \fB\-\-noaccent\fR
+Suppress display of combining accent characters. Their entries will
+still be listed in the table.
+.TP
+\fB\-i\fR, \fB\-\-input\fR
+Instead of displaying a table,
+.B ubrowse
+reads characters from standard input, and outputs each character, one
+per line, along with the full name of each codepoint. This behavior is
+on by default if standard input is not connected to a terminal.
+.TP
+.B \--help
+Display help and exit.
+.TP
+.B \--version
+Display version information and exit.
+.SH COMMANDS
+While examining the table, the following key commands are available.
+.IP ?
+Output a summary of these commands at the top of display.
+.IP "Spc \fIor\fR F"
+Scroll forward one screenful of the table.
+.IP "Bkspc \fIor\fR B"
+Scroll backward one screenful of the table.
+.IP "Right \fIor\fR L"
+Scroll forward one column of the table.
+.IP "Left \fIor\fR H"
+Scroll backward one column of the table.
+.IP "Down \fIor\fR J"
+Scroll forward one row of the table.
+.IP "Up \fIor\fR K"
+Scroll backward one row of the table.
+.IP "}"
+Scroll forward by U+1000 codepoints.
+.IP "{"
+Scroll backward by U+1000 codepoints.
+.IP /\fIpattern\fR
+Search forward for a codepoint name containing
+.IR pattern .
+.IP N
+Repeat the previous search, moving to the next matching codepoint.
+.IP P
+Return to the codepoint that was matched by the last search.
+.IP "U \fIor\fR S"
+Prompt for a codepoint value and jump to it.
+.IP Ctrl-B
+Switch the display to the list of codepoint blocks. The block list can
+be scrolled up and down, and searched. Pressing Ret on an entry will
+jump to the first codepoint in that block. (Alternately, pressing Q
+will return to the codepoint table display without changing the
+current position.)
+.IP "["
+Increase by one the number of columns displayed.
+.IP "]"
+Decrease by one the number of columns displayed.
+.IP I
+Show detailed information for the codepoint currently displayed at the
+top of the first column.
+.IP V
+Display the version number of the Unicode standard displayed by
+.BR ubrowse .
+.IP Ctrl-L
+Redraw the screen.
+.IP "Q \fIor\fR Ctrl-W"
+Exit the program.
+.SH CAVEAT
+.B ubrowse
+does not make use of any external resource; thus, updates to the
+Unicode standard are not automatically reflected in
+.BR ubrowse .
+.SH COPYRIGHT
+Copyright \(co 2013-2022 Brian Raiter
+.IR <breadbox@muppetlabs.com> .
+.P
+.BR ubrowse \'s
+home page is at:
+.br
+<\fIhttp://www.muppetlabs.com/~breadbox/software/ubrowse.html\fR>.
+.P
+This program is free software: you may deal in this software without
+restriction, provided that the copyright and permission notices are
+included. See the program's license for details.
+.SH SEE ALSO
+The Unicode standard: <\fIhttp://www.unicode.org/versions/latest/\fR>.
