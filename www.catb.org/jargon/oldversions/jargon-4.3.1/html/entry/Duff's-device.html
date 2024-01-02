@@ -1,0 +1,62 @@
+<html lang="en"><head>
+<title>Duff's device</title>
+<meta http-equiv="Content-Type" content="text/html">
+</head><body>
+
+<table width="100%" border=1>
+<tr>
+ <td width="33%"><a href="dub-dub-dub.html"><img src=../../graphics/prev.png alt=Previous><spacer type=horizontal size=5>dub dub dub</a></td>
+ <td width="33%"><a href="../-D-.html" target=_parent><img src=../../graphics/up.png alt=Up><spacer type=horizontal size=5>= D =</a></td>
+ <td width="33%"><a href="dumb-terminal.html"><img src=../../graphics/next.png alt=Next><spacer type=horizontal size=5>dumb terminal</a></td>
+</tr></table>
+<br>
+
+<p><b>Duff's device</b> n. <p>
+ The most dramatic use yet seen of <b><a href="fall-through.html">fall through</a></b> in C, invented by Tom Duff when he was at Lucasfilm. 
+   Trying to <b><a href="bum.html">bum</a></b> all the instructions he could out of an inner
+   loop that copied data serially onto an output port, he decided to
+   unroll it.  He then realized that the unrolled version could be
+   implemented by <em>interlacing</em> the structures of a switch and a
+   loop:
+
+<pre>   register n = (count + 7) / 8;      /* count &gt; 0 assumed */
+
+   switch (count % 8)
+   {
+   case 0:        do {  *to = *from++;
+   case 7:              *to = *from++;
+   case 6:              *to = *from++;
+   case 5:              *to = *from++;
+   case 4:              *to = *from++;
+   case 3:              *to = *from++;
+   case 2:              *to = *from++;
+   case 1:              *to = *from++;
+                      } while (--n &gt; 0);
+   }
+</pre>
+
+
+<br><p>
+<p>Shocking though it appears to all who encounter it for the first
+   time, the device is actually perfectly valid, legal C.  C's default
+   <b><a href="fall-through.html">fall through</a></b> in case statements has long been its most
+   controversial single feature; Duff observed that "This code forms
+   some sort of argument in that debate, but I'm not sure whether it's
+   for or against." Duff has discussed the device in detail at
+   <a href="http://www.lysator.liu.se/c/duffs-device.html" target="_parent">http://www.lysator.liu.se/c/duffs-device.html</a>.  Note
+   that the omission of postfix <code>++</code> from <code>*to</code> was
+   intentional (though confusing).  Duff's device can be used to
+   implement memory copy, but the original aim was to copy values
+   serially into a magic IO register.
+
+<p>[For maximal obscurity, the outermost pair of braces above could
+   actually be removed -- GLS]
+
+<P><table width="100%" border=1>
+<tr>
+ <td width="33%"><a href="dub-dub-dub.html"><img src=../../graphics/prev.png alt=Previous><spacer type=horizontal size=5>dub dub dub</a></td>
+ <td width="33%"><a href="../-D-.html" target=_parent><img src=../../graphics/up.png alt=Up><spacer type=horizontal size=5>= D =</a></td>
+ <td width="33%"><a href="dumb-terminal.html"><img src=../../graphics/next.png alt=Next><spacer type=horizontal size=5>dumb terminal</a></td>
+</tr></table>
+
+</body></html>
