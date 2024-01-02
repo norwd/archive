@@ -81,7 +81,7 @@ jobs:
       - name: Render HTML to Markdown
         working-directory: ${{ steps.target.outputs.directory }}
         if: ${{ endsWith(steps.target.outputs.file, '.html') }}
-        run: pandoc --from html --to markdown "${FILE}" -o "$(echo "${FILE}" | sed 's/html$/md/')"
+        run: iconv -t utf-8 "${FILE}" | pandoc --from html --to markdown -o "$(echo "${FILE}" | sed 's/html$/md/')"
         env:
           FILE: ${{ steps.target.outputs.file }}
 
