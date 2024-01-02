@@ -75,6 +75,13 @@ jobs:
         env:
           FILE: ${{ steps.target.outputs.file }}
 
+      - name: Extract Zipfile
+        working-directory: ${{ steps.target.outputs.directory }}
+        if: ${{ endsWith(steps.target.outputs.file, '.zip') }}
+        run: unzip "${FILE}"
+        env:
+          FILE: ${{ steps.target.outputs.file }}
+
       #- name: Setup GPG Keys
       #  uses: crazy-max/ghaction-import-gpg@v5
       #  with:
