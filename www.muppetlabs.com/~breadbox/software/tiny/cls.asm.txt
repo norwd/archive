@@ -1,0 +1,55 @@
+;; cls.asm: Copyright (C) 2022 Brian Raiter <breadbox@muppetlabs.com>
+;; Licensed under the terms of the GNU General Public License, either
+;; version 2 or (at your option) any later version.
+;;
+;; To build:
+;;	nasm -f bin -o cls cls.asm && chmod +x cls
+
+BITS 32
+
+;; The executable's ELF header and program header table, which overlap
+;; each other slightly. The entry point appears within the program
+;; header table (specifically, one byte into the p_vaddr field). It
+;; initializes eax and ebx before skipping past the headers.
+
+		org	0x046A4000
+
+		db	0x7F, "ELF", 1, 1, 1, 0	; e_ident
+		dd	0
+		dd	0
+		dw	2			; e_type
+		dw	3			; e_machine
+		dd	1			; e_version
+		dd	_start			; e_entry
+		dd	phdr - $$		; e_phoff
+		dd	0			; e_shoff
+		dd	0			; e_flags
+		dw	0x34			; e_ehsize
+		dw	0x20			; e_phentsize
+phdr:		dw	1			; e_phnum	; p_type
+		dw	0			; e_shentsize
+		dw	0			; e_shnum	; p_offset
+		dw	0			; e_shstrndx
+		db	0					; p_vaddr
+_start:		inc	eax
+		push	byte 4
+		pop	ebx					; p_paddr
+		xchg	eax, ebx
+		jmp	short continue
+		dd	filesize				; p_filesz
+		dd	filesize				; p_memsz
+		dd	7					; p_flags
+		dd	0x1000					; p_align
+
+continue:					; eax = 4 (write syscall no.)
+						; ebx = 1 (stdout file desc.)
+		lea	edx, [byte eax + 4]	; edx = 8 (length of string)
+		push	dword 0x4A5B1B48	; Point ecx at the string
+		push	dword 0x5B1B631B	;   "\033c\033[H\033[J"
+		mov	ecx, esp
+		int	0x80			; eax = write(ebx, ecx, edx)
+		sub	al, dl			; Zero al if write succeeded
+		xchg	eax, ebx		; eax = 1 (exit syscall no.)
+		int	0x80			; exit(ebx)
+
+filesize equ $ - $$
