@@ -1,0 +1,51 @@
+; Copyright 1994, Jeff Epler
+; You may use this file in any way you desire.  There are no warranties, etc,
+; etc.
+; Prints the prime divisors of the argument.
+
+; [IX,IY] holds our index into the argument
+; [TX,TY] holds our 'running total'
+
+:set ArgRow = 32
+:set MaxArgs = 16
+:set aY = ArgRow
+:set iX = 0
+:set iY = 31
+:set tX = 1
+:set tY = 31
+
+[iX,iY]
+0
+
+[0,0]
+L   0   tY  tX  #   0   iY  iX  0
+
+[9,0]
+?   cw  tY  tX  =   10  *   aY  iY  iX  =   =   '0' -   +   tY  tX  #   cw
+ccw cw  ?   nop nop nop =   ~   aY  #   iX  iY  @   +   1   =   iX  iY  cw
+2
+iY
+iX
+#
+tY
+tX
+=
+0
+?
+ccw ccw                                     x
+@   #
+iY  iX
+iX  iY
+=   +
+-   1
+!   =
+?   iX
+cw  iY
+@   cw  iY  iX  =   @   d   0   c   /   9   J
+iY  ?                                       10
+iX  !                                       y
+=   %
+ccw ccw
+
+[4,19]
+ret 0   c   0   d
