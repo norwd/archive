@@ -1,0 +1,58 @@
+[Download
+syslib.tar.gz](http://www.muppetlabs.com/~breadbox/pub/intercal/syslib.tar.gz)
+
+The Non-binary INTERCAL System Libraries
+========================================
+
+This project is easily my personal record for having the highest ratio
+of INTERCAL code to documentation. Normally an INTERCAL program requires
+a fair bit of explanation in order to use. However, this set of five
+libraries needs none, as each one is simply a direct port of the
+standard INTERCAL system library, already documented in the
+[manual](http://www.muppetlabs.com/~breadbox/intercal-man).
+
+The C-INTERCAL compiler introduced support for non-binary bases in its
+wild adolescent era, but for many years afterwards there was no system
+library available in those other bases. It was therefore extremely
+difficult to get anything done in them, even if you had a solid grasp of
+the non-binary logical operators. Frustrated with this ridiculous
+situation, I eventually sat down and started porting the system library.
+
+Originally I was only going to port the ternary version, but once I had
+finished that one, I realized that it was never going to be easier to do
+the other four than it was right then, while the specifics of the
+routines were still fresh in my mind. So I kept going until I had all of
+them done.
+
+Each library after the ternary version got bigger and slower, as each
+higher base required more logical operations in order to do
+multiplication and division. The library uses labels in the 1700s to
+store internal subroutines. The one for base 7 is particularly
+cumbersome. (If you are writing septary INTERCAL and are frustrated with
+the slow speed of the multiplication and division routines, I apologize,
+while also suggesting that if you can do significantly better then
+please share your code with the rest of the class.)
+
+The entire project took most of a summer. Two memories from that time
+stick out in particular. The first is of being trapped in an airport for
+several hours waiting for a connecting flight to arrive. I wound up
+using that time to start composing the quartary library, writing several
+pages of INTERCAL code in pencil in my notebook. The second memory is
+from when I was porting the sexary libray. After finishing the port,
+testing revealed a bug that I hadn\'t seen before and didn\'t
+understand. Later that week I was out drinking with friends when a
+possible cause for the bug suddenly popped into my head. I went home
+hours later, and although I was quite inebriated by then I was able to
+recall the idea and successfully fix the bug. (I have never worked on
+code while intoxicated to that degree before or since.)
+
+The link at top will download a tarball containing the full set of
+libraries. However, they are included as part of the C-INTERCAL compiler
+distribution, so if you have the compiler you should already have the
+libraries. As with the original binary system library, the compiler
+automatically includes the library if any of its routines are invoked.
+
+\
+[[INTERCAL](http://www.muppetlabs.com/~breadbox/intercal/)]{.small}\
+[[Brian Raiter](http://www.muppetlabs.com/~breadbox/)]{.small}\
+[[Muppetlabs](http://www.muppetlabs.com/)]{.small}
