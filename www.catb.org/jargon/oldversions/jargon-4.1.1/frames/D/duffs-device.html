@@ -1,0 +1,62 @@
+<HTML>
+<HEAD>
+<TITLE>Duff's device</TITLE>
+<BODY>
+
+<TABLE WIDTH="100%" BORDER><TR>
+ <TD WIDTH="50%" ALIGN=LEFT>
+  <TT><NOBR>&lt;&lt; </NOBR></TT>
+<A HREF="../D/drunk-mouse-syndrome.html">drunk mouse syndrome</A></TD>
+ <TD WIDTH="50%" ALIGN=RIGHT>
+<A HREF="../D/dumb-terminal.html">dumb terminal</A>  <TT><NOBR> &gt;&gt;</NOBR></TT>
+</TD>
+</TR></TABLE>
+<P>
+<B>Duff's device</B> n. <P> The most dramatic use yet seen of  <A HREF="../F/fall-through.html">fall through</A> in C, invented by Tom Duff when he was at Lucasfilm.
+   Trying to  <A HREF="../B/bum.html">bum</A> all the instructions he could out of an inner
+   loop that copied data serially onto an output port, he decided to
+   unroll it.  He then realized that the unrolled version could be
+   implemented by <EM>interlacing</EM> the structures of a switch and a
+   loop:<P>
+<PRE>
+   register n = (count + 7) / 8;      /* count &#62; 0 assumed */
+
+   switch (count % 8)
+   {
+   case 0:        do {  *to = *from++;
+   case 7:              *to = *from++;
+   case 6:              *to = *from++;
+   case 5:              *to = *from++;
+   case 4:              *to = *from++;
+   case 3:              *to = *from++;
+   case 2:              *to = *from++;
+   case 1:              *to = *from++;
+                      } while (--n &#62; 0);
+   }
+</PRE>
+<P>
+<P>
+   Shocking though it appears to all who encounter it for the first
+   time, the device is actually perfectly valid, legal C.  C's default
+    <A HREF="../F/fall-through.html">fall through</A> in case statements has long been its most
+   controversial single feature; Duff observed that "This code forms
+   some sort of argument in that debate, but I'm not sure whether it's
+   for or against." Duff has discussed the device in detail at
+   <I><a href="http://www.lysator.liu.se/c/duffs-device.html"></a></I>.  Note 
+   that the omission of postfix <CODE>++</CODE> from <CODE>*to</CODE> was
+   intentional (though confusing).  Duff's device can be used to
+   implement memory copy, but the original aim was to copy values
+   serially into a magic IO register. <P>
+   [For maximal obscurity, the outermost pair of braces above could be
+   actually be removed -- GLS]
+<P>
+
+<TABLE WIDTH="100%" BORDER><TR>
+ <TD WIDTH="50%" ALIGN=LEFT>
+  <TT><NOBR>&lt;&lt; </NOBR></TT>
+<A HREF="../D/drunk-mouse-syndrome.html">drunk mouse syndrome</A></TD>
+ <TD WIDTH="50%" ALIGN=RIGHT>
+<A HREF="../D/dumb-terminal.html">dumb terminal</A>  <TT><NOBR> &gt;&gt;</NOBR></TT>
+</TD>
+</TR></TABLE>
+<P></BODY></HTML>
