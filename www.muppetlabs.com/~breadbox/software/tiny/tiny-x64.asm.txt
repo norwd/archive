@@ -1,0 +1,75 @@
+;; tiny.asm: Copyright (C) 2021 Brian Raiter <breadbox@muppetlabs.com>
+;; Licensed under the terms of the GNU General Public License, either
+;; version 2 or (at your option) any later version.
+;;
+;; To build:
+;;	nasm -f bin -o tiny tiny.asm && chmod +x tiny
+
+BITS 64
+
+		org	0x500000000
+
+		db	0x7F			; e_ident
+_start:		db	"ELF"			; 3 REX prefixes (no effect)
+		and	eax, 0x00000101
+		lea	edi, [rax + 42]		; rdi = exit code
+		mov	al, 60			; rax = syscall number
+		syscall				; exit(rdi)
+		dw	2 			; e_type
+		dw	62			; e_machine
+		dd	1			; e_version
+phdr:		dd	1			; e_entry	; p_type
+		dd	5					; p_flags
+		dq	phdr - $$		; e_phoff	; p_offset
+		dq	phdr			; e_shoff	; p_vaddr
+		dd	0			; e_flags	; p_paddr
+		dw	0x40			; e_ehsize	
+		dw	0x38			; e_phentsize
+		dw	1			; e_phnum	; p_filesz
+		dw	0x40			; e_shentsize
+		dw	0			; e_shnum
+		dw	0			; e_shstrndx
+		dq	0x00400001				; p_memsz
+		dq	0					; p_align
+
+;; This is how the file looks when it is read as a 64-bit ELF header,
+;; beginning at offset 0:
+;;
+;; e_ident:	db	0x7F, "ELF"			; required
+;;		db	0x25				; (garbage)
+;;		db	1				; 1 = ELFDATA2LSB
+;;		db	1				; 1 = EV_CURRENT
+;;		db	0				; 0 = ELFOSABI_SYSV
+;;		db	0x00, 0x8D, 0x78, 0x2A		; (unused)
+;;		db	0xB0, 0x3C, 0x0F, 0x05
+;; e_type:	dw	2				; 2 = ET_EXE
+;; e_machine:	dw	62				; 62 = EM_X86_64
+;; e_version:	dd	1				; 1 = EV_VERSION
+;; e_entry:	dq	0x0000000500000001		; program starts here
+;; e_phoff:	dq	0x18				; phdrs located here
+;; e_shoff:	dq	0x0000000500000018		; (unused)
+;; e_flags:	dd	0				; (unused)
+;; e_ehsize:	dw	0x40				; ehdr size
+;; e_phentsize:	dw	0x38				; phdr entry size
+;; e_phnum:	dw	1				; one phdr in the table
+;; e_shentsize:	dw	0x40				; shdr entry size
+;; e_shnum:	dw	0				; (unused)
+;; e_shstrndx:	dw	0				; (unused)
+;;
+;; This is how the file looks when it is read as a program header
+;; table, beginning at offset 0x18:
+;;
+;; p_type:	dd	1				; 1 = PT_LOAD
+;; p_flags:	dd	5				; 5 = PF_R | PF_X
+;; p_offset:	dq	0x18				; addr near top of file
+;; p_vaddr:	dq	0x0000000500000018		; load to this address
+;; p_paddr:	dq	0x0038004000000000		; (unused)
+;; p_filesz:	dq	0x00400001			; exaggerated file size
+;; p_memsz:	dq	0x00400001			; equal to file size
+;; p_align:	dq	0				; (unused)
+;;
+;; Even though p_offset points to the middle of the file, the loader
+;; will still load the entire file, as long as p_vaddr has the same
+;; offset in its address. It's okay for the p_filesz value to be larger
+;; than the true file size, so long as p_memsz has the same value.
+
