@@ -1,0 +1,865 @@
+;; puzzle.asm: Copyright (C) 2023 Brian Raiter <breadbox@muppetlabs.com>
+;; Licensed under the terms of the GNU General Public License, either
+;; version 2 or (at your option) any later version.
+;;
+;; To build:
+;;	nasm -f bin -o puzzle puzzle.asm && chmod +x puzzle
+
+;; A 15 Puzzle for x86 Linux using X11.
+;;
+;; Because this program does not link with Xlib (or with any other
+;; libraries), it needs to talk to the X Window server directly,
+;; opening a Unix domain socket connection at a predetermined
+;; location. The system calls that do this can be described as:
+;;
+;;   sock = socket(AF_UNIX, SOCK_STREAM, 0);
+;;   connect(sock, { .sun_family = AF_UNIX, .sun_path = "/tmp/.X11-unix/X0" });
+;;
+;; If the X server is not present at the given location, or is
+;; otherwise unavailable, the connect system call will fail. The
+;; program then exits with an exit code equal to the error number. (If
+;; the X server is present but rejects the connection request, the
+;; program exits with an exit code of 1.)
+;;
+;; If the connect system call succeeds, the socket can then be written
+;; to (to generate requests, i.e. the actions that are normally
+;; encapsulated by Xlib function calls) and read from (to retrieve
+;; events and error reports).
+;;
+;; The first part of this program, occupying over half of the
+;; program's size, is responsible for simply initializing the program
+;; data. Most of this is done before any other activity takes place.
+;; Following this, the program attempts to connect with the local
+;; X Window server. If successful, the last of the data
+;; initialization is completed, and then the remainder of the
+;; program actually makes everything happen.
+;;
+;; The initialization of the data is concerned with laying out a
+;; buffer containing eight requests to be sent to the X server. These
+;; requests create the program's window and a pixmap. Once the
+;; connection to the X server has been established, these eight
+;; requests are submitted before the program enters its event loop.
+;;
+;; The eight requests sent during initialization can be described as:
+;;
+;;   windowid = CreateWindow(root->id, 512, 256, 256, 256, root->depth,
+;;                           InputOutput, CopyFromParent, 1, CWEventMask,
+;;                           ExposureMask | ButtonPressMask);
+;;   pixmapid = CreatePixmap(root->id, 128, 640, root->depth);
+;;   ChangeProperty(windowid, XA_WM_NAME, XA_STRING, 8,
+;;                  PropModeReplace, 6, "Puzzle");
+;;   pixmapgc = CreateGC(pixmap, GCForeground | GCBackground,
+;;                       root->blackPixel, root->whitePixel);
+;;   windowgc = CreateGC(window, 0);
+;;   ChangeProperty(windowid, XA_WM_NORMAL_HINTS, XA_WM_SIZE_HINTS, 32,
+;;                  PropModeReplace, 18,
+;;                  { .min_width = 89, .min_height = 89,
+;;                    .max_width = 89, .max_height = 89 });
+;;   MapWindow(windowid);
+;;   PutImage(pixmapid, pixmapgc, XYBitmap, 1, 0, 0, 128, 640, { /*pixels*/ });
+;;
+;; Most of the initialization process is taken up with initializing
+;; the pixel data for the PutImage request. The images for the tiles
+;; are stored in this pixmap along the left side of the pixmap, in a
+;; column 19 pixels wide. The background of the window is stored in
+;; an 89x89 square starting at (32, 0). The remaining pixels of the
+;; pixmap are unused.
+;;
+;; Once the X objects have been created, the program waits for events
+;; to arrive. An exposure event causes the window's contents to be
+;; rendered. A mouse button event is evaluated to see if the current
+;; tile layout needs to change. A client message event is assumed to be
+;; a user request to close the program. All other events are ignored.
+;;
+;; Rendering the window's contents is done using 17 CopyArea requests,
+;; with the pixmap as the source and the window as the destination.
+;; The first CopyArea renders the background, followed by one for each
+;; of the 16 tile positions. The requests can be described as:
+;;
+;;   CopyArea(pixmapid, windowid, windowgc, 32, 0, 89, 89, 0, 0);
+;;   for (i = 0 ; i < 16 ; ++i)
+;;       CopyArea(pixmapid, windowid, windowgc, 0, puzzle[i] * 32, 19, 19,
+;;                5 + 20 * (i % 4), 5 + 20 * (i / 4));
+;;
+;; The remaining request that the program sends happens during the
+;; flash loop, when the window's contents are temporary rendered in
+;; inverse. This is done by changing the gc's function from GXcopy to
+;; GXcopyInvert before redrawing the window. The nanosleep system call
+;; is used to allow time for the contents to become visible before the
+;; the function is changed again and the window is redrawn. Repeating
+;; this 16 times causes the window to flash for about one second.
+
+BITS 32
+
+;;
+;; Constants used by the program.
+;;
+
+;; Coordinates and dimensions of the elements of the display.
+
+%define windowsize		89
+%define frameoffset		5
+%define tilesize		19
+%define tilespacing		(tilesize + 1)
+%define toplefttilecorner	((frameoffset << 16) | frameoffset)
+%define	tilerowjump		((tilespacing << 16) - (4 * tilespacing))
+
+;; The basic stipple pattern that marks the empty space.
+
+%define emptystipplepattern	0x00044444
+
+;; Dimensions of various elements stored in the pixmap.
+
+%define digitheight		13
+%define tilesrcheight		32
+%define bkgndxpos		32
+%define pixmaprowbytes		16
+
+;; System call numbers.
+
+%define syscall_exit		1
+%define syscall_read		3
+%define syscall_write		4
+%define syscall_nanosleep	162
+%define syscall_socket		359
+%define syscall_connect		362
+
+;; The standard size of a struct sockaddr_un.
+
+%define SockAddrUnixSize	110
+
+;; The errno value for an interrupted system call.
+
+%define	EINTR			4
+
+;; Sizes of various requests and responses sent to and from the
+;; X Window server.
+
+%define ConnectReqSize		12
+%define ConnectRespHeaderSize	8
+%define	ConnSetupSize		32
+%define GenericRespSize		32
+%define ChangeGCSize		16
+%define CopyAreaSize		28
+
+;; At the top of the request buffer is a ChangeGC request containing
+;; these fields.
+
+%define ChangeGC_gc		4
+%define ChangeGC_function	12
+
+;; After this request, the buffer holds a sequence of eight requests,
+;; all of which are sent to the X server during program
+;; initialization. The requests are: CreateWindow, CreatePixmap,
+;; ChangeProperty (x2), CreateGC (x2), MapWindow, and PutImage.
+;; Several fields in these requests must be initialized at runtime,
+;; as identified by the following offsets.
+
+%define CreateWindow_depth	1
+%define CreateWindow_parent	8
+%define CreatePixmap_depth	37
+%define CreatePixmap_drawable	44
+%define CreatePixGC_foreground	100
+%define CreatePixGC_background	104
+
+;; The offset for this field (the title string following the first
+;; ChangeProperty request) is accessed from the start of the request
+;; buffer, instead of just past the ChangeGC request.
+
+%define SetWinTitle_title	(76 + ChangeGCSize)
+
+;;The remaining request that will be sent to the X Window server
+;; is CopyArea. This request is stored in a separate buffer, using
+;; the following header and field offsets.
+
+%define CopyAreaHeader		(((CopyAreaSize / 4) << 16) | 0x3E)
+%define CopyArea_srcid		4
+%define CopyArea_destid		8
+%define CopyArea_gc		12
+%define CopyArea_srcpos		16
+%define CopyArea_destpos	20
+%define CopyArea_width		24
+%define CopyArea_height		26
+
+;; The connection setup response sent by the X server contains two
+;; parts. The first part contains the following fields that our
+;; program needs. (The second part is obtained via these fields.)
+
+%define ConnSetup_ridBase	4
+%define ConnSetup_ridMask	8
+%define ConnSetup_nbytesVendor	16
+%define ConnSetup_numFormats	21
+
+;; Event ID numbers.
+
+%define ButtonPressEvent	4
+%define ExposeEvent		12
+
+;; Offset of the coordinates in a mouse button press event.
+
+%define ButtonPress_position	24
+
+;; Macro for computing various addresses in the data area. Assuming
+;; that ebp is initialized to point to the puzzle label, this allows
+;; several labels to be accessed with a byte offset.
+
+%define ADDR(p) ebp + (p) - puzzle
+
+;;
+;; The ELF executable file structures
+;;
+;; The following headers provide the structures required by the ELF
+;; standard to identify the file as a 32-bit executable for the x86
+;; architecture. The entire program is loaded into a single chunk of
+;; read-write memory, with ~66k of BSS memory immediately following
+;; the file contents.
+;;
+;; Note that the program actually begins inside the ELF header,
+;; halfway into the load address field in fact. These instruction
+;; initialize ecx to 10 and eax to 16 before jumping past the
+;; remaining header bytes. (The final jump overlaps with the p_memsz
+;; field, which explains the irregular BSS memory size.)
+;;
+
+		org	0x0FB00000
+
+		db	0x7F, 'ELF'
+		db	1			; ELFCLASS32
+		db	1			; ELFDATA2LSB
+		db	1			; EV_CURRENT
+		db	0			; ELFOSABI_NONE
+		dd	0
+		dd	0
+		dw	2			; ET_EXEC
+		dw	3			; EM_386
+		dd	1			; EV_CURRENT
+		dd	_start
+		dd	phdr - $$
+		dd	0
+		dd	0
+		dw	0x34			; sizeof(Elf32_Ehdr)
+		dw	0x20			; sizeof(Elf32_Phdr)
+phdr:		dw	1			; PT_LOAD
+		dw	0
+		dw	0
+		dw	0
+		dw	0
+_start:		mov	al, 15
+		push	10
+		pop	ecx
+		cmp	eax, filesize
+		jmp	$ + 12
+		dw	1
+		dd	7			; PF_R | PF_W | PF_X
+		dd	0x1000
+
+;; ebp is initialized to point to the puzzle array, a value that will
+;; remain unchanged throughout the program. Its proximity to several
+;; other addresses is used by the ADDR() macro.
+
+		mov	ebp, puzzle
+
+;; Initialize the puzzle array to a known valid state. The tiles are
+;; laid out in reverse order, from 15 to 1, with the empty posisiton
+;; at top left. (This loop stores a value of 16 in the empty position,
+;; but this will be overwritten as soon as the tiles are shuffled.)
+
+		lea	edi, [ebp + 1]
+mkpuzzle:	stosb
+		dec	eax
+		jnz	mkpuzzle
+
+;; Initialize the pixels holding the tile images. The following
+;; routine generates twenty tile images, labeled 0 through 19. The
+;; bytes at digitpixels specify the digits 0 through 9 as a sequence
+;; of 8x13 bitmaps, each byte comprising a complete row of pixels. The
+;; only hitch in this layout is the digit 6, which is the only digit
+;; that ascends above the 8x13 bounding box. To handle this, digits 6
+;; through 9 are all shifted down one row, and the code offsets their
+;; placement at the appropriate point. On each iteration of the inner
+;; loop, one row of pixels is created for tile n, and then another row
+;; of pixels is generated for tile 10+n.
+
+		mov	esi, digitpixels
+		mov	edi, startupreq.pixels + 3 * pixmaprowbytes
+		push	edi
+digitloop:	cdq
+.rowloop:	xor	eax, eax
+		lodsb
+		shl	eax, 7
+		stosd
+		shl	eax, 2
+		mov	al, [digitpixels + digitheight + edx]
+		shl	eax, 1
+		mov	[edi + 10 * tilesrcheight * pixmaprowbytes - 4], eax
+		add	edi, pixmaprowbytes - 4
+		inc	edx
+		cmp	dl, digitheight
+		jnz	.rowloop
+		add	edi, (tilesrcheight - digitheight) * pixmaprowbytes
+		cmp	ecx, 5
+		jnz	.notsix
+		sub	edi, pixmaprowbytes
+.notsix:	loop	digitloop
+
+;; Overwrite the zeroth tile with a stipple pattern that represents
+;; the "blank tile", the empty spot created by the missing tile.
+
+		pop	edi
+		mov	eax, emptystipplepattern
+		mov	[edi - 2 * pixmaprowbytes], eax
+		shr	eax, 2
+		stosd
+		mov	cl, (tilesize - 4) * (pixmaprowbytes / 4)
+.blankloop:	mov	eax, [edi - 4 * pixmaprowbytes]
+		stosd
+		loop	.blankloop
+
+;; esi has been advanced past the digitpixels data and now points to
+;; setupvalues. This data holds a set of non-zero values that need to
+;; be stored in the requests buffer. (See the comments at setupvalues
+;; for details about how the information is encoded.) Note also the
+;; explicit 0x3D value. This is the first byte of the five-byte
+;; instruction "cmp eax, IMM". The actual compare is not needed; it is
+;; simply used to skip over the next three instructions.
+
+		mul	ecx
+		lea	edi, [ADDR(reqbuf - 1)]
+		mov	dword [edi + SetWinTitle_title + 1], 'Puzz'
+		mov	cl, setupvaluecount
+setuploop:	mov	al, [esi]
+		shr	al, 5
+		jz	.twobytes
+		add	edi, eax
+		lodsb
+		and	al, 0x1F
+		db	0x3D
+.twobytes:	lodsb
+		add	edi, eax
+		lodsb
+		mov	[edi], al
+		loop	setuploop
+
+;; esi has now been advanced past setupvalues and points to
+;; bkgndsequences. This data is used to lay out the window's
+;; background image, an 96x89 region stored at offset (32, 0) in the
+;; pixmap. It depicts the frame around the sliding tiles, with a black
+;; center area that provides the dividing lines between the tiles.
+;; With the tiles absent, there are only nine different rows of pixels
+;; in this image. In between the top six and bottom six rows, a
+;; repeating pattern of four rows makes up the middle area. Each row
+;; is neatly specified by a 32-bit value, stored at bkgndpatterns.
+;; (See the comments at bkgndpatterns for details about how the pixel
+;; patterns are encoded.)
+
+		mov	dl, windowsize
+bkgndloop:	add	edi, pixmaprowbytes - 9
+		mov	al, 3
+		and	eax, edx
+		mov	al, [esi + eax]
+		cmp	dl, 6
+		ja	.notatbottom
+		mov	al, [esi + 8 + edx]
+.notatbottom:	cmp	dl, 83
+		jb	.notattop
+		mov	al, [esi - 80 + edx]
+.notattop:	mov	eax, [ADDR(bkgndpatterns) + eax*4]
+		stosd
+		stosd
+		stosd
+		sub	edi, 10
+		mov	al, ah
+		mov	cl, 7
+		rep stosb
+		dec	edx
+		jnz	bkgndloop
+
+;; Mix up the puzzle so the tiles are disarranged. A simple linear
+;; congruential generator is used to generate random values between 0
+;; and 15, with the TSC register providing an initial seed value.
+;; After approximately 700 random moves, each tile should be equally
+;; likely to be in any position. However, because this code selects
+;; the tile to slide without regard to its proximity to the empty
+;; space, it will only request a valid move about a third of the time.
+;; Thus the loop is run for 2500 iterations to ensure a good starting
+;; position.
+
+		rdtsc
+		mov	ch, 10
+shuffle:	imul	eax, 32310901
+		add	eax, 113
+		push	eax
+		shr	eax, 28
+		call	slidetile
+		pop	eax
+		loop	shuffle
+
+;; The program now attempts to open a connection to the X Window
+;; server. A socket is created using the socket system call, and the
+;; file descriptor is stored in ebx, where it will be for the rest of
+;; the program's runtime. The connect system call opens a Unix domain
+;; socket with the server. If either of these calls are unsuccessful,
+;; the program exits immediately with the returned error number as the
+;; exit code. Otherwise, a connection request is sent.
+
+		mov	eax, syscall_socket
+		cdq
+		inc	ecx
+		mov	ebx, ecx
+		int	0x80
+		or	eax, eax
+		jl	exitfwdfwd
+		xchg	eax, ebx
+		lea	ecx, [ADDR(sockaddr)]
+		mov	dl, SockAddrUnixSize
+		mov	ax, syscall_connect
+		int	0x80
+		or	eax, eax
+		jl	exitfwdfwd
+		lea	ecx, [ADDR(connectreq)]
+		mov	dl, ConnectReqSize
+		call	send
+
+;; If the server does not accept the connection request, the first
+;; byte of the response will be equal to 0, and the program will exit.
+;; Otherwise the first byte will be equal to 1, followed by a variable
+;; amount of data. The 16-bit value stored at offset 6 holds the number of
+;; 4-byte fields in the full response (after the header).
+
+		mov	dl, ConnectRespHeaderSize
+		call	recv
+		mov	al, [ecx]
+		dec	eax
+exitfwdfwd:	jl	exitfwd
+		movzx	edx, word [ecx + 6]
+		shl	edx, 2
+		call	recv
+
+;; From the X server's response, we only need to extract a handful of
+;; fields. Mostly importantly, we need the ridBase and ridMask values,
+;; as this tells us what numbers are valid IDs for our objects. Our
+;; program needs four ID values: for the window, the pixmap, and both
+;; of their respective GCs. edi is set to ridBase, and edx is set to
+;; the lowest 1-bit in ridMask, giving an increment between ID values.
+;; The IDs then need to be inserted into the request buffer at various
+;; positions.
+
+		push	ecx
+		mov	edi, [ecx + ConnSetup_ridBase]
+		mov	esi, [ecx + ConnSetup_ridMask]
+		cdq
+		sub	edx, esi
+		and	edx, esi
+
+;; The data at idoffsets indicates the offsets into the buffer of
+;; startup requests where each of the four ID values need to be
+;; stored. Three of the ID values also need to be stored in the buffer
+;; holding the CopyArea request. The byte values under idoffsets are
+;; thus of two types. Even values are request buffer offsets. Odd
+;; values are CopyArea buffer offsets, and additionally indicate when
+;; to switch to the next ID value. Lastly, one ID (the window's gc) is
+;; needed by the ChangeGC request, so this value is stored directly.
+;; Note that the last value in the array is explicitly tested for as a
+;; sentinel value.
+
+		lea	esi, [ADDR(idoffsets)]
+		lea	ecx, [ADDR(startupreq)]
+		mov	[ecx - ChangeGCSize + ChangeGC_gc], edi
+idloop:		lodsb
+		test	al, 1
+		jz	.sameid
+		mov	[ADDR(copyareareq - 1) + eax], edi
+		add	edi, edx
+		lodsb
+.sameid:	mov	[ecx + eax], edi
+		cmp	al, 236
+		jnz	idloop
+
+;; The values stored in two fields in the X server's response are
+;; needed in order to obtain the offset of the data fields describing
+;; the root window.
+
+		pop	edi
+		movzx	edx, word [edi + ConnSetup_nbytesVendor]
+		mov	al, [edi + ConnSetup_numFormats]
+		add	edi, edx
+		lea	esi, [edi + eax*8 + ConnSetupSize]
+
+;; From the root window specification, four values are needed in
+;; order to complete the initialization of the request buffer: the ID
+;; number of the root window, its depth (i.e. the number of bits per
+;; pixel), and the pixel values used to represent white and black.
+;; These values are copied into the request buffer directly.
+
+		lodsd
+		mov	[ecx + CreateWindow_parent], eax
+		mov	[ecx + CreatePixmap_drawable], eax
+		lodsd
+		lodsd
+		mov	[ecx + CreatePixGC_background], eax
+		lodsd
+		mov	[ecx + CreatePixGC_foreground], eax
+		mov	al, [esi + 22]
+		mov	[ecx + CreateWindow_depth], al
+		mov	[ecx + CreatePixmap_depth], al
+
+;; The request buffer is fully initialized. All the requests are sent
+;; off at once. Startup is then complete, and the program can enter
+;; its event loop.
+
+		mov	dx, startupreqsize
+		call	send
+
+;;
+;; The event loop.
+;;
+
+;; The loop waits for the X server to send us an event (and/or an
+;; error report from a earlier sent request, in which case the program
+;; exits with a exit code of 1). The only events we have requested to
+;; receive are Expose events and ButtonPress events. Any other events
+;; we might get should be ignored.
+
+eventloop:
+		mov	dl, GenericRespSize
+		call	recv
+		mov	al, [ecx]
+		cmp	al, ExposeEvent
+		jz	draw
+		dec	eax
+exitfwd:	jl	exit
+		cmp	al, ButtonPressEvent - 1
+		jnz	eventloop
+
+;; When a ButtonPress event is received, the coordinates of the mouse
+;; at the time of the event are obtained. The coordinates are
+;; translated into a row number and column number and then combined
+;; (via the misuse of some BCD instructions) to find the position of
+;; the tile that was selected. If the position is not valid (i.e. the
+;; button press was not over a tile), the event is ignored and the
+;; program returns to waiting for the next event.
+
+		mov	eax, [ecx + ButtonPress_position]
+		sub	al, frameoffset
+		aam	tilespacing
+		cmp	ah, 4
+		jae	eventloop
+		mov	dl, ah
+		shr	eax, 16
+		sub	al, frameoffset
+		aam	tilespacing
+		mov	al, dl
+		aad	4
+		cmp	al, 16
+eventloopfwd:	jae	eventloop
+
+;; If a valid tile position was selected, the slidetile function is
+;; called. Then, the puzzle's current state is examined. If it is now
+;; in its solved state (namely, if the first fifteen positions contain
+;; the tiles 1 through 15 in order), the flash counter is set to 16.
+;; This will cause the draw routine to enter the flash routine
+;; immediately afterwards.
+
+		call	slidetile
+		jnc	eventloop
+		mov	dl, 15
+chkloop:	cmp	[ebp + edx - 1], dl
+		jnz	draw
+		dec	edx
+		jnz	chkloop
+		mov	byte [ADDR(flashcount)], 16
+
+;; Here the window's display is rendered. First the window is filled
+;; with the static background image, and then the current state of the
+;; puzzle is consulted to render each tile in its current location
+;; (including the zeroth tile, or empty space), after which the
+;; program returns to the top of the loop to await the next event.
+
+draw:
+		mov	al, bkgndxpos
+		xor	edi, edi
+		mov	dl, windowsize
+		call	sendcopyarea
+		mov	edi, toplefttilecorner
+		mov	esi, ebp
+drawloop:	lodsb
+		shl	eax, 21
+		mov	dl, tilesize
+		call	sendcopyarea
+		mov	al, 15
+		and	eax, esi
+		jz	flash
+		add	edi, tilespacing
+		test	al, 3
+		jnz	drawloop
+		add	edi, tilerowjump
+		jmp	drawloop
+
+;; The exit routine is placed here, immediately following one of the
+;; program's few unconditional jump instructions. This routine is
+;; called to exit the program. The contents of the al register are
+;; interpreted as a (negative) error code, or zero to indicate a
+;; successful exit.
+
+exit:
+		neg	eax
+		xchg	eax, ebx
+		mov	al, syscall_exit
+		int	0x80
+
+;; If the flashcount is currently nonzero, then it is decremented,
+;; and the window is flashed. This is done by alternating the function
+;; for the window's gc between GXcopy and GXcopyInverted, and then
+;; forcing a redraw after sleeping for approximately 1/20 of a second.
+;; After the redraw, the program will return here and repeat the
+;; process until flashcount reaches zero.
+
+flash:
+		cmp	[ADDR(flashcount)], al
+		jz	eventloopfwd
+		dec	byte [ADDR(flashcount)]
+		push	ebx
+		lea	ebx, [ADDR(timespec)]
+		mov	byte [ebx + 7], 3
+		xor	ecx, ecx
+		mov	al, syscall_nanosleep
+		int	0x80
+		pop	ebx
+		lea	ecx, [ADDR(reqbuf)]
+		xor	byte [ecx + ChangeGC_function], 0x0F
+		mov	dl, 16
+		call	send
+		jmp	draw
+
+;;
+;; Subroutines.
+;;
+
+;; recv: Retrieves a response from the X server. Exits if the read
+;; fails. (If the X server closes the connection, exits successfully.)
+;; edx holds the size of the (expected) response.
+;; On return, ecx points to the received response, and eax and edx are
+;; altered (with edx being set to zero).
+
+recv:
+		mov	ecx, respbuf
+		push	ecx
+		push	syscall_read
+		jmp	dosyscall
+
+;; sendcopyarea: Sends a CopyArea request to the X server. Exits if an
+;; error occurs.
+;; eax holds the x, y pixmap coordinates of the square area to copy
+;; from (with x in the low word and y in high word).
+;; edi holds the x, y window coordinates to copy the pixels to.
+;; edx holds the size of the square to copy (must be 255 or less).
+;; On return, eax and ecx are altered, and edx is set to zero.
+
+sendcopyarea:
+		lea	ecx, [ADDR(copyareareq)]
+		mov	dword [ecx], CopyAreaHeader
+		mov	[ecx + CopyArea_destpos], edi
+		mov	[ecx + CopyArea_srcpos], eax
+		mov	[ecx + CopyArea_width], dl
+		mov	[ecx + CopyArea_height], dl
+		mov	dl, CopyAreaSize
+
+;; send: Sends a request to the X server. Exits if an error occurs.
+;; ecx points to the request to send.
+;; edx specifies the request's size in bytes.
+;; On return, eax and edx are altered (with edx always being zero).
+
+send:
+		push	ecx
+		push	syscall_write
+dosyscall:	pop	eax
+		push	eax
+		int	0x80
+		cmp	eax, -EINTR
+		jz	dosyscall
+		or	eax, eax
+		jle	exit
+		add	ecx, eax
+		sub	edx, eax
+		jg	dosyscall
+		pop	eax
+		pop	ecx
+		ret
+
+;; slidetile: Moves one or more tiles one position, in the line
+;; between the position specified by eax and the currently empty
+;; position. If the requested move is invalid (i.e. the position in
+;; eax is not orthogonally aligned with the empty position, or is
+;; empty itself), no change is made. On return, the carry flag will be
+;; set if the requested move was valid, and eax and edx will be
+;; altered (but both will hold values 255 or less).
+
+slidetile:
+		mov	esi, [ADDR(empty)]
+		xor	esi, eax
+		jz	.badmove
+		cdq
+		inc	edx
+		cmp	esi, 4
+		jb	.goodmove
+		mov	dl, 4
+		and	esi, 0x03
+		jnz	.badmove
+.goodmove:	cmp	eax, [ADDR(empty)]
+		jl	.positive
+		neg	dl
+.positive:	mov	[ADDR(empty)], eax
+.shift:		xchg	dh, [ebp + eax]
+		add	al, dl
+		cmp	dh, 1
+		jnc	.shift
+.badmove:	ret
+
+;;
+;; The data.
+;;
+
+;; The graphic data for the digits 0-9. Each digit is represented by
+;; 13 bytes of data, with each byte representing one row of 8 pixels.
+
+digitpixels:
+	db    0x3C,0x66,0xDB,0xBD,0xA5,0xA5,0xA5,0xBD,0xDB,0x66,0x3C,0x00,0x00
+	db    0x38,0x2C,0x24,0x2C,0x28,0x28,0x28,0x28,0x6C,0x44,0x7C,0x00,0x00
+	db    0x3E,0x63,0x5D,0x57,0x58,0x6C,0x36,0x7B,0x5D,0x41,0x7F,0x00,0x00
+	db    0x3C,0x66,0x5A,0x5E,0x6C,0x64,0xDC,0xB0,0xA0,0xB7,0xDD,0x63,0x3E
+	db    0x70,0x58,0x6C,0x76,0x5B,0xDD,0x81,0xDF,0xD8,0x88,0xF8,0x00,0x00
+	db    0x7F,0x41,0x7D,0x3D,0x61,0xDF,0xB0,0xA0,0xB0,0xD8,0x6F,0x31,0x1F
+	db    0x3C,0x26,0x3B,0x3D,0x65,0xD9,0xBD,0xA5,0xBD,0xDB,0x66,0x3C,0x00
+	db    0x00,0xFF,0x81,0xBD,0xD7,0x58,0x68,0x2C,0x34,0x14,0x14,0x1C,0x00
+	db    0x00,0x3C,0x66,0x5A,0x5A,0x66,0xDB,0xBD,0xA5,0xBD,0xDB,0x66,0x3C
+	db    0x00,0x3C,0x66,0xDB,0xBD,0xA5,0xBD,0x9B,0xA6,0xBC,0xDC,0x64,0x3C
+
+;; A list of 54 values to be stored in the request buffer during
+;; program initialization. These bytes encode the constant non-zero
+;; values in the requests buffer that need to be initialized. Each
+;; value is encoded in one of two ways. The simpler encoding uses two
+;; bytes: the first byte is a distance to be added to a running
+;; pointer within the buffer, and the second byte is the value itself.
+;; The other encoding stores the data in a single byte, with the
+;; distance stored in the top three bits, and the value to store in
+;; the bottom five bits.
+
+setupvaluecount equ 54
+setupvalues:	db	 1, 0x38,     0x44,     0xC1,     0x83,     0x81
+		db	    0x49, 11, 0x02,     0x41,     0x41,     0x41
+		db	    0x21,     0x41,     0xE8,     0x64,  1, 0x80
+		db	 3, 0x35,     0x44, 10, 0x80,  2, 0x80,     0x22
+		db	    0x32,     0x48,  6, 0x27,     0x9F,     0x88
+		db	    0x86,  8, 0x6C,  1, 0x65,  3, 0x37,     0x46
+		db	10, 0x0C, 12, 0x37,     0x44, 14, 0x12,     0x58
+		db	 6, 0x28,  4, 0x29,  4, 0x20,     0x92,  4, 0x30
+		db	20, 0x59,  4, 0x59,  4, 0x59,  4, 0x59, 30, 0x00
+		db	10, 0x08,     0x42,  6, 0x48,     0x46,     0x2A
+		db	 9, 0x80,  2, 0x80,     0x22,     0xC1
+
+
+;; Sequences of patterns used to build up the background image. The
+;; top six rows of pixels use patterns 0, 2, 0, 1, 3, 4. The bottom
+;; six rows of pixels use patterns 7, 3, 2, 0, 1, 0. In between, the
+;; rows repeat patterns 5, 6, 5, 4 in a loop. The code selects the
+;; correct pattern index from this data via a series of messy tests
+;; and a decrementing index value. The actual pixel patterns making up
+;; each row is specified by the bkgndpatterns data.
+
+bkgndsequences:	db	4, 5, 6, 5
+		db	4, 3, 1, 0, 2, 0
+		db	   1, 0, 2, 3, 7
+
+;; idoffsets holds offset values indicating where to store each of the
+;; four IDs defined by the program. These IDs are, in order, the
+;; window GC, the window, the pixmap and the pixmap GC. The first three
+;; values also need to be stored in the CopyArea request buffer. (The
+;; fourth ID, the pixmap gc, is only needed for the PutImage request.)
+;; The byte values stored here are of two types. Even values represent
+;; offsets into the request buffer. Odd values provide offsets into
+;; the CopyArea buffer. The latter additionally indicates the last use
+;; of the current ID, after which the following value refers to the
+;; next ID in the list.
+
+idoffsets:	db	112,			 1 + CopyArea_gc
+		db	  4,  56, 116, 128, 224, 1 + CopyArea_destid
+		db	 40,  92, 232,		 1 + CopyArea_srcid
+		db	 88, 236
+
+;; The pixel patterns making up each line of the background image.
+;; Each pattern is a set of three. The lowest byte specifies the
+;; first byte (i.e. the leftmost eight pixels) of the line. The
+;; two highest bytes provide the last two bytes (i.e. the rightmost
+;; nine pixels, plus seven padding bits). The remaining byte in the
+;; middle is a pattern of eight pixels that is repeated to fill in the
+;; remaining pixels in the middle of the line.
+
+ALIGN 4, db 0
+bkgndpatterns:	dd	0x55555555, 0xEEEEEEEE, 0xBBBBBBBB, 0x555FFFF5
+		dd	0xBBB7FFFB, 0x5557FFF5, 0xEEF7FFFE, 0xEEF0001E
+
+;; The Unix domain socket specification, as needed for the connect
+;; system call.
+
+sockaddr:	dw	1
+		db	'/tmp/.X11-unix/X0', 0
+
+;; The connection initiation request structure only has non-zero
+;; values in the first and third bytes. The first byte is 0x6C to
+;; request an little-endian communication channel. The third and
+;; fourth bytes are 11 and 0 to select the X11 protocol standard.
+
+connectreq:	db	'l', 0, 11
+
+;;
+;; End of the file image.
+;;
+
+filesize equ $ - $$
+
+;;
+;; Beginning of the program's bss section.
+;; 
+
+ABSOLUTE $
+
+;; The remaining bytes of the connection initiation request. After
+;; initialization, this buffer is also used to hold the flash count.
+
+flashcount:	resb	ConnectReqSize - 3
+
+ALIGNB 16
+
+;; The puzzle is represented as a simple array of 16 bytes, with 0
+;; representing the blank, or absent, tile, and the bytes 1 through 16
+;; representing each numbered tile. The array is aligned on a 16-byte
+;; boundary, so that lowest four bits of the address correspond to the
+;; tile position. The following dword holds the current position of
+;; the absent tile.
+
+puzzle:		resb	16
+empty:		resd	1
+
+;; The timespec structure used by the nanosleep system call.
+
+timespec:	resd	2
+
+;; The buffer used for storing CopyArea requests.
+
+copyareareq:	resb	CopyAreaSize
+
+;; The buffer in which the eight requests sent during program startup
+;; are constructed, preceded by the request used when inverting the
+;; window colors.
+
+reqbuf:
+
+setcopyreq:	resb	16
+startupreq:	resb	252
+.pixels:	resb	20 * tilesrcheight * 16
+startupreqsize equ $ - startupreq
+
+;; The remaining memory allocated by the program is used to hold
+;; responses from the X server.
+
+respbuf:
