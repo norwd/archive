@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>(Draft) Smallest Echo, Part 2: x86 Assembly</title>
+	
+	
+	<link rel="stylesheet" href="/css/style.css">
+	
+</head>
+<body>
+	<header>
+	
+	<a href="https://blog.mandejan.nl/">Jan&#39;s Blog!</a><br>
+	
+	
+	<p>
+	<nav>
+			<a href="/"><b>Start</b></a>.
+			
+			
+			<a href="/about.html"><b>About</b></a>.
+			
+	</nav>
+	</p>
+	
+</header>
+
+	
+	<main>
+		<article>
+			<h1>(Draft) Smallest Echo, Part 2: x86 Assembly</h1>
+			<b><time>04.10.2020 14:02</time></b>
+		       
+
+			<div>
+				<h1 id="notice-draft">Notice: Draft</h1>
+<p>I&rsquo;ll publish it once its finished thanks :)</p>
+<hr>
+<p>Hi all, last time we left off on our journey toward the smallest implementation
+of an echo binary for linux we where using <a href="https://ziglang.org">Zig</a>! Check out
+<a href="/posts/smallest-echo.html">Part 1</a> if you haven&rsquo;t already. At the end of the
+post I concluded at 277 bytes. It was at this point I concluded that we needed
+to leave the final niceties from the realm of mortal programming languages
+behind. But before we start venturing deep into the pages of the x86 Software
+Developers
+<a href="https://software.intel.com/content/www/us/en/develop/articles/intel-sdm.html">Manual</a>
+lets see if we can cling on to the final shreds of hope Zig can provide for us.
+By shreds of hope I meant assembly and by providing I meant flexing with your
+radare2 skills and running <code>r2 -qc'af' -c'pdf'</code> on your binary. You could also
+go the convienient way by running your Zig code through
+<a href="https://godbolt.org/z/eobTcG">Godbolt</a><sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup> and going from there. The radare2
+way comes with the advantage of printing you some gourgeous comments for every
+line of assembly. After cleaning the assembly up a bit (naming things and
+commenting) I ended up with the following file:</p>
+<h2 id="182-bytes">182 bytes</h2>
+<div class="highlight"><pre class="chroma"><code class="language-nasm" data-lang="nasm"><span class="err">[</span><span class="k">bits</span> <span class="mi">32</span><span class="p">]</span>
+<span class="k">global</span> <span class="nv">_start</span>
+<span class="k">section</span> <span class="nv">.text</span>
+
+<span class="nl">_start:</span>                                         <span class="c1">; bytes      ; r2 comment</span>
+        <span class="nf">mov</span>     <span class="nb">esi</span><span class="p">,</span> <span class="kt">dword</span> <span class="p">[</span><span class="nb">esp</span><span class="p">]</span>                <span class="c1">; 8b3424     ; 005-32bit.zig:4 pub export fn _start() callconv(.Naked) noreturn {</span>
+        <span class="nf">xor</span>     <span class="nb">ebp</span><span class="p">,</span> <span class="nb">ebp</span>                        <span class="c1">; 31ed       ;</span>
+        <span class="nf">mov</span>     <span class="nb">ebx</span><span class="p">,</span> <span class="mi">1</span>                          <span class="c1">; bb01000000 ; i386.zig:31     return asm volatile (&#34;int $0x80&#34;</span>
+        <span class="nf">lea</span>     <span class="nb">edi</span><span class="p">,</span> <span class="p">[</span><span class="nb">esi</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>                  <span class="c1">; 8d7eff     ; 005-32bit.zig:11     for (argv[1..argc]) |arg, i| {</span>
+        <span class="nf">add</span>     <span class="nb">esi</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span>                         <span class="c1">; 83c6fe     ; 005-32bit.zig:0</span>
+<span class="nl">.loop:</span>  <span class="c1">; for every argv</span>
+        <span class="nf">cmp</span>     <span class="nb">ebp</span><span class="p">,</span> <span class="nb">edi</span>                        <span class="c1">; 39fd       ; 005-32bit.zig:11     for (argv[1..argc]) |arg, i| {</span>
+        <span class="nf">je</span>      <span class="nv">.exit</span>                           <span class="c1">; 7422       ;</span>
+        <span class="nf">mov</span>     <span class="nb">ecx</span><span class="p">,</span> <span class="kt">dword</span> <span class="p">[</span><span class="nb">esp</span> <span class="o">+</span> <span class="mi">4</span><span class="o">*</span><span class="nb">ebp</span> <span class="o">+</span> <span class="mi">8</span><span class="p">]</span>    <span class="c1">; 8b4cac08   ;</span>
+        <span class="nf">xor</span>     <span class="nb">edx</span><span class="p">,</span> <span class="nb">edx</span>                        <span class="c1">; 31d2       ; 005-32bit.zig:0</span>
+<span class="nl">.strlen:</span> <span class="c1">; increment edx until we find a 0 byte</span>
+        <span class="nf">cmp</span>     <span class="kt">byte</span> <span class="p">[</span><span class="nb">ecx</span> <span class="o">+</span> <span class="nb">edx</span><span class="p">],</span> <span class="mi">0</span>             <span class="c1">; 803c1100   ; mem.zig:710     while (ptr[i] != sentinel) {</span>
+        <span class="nf">lea</span>     <span class="nb">edx</span><span class="p">,</span> <span class="p">[</span><span class="nb">edx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>                  <span class="c1">; 8d5201     ; mem.zig:711         i += 1;</span>
+        <span class="nf">jne</span>     <span class="nv">.strlen</span>                         <span class="c1">; 75f7       ; mem.zig:710     while (ptr[i] != sentinel) {</span>
+        <span class="nf">mov</span>     <span class="kt">byte</span> <span class="p">[</span><span class="nb">ecx</span> <span class="o">+</span> <span class="nb">edx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span> <span class="s">&#39; &#39;</span>       <span class="c1">; c64411ff20 ; 005-32bit.zig:13         arg[len] = &#39; &#39;; ; [0x20:1]=255 ; 32</span>
+        <span class="nf">mov</span>     <span class="nb">eax</span><span class="p">,</span> <span class="mi">4</span>                          <span class="c1">; b804000000 ; i386.zig:31     return asm volatile (&#34;int $0x80&#34;</span>
+        <span class="nf">cmp</span>     <span class="nb">ebp</span><span class="p">,</span> <span class="nb">esi</span>                        <span class="c1">; 39f5       ; 005-32bit.zig:15         if (i == argc - 2) break;</span>
+        <span class="nf">lea</span>     <span class="nb">ebp</span><span class="p">,</span> <span class="p">[</span><span class="nb">ebp</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>                  <span class="c1">; 8d6d01     ; 005-32bit.zig:11     for (argv[1..argc]) |arg, i| {</span>
+        <span class="nf">int</span>     <span class="mh">0x80</span>                            <span class="c1">; cd80       ; i386.zig:31     return asm volatile (&#34;int $0x80&#34;</span>
+        <span class="nf">jne</span>     <span class="nv">.loop</span>                           <span class="c1">; 75da       ; 005-32bit.zig:15         if (i == argc - 2) break;</span>
+<span class="nl">.exit:</span>	<span class="c1">; Write newline and call exit(0)</span>
+        <span class="nf">mov</span>     <span class="nb">eax</span><span class="p">,</span> <span class="mi">4</span>                          <span class="c1">; b804000000 ; i386.zig:31     return asm volatile (&#34;int $0x80&#34;</span>
+        <span class="nf">mov</span>     <span class="nb">ebx</span><span class="p">,</span> <span class="mi">1</span>                          <span class="c1">; bb01000000 ;</span>
+        <span class="nf">mov</span>     <span class="nb">ecx</span><span class="p">,</span> <span class="nv">newline</span>                    <span class="c1">; b9b4004000 ; 0x4000b4 ; &#34;\n&#34;</span>
+        <span class="nf">mov</span>     <span class="nb">edx</span><span class="p">,</span> <span class="mi">1</span>                          <span class="c1">; ba01000000 ;</span>
+        <span class="nf">int</span>     <span class="mh">0x80</span>                            <span class="c1">; cd80       ;</span>
+        <span class="nf">mov</span>     <span class="nb">eax</span><span class="p">,</span> <span class="mi">1</span>                          <span class="c1">; b801000000 ; i386.zig:12     return asm volatile (&#34;int $0x80&#34;</span>
+        <span class="nf">xor</span>     <span class="nb">ebx</span><span class="p">,</span> <span class="nb">ebx</span>                        <span class="c1">; 31db       ;</span>
+        <span class="nf">int</span>     <span class="mh">0x80</span>                            <span class="c1">; cd80       ;</span>
+
+<span class="nl">newline:</span>
+        <span class="kd">db</span>      <span class="mh">0x0a</span>
+</code></pre></div><p>If you can build the above code as follows <code>yasm -felf32 -o echo.o 006-start.asm &amp;&amp; ld -m elf_i386 -s -n -Ttext-segment=0x10000 -o echo echo.o &amp;&amp; sstrip -z echo</code>. This will leave you with a binary 182 bytes in size. But wait you ask,
+since you so nicely provided the dissassembled bytes next to the instructions,
+when I add those all up I only get 86 bytes? Good question! Let&rsquo;s inspect the
+binary! (<code>xxd echo</code>)</p>
+<div class="highlight"><pre class="chroma"><code class="language-hexdump" data-lang="hexdump"><span class="nl">00000000</span><span class="p">:</span> <span class="mh">7f45</span> <span class="mh">4c46</span> <span class="mh">0101</span> <span class="mh">0100</span> <span class="mh">0000</span> <span class="mh">0000</span> <span class="mh">0000</span> <span class="mh">0000</span>  <span class="s">.ELF............</span>
+<span class="nl">00000010</span><span class="p">:</span> <span class="mh">0200</span> <span class="mh">0300</span> <span class="mh">0100</span> <span class="mh">0000</span> <span class="mh">6000</span> <span class="mh">0100</span> <span class="mh">3400</span> <span class="mh">0000</span>  <span class="s">........`...4...</span>
+<span class="nl">00000020</span><span class="p">:</span> <span class="mh">0000</span> <span class="mh">0000</span> <span class="mh">0000</span> <span class="mh">0000</span> <span class="mh">3400</span> <span class="mh">2000</span> <span class="mh">0100</span> <span class="mh">2800</span>  <span class="s">........4. ...(.</span>
+<span class="nl">00000030</span><span class="p">:</span> <span class="mh">0000</span> <span class="mh">0000</span> <span class="mh">0100</span> <span class="mh">0000</span> <span class="mh">6000</span> <span class="mh">0000</span> <span class="mh">6000</span> <span class="mh">0100</span>  <span class="s">........`...`...</span>
+<span class="nl">00000040</span><span class="p">:</span> <span class="mh">6000</span> <span class="mh">0100</span> <span class="mh">5600</span> <span class="mh">0000</span> <span class="mh">5600</span> <span class="mh">0000</span> <span class="mh">0500</span> <span class="mh">0000</span>  <span class="s">`...V...V.......</span>
+<span class="nl">00000050</span><span class="p">:</span> <span class="mh">1000</span> <span class="mh">0000</span> <span class="mh">0000</span> <span class="mh">0000</span> <span class="mh">0000</span> <span class="mh">0000</span> <span class="mh">0000</span> <span class="mh">0000</span>  <span class="s">................</span>
+<span class="nl">00000060</span><span class="p">:</span> <span class="mh">8b34</span> <span class="mh">2431</span> <span class="mh">edbb</span> <span class="mh">0100</span> <span class="mh">0000</span> <span class="mh">8d7e</span> <span class="mh">ff83</span> <span class="mh">c6fe</span>  <span class="s">.4$1.......~....</span>
+<span class="nl">00000070</span><span class="p">:</span> <span class="mh">39fd</span> <span class="mh">7422</span> <span class="mh">8b4c</span> <span class="mh">ac08</span> <span class="mh">31d2</span> <span class="mh">803c</span> <span class="mh">1100</span> <span class="mh">8d52</span>  <span class="s">9.t&#34;.L..1..&lt;...R</span>
+<span class="nl">00000080</span><span class="p">:</span> <span class="mh">0175</span> <span class="mh">f7c6</span> <span class="mh">4411</span> <span class="mh">ff20</span> <span class="mh">b804</span> <span class="mh">0000</span> <span class="mh">0039</span> <span class="mh">f58d</span>  <span class="s">.u..D.. .....9..</span>
+<span class="nl">00000090</span><span class="p">:</span> <span class="mh">6d01</span> <span class="mh">cd80</span> <span class="mh">75da</span> <span class="mh">b804</span> <span class="mh">0000</span> <span class="mh">00bb</span> <span class="mh">0100</span> <span class="mh">0000</span>  <span class="s">m...u...........</span>
+<span class="nl">000000a0</span><span class="p">:</span> <span class="mh">b9b5</span> <span class="mh">0001</span> <span class="mh">00ba</span> <span class="mh">0100</span> <span class="mh">0000</span> <span class="mh">cd80</span> <span class="mh">b801</span> <span class="mh">0000</span>  <span class="s">................</span>
+<span class="nl">000000b0</span><span class="p">:</span> <span class="mh">0031</span> <span class="mh">dbcd</span> <span class="mh">800a</span>                           <span class="s">.1....</span>
+</code></pre></div><p>As you can see, the first instruction <code>mov esi, dword [esp]</code> hex <code>8b3424</code>
+appears at address <code>0x60</code>, that means that there are 96 bytes before it that are
+not cpu instructions but that still contribute to the binary size. If we want
+the smallest binary possible, we need to be able to controll <em>every</em> byte in our
+binary and letting our assembler and linker make the elf header for us is just
+not feasable anymore. Luckily yasm has the option to emit binaries directly via
+the <code>-f bin</code> flag. This also omits the need for a linker and our sstrip utility.
+On the other hand, this tasks us with reading the elf specification
+(<a href="https://en.wikipedia.org/wiki/Executable_and_Linkable_Format">Wikipedia</a> has a
+good summary). The smallest elf header I could find online was described in this
+<a href="https://muppetlabs.com/~breadbox/software/tiny/teensy.html">excellent essay</a>
+coincedentally written by the same talented author as the ELFKicker tools. (from
+which I used the <code>sstrip</code> utility). I adapted his findings slightly to fit my
+program. I also made a template with just a program that returns 42 if you want
+to give size coding a try. You can find the template here:</p>
+<section class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1" role="doc-endnote">
+<p>Or as <a href="https://twitter.com/mattgodbolt">some</a> prefer to call it: <a href="https://godbolt.org">Compiler Explorer</a> <a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</section>
+
+			</div>
+		</article>
+	</main>
+<aside>
+	<div>
+		<div>
+			<h3>LATEST POSTS</h3>
+		</div>
+		<div>
+			<ul>
+				
+				<li><a href="/posts/smallest-echo-2.html">(Draft) Smallest Echo, Part 2: x86 Assembly</a></li>
+				
+				<li><a href="/posts/smallest-echo.html">Smallest Echo, Part 1: Zig</a></li>
+				
+			</ul>
+		</div>
+	</div>
+</aside>
+
+
+	<footer>
+	<p>&copy; 2021 <a href="https://blog.mandejan.nl/"><b>Jan&#39;s Blog!</b></a>.
+	</p>
+</footer>
+
+</body>
+</html>
