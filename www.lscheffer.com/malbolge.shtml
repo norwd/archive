@@ -1,0 +1,371 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html;
+      charset=windows-1252">
+    <title>Programming in Malbolge</title>
+  </head>
+  <body style="color: rgb(0, 0, 0); background-color: rgb(255, 255,
+    255);" link="#0000ee" vlink="#551a8b" alink="#0000ee">
+    <h2>Introduction to Malbolge<br>
+    </h2>
+    <b style="color: black; background-color: rgb(160, 255, 255);">
+      Malbolge</b>, for those not familiar with it, is a language
+    designed to be difficult (or perhaps impossible - until recently,
+    there was not even <a href="#Turing">an informal argument showing
+      Turing completeness</a>) to program in. For example, the effect of
+    any instruction depends on where it is located in memory (mod 94, of
+    course), all instructions are self-modifying (according to a
+    permutation table) and both the code and data pointers are
+    incremented after every instruction, making it hard to re-use any
+    code or data. There is no way to initialize memory except to one of
+    the 8 instruction characters, there is no LOAD or STORE operator,
+    and the only available memory operators (both of them) work in
+    trinary and are designed to be opaque. The only control flow
+    construct is an unconditional computed jump, which is also nearly
+    worthless since there is no way (or certainly no obvious way) to set
+    memory to anything except the 8 instruction characters.<br>
+    <br>
+    Believe it or not, <b>
+      <title> Counter </title>
+      02101012220 </b> &nbsp; people (counted in trinary, of course)
+    have so far have expressed an interest in programming in Malbolge!
+    Note that if your first impression is that counting visitors in
+    trinary is rather inconvenient, then you are missing the point of
+    Malbolge altogether. <br>
+    <br>
+    Originally, information about Malbolge was published at the site
+    below, though this site is now dead, according to the author:
+    http://www.mines.edu/students/b/bolmstea/malbolge/<br>
+    Fortunately (or maybe not) this information has been
+    preserved.&nbsp; A copy of the original site was archived at<br>
+    <a
+href="http://web.archive.org/web/20000815230017/http:/www.mines.edu/students/b/bolmstea/malbolge/">http://web.archive.org/web/20000815230017/http:/www.mines.edu/students/b/bolmstea/malbolge/</a><br>
+    The language specification copied from the original site: &nbsp;<a
+      href="http://www.lscheffer.com/malbolge_spec.html">Malbolge
+      language specification</a><br>
+    The reference interpreter copied from the original site: <a
+      href="http://www.lscheffer.com/malbolge_interp.html">Malbolge
+      Interpreter</a>.&nbsp; <br>
+    Note:&nbsp; Where the spec and the interpreter differ (for example,
+    the spec calls '&lt;' an INPUT instruction and '/' an OUPUT, but the
+    interpreter does the opposite), in this work the interpreter is held
+    to be correct.<br>
+    <p>Although the language had been out since 1998, for many years the
+      most complex known programs was 'hello, world', available in
+      several versions.<br>
+      <a href="http://www.acooke.org/andrew/writing/malbolge.html">http://www.acooke.org/andrew/writing/malbolge.html</a><br>
+      <a href="http://www.antwon.com/index.php?p=234">http://www.antwon.com/index.php?p=234</a><br>
+      <a
+        href="http://www.wikipedia.org/wiki/Malbolge_programming_language">http://www.wikipedia.org/wiki/Malbolge_programming_language</a><br>
+      <a href="http://www2.latech.edu/%7Eacm/helloworld/malbolge.html">http://www2.latech.edu/~acm/helloworld/malbolge.html</a><br>
+    </p>
+    <p>In 2004, based on the analysis below, I wrote a program that
+      copied input to output, though it did not terminate properly on
+      end of input.<br>
+    </p>
+    <p>There was a claim that the '99 bottles of beer' program had been
+      written in Malbolge. &nbsp;( The site was (now dead): <a
+        href="http://99-bottles-of-beer.ls-la.net/m.html">http://99-bottles-of-beer.ls-la.net/m.html</a>)
+      &nbsp;The implication is that the program was doing looping,
+      testing and printing. &nbsp;However, closer examination shows that
+      the programmer was just doing a printf("") of the desired result
+      using straight line code. &nbsp;Conceptually this is exactly the
+      same as the 'hello world' example above.<br>
+    </p>
+    <p>This difficult task of writing a general program in Malbolge was
+      completed for real in 2005 by&nbsp; Hisashi Iizawa , Toshiki
+      Sakabe, Masahiko Sakai , Keiichirou Kusakari, and Naoki
+      Nishida.&nbsp; Their paper "Programming Method in Obfuscated
+      Language Malbolge" (in Japanese) can be found at <a
+href="http://www.sakabe.i.is.nagoya-u.ac.jp/%7Enishida/DB/pdf/iizawa05ss2005-22.pdf">http://www.sakabe.i.is.nagoya-u.ac.jp/~nishida/DB/pdf/iizawa05ss2005-22.pdf</a>.&nbsp;
+
+      The resulting source code for '99 bottles of beer' can be found
+      at: <a
+        href="http://www.99-bottles-of-beer.net/language-malbolge-995.html">http://www.99-bottles-of-beer.net/language-malbolge-995.html</a>
+      .&nbsp; Though some of the theory developed here was used,
+      reducing this to practice was an amazing feat of programming
+      prowess.
+      <meta http-equiv="Content-Type" content="text/html;
+        charset=windows-1252">
+    </p>
+    <h3>Malbolge as a cryptosystem</h3>
+    The correct way to think about <b style="color: black;
+      background-color: rgb(160, 255, 255);">Malbolge</b>, I'm
+    convinced, is as a cryptographer and not a programmer. Think of it
+    as a complex code and/or algorithm that transforms input to output.
+    Then study it to see if you can take advantage of its weaknesses to
+    forge a message that produced the output you want.
+    <p>&nbsp;Looked at as a cryptosystem, it has several weaknesses:<br>
+    </p>
+    <h3>Some permutation cycles are short</h3>
+    <h3> </h3>
+    First, the self modifying instructions do not form one large
+    permutation. (If they did, then any instruction executed enough
+    times would always turn into a 'HALT' at some point). So we can find
+    instructions, which when executed, turn into other instructions, and
+    then back. For example, an OP instruction, when located at location
+    20 (mod 94), will become a LOAD instruction, then a NOP, then
+    another NOP, then back to a OP instruction, and so on. Cycles are
+    length 2, 9, 4, 5, 6, and 68, and the instructions executed by each
+    cycle depend on the starting position mod 94. In general the short
+    cycles are more useful than the long ones, but the long cycle at 2
+    mod 94 is very good, as it cycles between input, output, and load D
+    register instructions.&nbsp; A list of all the cycles can be found <a
+      href="malbolge_cycle.html">here</a>.<br>
+    <h3>Jump instructions do not self modify<br>
+    </h3>
+    The next weakness is a biggie - any JUMP instruction is not self
+    modifying! This happens because the order is:<br>
+    <ol>
+      <li> Instruction at C is executed</li>
+      <li> Instruction at C is scrambled by the permutation table</li>
+      <li> C is incremented</li>
+    </ol>
+    But the branch instruction changes C between steps (1) and (2). Thus
+    the branch address is one less than the intended target, and neither
+    the branch instruction itself nor the target is modified (the work
+    before the target IS modified, but that's not so bad.&nbsp; In fact
+    we will use this to great advantage later). This is very helpful
+    since it's much easier to cope with changing instructions than
+    changing control flow. Also, once an instruction permutes into a
+    branch instruction, it will not change any further.<br>
+    <a name="Loading"></a>
+    <h3>Initializing values<br>
+    </h3>
+    The next weakness is in the program reader. It is clear from the
+    text description that the intent is allow <a
+      href="http://www.lscheffer.com/malbolge_legal.html">only valid
+      instructions</a> to be written into memory, and the rest of memory
+    will be filled by the OP loop. This in general prevents the (ab)user
+    from starting with memory set to any useful values. However, close
+    inspection of the code reveals that non-printing characters (0-31)
+    and (128-255) are written directly to memory without checking
+    (except newline, tab, and a few other whitespace characters (those
+    selected by isspace()), which are ignored). One could argue this is
+    simply a bug in the interpreter, but taking advantage of a bug in
+    the interpreter seems very much in character (so to speak). This is
+    very helpful, allowing the programmer to ensure that the right
+    branch target address is in the right spot in memory, for example.<br>
+    <br>
+    Using these weaknesses, I've succeeded in writing a <b
+      style="color: black; background-color: rgb(160, 255, 255);">Malbolge</b>
+    program that copies its input to its output. Since some of it is<br>
+    non-printing, here it is uu-encoded:<br>
+    <pre><br>begin 666 copy.mb<br>M1"="04 _/CT\.SHY.#&lt;V-30S,C$P+RXM+"LJ*2@G)B4D(R(A?GU\&gt;WIY&gt;'=V<br>M=71S&lt;G%P;VYM;&amp;MJ:6AG9F5D8V)A8%]&gt;75Q;6EE85U955%-245!/3DU,2TI)<br>M2$=&amp;141#0D% /SX]/#LZ.3@W-C4T,S(Q,"\N+2PK*BDH)R8E)",B(7Y]?'MZ<br>M&gt;7AW=G5T&lt;W)Q&lt;&amp;]N;6QK:FEH9V9E9&amp;-B86!?7EU&lt;6UI96%=655134E%03TY-<br>M3$M*24A'1D5$0R9?O;V]O;V]O;V]O;V]O;V]O;V]O;V]O;V]O;V]O;V]O;V]<br>MO;V]Y+V]O;V]O;V]O;V]O;V]O;V]O;V]O;V]O;V]O;V]O;V]O;V]O;V]O;V]<br>MO;V]O;V]O;V]O;V]O;V]O;V]O;V]O;V]O;V]O;V]O;V]O;V]O;V]O;V]O;V]<br>MO;V]O;V]O;V]O;V]O;V]O;V]O;V]O;V]O;V]O;V]O;V]O;V]O;V]O;V]O;V]<br>MO;V]O&gt;2]O;V]O;V]O;V]O;V]O;V]O;V]O;V]O;V]O;V]O;V]O;V]O;V]O;V]<br>DO;V]O;V]O;V]O;V]O;V]O;V]O;V]O;V]O;V]O;V]O;V]O;T*<br> <br>end<br><br></pre>
+    <h2>Here are some more observations, not taken advantage of yet:</h2>
+    <h3><a name="CodeFix"></a>Getting aroung the effect of self
+      modifying instructions</h3>
+    &nbsp; All the various instructions appear in loops of length 2,
+    although only when located at certain memory locations. This means
+    that you can write a routine that does the right thing every other
+    time, and nothing the alternate times.&nbsp; However, since the
+    instructions will only do this when located at the proper spots, you
+    need to branch after each one.&nbsp; For example, suppose you wanted
+    to do<br>
+    <ol>
+      <li>Input</li>
+      <li>OP</li>
+      <li>rotate</li>
+    </ol>
+    In that order.&nbsp;&nbsp; You can do this at any location, but only
+    once.&nbsp; If you try to execute it again,&nbsp; the instructions
+    will have self modified in various ways, and the next attempt will
+    do something un-intended.&nbsp; However, if you do it this way:<br>
+    <ol>
+      <li>Input (at location 53, mod 94)<br>
+      </li>
+      <li>Branch to 82</li>
+      <li>OP (at location 82, mod 94)<br>
+      </li>
+      <li>branch to 59<br>
+      </li>
+      <li>rotate (at location&nbsp; 59, mod 94)<br>
+      </li>
+      <li>branch</li>
+    </ol>
+    Then each instruction is located where it is part of a
+    2-cycle.&nbsp; So the first time it will do what is desired, the
+    next time it will do nothing at all, then the next time each will do
+    the correct thing again.. In fact you can do even better - you can
+    execute the routine, then branch to each of the branches (this can
+    work since the branch target is not coded with the branch, it's in
+    data segment.&nbsp; Thus the same branch can jump to multiple
+    different locations.)&nbsp; So why branch to a branch instead of
+    going to the final location directly??&nbsp; Because the side effect
+    of a branch is to permute the instruction just before the branch
+    target!&nbsp; Thus executing the code, then chaining through the
+    branches, restores the code (if 2-cycle) to the original state.<br>
+    <br>
+    Many modifications are possible:&nbsp; pre-munging, munge as you go,
+    or post-fixing as described above.&nbsp; Each is useful in some
+    circumstances.<br>
+    <br>
+    <a name="immutableNOPS"></a>
+    <h3>Building immutable NOPs</h3>
+    Only some locations have NOPs which can be loaded initially, and
+    will always remain NOPs. &nbsp;<a
+      href="http://www.lscheffer.com/malbolge_nops.html">Such cycles
+      exist for all locations (mod 94)</a>, but most never go through
+    any official instruction and hence cannot be loaded directly.
+    &nbsp;However, all can be loaded by loading a constant from 129-255,
+    then doing a single rotate (used as a divide by three.) &nbsp;This
+    gives numbers in the range of 43-85 (Note that the numbers must be
+    evenly divisible by three since the LST will be rotated into the
+    most significant trit). &nbsp;Each location has at least one NOP
+    loop that contains one such number.<br>
+    <br>
+    Note that in the case of NOPs , as in branches, we do not need to
+    worry about the cycle length, though for different reasons (branches
+    don't change, and NOPs change but we don't care as long as they
+    change into other NOPs).<br>
+    <a name="OP"></a>
+    <h3>Some observations on the OP operator:</h3>
+    OP is defined as:<br>
+    <pre><br>            | A trit:<br>    ________|_0__1__2_<br>          0 | 1  0  0<br>      *D  1 | 1  0  2<br>     trit 2 | 2  2  1</pre>
+    <br>
+    If the memory (*D) is all ones, then the result is just the A
+    register with 1s and 0s swapped.<br>
+    <br>
+    If the A trit is all 2s, then the result is the memory with 1 and 2
+    swapped.<br>
+    <br>
+    All the values that are easy to come by (instructions or input) will
+    have 0s in their upper trits. &nbsp;Thus after any OP they will have
+    all 1s in these position.<br>
+    <br>
+    You can set a memory location to a known value as follows:
+    &nbsp;First OP a location with itself. &nbsp;(Any ROTATE or OP
+    instruction will set the A register and memory to the same value).
+    After resetting the D register, then OPing with itself, a location
+    will contain only 0s and 1s. &nbsp;Then if you OP with an A of 0,
+    you'll get all ones. &nbsp; If you OP with an A of all 1s,
+    &nbsp;you'll set A and memory to 0.<br>
+    <br>
+    <h3>Loads and Stores:<br>
+    </h3>
+    You can synthesize a load from 10 rotates (which restores the
+    original).&nbsp; Alternatively, you can fill A with all 2s, then OP
+    the location (which swaps 1s and 2s in the memory location. Then
+    repeat this process, which swaps the memory back and loads A with
+    the newly corrected value..&nbsp; You can synthesize a 'store' by
+    OPing twice into locations fulled with all '1's.&nbsp; (If the
+    memory trit is 1, then the OP bit gets written with 0 and 1 reversed
+    and 2 kept the same.&nbsp; If you do this twice you get the original
+    back.)<br>
+    <h3>Doing arithmetic in Malbolge</h3>
+    <br>
+    I suspect the best way to do arithmetic is by table lookup.
+    &nbsp;Even this is difficult (you need a table filled with computed
+    values followed by an equally sized array of branch targets.
+    &nbsp;Then you load the value with a ROTATE or OP&nbsp; instruction
+    followed by a tables worth of immutable NOPs, followed by a LOAD and
+    BRANCH. &nbsp;Of course this scrambles your table entry, which must
+    then be undone, and so on.). &nbsp;This still looks easier than
+    synthesizing arithmetic out of OPs and ROTATEs, at least to me.<br>
+    <br>
+    <h3>Code Density</h3>
+    Most of these techniques require considerable code to perform simple
+    operations. &nbsp;In general this is no problem, and does not affect
+    theoretical Turing completeness. &nbsp;(If your primary concern is
+    code density, perhaps Malbolge is not such a good choice of
+    languages....) It is a problem in practice since only the bottom 256
+    locations can be easily addressed by any program you can input - any
+    higher addresses must be synthesized. &nbsp;This in itself takes
+    lots of code.<br>
+    <br>
+    <a name="Turing"></a>
+    <h3>A general strategy for writing larger Malbolge programs, and
+      proving practical Turing completeness.</h3>
+    If the code can be made to fit, then a combinations of OPs, rotates,
+    and computed branches should allow a <a href="loader.html">bootstrap
+
+      program</a> that reads an arbitrary byte string into memory, which
+    would help get around the 8 allowed character restriction, and
+    allows use of more of the address space. Then it might be possible
+    to write <a href="bf2malbolge.html">a BrainF***-&gt;<b
+        style="color: black; background-color: rgb(160, 255, 255);">Malbolge</b>
+      compiler</a>, and so on....&nbsp; This shows that Molbolge meets
+    the practical definition of Turing Completeness - it can compute any
+    problem that fits within its memory.&nbsp; However, Malbolge can
+    never meet the <a
+      href="http://en.wikipedia.org/wiki/Turing_machine">formal
+      definition of Turing completeness</a>, which requires access to an
+    unlimited amount of memory.<br>
+    <h3>Proving formal Turing completeness.</h3>
+    However, a very slight addition to Malbolge makes it truly and
+    formally Turing complete.&nbsp; There is nothing in the Malbolge
+    spec that states that the INPUT and OUTPUT operations cannot refer
+    to the same data stream, which then can be considered a tape with a
+    257 symbol alphabet.&nbsp; (257 since INPUT can return the values
+    0..255, plus the special value 2222222222 upon end of file.&nbsp;
+    We'll assume this really means upon any attempt to read an undefined
+    byte.)&nbsp; INPUT can read the symbol on the tape and move the head
+    one byte to the right, exactly what it currently does.&nbsp; OUTPUT
+    can write the symbol (A mod 256) to the current position and move
+    the head one to the right, also exactly what it currently does.
+    &nbsp; Now for the change:&nbsp; an OUTPUT with A=2222222222
+    (normally an obscure way to write the byte 168) moves the tape head
+    one position to the left (in UNIX terms, it backs up the file
+    location by one byte).&nbsp; Call this variant Malboge-T, with the T
+    standing for Turing completeness.<br>
+    <br>
+    As far as I can determine, Malbolge-T would give results identical
+    to classic Malbolge with all existing Malbolge programs*. (As if
+    compatibility between Malbolge varients was a big practical
+    problem).&nbsp; However, since Malbolge-T has access to a
+    potentially unlimited external memory, it at least has the
+    possibility of being Turing complete. In fact it's not hard to show,
+    using the table lookup techniques utilized in the <a
+      href="bf2malbolge.html">BrainF***-&gt;<b style="color: black;
+        background-color: rgb(160, 255, 255);">Malbolge</b> compiler</a>,
+    that a simple state machine with completely arbitrary state
+    transitions can be implemented.&nbsp; And if you can implement a
+    relatively small arbitrary state machine (5 states times 5 symbols
+    is sufficient),&nbsp; and combine it with the bi-directional tape,
+    then you can implement a Universal Turing Machine, and hence show
+    true Turing completeness.<br>
+    <br>
+    *except for the copy program above, which would now backup forever
+    after EOF on the input, instead of spewing an infinite number of
+    bytes with a value of 168. <br>
+    <h3>It could be worse<br>
+    </h3>
+    Malbolge, although obviously difficult, could be worse. &nbsp;Here
+    are some suggestions for making it even tougher:<br>
+    <ul>
+      <li>Redo the instruction permutation table to remove all short
+        cycles.</li>
+      <li>In particular, if every possible cycle for every location
+        contains at least one non-NOP instruction, then you could not
+        even construct a NOP that you could rely on.<br>
+      </li>
+      <li>Remove the oversight in the reference interpreter that lets
+        the user load non-ascii values directly.</li>
+      <li>You could make the OP even less useful by modifying it so that
+        as few rows and columns as possible contain all three digit
+        values. This makes it hard to set specific values that contain
+        all three trits. &nbsp;Alternatively, make OP so that as many
+        rows and columns as possible contain all three trit values.
+        &nbsp;This makes it very hard to set a memory address to
+        anything unless you know the prior value.</li>
+      <li>Modify instructions as they are fetched, not when they are
+        done. &nbsp;Then branches too would self modify.<br>
+      </li>
+    </ul>
+    Happy programming,<br>
+    Lou Scheffer<br>
+    <pre><br><br>From Ryan Kusnery's weird languages page:<br><br></pre>
+    The day that someone writes, in <b style="color: black;
+      background-color: rgb(160, 255, 255);">Malbolge</b>, a program
+    that simply copies its input to it's output, is the day my hair
+    spontaneously turns green. It's the day that elephants are purple
+    and camels fly, and a cow can fit through a needle's eye. <br>
+    <br>
+    I hereby release all my work on Malbolge, in any and all forms, into
+    the public domain. <br>
+    This page last modified 17 Apr 2015. <br>
+    <small><a href="http://www.lscheffer.com/index.htm">Back to
+        LScheffer home page</a></small>
+  </body>
+</html>
