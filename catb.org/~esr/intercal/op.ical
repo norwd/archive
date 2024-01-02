@@ -1,0 +1,26 @@
+#!./iperl
+
+while (<DATA>)
+{
+	($testno, $expr, $ans) = split(/ /);
+	if (($got = eval($expr)) == $ans)
+	{
+		print "ok " . $testno . "\n";
+	}
+	else
+	{
+		print "not ok " . $testno . "\n";
+		print "# $testno $expr wanted $ans got $got\n";
+	}
+}
+__END__
+1 &mingle(65535,0) 2863311530
+2 &mingle(0,65535) 1431655765
+3 &mingle(255,255) 65535
+4 &select(179,201) 9
+5 &select(201,179) 17
+6 &select(179,179) 31
+7 &select(201,201) 15
+8 &and16(77) 4
+9 &or16(77) 32879
+10 &xor16(77) 32875

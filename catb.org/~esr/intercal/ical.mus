@@ -1,0 +1,219 @@
+/* $Header: ical.mus,v 3.0.1.1 90/08/09 04:05:21 lwall Locked $
+ */
+
+#include "EXTERN.h"
+#include "perl.h"
+extern int wantarray;
+
+char *savestr();
+
+static enum uservars {
+    UV_dummy,
+};
+
+static enum usersubs {
+    US_and16,
+    US_or16,
+    US_xor16,
+    US_and32,
+    US_or32,
+    US_xor32,
+    US_select,
+    US_mingle,
+};
+
+unsigned short	and16(), or16(), xor16();
+unsigned long	and32(), or32(), xor32();
+unsigned int	select(), mingle();
+
+static int usersub();
+static int userset();
+static int userval();
+
+int
+init_ical()
+{
+    struct ufuncs uf;
+    char *filename = "ical.c";
+
+    uf.uf_set = userset;
+    uf.uf_val = userval;
+
+#define MAGICVAR(name, ix) uf.uf_index = ix, magicname(name, &uf, sizeof uf)
+
+    make_usub("and16",		US_and16,	usersub, filename);
+    make_usub("or16",		US_or16,	usersub, filename);
+    make_usub("xor16",		US_xor16,	usersub, filename);
+    make_usub("and32",		US_and32,	usersub, filename);
+    make_usub("or32",		US_or32,	usersub, filename);
+    make_usub("xor32",		US_xor32,	usersub, filename);
+    make_usub("select",		US_select,	usersub, filename);
+    make_usub("mingle",		US_mingle,	usersub, filename);
+};
+
+static int
+usersub(ix, sp, items)
+int ix;
+register int sp;
+register int items;
+{
+    STR **st = stack->ary_array + sp;
+    register int i;
+    register char *tmps;
+    register STR *Str;		/* used in str_get and str_gnum macros */
+
+    switch (ix) {
+CASE unsigned short and16
+I	unsigned short	n
+END
+
+CASE unsigned short or16
+I	unsigned short	n
+END
+
+CASE unsigned short xor16
+I	unsigned short	n
+END
+
+CASE unsigned long and32
+I	unsigned long	n
+END
+
+CASE unsigned long or32
+I	unsigned long	n
+END
+
+CASE unsigned long xor32
+I	unsigned long	n
+END
+
+CASE unsigned select
+I	unsigned	n1
+I	unsigned	n2
+END
+
+CASE unsigned mingle
+I	unsigned short	n1
+I	unsigned short	n2
+END
+
+    default:
+	fatal("Unimplemented user-defined subroutine");
+    }
+    return sp;
+}
+
+static int
+userval(ix, str)
+int ix;
+STR *str;
+{
+    switch (ix) {
+	default:
+	    break;
+    }
+    return 0;
+}
+
+static int
+userset(ix, str)
+int ix;
+STR *str;
+{
+    switch (ix) {
+    default:
+	break;
+    }
+    return 0;
+}
+
+/* INTERCAL Maths routines start here */
+
+unsigned short and16(n)
+unsigned short n;
+{
+	unsigned short n1;
+
+	n1 = (n >> 1) | ((n & 01) << 15);
+	return n & n1;
+}
+
+unsigned long and32(n)
+unsigned long n;
+{
+	unsigned long n1;
+
+	n1 = (n >> 1) | ((n & 01) << 31);
+	return n & n1;
+}
+
+unsigned short or16(n)
+unsigned short n;
+{
+	unsigned short n1;
+
+	n &= 0177777;
+	n1 = (n >> 1) | ((n & 01) << 15);
+	return n | n1;
+}
+
+unsigned long or32(n)
+unsigned long n;
+{
+	unsigned long n1;
+
+	n1 = (n >> 1) | ((n & 01) << 31);
+	return n | n1;
+}
+
+unsigned short xor16(n)
+unsigned short n;
+{
+	unsigned short n1;
+
+	n &= 0177777;
+	n1 = (n >> 1) | ((n & 01) << 15);
+	return n ^ n1;
+}
+
+unsigned long xor32(n)
+unsigned long n;
+{
+	unsigned long n1;
+
+	n1 = (n >> 1) | ((n & 01) << 31);
+	return n ^ n1;
+}
+
+unsigned int select(n1, n2)
+unsigned int n1, n2;
+{
+	unsigned int result = 0, bit = 0;
+
+	while (n2 != 0)
+	{
+		if (n2 & 01)
+		{
+			result |= (n1 & 01) << bit++;
+		}
+		n1 >>= 1;
+		n2 >>= 1;
+	}
+
+	return result;
+}
+
+unsigned int mingle(n1, n2)
+unsigned short n1, n2;
+{
+	unsigned int result = 0, bit = 0;
+
+	while ((n1 != 0) || (n2 != 0))
+	{
+		result |= (((n1 & 01) << 1) | (n2 & 01)) << (2 * bit++);
+		n1 >>= 1;
+		n2 >>= 1;
+	}
+
+	return(result);
+}
