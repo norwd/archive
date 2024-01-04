@@ -3,10 +3,6 @@
 name: "Archive Link"
 run-name: "Archiving ${{ inputs.url }}"
 
-concurrency:
-  group: write
-  cancel-in-progress: false
-
 on:
   workflow_dispatch:
     inputs:
@@ -22,6 +18,9 @@ jobs:
   archive-file:
     name: Archive File
     runs-on: ubuntu-latest
+    concurrency:
+      group: write
+      cancel-in-progress: false
     steps:
       - name: Checkout
         uses: actions/checkout@v3
