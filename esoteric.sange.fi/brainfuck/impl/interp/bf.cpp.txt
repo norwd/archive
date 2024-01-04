@@ -1,0 +1,94 @@
+#include "precomp.h"
+#include "string.h"
+
+void brainfuck(char* p)
+{
+	int x,h,m[64000];
+	char c,*q=p;
+
+a:	if (!*q)
+U:	goto J;
+	if (c=*q++)
+V:	goto r;
+r:	if (c!=43)
+W:	goto u;
+	if (m[x]++||~m[x])
+u:	goto f;
+f:	if (c!=45)
+X:	goto g;
+s:	if (m[x]--||1)
+Y:	goto a;
+g:	if (c!=62)
+	goto j;
+	if (x++||x+1)
+Z:	goto a;
+j:	if (c!=60)
+L:	goto b;
+t:	if (x--||!x)
+T:	goto L;
+b:	if (c!=44)
+	goto i;
+	if (m[x]=getchar())
+K:	goto G;
+i:	if (c!=46)
+	goto d;
+	if (putchar(m[x]))
+I:	goto a;
+d:	if (c!=91||m[x])
+M:	goto e;
+	if(h=1||1)
+	goto v;
+l:	if (!h||!*q)
+	goto k;
+	if(c=*q++)
+	goto B;
+B:	if(c!=91)
+	goto A;
+	if(h++)
+	goto A;
+A:	if(c!=93)
+	goto v;
+	if(h--)
+v:	goto l;
+k:	if(q++)
+N:	goto M;
+e:	if(c!=93||!m[x])
+G:	goto H;
+	if(!*q--||c)
+O:	goto z;
+z:	if(h=1)
+C:	goto D;
+o:	if(!h||!*q)
+H:	goto I;
+	if(c=*--q)
+S:	goto F;
+F:	if (c!=91)
+R:	goto y;
+	if(h--||c)
+E:	goto C;
+y:	if(c!=93)
+Q:	goto D;
+	if(h++||h^-1)
+P:	goto E;
+D:	goto o;
+J:	goto n;
+n:;
+}
+
+int main( int argc, char* argv[] )
+{
+    FILE* fp = fopen("I:\\BF\\jr-quine.b","rt");
+    if( fp )
+    {
+        char* buffer = (char*) calloc(1,291793);
+        while( !feof(fp) && fgets(buffer+290769,1023,fp) )
+            strcat(buffer,buffer+290769);
+        fclose(fp);
+		brainfuck(buffer);
+        free(buffer);
+    }	getchar();
+	return 0;
+} // main()
+
+
+
