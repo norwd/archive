@@ -1,0 +1,62 @@
+
+Why higher-order macros ?
+
+if you know a bit about Brainfunct, you know how to add two numbers
+(say from
+      a    [b]
+ you want to get
+    [a+b]   0
+ where [] indicates the BF data pointer position.)
+
+You do this:
+    [-<+>]<
+
+This is nicely put into a macro 'add':
+    & add = [-<+>]< ;
+
+But what if the numbers to add are separated by a longer distance ?
+you'll want for instance:
+
+    & add2 = [-<<+>>]<< ;
+    & add3 = [-<<<+>>>]<<< ;
+
+now, you'd like to use the distance as _parameter_ of your macro.
+The first idea is to provide under the form of <<< and >>>: 
+
+    & add_n ( go_left | go_right ) = [ - go_left + go_right ] go_left ;
+
+so now, instead of [-<<<+>>>]<<< you can write
+
+    add_n(<<<|>>>)
+
+but this has two drawbacks: first you have to put all these '<' and '>'
+in your call (even if that is already a big improvement, in cases more
+complicated than add); second, there are two parameters to represent your
+morally unique parameter 'distance': this is not clean, and is error-prone.
+
+It would be nice if you could pass the distance itself to the macro:
+
+    add_N(3)
+
+No problem !
+Imagine 3 is a macro that triples its argument: 
+
+    &3(x)=x x x;
+
+then you can write:
+
+    & add_N ( distance ) = [ - distance(<) + distance(>) ] distance(<) ;
+
+where 'distance' is now a _macro_ parameter that you call in add_N's code.
+add_N's code is a bit long, but you can make it shorter (and easier to
+understand) using locally defined macros:
+
+    & add_N ( distance ) =
+        &go_left= distance(<);
+        &go_right = distance(>);
+        [ - go_left + go_right ] go_left 
+    ;        
+
+
+err... actually quite a bit longer, but you get the picture, don't you ? ;-)
+-
