@@ -1,0 +1,176 @@
+BFASM -- Assembly language to BrainF*** Compiler
+Copyright (c) 2004 Jeffry Johnston
+E-Mail: bfasm@kidsquid.com
+
+License
+-------
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation. See the file LICENSE for more details.
+
+
+Introduction
+------------
+BFASM is an assembly language to BF compiler.  It was originally
+written in C and then rewritten in ASM so it could assemble itself to
+a native BF program.
+
+BF is an esoteric programming language with 8 instructions.  There is
+some information about BF inside bfi.c.  For more about BF, visit the
+following website:
+
+http://www.muppetlabs.com/~breadbox/bf
+
+To run BFASM assembled programs, the BF interpreter or compiler must
+be able to handle very large source files (over 200k), store at least
+16-bit numbers in cells, wrap over- and under- flows of cells, and
+return character 0 on EOF.
+
+The included bfi BF interpreter can run the large BFASM assembled
+programs.  To compile bfi type:
+
+make
+
+This will also compile bfasmdat, a program that generates data for the
+bfasm.asm tables.
+
+
+Usage
+-----
+BFASM takes the assembly program source from STDIN and outputs BF code
+to STDOUT.  Using my (slow) bfi interpreter:
+
+bfi bfasm.b < source.asm > dest.b
+
+
+Register model
+--------------
+There are four general purpose registers: r1, r2, r3, and r4.  The
+size of these registers depends on the BF interpreter or compiler
+being used, but they are at least 16-bits wide.  There are no flags
+and no instruction pointer.  The assembler is case sensitive, so
+the registers should always be written with a lowercase "r".
+
+
+Memory
+------
+BFASM allows for a stack (of definable size) and memory.  Memory
+can be accessed indirectly for pointer use.
+
+
+Comments
+--------
+Comments begin with the ";" character.  They can be placed either at
+the beginning of a line or after an instruction.  Comments continue
+until the end of the line.  Additionally, new-line characters and
+spaces are ignored (except in strings).
+
+
+Operands
+--------
+Operands include the registers, immediate values, characters, and
+strings in the following combinations (when separated by commas):
+
+Combination             Example
+===========             =======
+"string"                "Hello"
+reg                     r1
+immed                   123
+.char                   .A
+reg,reg                 r1,r2
+reg,immed               r3,32
+reg,char                r4,.Z
+
+Strings are only used with the "txt" instruction.  There are no
+escape sequences, use "db_" when needed.  Characters are converted to
+the appropriate ASCII immediate value.  Immediate values can be any
+size (BF interpreter or compiler dependent) and are automatically
+substituted as if a register value.  Therefore, immediate values (and
+characters) can be used in place of a register.  There can only be one
+immediate value per instruction.  Operands are evaluated separately
+from instructions, so it is possible to use the wrong number of
+operands for an instruction with no error reported.  However, doing
+this will most likely lead to a crash when the assembled program is
+run.
+
+
+Instructions
+------------
+Instructions are case sensitive and must be given in lowercase
+letters.  When more than one entry exists for a particular
+instruction it means that there are optimized versions of that
+instruction for the given operand combination.  The returned values
+of a boolean operation are 0 (false) or 1 (true).  This applies to:
+and, eq_, ge_, gt_, le_, lt_, ne_, or_.  Only one instruction is
+allowed per line.  Note that lbl (label) is an instruction.
+
+Instruction     Description             Operation
+===========     ===========             =========
+add regA,regB   Add                     regA = regA + regB
+add reg,immed   Add                     reg = reg + immed
+and regA,regB   Boolean AND             regA = regA AND regB
+clr reg         Clear                   reg = 0
+db_ immed       Declare byte            puts immed at the next memory
+                                        position (see org)
+dec reg         Decrement               reg = reg - 1
+div regA,regB   Divide                  regA = regA / regB
+end             End (Exit) program      jmp 0 (exit)
+eq_ regA,regB   Equal to?               regA = regA == regB
+ge_ regA,regB   Greater than or equal?  regA = regA >= regB
+gt_ regA,regB   Greater than?           regA = regA > regB
+in_ reg         Input                   reg = input from STDIN
+                                        (EOF = 0)
+inc reg         Increment               reg = reg + 1
+jmp reg         Jump                    jumps to a line label
+jnz regA,regB   Jump if not zero        jmp's to regB if regA != 0
+jz_ regA,regB   Jump if zero            jmp's to regB if regA == 0
+lbl immed       Label                   defines a line label
+le_ regA,regB   Less than or equal to?  regA = regA <= regB
+lt_ regA,regB   Less than?              regA = regA < regB
+mod regA,regB   Modulus (broken)        Do not use yet!
+mov regA,regB   Move (copy)             regA = regB
+mov reg,immed   Move (set)              reg = immed
+mul regA,regB   Multiply                regA = regA * regB
+ne_ regA,regB   Not equal to?           regA = regA != regB
+neg reg         Negate                  reg = 0 - reg
+not reg         Logical NOT             reg = 1 - reg
+or_ regA,regB   Boolean OR              regA = regA OR regB
+org immed       Origin                  sets memory position of the
+                                        next db_ or txt output
+                                        (default is 0, but needs to
+                                        be re-set after stk is used)
+out reg         Output                  output to STDOUT = reg
+pop reg         Pop                     pops reg from the stack
+psh reg         Push                    pushes reg onto the stack
+raw char        Raw output              writes char directly as code
+rcl regA,regB   Recall (from memory)    regA = *regB (mov regA,[regB])
+ret             Return                  pops label and jmp's to it
+stk immed       Stack size              Set the maximum number of
+                                        items on the stack (default
+                                        is 0)
+sto regA,regB   Store (in memory)       *regA = regB (mov [regA],regB)
+sub regA,regB   Subtract                regA = regA - regB
+sub reg,immed   Subtract                reg = reg - immed
+swp regA,regB   Swap                    regA = regB, regB = regA
+txt string      Text                    converts string to immediate
+                                        values and performs db_'s
+
+Helpful hints
+-------------
+There is no call instruction.  A call can be generated as follows:
+psh 23          ; value of return label
+jmp 1000        ; label of subroutine
+lbl 23          ; return position
+...
+lbl 1000        ; subroutine
+        ...
+ret             ; return
+
+
+Version history
+---------------
+0.20    04 Aug 2004
+* Fixed bug that occurred when both register operands were the same
+
+0.10    24 Jun 2004
+* Initial release
