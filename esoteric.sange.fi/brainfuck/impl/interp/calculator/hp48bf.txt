@@ -1,0 +1,90 @@
+Hewlett Packard HP-48 BrainF*** Interpreter (UserRPL) by Jeffry Johnston
+Released April 29, 2001
+
+Key to Symbols (for the plaintext version of this document)
+--------------
+<<      Opening guillemet (purple above the "-" key)
+>>      Closing guillemet
+<=      Less than or equal to
+a{      Alpha key
+<-      Left shift arrow (purple)
+->      Right shift arrow (cyan)
+y:      Lowercase y, umlaut accent (character 255)
+
+Custom Keyboard Program (push CST and NXT to access more chars)
+-----------------------
+® { "<" ">" "+" "-" ", "@" "[" "]" "." "." "˜" } MENU ¯
+'KEYS' STO
+
+Manual entry of special characters (also PRG for table)
+----------------------------------
+>       à2
+<       à2
++       à+
+-       à-
+.       .
+,       .
+[]      x (multiplication key)
+@       àENTER
+LF      . (must push ENTER after using LF)
+˜ (255) àYà9
+
+Sample BF program
+-----------------
+",+[-.,+]@"
+'SOURCE' STO
+
+BF Interpreter Program
+----------------------
+®
+"                     " 'SCRN' STO
+CLLCD SCRN 0 DISP
+{ 1 5000 } 0 CON 'DATA' STO
+0 'QUIT' 0 'IPP' 1 'MP' STO STO STO
+DO
+  'IPP' INCR DROP
+  SOURCE IPP IPP SUB NUM 'IPV' STO
+  DATA MP GET 'MPV' STO
+  IF 'IPV==43' THEN DATA MP MPV 1 + 256 MOD PUT 'DATA' STO END
+  IF 'IPV==45' THEN DATA MP MPV 1 - 256 MOD PUT 'DATA' STO END            
+  IF 'IPV==60' THEN 'MP' DECR DROP END 
+  IF 'IPV==62' THEN 'MP' INCR DROP END 
+  IF 'IPV==64' THEN 1 'QUIT' STO END         
+  IF 'IPV==46' THEN SCRN 2 22 SUB MPV CHR + 'SCRN' STO SCRN 0 DISP END    
+  IF 'IPV==44' THEN DATA MP SCRN "" INPUT NUM PUT 'DATA' STO END     
+  IF 'IPV==93' THEN 'IPP' STO END      
+  IF 'IPV==91' THEN  
+    IF 'MPV==0' THEN
+      1 'LVL' STO
+      DO
+        'IPP' INCR DROP
+        SOURCE IPP IPP SUB NUM 'IPV' STO
+        IF 'IPV==91' THEN 'LVL' INCR DROP END
+        IF 'IPV==93' THEN 'LVL' DECR DROP END
+      UNTIL 'LVLó0' END  
+    ELSE
+      IPP 1 -
+    END
+  END
+UNTIL 'QUIT' END
+SCRN 5 22 SUB
+'DATA' 'MP' 'MPV' 'IPP' 'IPV' 'LVL' 'QUIT' 'SCRN'
+PURGE PURGE PURGE PURGE PURGE PURGE PURGE PURGE
+¯
+'BF' STO
+
+Variables Used (* Purged automatically on BF exit)
+--------------
+BF      BF Interpreter
+SOURCE  BF Program Source
+KEYS    Custom Keyboard Program
+*DATA    Memory (5000 bytes)
+*MP      MP - Memory Pointer
+*MPV     [MP]
+*IP      IP - Instruction Pointer
+*IPV     [IP]
+*LVL     Bracket depth
+*QUIT    End Program?
+*SCRN    Text Output Screen
+
+
