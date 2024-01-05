@@ -1,0 +1,38 @@
+Installation of mod_bf
+~~~~~~~~~~~~~~~~~~~~~~
+
+Sorry, I don't have any experience with Apache 2.0, yet. Installing this module
+probably takes different steps.
+
+Installing this module really shouldn't be hard.
+All you should have to do are the following steps, if something doesn't
+work, please send an email to <markus.kliegl@t-online.de> with a detailed
+description of the problem.
+
+1. Untar mod_bf-xxx.tar.gz into <apache>/src/modules, where <apache> is the
+   directory that contains the sources of apache. This should create the directory
+   <apache>/src/modules/bf.
+2. Add the following line to the end of the <apache>/src/Configuration file:
+   AddModule modules/bf/mod_bf.o
+3. Now cd into <apache>/src and run './Configure'. This should create a Makefile
+   in <apache>/src/modules/bf.
+4. Now you can proceed with the apache installation just as you normally would, just
+   adding the following
+   --activate-module=src/modules/bf/libbf.a
+   when calling './configure'.
+
+In order to be able to make use of mod_bf, you will have to do one of the following:
+
+A. Edit <apache-dst>/conf/httpd.conf and add the following line at the appropriate
+   section:
+   AddHandler bf-handler .bf
+   <apache-dst> is here where the installed apache server resides. This will let
+   mod_bf handle all requests on files with the ending '.bf'.
+B. Create a directory, such as <apache-dst>/htdocs/bf and create a file called
+   .htaccess in the newly created directory. Edit this file to contain the same
+   line as above 'AddHandler bf-handler .bf'. This will pass all requests on files
+   with the extension .bf that are located in the directory to mod_bf. It should be
+   noted that you might just as well add the above line to a .htaccess in any other
+   directory.
+
+Everything should be configured, now go ahead and test it. :-)
