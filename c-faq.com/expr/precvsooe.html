@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file expr.sgml dated Sat Jul  3 17:10:33 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 3.4</title>
+<link href="xorswapexpr.html" rev=precedes>
+<link href="seqpointops.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="xorswapexpr.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="seqpointops.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 3.4
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+Can I use explicit parentheses to force
+the order of evaluation I want,
+and control these side effects?
+Even if I don't, doesn't precedence dictate it?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+Not in general.
+</p><p>Operator precedence and explicit parentheses impose only a
+partial ordering on the evaluation of an
+expression.
+In
+the expression
+<pre>
+	f() + g() * h()
+</pre>
+although we know that
+the multiplication will happen
+before the addition,
+there is no telling which
+of the three functions
+will be called first.
+In other words, precedence only partially specifies order of
+evaluation, where ``partially'' emphatically does
+<I>not</I>
+cover evaluation of operands.
+</p><p>
+Parentheses tell the compiler which operands go with which operators;
+they
+
+do <em>not</em> force the compiler to evaluate everything 
+within the parentheses first.
+Adding explicit parentheses to the above expression
+to make it
+<pre>
+	f() + (g() * h())
+</pre>
+would make no difference in the order of the function calls.
+
+Similarly,
+adding explicit parentheses to
+the expression from question <a href="evalorder2.html">3.2</a>
+to make it
+<pre>
+	(i++) * (i++)		/* WRONG */
+</pre>
+accomplishes nothing
+(since <TT>++</TT> already
+has higher precedence
+than <TT>*</TT>);
+the expression remains undefined with or without them.
+</p><p>When you need to ensure the order of subexpression evaluation,
+you may need to use explicit temporary variables
+and separate statements.
+
+</p>
+
+
+
+<p>References:
+
+K&amp;R1 Sec. 2.12 p. 49, Sec. A.7 p. 185
+<br>
+K&amp;R2 Sec. 2.12 pp. 52-3, Sec. A.7 p. 200
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="xorswapexpr.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="seqpointops.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

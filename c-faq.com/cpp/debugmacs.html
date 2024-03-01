@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file cpp.sgml dated Wed Dec 21 13:52:14 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 10.27</title>
+<link href="varargs.html" rev=precedes>
+<link href="../ansi/ansi1.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="varargs.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="../ansi/ansi1.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 10.27
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+How can I include expansions of the <TT>__FILE__</TT>
+and <TT>__LINE__</TT> macros
+in a general-purpose debugging macro?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+This question tends to reduce to question
+<a href="varargs.html">10.26</a>.
+One solution
+
+
+involves writing your debug macro in terms of
+a varargs function
+(see questions
+<a href="../varargs/varargs1.html">15.4</a> 
+and
+<a href="../varargs/vprintf.html">15.5</a>),
+and an auxiliary function which stashes the values of
+<TT>__FILE__</TT> and <TT>__LINE__</TT> away in static variables,
+
+as in:
+<pre>
+#include &lt;stdio.h&gt;
+#include &lt;stdarg.h&gt;
+
+void debug(const char *, ...);
+void dbginfo(int, const char *);
+#define DEBUG dbginfo(__LINE__, __FILE__), debug
+
+static const char *dbgfile;
+static int dbgline;
+
+void dbginfo(int line, const char *file)
+{
+	dbgfile = file;
+	dbgline = line;
+}
+
+void debug(const char *fmt, ...)
+{
+	va_list argp;
+	fprintf(stderr, "DEBUG: \"%s\", line %d: ", dbgfile, dbgline);
+	va_start(argp, fmt);
+	vfprintf(stderr, fmt, argp);
+	va_end(argp);
+	fprintf(stderr, "\n");
+}
+</pre>
+With this machinery in place,
+a call to
+<pre>
+	DEBUG("i is %d", i);
+</pre>
+expands to
+<pre>
+	dbginfo(__LINE__, __FILE__), debug("i is %d", i);
+</pre>
+and prints something like
+<pre>
+	DEBUG: "x.c", line 10: i is 42
+</pre>
+</p><p>A cunning improvement
+is the idea of having
+the stashing function return a
+pointer
+to the bona-fide varargs function:
+<pre>
+void debug(const char *, ...);
+void (*dbginfo(int, const char *))(const char *, ...);
+#define DEBUG (*dbginfo(__LINE__, __FILE__))
+
+void (*dbginfo(int line, const char *file))(const char *, ...)
+{
+	dbgfile = file;
+	dbgline = line;
+	return debug;
+}
+</pre>
+With these definitions,
+<pre>
+	DEBUG("i is %d", i);
+</pre>
+gets expanded to
+<pre>
+	(*dbginfo(__LINE__, __FILE__))("i is %d", i);
+</pre>
+
+</p><p>Another,
+perhaps easier way might simply be to
+
+
+<pre>
+	#define DEBUG printf("DEBUG: \"%s\", line %d: ", \
+		__FILE__,__LINE__),printf
+</pre>
+Now,
+<pre>
+	DEBUG("i is %d", i);
+</pre>
+simply expands to
+<pre>
+	printf("DEBUG: \"%s\", line %d: ",
+		__FILE__,__LINE__),printf("i is %d", i);
+</pre>
+</p><p>Finally, you may be able to
+
+
+use the
+<pre>
+	#define _ ,
+</pre>
+trick
+from question <a href="varargs.html">10.26</a>.
+</p><p>Additional links:
+<a href="sd10.html" rel=subdocument>another idea</a>
+</p><!-- aend -->
+<p>
+<hr>
+<a href="varargs.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="../ansi/ansi1.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

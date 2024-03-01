@@ -1,0 +1,160 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file malloc.sgml dated Wed Dec 21 13:50:44 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 7.31</title>
+<link href="reallocnull.html" rev=precedes>
+<link href="alloca.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="reallocnull.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="alloca.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 7.31
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+What's the difference between <TT>calloc</TT> and <TT>malloc</TT>?
+Which should I
+
+use?
+
+Is it safe to take advantage of <TT>calloc</TT>'s
+zero-filling?
+Does <TT>free</TT> work
+on memory allocated with <TT>calloc</TT>,
+or do you
+
+need a <TT>cfree</TT>?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+<TT>calloc(m, n)</TT> is essentially equivalent to
+<pre>
+p&nbsp;=&nbsp;malloc(m&nbsp;*&nbsp;n);
+memset(p,&nbsp;0,&nbsp;m&nbsp;*&nbsp;n);
+</pre>
+</p><p>There is no important difference between
+the two
+other than the number of arguments
+and the zero fill.<a href="callocvslazy.html" rel=subdocument>[footnote]</a>
+</p><p>Use whichever function is convenient.
+Don't rely on <TT>calloc</TT>'s zero fill too much
+(see below);
+usually,
+it's best to initialize data structures yourself,
+on a field-by-field basis,
+especially if there are pointer fields.
+</p><p><TT>calloc</TT>'s
+zero fill is all-bits-zero,
+and
+
+
+
+is therefore guaranteed to yield the value 0
+for all integral types
+(including
+<TT>'\0'</TT>
+for
+character types).
+But
+
+it
+does <em>not</em>
+guarantee useful null pointer values
+(see
+section
+<a href="../null/index.html">5</a> of this list)
+or floating-point zero values.
+</p><p><TT>free</TT>
+is
+properly
+used to free the memory allocated
+by <TT>calloc</TT>;
+there is no Standard <TT>cfree</TT> function.
+
+</p><p>One imagined distinction that is <em>not</em> significant
+between <TT>malloc</TT> and <TT>calloc</TT>
+is whether
+a single element
+or an array of elements
+is being allocated.
+Though <TT>calloc</TT>'s two-argument calling convention 
+suggests that it
+is supposed to
+be used to allocate an array of <TT>m</TT> items of size <TT>n</TT>,
+there is no such
+requirement;
+it is perfectly
+
+permissible
+to allocate one item with <TT>calloc</TT>
+(by passing one argument as 1)
+or to allocate an array with <TT>malloc</TT>
+(by doing the multiplication yourself;
+see for example
+the code fragment in
+question <a href="../aryptr/dynarray.html">6.14</a>).
+(Nor does structure padding enter into the question;
+any padding necessary
+to make arrays of structures work correctly
+is always handled by the compiler,
+and reflected by <TT>sizeof</TT>.
+See question <a href="../struct/endpad.html">2.13</a>.)
+</p>
+
+
+
+
+<p>References:
+
+ISO Sec. 7.10.3 to 7.10.3.2
+<br>
+H&amp;S Sec. 16.1 p. 386, Sec. 16.2 p. 386
+<br>
+PCS Sec. 11 pp. 141,142
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="reallocnull.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="alloca.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

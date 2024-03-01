@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file struct.sgml dated Wed Dec 21 16:15:32 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 2.12</title>
+<link href="io.html" rev=precedes>
+<link href="endpad.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="io.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="endpad.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 2.12
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+Why is my
+compiler
+leaving holes in structures,
+wasting space
+and preventing
+
+``binary'' I/O to external data
+files?
+Can
+I turn
+this
+off,
+or otherwise control the alignment of structure fields?
+
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+Many machines
+access values in memory
+most efficiently
+when the values are appropriately aligned.
+(For example,
+on a byte-addressed machine,
+<TT>short&nbsp;int</TT>s of size 2
+might best be placed at even addresses,
+and
+<TT>long&nbsp;int</TT>s of size 4
+at addresses which are a multiple of 4.)
+Some machines cannot perform unaligned accesses
+at all,
+and
+<em>require</em> that
+all data
+be appropriately aligned.
+</p><p>Therefore, if you declare a structure like
+<pre>
+	struct {
+		char c;
+		int i;
+	};
+</pre>
+the compiler will usually
+leave an unnamed, unused hole
+between the <TT>char</TT> and <TT>int</TT> fields,
+to ensure that the
+
+<TT>int</TT> field
+is properly aligned.
+(This incremental alignment of the second field
+based on the first
+relies on the fact
+that the structure itself
+is always properly aligned,
+with the most conservative
+
+alignment requirement.
+The compiler guarantees this alignment for structures it allocates,
+as does <TT>malloc</TT>.)
+</p><p>Your compiler may provide an extension to give you
+control
+over the packing of structures
+(i.e. whether they are padded or not),
+perhaps
+with
+a <TT>#pragma</TT> (see
+question <a href="../ansi/pragma.html">11.20</a>),
+but there
+is no standard method.
+</p><p>If you're worried about wasted space,
+you can minimize the effects of padding
+by ordering the members of
+a
+structure
+
+
+based on their base types,
+from largest to smallest.
+
+You can sometimes get more control over size and alignment
+by using bit-fields,
+although they
+have their own drawbacks.
+(See question <a href="bitfields.html">2.26</a>.)
+</p><p>See also
+questions <a href="endpad.html">2.13</a>, <a href="../strangeprob/ptralign.html">16.7</a>, and <a href="../misc/binaryfiles.html">20.5</a>.
+
+</p><p>Additional links:
+<br>
+<br>
+A bit more
+
+
+
+
+<a href="align.html">explanation of ``alignment''</a>
+and why it requires paddding
+<br>
+<br>
+Additional
+<a href="align.esr.html">ideas on working with alignment and padding</a>
+by Eric Raymond,
+couched in the form of six new FAQ list questions
+<br>
+<br>
+Corrections to the above from
+<a href="align.esr2.html">Norm Diamond</a>
+and
+<a href="align.esr3.html">Clive Feather</a>
+</p>
+
+<p>References:
+
+K&amp;R2 Sec. 6.4 p. 138
+<br>
+H&amp;S Sec. 5.6.4 p. 135
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="io.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="endpad.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

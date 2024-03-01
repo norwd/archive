@@ -1,0 +1,231 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:47 2005 by faqproc version 2.7 -->
+<!-- from source file misctechn.sgml dated Sat Sep 28 22:23:36 2002 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+
+
+<title>Question 20.3</title>
+<link href="ragged.html" rev=precedes>
+<link href="errno.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="ragged.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="errno.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 20.3
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+How can I open files mentioned on the command line,
+and parse option flags?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+Here is a skeleton which implements a traditional Unix-style
+<TT>argv</TT> parse,
+handling option flags beginning with <TT>-</TT>,
+and optional filenames.
+(The two flags accepted
+by this example
+are <TT>-a</TT> and <TT>-b</TT>;
+<TT>-b</TT> takes an argument.)
+<pre>
+#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+#include &lt;errno.h&gt;
+
+main(int argc, char *argv[])
+{
+	int argi;
+	int aflag = 0;
+	char *bval = NULL;
+
+	for(argi = 1; argi &lt; argc &amp;&amp; argv[argi][0] == '-'; argi++) {
+		char *p;
+		for(p = &amp;argv[argi][1]; *p != '\0'; p++) {
+			switch(*p) {
+			case 'a':
+				aflag = 1;
+				printf("-a seen\n");
+				break;
+
+			case 'b':
+				bval = argv[++argi];
+				printf("-b seen (\"%s\")\n", bval);
+				break;
+
+			default:
+				fprintf(stderr,
+					"unknown option -%c\n", *p);
+			}
+		}
+	}
+
+	if(argi &gt;= argc) {
+		/* no filename arguments; process stdin */
+		printf("processing standard input\n");
+	} else {
+		/* process filename arguments */
+
+		for(; argi &lt; argc; argi++) {
+			FILE *ifp = fopen(argv[argi], "r");
+			if(ifp == NULL) {
+				fprintf(stderr, "can't open %s: %s\n",
+					argv[argi], strerror(errno));
+				continue;
+			}
+
+			printf("processing %s\n", argv[argi]);
+
+			fclose(ifp);
+		}
+	}
+
+	return 0;
+}
+</pre>
+(This code assumes that <TT>fopen</TT>
+sets <TT>errno</TT> when it fails,
+which is not guaranteed,
+but usually works,
+and makes error messages much more useful.
+See also question <a href="errno.html">20.4</a>.)
+</p><p>There are several canned functions available
+for doing command line parsing in a standard way;
+the most popular one is
+<TT>getopt</TT>
+(see also question <a href="../resources/sources.html">18.16</a>).
+Here is the above example,
+rewritten to use <TT>getopt</TT>:
+<pre>
+extern char *optarg;
+extern int optind;
+
+main(int argc, char *argv[])
+{
+	int aflag = 0;
+	char *bval = NULL;
+	int c;
+
+	while((c = getopt(argc, argv, "ab:")) != -1)
+		switch(c) {
+		case 'a':
+			aflag = 1;
+			printf("-a seen\n");
+			break;
+
+		case 'b':
+			bval = optarg;
+			printf("-b seen (\"%s\")\n", bval);
+			break;
+	}
+
+	if(optind &gt;= argc) {
+		/* no filename arguments; process stdin */
+		printf("processing standard input\n");
+	} else {
+		/* process filename arguments */
+
+		for(; optind &lt; argc; optind++) {
+			FILE *ifp = fopen(argv[optind], "r");
+			if(ifp == NULL) {
+				fprintf(stderr, "can't open %s: %s\n",
+					argv[optind], strerror(errno));
+				continue;
+			}
+
+			printf("processing %s\n", argv[optind]);
+
+			fclose(ifp);
+		}
+	}
+
+	return 0;
+}
+</pre>
+</p><p>The examples above overlook a number of nuances:
+a lone
+``<TT>-</TT>'' is often taken to mean
+``read standard input'';
+the marker ``<TT>--</TT>'' often signifies the end of the options
+(proper versions of <TT>getopt</TT> do handle this);
+it's traditional to print a usage message
+when a command is invoked with improper or missing arguments.
+</p><p>If you're wondering how <TT>argv</TT> is laid out in memory,
+it's actually a
+``ragged array'';
+see the picture in
+question <a href="ragged.html">20.2</a>.
+See also questions
+<a href="../charstring/stringeq.html">8.2</a>,
+<a href="../lib/regex.html">13.7</a>,
+and
+<a href="../osdep/readdir.html">19.20</a>.
+</p>
+
+
+
+
+
+
+
+
+<p>References:
+
+K&amp;R1 Sec. 5.11 pp. 110-114
+<br>
+K&amp;R2 Sec. 5.10 pp. 114-118
+<br>
+ISO Sec. 5.1.2.2.1
+<br>
+H&amp;S Sec. 20.1 p. 416
+<br>
+PCS Sec. 5.6 pp. 81-2, Sec. 11 p. 159, pp. 339-40 Appendix F
+<br>
+Schumacher, ed.,
+<I>Software Solutions in C</I> Sec. 4 pp. 75-85
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="ragged.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="errno.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

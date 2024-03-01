@@ -1,0 +1,53 @@
+<html>
+<head>
+<title></title>
+</head>
+<body>
+<p>
+[Someone asked how to implement sets using arrays of bits.
+This is an excerpt from the additional explanation I posted.]
+<p>
+Newsgroups: comp.lang.c
+<br>
+From: scs@eskimo.com (Steve Summit)
+<br>
+Subject: Re: pascal-like set implementation
+<br>
+Message-ID: &lt;E97GrL.F33@eskimo.com&gt;
+<br>
+Date: Fri, 25 Apr 1997 18:02:08 GMT
+<p>
+If the repertoire of elements which might be contained in the set
+(what was that buzzword from set theory? ``Universe''?) is known,
+then the thing to do is set up a correspondence between those
+elements and the 0-based integers.  (That is, if the universe is
+the elements ``apple'', ``pear'', and ``orange'', set apple = 0,
+pear = 1, and orange = 2.  Hmm, you might be able to slickly use
+an enum for this.)  Then, each set you want to manipulate is an
+array of <TT>BITNSLOTS(n)</TT> elements.  To add an element to a set,
+turn on the corresponding bit.  To remove an element from a set,
+turn off the corresponding bit.  To compute the union of two
+sets, run the loop
+<p>
+<pre>
+	for(i = 0; i &lt; BITNSLOTS(nb); i++)
+		set3[i] = set1[i] | set2[i];
+</pre>
+<p>
+Computing the intersection is left as an exercise for the reader.
+<p>
+Printing a set out will obviously require iterating over all the
+bits, using <TT>BITTEST()</TT> to discover whether each bit is turned on,
+and then somehow going from the bit index back to the name of the
+element, if necessary.  (We had a thread a week or two ago about
+how to print enum values symbolically.  Here, since the indices
+are known to be 0-based integers, a simple lookup table, in the
+form of an array of strings, would suffice.)
+<p>
+<address>
+<a href="http://www.eskimo.com/~scs/">Steve Summit</a>
+<br>
+<a href="mailto:scs@eskimo.com">scs@eskimo.com</a>
+</address>
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file librand.sgml dated Sat Jul  3 13:09:31 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 13.15</title>
+<link href="y2k.html" rev=precedes>
+<link href="randrange.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="y2k.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="randrange.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 13.15
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+I need a random number generator.
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+The
+Standard
+C library has one: <TT>rand</TT>.
+The implementation on your system may not be perfect,
+but writing a better one isn't necessarily easy, either.
+
+</p><p>
+If
+you do find yourself needing to implement your own
+random number generator,
+there is plenty of literature out there;
+see the References below or
+
+
+
+
+the sci.math.num-analysis FAQ list.
+
+There are also any number of packages on the net:
+old standbys are
+r250, RANLIB, and FSULTRA
+(see question <a href="../resources/sources.html">18.16</a>),
+and there is much recent work
+by
+<a href="http://stat.fsu.edu/~geo/">Marsaglia</a>,
+
+and Matumoto and Nishimura
+(the ``<a href="http://www.math.keio.ac.jp/~matumoto/emt.html">Mersenne Twister</a>''),
+and
+
+
+
+
+some code collected by
+<a href="http://www-cs-faculty.stanford.edu/~knuth/">Don Knuth</a>
+on his
+<a href="http://www-cs-faculty.stanford.edu/~knuth/programs.html">web pages</a>.
+</p><p>Here is
+a portable C implementation of
+the ``minimal standard'' generator proposed by
+Park and
+Miller:
+<pre>
+#define a 16807
+#define m 2147483647
+#define q (m / a)
+#define r (m % a)
+
+static long int seed = 1;
+
+long int PMrand()
+{
+	long int hi = seed / q;
+	long int lo = seed % q;
+	long int test = a * lo - r * hi;
+	if(test &gt; 0)
+		seed = test;
+	else	seed = test + m;
+	return seed;
+}
+</pre>
+(The ``minimal standard'' is adequately good;
+it is something ``against which all others should be judged'';
+it is recommended for use 
+``unless one has access to a random number generator
+<I>known</I> to be better.'')
+</p><p>This code implements the generator
+<blockquote><I>X</I> &nbsp;&lt;-&nbsp; (<I>aX</I> + <I>c</I>) mod <I>m</I>
+</blockquote>for <I>a</I> = 16807,
+<I>m</I> = 2147483647
+(which is
+2**31-1),
+and <I>c</I> = 0.<a href="pmprimem.html" rel=subdocument>[footnote]</a>
+The multiplication is carried out
+using a technique described by
+Schrage,
+ensuring that the intermediate result <I>aX</I> does not overflow.
+The implementation above returns <TT>long&nbsp;int</TT> values
+in the range [1, 2147483646];
+that is, it corresponds to C's <TT>rand</TT>
+with a <TT>RAND_MAX</TT> of 2147483646,
+<em>except</em> that it never returns 0.
+To alter it to return floating-point numbers in the range (0, 1)
+(as in the Park and Miller paper),
+change the declaration to
+<pre>
+	double PMrand()
+</pre>
+and the last line to
+<pre>
+	return (double)seed / m;
+</pre>
+For slightly better statistical properties,
+Park and Miller now recommend using <I>a</I> = 48271.
+</p>
+
+
+
+
+
+
+
+
+
+<p>References:
+
+K&amp;R2 Sec. 2.7 p. 46, Sec. 7.8.7 p. 168
+<br>
+ISO Sec. 7.10.2.1
+<br>
+H&amp;S Sec. 17.7 p. 393
+<br>
+PCS Sec. 11 p. 172
+<br>
+Knuth Vol. 2 Chap. 3 pp.&nbsp;1-177
+<br>
+Park and Miller, ``Random Number Generators: Good Ones are Hard to Find''
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="y2k.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="randrange.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

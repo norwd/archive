@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file null.sgml dated Wed Dec 21 13:03:25 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 5.19</title>
+<link href="runtime0.html" rev=precedes>
+<link href="nullpassign.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="runtime0.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="nullpassign.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 5.19
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+How can I access
+an interrupt vector
+located at
+the machine's location 0?
+If I set a pointer to <TT>0</TT>,
+the compiler might translate it to some nonzero internal null
+pointer value.
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+Since whatever is at location 0 is
+obviously
+machine dependent,
+you're free to use whatever machine-dependent trick will work to
+get there.
+Read your vendor's documentation
+(and see
+section
+<a href="../osdep/index.html">19</a>).
+It's likely that
+if it's at all meaningful
+for you to be
+accessing
+location 0,
+the system will be set up to make it reasonably easy to do so.
+Some possibilities are:
+<OL><li>Simply set a pointer to <TT>0</TT>.
+(This is the way that doesn't have to work,
+but if it's meaningful,
+it probably will.)
+<li>Assign the integer <TT>0</TT> to an <TT>int</TT> variable,
+and convert that <TT>int</TT> to a pointer.
+(This is also not guaranteed to work,
+
+but it probably will.)
+<li>Use a union
+to set the bits of a pointer variable to 0:
+<pre>
+	union {
+		int *u_p;
+		int u_i;	/* assumes sizeof(int) &gt;= sizeof(int *) */
+	} p;
+
+	p.u_i = 0;
+</pre>
+<li>Use <TT>memset</TT>
+to set the bits of a pointer variable to 0:
+<pre>
+	memset((void *)&amp;p, 0, sizeof(p));
+</pre>
+<li>Declare an external variable or array
+<pre>
+	extern int location0;
+</pre>
+and use an assembly language file,
+or some special linker invocation,
+to arrange that this symbol
+refers to
+(i.e. the variable
+is placed at)
+address 0.
+</OL></p><p>See also questions
+<a href="../ptrs/int2ptr.html">4.14</a>
+and
+<a href="../osdep/rawmemadr.html">19.25</a>.
+</p>
+
+
+
+
+<p>References:
+
+K&amp;R1 Sec. A14.4 p. 210
+<br>
+K&amp;R2 Sec. A6.6 p. 199
+<br>
+ISO Sec. 6.3.4
+<br>
+Rationale Sec. 3.3.4
+<br>
+H&amp;S Sec. 6.2.7 pp. 171-2
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="runtime0.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="nullpassign.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

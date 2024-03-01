@@ -1,0 +1,120 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file varargs.sgml dated Sun Nov 25 08:09:42 2001 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 15.11</title>
+<link href="float.html" rev=precedes>
+<link href="handoff.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="float.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="handoff.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 15.11
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+I can't get <TT>va_arg</TT> to pull in an argument
+of type pointer-to-function.
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+Try using a <TT>typedef</TT> for the function pointer type.
+</p><p>The type-rewriting games which
+the <TT>va_arg</TT> macro
+typically
+plays are stymied
+by overly-complicated types such as
+pointer-to-function.
+To illustrate,
+a simplified implementation of <TT>va_arg</TT> is
+<pre>
+	#define va_arg(argp, type) \
+		(*(type *)(((argp) += sizeof(type)) - sizeof(type)))
+</pre>
+where <TT>argp</TT>'s
+type
+(<TT>va_list</TT>)
+is <TT>char&nbsp;*</TT>.
+When you attempt to invoke
+<pre>
+	va_arg(argp, int (*)())
+</pre>
+the expansion is
+<pre>
+	(*(int (*)() *)(((argp) += sizeof(int (*)())) - sizeof(int (*)())))
+</pre>
+which is a syntax error
+(the first cast <TT>(int&nbsp;(*)()&nbsp;*)</TT> is meaningless).
+<a href="opaque.html" rel=subdocument>[footnote]</a>
+</p><p>If you
+use
+a <TT>typedef</TT>
+for the function pointer type, however, all will be well.
+Given
+<pre>
+	typedef int (*funcptr)();
+</pre>
+the expansion of
+<pre>
+	va_arg(argp, funcptr)
+</pre>
+is
+<pre>
+	(*(funcptr *)(((argp) += sizeof(funcptr)) - sizeof(funcptr)))
+</pre>
+which works correctly.
+</p><p>See also
+questions <a href="../decl/typedefvsdefine.html">1.13</a>, <a href="../decl/pfitypedef.html">1.17</a>, and <a href="../decl/cdecl1.html">1.21</a>.
+</p>
+
+<p>References:
+
+ISO Sec. 7.8.1.2
+<br>
+Rationale Sec. 4.8.1.2
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="float.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="handoff.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

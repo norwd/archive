@@ -1,0 +1,45 @@
+<html>
+<head>
+<title></title>
+</head>
+<body>
+From: Branko Radovanovic
+<br>
+Subject: Day difference between two dates
+<br>
+Message-ID: &lt;199602161231.NAA18023@pinus.cc.etf.hr&gt;
+<br>
+Date: Fri, 16 Feb 1996 13:31:39 +0100
+<p>
+I suggest the following code for solving both the problem of
+computing the day difference between two dates, and the problem
+of determining day of week on a given date :
+<p>
+<pre>
+#define DayOfWeek(d,m,y) (int)(DaysElapsed(d,m,y) % 7)
+
+long DaysElapsed(int d,int m,int y) {
+    static int cd[]={0,31,59,90,120,151,181,212,243,273,304,334};
+    long n=365L*(y-1);
+
+    if (m&lt;3) y--;
+    return n+y/4-y/100+y/400+cd[m-1]+d;
+}
+</pre>
+<p>
+DayOfWeek macro works exactly the same as the code posted by
+Tomohiko Sakamoto, while the day difference between date1 and date2
+(date1&lt;=date2) can simply be computed this way:
+<p>
+<pre>
+difference=DaysElapsed(d2,m2,y2)-DaysElapsed(d1,m1,y1);
+</pre>
+<p>
+I think this is by far superior to using mktime(). The code is
+100 % portable (even across languages other than C), much faster,
+smaller and simpler than mktime(), and does not suffer from year
+range limitation.
+<p>
+Branko Radovanovic
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file librand.sgml dated Sat Jul  3 13:09:31 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 13.17</title>
+<link href="randrange.html" rev=precedes>
+<link href="notveryrand.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="randrange.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="notveryrand.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 13.17
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+Each time I run my program,
+I get the same sequence of numbers back from <TT>rand()</TT>.
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+It's a characteristic of most
+pseudo-random number generators
+(and a defined property of the C library <TT>rand</TT>)
+that
+they
+
+always start with the same number
+and go through the same sequence.
+(Among other things,
+a bit of predictability can make debugging
+much easier.)
+When you don't want this predictability,
+you
+
+
+can call <TT>srand</TT> to seed the pseudo-random number
+generator with a truly random
+(or at least variable)
+initial value.
+Popular seed values are the time of day,
+or a process ID number,
+or
+the elapsed time
+before the user presses a key,
+or some combination of these.
+Here's an example call,
+using the time
+of day
+as a seed:
+<pre>
+	#include &lt;stdlib.h&gt;
+	#include &lt;time.h&gt;
+
+	srand((unsigned int)time((time_t *)NULL));
+</pre>
+(There remain several difficulties:
+the <TT>time_t</TT> returned by <TT>time</TT>
+might be a floating-point type,
+hence not portably convertible to <TT>unsigned&nbsp;int</TT>
+without the possibility of overflow.
+Furthermore,
+if time of day is available with 1-second resolution,
+using it by itself means that
+successive runs of the program can easily get the same seed.
+Subsecond resolution,
+of time-of-day
+or
+
+
+keystroke presses,
+is
+hard to achieve portably;
+see
+question
+<a href="../osdep/subsecond.html">19.37</a>.)
+</p><p>Note also that
+it's
+
+rarely useful to call <TT>srand</TT> more 
+than once during a run of a program;
+
+in particular,
+don't try calling <TT>srand</TT>
+before each call to <TT>rand</TT>,
+in an attempt to get ``really random''
+numbers.</p>
+
+
+<p>References:
+
+K&amp;R2 Sec. 7.8.7 p. 168
+<br>
+ISO Sec. 7.10.2.2
+<br>
+H&amp;S Sec. 17.7 p. 393
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="randrange.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="notveryrand.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

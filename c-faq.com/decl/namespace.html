@@ -1,0 +1,357 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file decl.sgml dated Wed Dec 21 12:56:18 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 1.29</title>
+<link href="bigdatastr.html" rev=precedes>
+<link href="initval.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="bigdatastr.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="initval.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 1.29
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+How can I determine
+which identifiers are safe for me to use
+and which are reserved?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+Namespace management can be a sticky issue.
+The problem--which isn't always
+obvious--is that you don't want
+to pick identifiers already in use by the implementation,
+
+such that
+you
+get
+``multiply defined'' errors
+or--even worse--quietly
+replace
+one of the implementation's 
+symbols
+and
+break
+everything.
+You also want some guarantee that later releases
+
+won't usurp names
+you're legitimately using.
+<a href="internal.html" rel=subdocument>[footnote]</a>
+(Few things are more frustrating
+than taking a debugged, working, production program,
+recompiling it under a new release of a compiler,
+and having the build fail
+due to namespace or other problems.)
+Therefore,
+the ANSI/ISO C Standard contains rather elaborate definitions
+carving out distinct namespace subsets
+for the user and the implementation.
+</p><p>To make sense of ANSI's rules,
+and
+before we can say whether a given identifier is reserved,
+we must understand three attributes of
+
+the identifier:
+its scope, namespace, and linkage.
+</p><p>There are four kinds of scope
+(regions over which an
+identifier's declaration is in effect)
+in C:
+
+function,
+file,
+block,
+and
+prototype.
+(The fourth
+one
+
+exists only in the parameter lists
+of function prototype declarations;
+see also question <a href="../ansi/structinproto.html">11.5</a>.)
+</p><p>There are four different kinds of namespaces,
+for:
+
+<UL><li>labels
+(i.e. <TT>goto</TT> targets);
+<li>tags
+(names of structures, unions,
+and
+
+enumerations;
+these
+three
+aren't separate even though they theoretically could be);
+<li>structure/union members
+(one namespace per structure or union);
+and
+<li>everything else
+(functions, variables, typedef names, enumeration constants),
+termed ``ordinary identifiers'' by the Standard.
+</UL></p><p>Another set of names
+(though not termed a ``namespace'' by the Standard)
+consists of preprocessor macros;
+these are all expanded
+before the compiler gets around to considering the four formal namespaces.
+</p><p>The standard defines three kinds of ``linkage'':
+
+external, internal, and none.
+For our purposes,
+external linkage means global,
+non-<TT>static</TT> variables and functions
+(across all source files),
+internal linkage means <TT>static</TT> variables and functions
+with file scope,
+and
+``no linkage''
+refers to local variables,
+and also things like typedef names and enumeration constants.
+
+</p><p>The rules,
+paraphrased from
+ANSI Sec. 4.1.2.1,
+are:
+</p><UL><li>1.
+All
+identifiers beginning with an underscore
+followed by an upper-case letter or another underscore
+are always reserved
+(all scopes, all namespaces).
+<li>2.
+All
+identifiers beginning with an underscore
+are reserved for ordinary identifiers
+(functions, variables, typedefs, enumeration constants)
+with file scope.
+
+<li>3.
+A
+macro name defined in a standard header
+is reserved for any use
+if
+
+
+any
+header which <TT>#define</TT>s it is <TT>#include</TT>d.
+<li>4.
+All
+standard library identifiers
+with external linkage
+(e.g. function names)
+are always reserved
+as identifiers with external linkage.
+<li>5.
+Typedef
+
+and
+tag names,
+with file scope,
+defined in standard headers,
+are reserved at file scope
+(in the same namespace)
+if the corresponding header is <TT>#include</TT>d.
+(The Standard really says
+``each identifier with file scope,''
+but the only standard identifiers not covered by rule 4
+are typedef and tag names.)
+</UL><p>Rules 3 and 4
+are additionally complicated by the fact that
+several sets of macro names and standard library identifiers
+are reserved for ``future directions''
+that is,
+later revisions of the Standard
+may define new names matching certain patterns.
+</p><p>Here is a list of the patterns which are reserved for 
+``future directions''
+associared with each standard header:
+<blockquote>[TABLE GOES HERE]
+</blockquote>(The notation <TT>[A-Z]</TT> means ``any uppercase letter'';
+similarly, <TT>[a-z]</TT> and <TT>[0-9]</TT> indicate lower-case 
+letters and digits.
+The notation <TT>*</TT> means ``anything.''
+For example,
+the pattern for <TT>&lt;stdlib.h&gt;</TT> says that
+all external identifiers beginning with the letters <TT>str</TT>
+followed by a lower-case letter
+are reserved.)
+</p><p>What do the
+above
+rules really mean?
+If you want to be on the safe side:
+</p><UL><li>1,2.
+Don't
+give anything a name
+with a leading underscore.
+<li>3.
+Don't
+give anything a name
+which is already a
+standard macro
+(including the ``future directions'' patterns).
+<li>4.
+Don't
+give
+any functions or global variables
+names
+which are already taken by
+functions or variables in the standard library,
+or
+which match
+any of the ``future directions'' patterns.
+(Strictly speaking, ``matching'' means
+matching in the first six characters,
+without regard to case;
+see question <a href="../ansi/extidsignif.html">11.27</a>.)
+<li>5.
+Don't redefine standard typedef
+
+or tag names.
+</UL><p>In fact,
+the preceding
+subparagraphs
+
+are overly conservative.
+If you wish,
+you may
+
+remember the following exceptions:
+</p><UL><li>1,2.
+You may use identifiers consisting of
+an underscore
+followed by a digit or lower case letter
+for labels and structure/union members.
+<li>1,2.
+You may use identifiers consisting of
+an underscore
+followed by a digit or lower case letter
+at function, block, or prototype scope.
+<li>3.
+You may use names matching standard macro names
+if you don't <TT>#include</TT> any header files which <TT>#define</TT> them.
+<li>4.
+You may use names of standard library routines as static or 
+local variables
+(strictly speaking, as identifiers with internal or no linkage).
+<li>5.
+You may use standard typedef and tag names
+if you don't <TT>#include</TT> any header files which declare them.
+</UL><p>However,
+before making use of any of these exceptions,
+recognize that
+some of them are pretty risky
+(especially exceptions 3 and 5,
+since
+you could
+accidentally <TT>#include</TT> the relevant header file
+at a later time,
+perhaps through a chain of nested <TT>#include</TT> files),
+and others
+(especially the ones labeled 1,2)
+represent sort of a ``no man's land''
+
+between the user namespaces
+and the namespaces reserved to the implementation.
+</p><p>One reason for providing these exceptions
+is to allow the implementors
+of various add-in libraries
+a way to declare
+their own
+internal or
+``hidden'' identifiers.
+If you make use of any of the exceptions,
+you won't clash with any identifiers defined by the Standard,
+but you might clash with something
+defined by a third-party library you're using.
+(If,
+on the other hand,
+you're
+the one who's
+
+implementing an add-on library,
+you're welcome to make use of them,
+if necessary,
+and if you're careful.)
+</p><p>
+(It <em>is</em>
+
+generally safe to make use of exception 4
+to give function parameters
+or local variables
+names matching standard library routines
+
+or ``future directions'' patterns.
+For example,
+``<TT>string</TT>''
+is a
+common--and legal--name
+for a
+parameter or local variable.)
+</p><p>Additional links:
+<a href="http://www.concentric.net/~Brownsta/c-predef.htm">Stan Brown's comprehensive list of reserved identifiers</a>
+</p>
+
+
+
+
+
+
+
+
+
+
+<p>References:
+
+ISO Sec. 6.1.2.1, Sec. 6.1.2.2, Sec. 6.1.2.3, Sec. 7.1.3, Sec. 7.13
+<br>
+Rationale Sec. 4.1.2.1
+<br>
+H&amp;S Sec. 2.5 pp. 21-3, Sec. 4.2.1 p. 67, Sec. 4.2.4 pp. 69-70, Sec. 4.2.7 p. 78, Sec. 10.1 p. 284
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="bigdatastr.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="initval.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

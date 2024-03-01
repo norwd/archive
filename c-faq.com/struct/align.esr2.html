@@ -1,0 +1,135 @@
+<html>
+<head>
+<title></title>
+</head>
+<body>
+From: Norman Diamond
+<br>
+Newsgroups: comp.lang.c
+<br>
+Subject: Re: Criticism of C-FAQ submission invited
+<br>
+Date: 22 Sep 1994 09:26:35 GMT
+<br>
+Message-ID: &lt;35rikb$4dt$1@usenet.pa.dec.com&gt;
+<p>
+In article &lt;35qdf0$7iq@netaxs.com&gt; Eric Raymond writes:
+<br>
+&gt;A: Under most compilers on older word-oriented machines, each C data item
+<br>
+&gt;   other than a component of a <TT>char</TT> array must begin on a byte address that
+<br>
+&gt;   is a multiple of the word size of the machine (that is, each type must be
+<br>
+&gt;   ``word-aligned'').  Such implementations are becoming rare as ancient 16-
+<br>
+&gt;   and 36-bit machines pass away.
+<p>
+For efficiency purposes, often this would <em>include</em> components of a <TT>char</TT>
+array, and the C standard requires a bit of inefficiency in such cases.
+I would delete ``other than a component of a <TT>char</TT> array''.
+<p>
+Futhermore, imbedded systems are becoming <em>more</em> numerous than they used
+to be.  Washing machines and rice cookers didn't used to have these things.
+And imbedded systems are often made with weird custom architectures.
+So I would say ``Such implementations on hosted systems are becoming rare,
+though standalone implementations might have arbitrarily weird requirements.''
+<p>
+&gt;struct/array/union types have the alignment of their most restrictive member.
+<p>
+I have read that the committee decided to allow implementations to impose
+more restrictive alignments than necessary.  I think that they did not
+issue a technical corrigendum, so I think their assertion conflicts with
+the standard, but what else is new.  Anyway, add an ``at least''.
+<p>
+&gt;   The first member of each
+<br>
+&gt;   continuous group of bit fields is typically word-aligned, with all following
+<br>
+&gt;   being continuously packed into following words (though ANSI C requires the
+<br>
+&gt;   latter only for bit-field groups of less than word size).
+<p>
+The word ``word'' is ambiguous here.  The unit does not have to be the same
+as the size of an int.  If an int has word size and the unit for bit-fields
+has a different size, then ``word'' is incorrect here.  Maybe say ``units of
+some size'' and ``less than the size of whatever unit''.
+<p>
+&gt;Q: How do I figure the ``true size'' (with trailing padding) of a type when
+<br>
+&gt;   it occurs in a struct or array?
+<p>
+The correct answer is the ``sizeof'' operator.  It includes trailing padding.
+<p>
+&gt;Q: How can I squeeze the padding out of a structure to make it smaller?
+<br>
+[...]
+<br>
+&gt;   A simple rule that minimize padding in the ``self-aligned'' case (and does
+<br>
+&gt;   no harm in most others) is to order your struct members by decreasing size.
+<p>
+No.  Order your struct members by decreasing alignment requirements.
+For example, an array of 47 chars should come after an int, not the other
+way around.  And you probably want all nested structs up at the beginning
+even if they're relatively short, and you want to order them in a way that
+would be optimal if implementations didn't force extra padding into them
+(so that they really will be optimal on implementations which don't).
+<p>
+Also beware that different types of pointers can have different sizes and
+maybe different alignment requirements.  Pointers to function types, and
+pointers to void or chararacter types, are ``usually'' at least as long and
+at least as restrictive as other pointer types, so it is ``usually'' at least
+as favorable to put them earlier.
+<p>
+Should pointers go before doubles or vice-versa?  There's no general answer.
+<p>
+&gt;   No padding will be required within groups of members of the same size,
+<p>
+The committee said there might be :-(
+<p>
+&gt;   no group will require leading padding;
+<p>
+That is correct.  The standard prohibits leading padding.
+<p>
+&gt;Q: How can I get complete control of the bit-level layout of a struct?
+<br>
+&gt;A: This is what bit-fields are for.  Declare all your members as bit fields.
+<p>
+It still doesn't work, because an implementation might set its unit as 1 bit,
+and put arbitrary padding between bits.  The most complete control you can
+get is by abandoning structs and using an array of char.  You'll still have
+problems in network code with big-endian vs. little-endian.
+<p>
+&gt;   Note about bit fields: though modern compilers default them to unsigned,
+<p>
+Maybe so; I've never tried.  I'd suggest <em>always</em> specifying the desired
+type (int or unsigned).
+<p>
+&gt;Q: Why can't I pass structs back and forth between the heterogenous machines
+<br>
+&gt;   on my network?  It's all C, isn't it?
+<p>
+You might not even be able to do it between two programs on a single machine.
+One compiler might put int at 16 bits and the other at 32 bits.  They might
+pad the ends of structs differently.
+<p>
+&gt;Q: I came to C from Pascal, and the one feature I miss is Pascal's `with'
+<br>
+&gt;   construct.  Shouldn't C have an equivalent?
+<br>
+&gt;A: No, it's too dangerous.
+<p>
+Come on now, C is designed for people who like living dangerously.
+``It's dangerous'' is an argument for <em>including</em> it in C, and ``it's too
+dangerous'' is an argument for <em>requiring</em> it in C.  Have you really
+forgotten the spirit of C?  You'd be better off deleting this question
+and asserted answer.
+<br>
+--
+<br>
+ &lt;&lt;  If this were the company's opinion, I would not be allowed to post it.  &gt;&gt;
+<br>
+segmentation fault (california dumped)
+</body>
+</html>

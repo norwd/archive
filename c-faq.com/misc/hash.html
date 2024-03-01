@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:47 2005 by faqproc version 2.7 -->
+<!-- from source file algorithms.sgml dated Sat Feb 14 14:35:07 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 20.29</title>
+<link href="soundex.html" rev=precedes>
+<link href="gaussian.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="soundex.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="gaussian.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 20.29
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+What is hashing?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+Hashing is the process of
+mapping
+strings
+to integers,
+usually in a relatively small range.
+A ``hash function'' maps a string
+(or
+some
+other data structure)
+to
+
+
+
+a bounded number
+(the ``hash bucket'')
+which
+can more easily
+be
+used
+as an index in an array,
+or for performing repeated comparisons.
+
+(Obviously,
+a mapping from a potentially huge set of strings
+to a small set of integers
+will not be unique.
+Any
+algorithm using hashing
+therefore has to deal with the possibility of 
+``collisions.'')
+
+</p><p>Many hashing functions
+and related algorithms
+have been developed;
+a full treatment is beyond the scope of this list.
+An extremely simple
+hash function
+for strings
+is simply to add up the values of all the characters:
+<pre>
+unsigned hash(char *str)
+{
+	unsigned int h = 0;
+	while(*str != '\0')
+		h += *str++;
+	return h % NBUCKETS;
+}
+</pre>
+A somewhat better hash function is
+<pre>
+unsigned hash(char *str)
+{
+	unsigned int h = 0;
+	while(*str != '\0')
+		h = (256 * h + *str++) % NBUCKETS;
+	return h;
+}
+</pre>
+
+which actually treats the input string as a large binary number
+(<TT>8 * strlen(str)</TT> bits long,
+assuming characters are 8 bits)
+and computes that number modulo NBUCKETS,
+by Horner's rule.
+(Here it is important that NBUCKETS be prime,
+among other things.
+To remove the assumption that characters are 8 bits,
+use <TT>UCHAR_MAX+1</TT> instead of 256;
+the ``large binary number'' will then be
+<TT>CHAR_BIT * strlen(str)</TT> bits long.
+<TT>UCHAR_MAX</TT> and <TT>CHAR_BIT</TT> are defined in <TT>&lt;limits.h&gt;</TT>.)
+</p><p>When
+the set of strings is known in advance,
+it is also possible to devise ``perfect''
+hashing functions which
+guarantee a collisionless, dense mapping.
+</p>
+
+
+<p>References:
+
+K&amp;R2 Sec. 6.6
+<br>
+Knuth Sec. 6.4 pp. 506-549 Volume 3
+<br>
+Sedgewick Sec. 16 pp. 231-244
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="soundex.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="gaussian.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

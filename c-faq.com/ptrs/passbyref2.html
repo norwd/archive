@@ -1,0 +1,49 @@
+<html>
+<head>
+<title></title>
+</head>
+<body>
+[This is a mail message I sent to someone who was wondering how,
+if C uses ``pass by value'',
+a function could modify a caller's passed array.]
+<p>
+From: scs@eskimo.com (Steve Summit)
+<br>
+Subject: Re: Functions
+<br>
+Date: Mon, 27 May 1996 08:50:17 -0700 (PDT)
+<br>
+Message-Id: &lt;199605271550.IAA07326@mail.eskimo.com&gt;
+<br>
+In-Reply-To: &lt;4o4p05$5s7@oly.olympic.net&gt;
+<p>
+&gt; I realize that only the values of the variables are passed to the function
+<br>
+&gt; on a stack, which makes it impossible for the calling function to alter
+<br>
+&gt; the values in the main function. Thus why is it possible for strcat() to
+<br>
+&gt; alter a string value in the main function, from the strcat function. 
+<p>
+There are two ways of looking at this.
+<p>
+The simplified way (which is also ever-so-slightly incorrect) is
+to say that arrays are an exception to the rule that function
+arguments are passed by value.  You can say that strcat() accepts
+two arrays, and that arrays are passed by reference, in which case
+the function <em>can</em> modify the contents of the array back up there
+in the caller.
+<p>
+The completely correct way to explain it (which is also somewhat
+confusing at first) is to say that arrays are never passed to
+functions at all.  Instead, a pointer to the array's first
+element is passed.  (In fact, you will usually see strcat()
+documented as accepting two pointers to char.)  The function
+receives a copy of the pointer, as usual, so it cannot modify the
+pointer up in the caller.  <em>But</em>, the copied pointer it receives
+obviously points to the same place (in this case, to the same
+array containing the same string) as the original, so the
+function <em>can</em> modify the memory (i.e. the string) pointed to by
+the pointer.
+</body>
+</html>

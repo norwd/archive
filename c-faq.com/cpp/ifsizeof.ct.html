@@ -1,0 +1,190 @@
+<html>
+<head>
+<title></title>
+</head>
+<body>
+From: Chris Torek
+<br>
+Subject: Re: sizeof in define
+<br>
+Date: 1999/11/26
+<br>
+Newsgroups: comp.lang.c
+<br>
+Message-ID: &lt;81n9la$hhl$1@elf.bsdi.com&gt;
+<p>
+The C89 standard divides translation into eight ``phases''.
+C99 keeps the same phases and just adds Unicode and the like.  I
+will quote an old C99 draft below (with some small edits for text
+representation).  Read footnote 5 carefully, and then consider the
+fact that ``<TT>#if</TT>'' happens in phase 4, but pp-tokens are not converted
+to regular tokens until phase 7.  Since the ``sizeof'' keyword is a
+regular token rather than a pp-token, that makes it impossible for
+``<TT>#if</TT>'' to recognize it.  In fact, the line:
+<p>
+<pre>
+	# if ((sizeof aszColors / sizeof *aszColors) != COLOR_NB)
+</pre>
+<p>
+must (in the absence of various <TT>#define</TT>s) behave as if it read:
+<p>
+<pre>
+	# if ((0 0 / 0 *0) != 0)
+</pre>
+<p>
+so a diagnostic is required (because ``0 0'' is a syntax error).
+<p>
+(Once the required diagnostic has been emitted, of course, a compiler
+is free to do anything it likes, including go back and discover
+that the ``0''s came from ``sizeof'', work out the sizes, examine the
+enumeration constant, and so on.  For a compiler to do this, however,
+its phase-4 code must be able to peek at phase-7 data, such as
+enumeration constant values and array sizes.  That in turns requires
+an integrated compiler -- preprocessing cannot occur in a separate
+program the way it does in, e.g., gcc.  That in turn makes using
+multiple CPUs, e.g., via ``<TT>cpp | cc1</TT>'', much harder -- so it may be
+a good idea to retain this sequencing, and footnote 5.)
+<p>
+[excerpt from c9x.n2620.txt below]
+<p>
+<blockquote>
+Working Draft, 1997-11-21, WG14/N794 J11/97-158
+<br>
+5.1.1.2  Translation phases
+<p>
+[#1] The precedence among the syntax rules of translation is
+specified by the following phases.[footnote 5]
+<dl>
+<dt>
+1.
+</dt><dd>
+Physical source file multibyte characters are mapped
+to the source character set (introducing new-line
+characters for end-of-line indicators) if necessary.
+Any multibyte source file character not in the basic
+source character set is replaced by the universal-character-name
+that designates that multibyte
+character.[6]  Then, trigraph sequences are replaced by
+corresponding single-character internal
+representations.
+</dd>
+<dt>
+2.
+</dt><dd>
+Each instance of a backslash character immediately
+followed by a newline character is deleted, splicing
+physical source lines to form logical source lines.
+Only the last backslash on any physical source line
+shall be eligible for being part of such a splice.
+A source file that is not empty shall end in a new-line
+character, which shall not be immediately preceded by
+a backslash character before any such splicing takes
+place.
+</dd>
+<dt>
+3.
+</dt><dd>
+The source file is decomposed into preprocessing
+tokens[7] and sequences of white-space characters
+(including comments).  A source file shall not end in
+a partial preprocessing token or comment.  Each
+comment is replaced by one space character.  New-line
+characters are retained.  Whether each nonempty
+sequence of white-space characters other than new-line
+is retained or replaced by one space character is
+implementation-defined.
+</dd>
+<dt>
+4.
+</dt><dd>
+Preprocessing directives are executed, macro
+invocations are expanded, and pragma unary operator
+expressions are executed.  If a character sequence
+that matches the syntax of a universal-character-name
+is produced by token concatenation (6.8.3.3), the
+behavior is undefined.  A <TT>#include</TT> preprocessing
+directive causes the named header or source file to be
+processed from phase 1 through phase 4, recursively.
+All preprocessing directives are then deleted.
+</dd>
+<dt>
+5.
+</dt><dd>
+Each source character set member, escape sequence, and
+universal-character-name in character constants and
+string literals is converted to a member of the
+execution character set.
+</dd>
+<dt>
+6.
+</dt><dd>
+Adjacent character string literal tokens are
+concatenated and adjacent wide string literal tokens
+are concatenated.
+</dd>
+<dt>
+7.
+</dt><dd>
+White-space characters separating tokens are no longer
+significant.  Each preprocessing token is converted
+into a token.  The resulting tokens are syntactically
+and semantically analyzed and translated as a
+translation unit.
+</dd>
+<dt>
+9.
+</dt><dd>
+All external object and function references are
+resolved.  Library components are linked to satisfy
+external references to functions and objects not
+defined in the current translation.  All such
+translator output is collected into a program image
+which contains information needed for execution in its
+execution environment.
+</dd>
+</dl>
+<p>
+__________[footnotes 5 through 7]
+<p>
+<dl>
+<dt>
+5.
+</dt><dd>
+Implementations must behave as if these separate phases
+occur, even though many are typically folded together in
+practice.
+</dd>
+<dt>
+6.
+</dt><dd>
+The process of handling extended characters is specified
+in terms of mapping to an encoding that uses only the
+basic source character set, and, in the case of
+character literals and strings, further mapping to the
+execution character set.  In practical terms, however,
+any internal encoding may be used, so long as an actual
+extended character encountered in the input, and the
+same extended character expressed in the input as a
+universal-character-name (i.e., using the <TT>\U</TT> or <TT>\u</TT>
+notation), are handled equivalently.
+</dd>
+<dt>
+7.
+</dt><dd>
+As described in 6.1, the process of dividing a source
+file's characters into preprocessing tokens is context-dependent.
+For example, see the handling of <TT>&lt;</TT> within a
+<TT>#include</TT> preprocessing directive.
+</dd>
+</dl>
+</blockquote>
+<p>
+--
+<br>
+In-Real-Life: Chris Torek, Berkeley Software Design Inc
+<br>
+El Cerrito, CA  Domain: torek@bsdi.com&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+1&nbsp;510&nbsp;234&nbsp;3167
+<br>
+<a href="http://claw.bsdi.com/torek/">http://claw.bsdi.com/torek/</a>&nbsp;&nbsp;(not always up)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I report spam to abuse@.
+</body>
+</html>

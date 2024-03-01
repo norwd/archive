@@ -1,0 +1,172 @@
+<html>
+<head>
+<title></title>
+</head>
+<body>
+<p>
+[Someone asked me the question
+which is now 17.4b in the comp.lang.c FAQ list,
+and this was my reply.]
+<p>
+From: scs@eskimo.com (Steve Summit)
+<br>
+Subject: Re: A ``C'' Question
+<br>
+Date: Thu, 1 Jun 2000 11:43:30 -0700 (PDT)
+<br>
+Message-Id: &lt;200006011843.LAA29337@mail.eskimo.com&gt;
+<p>
+You wrote:
+<br>
+&gt; I have a ``C'' programming question. On UNIX system, in /usr/include 
+<br>
+&gt; directory, there is a ctype.h.
+<p>
+As a general rule, you have to be careful when inspecting
+compiler-supplied header files, for example the ones in
+/usr/include.  Often these make use of ``magic'' features which are
+not standard and sometimes not even intended for users to use.
+This question, however, has a reasonably straightforward answer,
+and it's not tied to any particular compiler.
+<p>
+&gt; In this file, there is a prototype definition
+<br>
+&gt;        <TT>extern int isalpha __((int))</TT>.
+<br>
+&gt; I can not understand &lt;space&gt;<TT>__((int))</TT>. What is meaning of that?
+<br>
+&gt; My guess is that it is an argument to the function isalpha but
+<br>
+&gt; how come there is a space in between.
+<p>
+This is actually a trick.
+<p>
+As you may know, there are two kinds of external function
+prototype declaration in C.  The old-fashioned kind looked like
+<p>
+<pre>
+	extern int isalpha();
+</pre>
+and says that <TT>isalpha</TT> is a function returning <TT>int</TT>.  The newer,
+prototype form (which may be the only kind you're used to) looks
+like
+<p>
+<pre>
+	extern int isalpha(int);
+</pre>
+and supplies the additional information that the <TT>isalpha</TT> function
+accepts one argument, of type <TT>int</TT>.
+<p>
+Sometimes it's useful if a piece of code (in this case, a header
+file) can be compiled both by ANSI-compatible and pre-ANSI
+compilers.  Function prototypes, however, were introduced along
+with the ANSI Standard.  Pre-ANSI compilers didn't understand
+function prototypes, and in fact a pre-ANSI compiler will
+generally report a ``syntax error'' when it sees a function
+prototype.
+<p>
+The first half of the trick, therefore, is to make the presence
+of the function prototype conditional.  Suppose we had the macro
+<p>
+<pre>
+	#define PROTOTYPE(args) args
+</pre>
+This is a fairly useless-looking macro; all it does is accept one
+macro argument and spit it back out.  But suppose we were to
+write the prototype for isalpha as
+<p>
+<pre>
+	extern int isalpha PROTOTYPE((int));
+</pre>
+After the preprocessor expanded the macro, we'd end up with
+<p>
+<pre>
+	extern int isalpha (int);
+</pre>
+which is just like our original prototype (except for the
+insertion of an extra space, which doesn't matter).
+<p>
+(One additional question here is why we have to invoke the
+macro as <TT>PROTOTYPE((int))</TT>, with an extra set of parentheses.
+The reason is so that the preprocessor won't complain when we
+use the <TT>PROTOTYPE</TT> macro to help us declare a function that takes
+multiple arguments.  If we invoked <TT>PROTOTYPE(int, double)</TT>, the
+preprocessor would complain that we'd invoked the <TT>PROTOTYPE</TT> macro
+with two macro arguments, while it expected only one.  But when
+we invoke it as <TT>PROTOTYPE((int, double))</TT>, as far as the
+preprocessor is concerned we're invoking it with one argument,
+which is ``<TT>(int, double)</TT>'', including one pair of parentheses.)
+<p>
+Now, however, we have a way to ``turn off'' the prototype.  If we
+redefine the <TT>PROTOTYPE</TT> macro as
+<pre>
+	#define PROTOTYPE(args) ()
+</pre>
+the macro-ized declaration for isalpha would turn into
+<pre>
+	extern int isalpha ();
+</pre>
+and this would be acceptable to a pre-ANSI compiler.  So, putting
+this all together, we might say
+<p>
+<pre>
+	#ifdef __STDC__
+	#define PROTOTYPE(args) args
+	#else
+	#define PROTOTYPE(args) ()
+	#endif
+
+	extern int isalpha PROTOTYPE((int));
+</pre>
+<p>
+Now we have one scrap of code that's ``backwards compatible''
+to a pre-ANSI compiler.  (Obviously we only have to do the
+<TT>#ifdef</TT>/<TT>#define</TT>/<TT>#else</TT> thing once, then we can use the <TT>PROTOTYPE</TT>
+macro in lots of external function prototype declarations.)
+<p>
+The only problem with this is that
+<pre>
+	extern int isalpha PROTOTYPE((int));
+</pre>
+looks pretty ugly, due to that macro name <TT>PROTOTYPE</TT> sitting in
+there.  Someone decided that it was worth trying to fix this.
+<p>
+The rule for identifiers in C is that they may consist of
+letters, digits, and underscore characters, and that the first
+character must not be a digit.  This means that the first
+character <em>can</em> be an underscore.  But it also means that
+identifiers consisting of <em>only</em> underscores are legal!  Using a
+single or a double underscore as an identifier is a pretty sneaky
+trick, and we obviously can't use it too often, but if we've
+decided that writing backwards-compatible function declarations
+without that ugly <TT>PROTOTYPE</TT> name is so important that we're
+willing to devote this sneaky trick to the task, we can replace
+the macro name ``<TT>PROTOTYPE''</TT> with the macro name ``<TT>__</TT>'', leading to:
+<p>
+<pre>
+	#ifdef __STDC__
+	#define __(args) args
+	#else
+	#define __(args) ()
+	#endif
+
+	extern int isalpha __((int));
+</pre>
+<p>
+So that explains what you saw.  (Personally, I don't think this
+is all worth it, and I don't use this trick, myself, but I've
+seen it in plenty of code written by others.)
+<p>
+<address>
+<a href="http://www.eskimo.com/~scs/">Steve Summit</a>
+<br>
+<a href="mailto:scs@eskimo.com">scs@eskimo.com</a>
+</address>
+<br>
+-- 
+<br>
+Programming Challenge #6: Don't just fix the bug.
+<br>
+See <a href="http://www.eskimo.com/~scs/challenge/">http://www.eskimo.com/~scs/challenge/</a>.
+</body>
+</html>

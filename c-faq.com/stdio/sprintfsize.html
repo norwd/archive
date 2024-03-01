@@ -1,0 +1,263 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file stdio.sgml dated Wed Dec 21 13:07:57 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 12.21</title>
+<link href="scanfprobs.html" rev=precedes>
+<link href="sprintfret.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="scanfprobs.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="sprintfret.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 12.21
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+How can I tell how much destination buffer space I'll need
+for an arbitrary <TT>sprintf</TT> call?
+How can I avoid
+overflowing
+the destination buffer with <TT>sprintf</TT>?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+When the format string being used with <TT>sprintf</TT> is
+known and
+relatively simple,
+you can
+sometimes
+predict
+a
+buffer
+size in an ad-hoc way.
+If
+the format
+consists of one or two <TT>%s</TT>'s,
+you can count the fixed
+characters in the format
+string yourself
+(or let <TT>sizeof</TT> count them for you)
+and add in the result of calling <TT>strlen</TT>
+on the string(s) to be inserted.
+For example,
+to
+compute the buffer size that the call
+<pre>
+	sprintf(buf, "You typed \"%s\"", answer);
+</pre>
+would need,
+you could
+write:
+<pre>
+	int bufsize = 13 + strlen(answer);
+or
+	int bufsize = sizeof("You typed \"%s\"") + strlen(answer);
+</pre>
+
+followed by
+<pre>
+	char *buf = malloc(bufsize);
+	if(buf != NULL)
+		sprintf(buf, "You typed \"%s\"", answer);
+</pre>
+You can
+conservatively
+estimate the size that <TT>%d</TT> will expand to with
+code like:
+<pre>
+#include &lt;limits.h&gt;
+char buf[(sizeof(int) * CHAR_BIT + 2) / 3 + 1 + 1];
+sprintf(buf, "%d", n);
+</pre>
+
+This code
+computes
+the number of characters required
+for a base-8 representation of a number;
+a base-10 expansion is guaranteed to take as much room or less.
+(The <TT>+2</TT> takes care of truncation if the size is not a
+multiple of 3,
+and 
+the <TT>+1+1</TT> leaves room for a leading <TT>-</TT>
+and a trailing <TT>\0</TT>.)
+An
+analogous technique
+could of course be used for <TT>long&nbsp;int</TT>,
+and the same buffer can obviously be used with
+<TT>%u</TT>, <TT>%o</TT>, and <TT>%x</TT>
+formats
+as well.
+</p><p>When the format string is more complicated,
+or
+is
+not
+even
+known until run time,
+predicting the buffer size becomes as
+difficult
+as reimplementing <TT>sprintf</TT>,
+and correspondingly error-prone
+(and inadvisable).
+A
+last-ditch
+technique
+which is sometimes
+suggested
+is to use
+<TT>fprintf</TT> to print the same text to a
+temporary file,
+and
+then to
+look at <TT>fprintf</TT>'s return value
+
+or
+the size of the file
+(but see question <a href="../osdep/filesize.html">19.12</a>).
+(Using a temporary file for this application
+is admittedly
+clumsy and inelegant,<a href="diskerr.html" rel=subdocument>[footnote]</a>
+but it's the only portable solution
+besides writing an entire <TT>sprintf</TT> format 
+interpreter.
+If your system provides one,
+you can
+
+use
+a null or ``bit bucket'' device
+such as
+<TT>/dev/null</TT> or <TT>NUL</TT>
+instead of a temporary file.)
+</p><p>If there's
+any
+chance that the buffer might not be big enough,
+you won't want to call <TT>sprintf</TT>
+without some guarantee
+that the buffer will not overflow
+and overwrite some other part of
+memory.
+If the format string is known,
+you can limit <TT>%s</TT> expansion by using
+<TT>%.</TT>N<TT>s</TT>
+for some N,
+or <TT>%.*s</TT>
+(see also question <a href="printfvwid.html">12.10</a>).
+</p><p>To avoid
+the overflow problem,
+you can use
+a length-limited version of <TT>sprintf</TT>,
+namely <TT>snprintf</TT>.
+It
+is
+used like this:
+<pre>
+	snprintf(buf, bufsize, "You typed \"%s\"", answer);
+</pre>
+<TT>snprintf</TT>
+has been available in several stdio libraries
+(including GNU and 4.4bsd)
+for several years.
+It
+has finally been
+standardized in C99.
+</p><p>As an extra, added bonus,
+the C99 <TT>snprintf</TT> provides a way
+to predict the size required
+for an arbitrary <TT>sprintf</TT> call.
+C99's
+<TT>snprintf</TT> returns
+the number of characters it would have placed in the buffer
+if there were room,
+not just how many it did place.
+Furthermore,
+it may be called with
+a null pointer
+and
+a buffer size
+of 0
+and a null pointer as the destination buffer.
+Therefore, the call
+<pre>
+	nch = snprintf(NULL, 0, fmtstring, /* other arguments */ );
+</pre>
+computes
+the number of characters required
+for the fully-formatted
+string.
+With that number
+(<TT>nch</TT>)
+in hand,
+you can then malloc a big-enough buffer
+and make a second <TT>snprintf</TT> call to fill it.
+</p><p>Yet another option is
+
+
+
+
+
+the (nonstandard) <TT>asprintf</TT> function,
+present in various C libraries including bsd's and GNU's,
+which formats to
+
+(and returns a pointer to)
+a <TT>malloc</TT>'ed buffer,
+like this:
+<pre>
+char *buf;
+asprintf(&amp;buf, "%d = %s", 42, "forty-two");
+/* now buf points to malloc'ed space containing formatted string */
+</pre>
+</p><p>Additional links:
+
+
+
+<a href="asprintf.c">sample implementation of <TT>asprintf</TT>
+</a></p>
+<p>References:
+
+C9X Sec. 7.13.6.6
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="scanfprobs.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="sprintfret.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

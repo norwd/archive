@@ -1,0 +1,49 @@
+<html>
+<head>
+<title></title>
+</head>
+<body>
+From: fred@genesis.demon.co.uk (Lawrence Kirby)
+<br>
+Newsgroups: comp.lang.c
+<br>
+Subject: Re: File size
+<br>
+Date: Wed, 23 Jun 99 00:05:27 GMT
+<br>
+Message-ID: &lt;930096327snz@genesis.demon.co.uk&gt;
+<p>
+In article &lt;7ko6mg$66b$1@eskinews.eskimo.com&gt;
+scs@eskimo.com "Steve Summit" writes:
+<br>
+&gt; ...But you're right, SEEK_END is still a kicker.
+<p>
+Assuming that it is a real problem (like whether the possibility of
+UCHAR_MAX &gt; INT_MAX is a real problem). My guess would be that any
+platform that is capable of determining a precise file size will
+get SEEK_END right on a binary stream. If you're worried state the
+assumption in the program documentation but don't lose sleep
+over it.
+<p>
+There are still good reasons not to get a file size e.g.
+<ol>
+<p><li>
+the file may not be seekable or even have a size (e.g. input from
+console/serial port/tty/pipe/socket).
+<p><li>
+the file size may change between determining it and making use of it.
+</ol>
+<p>
+If however you really do need to find the size of a file (you know to
+be a regular file) without actually scanning it end to end there is
+no more portable way than to use fseek/SEEK_END/ftell on a binary stream.
+<p>
+<pre>
+-- 
+-----------------------------------------
+Lawrence Kirby | fred@genesis.demon.co.uk
+Wilts, England | 70734.126@compuserve.com
+-----------------------------------------
+</pre>
+</body>
+</html>

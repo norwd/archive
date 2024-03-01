@@ -1,0 +1,236 @@
+<html>
+<head>
+<title></title>
+</head>
+<body>
+Newsgroups: comp.lang.c
+<br>
+From: scs@adam.mit.edu (Steve Summit)
+<br>
+Subject: Re: A question on style ...
+<br>
+Message-ID: &lt;1992Aug4.170926.2335@athena.mit.edu&gt;
+<br>
+Summary: returning aggregates
+<br>
+Date: Tue, 4 Aug 1992 17:09:26 GMT
+<p>
+In article &lt;1992Aug3.070036.20027@cucs5.cs.cuhk.hk&gt;, wong yick pong writes:
+<br>
+&gt; I am writing a library, of which a function should return a string:
+<br>
+&gt; But the [routine tends to return] ... (rubbish).
+<br>
+&gt; Is this because test is a local valuable?
+<br>
+&gt;      I know I can use static char or declare test as global,
+<br>
+&gt; but the first method would make the code not so understand,
+<br>
+&gt; while the second would not be possible in a library.
+<p>
+I'm not sure why using static would make the code harder to
+understand; it's one of the popular and recommended solutions.
+<p>
+I know of at least nine different ways of returning aggregates
+(i.e. structures and arrays, including strings) from subroutines
+in C, although one of them doesn't work, two of them are
+combinations, and one of them is a joke.
+<ol>
+<p><li>
+local: the routine returns a pointer to a local array or
+structure.  This is the one that doesn't work.
+<p><li>
+caller-supplied: the caller passes a pointer to the
+return buffer, and its size.
+<p><li>
+malloc: the routine returns a pointer, obtained from
+<TT>malloc</TT>, to a dynamically-allocated region of memory; the
+caller is responsible for explicitly freeing it (perhaps
+with a special <TT>xxxfree()</TT> routine which you also supply,
+if the returned structure contains other pointers which
+must also be freed).
+<p><li>
+static: the routine returns a pointer to the proverbial
+``static buffer whose content is overwritten by each call.''
+(An additional wrinkle is that several routines may share
+a single static buffer, &agrave; la <TT>ctime</TT> and <TT>asctime</TT>).
+<p><li>
+a combination of 2 and 3: if the caller passes a null
+pointer, the routine returns a dynamically-allocated
+pointer.
+<p><li>
+a combination of 2 and 4: if the caller passes a null
+pointer, the routine returns a pointer to static data.
+<p><li>
+struct: as long as the return data can be encapsulated in
+a single struct, the entire struct can be returned (with
+a conventional, by-value <TT>return</TT> statement) and the
+compiler essentially worries about allocation.  (This
+technique does not work well for strings, though,
+especially if they are to be arbitrarily long.)
+<p><li>
+multiple static: a generalization of 4; the routine
+returns a pointer to one of several static buffers.
+This means that the caller may use a small number of
+return values simultaneously, and does not have to worry
+about freeing them.
+<p><li>
+temporary file: the routine writes the data to a
+temporary file which the caller opens and reads.
+(Of course, if the routine picks the temporary file name,
+there is then the problem of retuning that name to the
+caller...)
+</ol>
+<p>
+I have heard that number 5 is a favorite of the GNU project.
+I like number 8 a lot, although I don't end up using it all that
+often.
+<p>
+Numbers 2 and 3 are obviously the simplest safe options,
+although they are more work for the caller.  Between the two,
+number 2 is fine most of the time; number 3 is appropriate when
+the caller has no good way of estimating the required size of the
+return buffer (and the data must all be returned at once), or
+when the caller is quite likely to call malloc and store a copy
+of several return values anyway, and when the overhead and other
+mild disadvantages of dynamic memory allocation will not be a
+problem.
+<p>
+Number 4, though it can be annoying and error-prone, is fine in
+certain circumstances, obviously those in which it is unlikely
+that the caller will have to be using several return values
+simultaneously.  <TT>ctime()</TT> is a good example -- its most common use
+is printing the current time of day, and since at any given
+instant there is only one current time of day, the caller is not
+likely to need to maintain multiple separate return values.
+<p>
+Numbers 5 and 6 obviously try to have their cake and eat it too,
+which is sometimes appropriate, but which could lead to
+unnecessary complexity and confusion (i.e. unsophisticated
+programmers might be bewildered by the discussion in a routine's
+documentation of its multiple personalities).  These techniques
+should probably be used sparingly, only when extreme flexibility
+will be truly be needed and when mostly experienced programmers
+will be using the routine.
+<p>
+Number 7 is a perfectly adequate solution which is not as widely
+known and used as it could be, due to the fact that many people
+think of structures as ``second class citizens'' in C, because
+according to K&amp;R1 they were, even though Ritchie's C compiler at
+the time K&amp;R1 was published, and all quality C compilers since,
+and all ANSI C compilers, fully support struct assignment,
+passing, and return.
+<p>
+Note that if we have:
+<p>
+<pre>
+	extern struct blort blortfunc();
+	f()
+	{
+	struct blort blort1, blort2;
+
+	blort1 = blortfunc(1);
+	blort2 = blortfunc(2);
+
+	...
+	}
+</pre>
+<p>
+, the struct return and assignment to two local struct variables
+have allowed us to manipulate two simultaneous aggregate return
+values, without collisions (i.e. without any ``data overwritten
+with each call''), and without any manual allocation or
+deallocation.
+<p>
+Number 8 is a little-known technique, which I invented myself one
+day, although I've seen it mentioned once or twice on the net, so
+other people have obviously thought of it, too.  This is another
+mildly-sophisticated technique, use of which in the presence of
+novice programmers might be confusing, but which can be extremely
+useful given the right set of circumstances.  I only use it for
+things like string formatting routines, which produce printable
+string representations of other data structures, and which are
+quite likely to be used more than once during a single call to,
+say, <TT>printf</TT>.  For example, suppose I have
+<p>
+<pre>
+	char *roman(int);
+</pre>
+which returns a roman-numeral representation of an <TT>int</TT>.  I might
+want to do things like
+<p>
+<pre>
+	printf("%s + %s = %s\n", roman(12), roman(34), roman(12 + 34));
+</pre>
+Now, if I were using technique 2, this would look like
+<p>
+<pre>
+	char buf1[20], buf2[20], buf3[20];
+	printf("%s + %s = %s\n", roman(12, buf1, 20), roman(34, buf2, 20),
+						roman(12 + 34, buf3, 20));
+</pre>
+<p>
+, which is a mess.  And if I were using technique 3, it would
+look like
+<p>
+<pre>
+	char *p1, *p2, *p3;
+	printf("%s + %s = %s\n", p1 = roman(12), p2 = roman(34),
+						p3 = roman(12 + 34));
+	free(p1);
+	free(p2);
+	free(p3);
+</pre>
+<p>
+, which is also a mess.
+<p>
+This is obviously exactly the sort of thing that technique 4
+breaks down on, although of course you can do things like
+<p>
+<pre>
+	printf("%s + ", roman(12));
+	printf("%s = ", roman(34));
+	printf("%s\n", roman(12 + 34));
+</pre>
+<p>
+But if I'm using technique 8, and if <TT>roman()</TT>'s implementation
+guarantees at least 3 separate static return buffers, then I can
+in fact write the obvious
+<p>
+<pre>
+	printf("%s + %s = %s\n", roman(12), roman(34), roman(12 + 34));
+</pre>
+and it will work just fine.
+<p>
+Technique 8's implementation looks something like
+<p>
+<pre>
+	#define NRETBUFS 3
+	#define RETBUFSIZE 20
+
+	char *roman(n)
+	int n;
+	{
+	static char retbufs[NRETBUFS][RETBUFSIZE];
+	static int whichret = 0;
+	char *ret;
+
+	ret = retbufs[whichret];
+	whichret = (whichret + 1) % NRETBUFS;
+
+	now format answer into ret...
+
+	return ret;
+	}
+</pre>
+<p>
+I won't say anything more about technique 9.
+<p>
+<address>
+<a href="http://www.eskimo.com/~scs/">Steve Summit</a>
+<br>
+scs@adam.mit.edu
+</address>
+</body>
+</html>

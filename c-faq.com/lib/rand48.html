@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file librand.sgml dated Sat Jul  3 13:09:31 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 13.21</title>
+<link href="gaussian.html" rev=precedes>
+<link href="exitvsreturn.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="gaussian.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="exitvsreturn.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 13.21
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+I'm porting this program, and it calls a routine
+<TT>drand48</TT>,
+which my library doesn't have.
+What is
+it?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+<TT>drand48</TT>
+is a
+Unix System V
+routine
+which
+returns floating point random numbers
+(presumably
+
+with 48 bits of precision)
+in the half-open interval
+[0,&nbsp;1)<a href="fn76.html" rel=subdocument>[footnote]</a>
+.
+(Its companion seed routine is <TT>srand48</TT>;
+neither is in the C Standard.)
+It's easy to write a low-precision replacement:
+
+<pre>
+#include &lt;stdlib.h&gt;
+
+double drand48()
+{
+	return rand() / (RAND_MAX + 1.);
+}
+</pre>
+</p><p>To more accurately simulate <TT>drand48</TT>'s semantics,
+you can try to give it closer to
+48 bits
+worth of precision:
+<pre>
+#define PRECISION 2.82e14	/* 2**48, rounded up */
+
+double drand48()
+{
+	double x = 0;
+	double denom = RAND_MAX + 1.;
+	double need;
+
+	for(need = PRECISION; need &gt; 1;
+			need /= (RAND_MAX + 1.)) {
+		x += rand() / denom;
+		denom *= RAND_MAX + 1.;
+	}
+
+	return x;
+}
+</pre>
+</p><p>Before using code like this, though,
+beware that it is numerically suspect,
+particularly if
+(as is usually the case)
+the period of <TT>rand</TT> is
+on the order of
+RAND_MAX.
+(If you have a longer-period random number generator available,
+such as BSD <TT>random</TT>,
+definitely
+use it
+when simulating <TT>drand48</TT>.)
+</p>
+<p>References:
+
+PCS Sec. 11 p. 149
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="gaussian.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="exitvsreturn.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

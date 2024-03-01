@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file cpp.sgml dated Wed Dec 21 13:52:14 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 10.6</title>
+<link href="constvsdefine.html" rev=precedes>
+<link href="nestincl.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="constvsdefine.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="nestincl.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 10.6
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+I'm splitting up a program
+into multiple source files
+for the first time,
+
+and I'm wondering what to put in <TT>.c</TT> files
+and what to put in <TT>.h</TT> files.
+(What does ``<TT>.h</TT>''
+mean,
+anyway?)
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+As a general rule, you should put these things in header
+(<TT>.h</TT>) files:
+<blockquote><pre>
+macro definitions (preprocessor <TT>#define</TT>s)
+structure, union, and enumeration declarations
+typedef declarations
+external function declarations (see also question <a href="../decl/extern.html">1.11</a>)
+global variable declarations
+</pre>
+</blockquote></p><p>It's especially important to put a declaration or definition in 
+a header file when it will be shared between several other files.
+Don't repeat a declaration or macro definition at the top of 
+two or more source files;
+do put it in a header file and <TT>#include</TT> it wherever 
+needed.
+The reason is not just to save typing:
+you want to set things up so that whenever a declaration or 
+definition changes,
+you only have to change it in one place,
+with the update propagated to
+all source files
+consistently.
+(In particular, never put external function
+prototypes in <TT>.c</TT> 
+files.
+See also question <a href="../decl/decldef.html">1.7</a>.)
+</p><p>On the other hand,
+when a definition or declaration should remain private to one
+<TT>.c</TT>
+file, it's
+fine
+to
+leave it there.
+
+
+
+(Private file-scope functions and
+variables
+should
+also
+be declared
+<TT>static</TT>.
+See also question <a href="../struct/opaquetypes.html">2.4</a>.)
+</p><p>Finally,
+you should not put actual code
+(i.e. function
+bodies)
+or global variable definitions
+(that is, defining
+or initializing
+instances)
+in header files.
+Also,
+when you are building a project
+out of multiple source files,
+you should compile each of them separately
+(using a compiler option
+to request compilation only),
+and use the linker
+to link the resultant object files together.
+(In an integrated development environment,
+all of this may be taken care of for you.)
+Don't try to ``link'' all of your source files together
+with <TT>#include</TT>;
+the <TT>#include</TT> directive should be used
+to pull in
+header files,
+not other <TT>.c</TT> files.
+
+</p><p>See also
+questions <a href="../decl/decldef.html">1.7</a>, <a href="nestincl.html">10.7</a>, and <a href="../style/srcfiles.html">17.2</a>.
+</p><p>Additional links:
+<a href="sd7.html" rel=subdocument>more explanation</a>
+</p>
+
+
+
+<p>References:
+
+K&amp;R2 Sec. 4.5 pp. 81-2
+<br>
+H&amp;S Sec. 9.2.3 p. 267
+<br>
+CT&amp;P Sec. 4.6 pp. 66-7
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="constvsdefine.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="nestincl.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:47 2005 by faqproc version 2.7 -->
+<!-- from source file osdepfile.sgml dated Sat Jun 26 20:52:13 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 19.11</title>
+<link href="sendmail.html" rev=precedes>
+<link href="filesize.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="sendmail.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="filesize.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 19.11
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+How can I check whether a file exists?
+I want to
+warn the user
+if a requested input file is missing.
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+It's surprisingly difficult to
+make this determination
+reliably and portably.
+Any test you make can be invalidated
+if the file is created or deleted
+(i.e.
+by some other process)
+between the time you make the test
+and the time you try to open the file.
+</p><p>Three possible test functions are
+<TT>stat</TT>,
+<TT>access</TT>,
+and
+<TT>fopen</TT>.
+(To
+make an approximate
+test
+using
+<TT>fopen</TT>,
+just open for reading and close immediately,
+although failure does not necessarily indicate nonexistence.)
+Of these,
+only <TT>fopen</TT> is widely portable,
+and <TT>access</TT>,
+where it exists,
+must be used carefully if
+the program
+uses the Unix
+set-UID
+feature.
+
+
+
+
+
+
+(If you have the choice,
+the best compromise
+is probably one of the <TT>stat</TT> functions.)
+</p><p>Rather than trying to predict in advance
+whether an operation
+such as opening a file
+will succeed,
+it's often better to
+
+try it,
+check the return value,
+and complain if it
+fails.
+(Obviously, this approach won't work
+if you're trying to avoid overwriting an
+existing file, unless you've got something like the
+<TT>O_EXCL</TT>
+file opening
+option available,
+which does just what you want
+in
+this
+case.)
+</p>
+
+
+
+<p>References:
+
+PCS Sec. 12 pp. 189,213
+<br>
+POSIX Sec. 5.3.1, Sec. 5.6.2, Sec. 5.6.3
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="sendmail.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="filesize.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

@@ -1,0 +1,132 @@
+<html>
+<!-- &lt;2003Jul27.0955.scs.004@aerotwo.scs.ndip.eskimo.net&gt; -->
+<head>
+<title></title>
+</head>
+<body>
+<p>
+[Someone asked about the difference between <TT>const</TT> and <TT>#define</TT> --
+whether they &ldquo;used up&rdquo; memory, and which was &ldquo;safer&rdquo;.
+This was my reply.]
+<p>
+It's true that <TT>#define</TT> doesn't &ldquo;use any memory&rdquo;.
+But beyond that,
+both
+<TT>const</TT> and <TT>#define</TT> both have their safe and unsafe aspects.
+<p>
+As you noted, <TT>const</TT> &ldquo;takes up memory and has a benefit of type checking.&rdquo;
+<p>
+There are several other differences:
+<p>
+<TT>#define</TT> operates purely at compile time.  Actually, since it's a
+preprocessor directive, you can think of it as operating <em>before</em>
+the main part of the compiler actually starts compiling your code.
+When you write
+<p>
+<pre>
+	#define NUM1 45
+	int array[NUM1];
+</pre>
+<p>
+by the time the main part of the compiler actually starts
+compiling your code, what it sees is just
+<p>
+<pre>
+	int array[45];
+</pre>
+This example also illustrates one of the mildly &ldquo;unsafe&rdquo; aspects
+of <TT>#define</TT>.  if you accidentally write
+<p>
+<pre>
+	#define NUM1 45;
+	int array[NUM1];
+</pre>
+<p>
+what the compiler actually sees is then
+<p>
+<pre>
+	int array[45;];
+</pre>
+which is a syntax error.
+<p>
+When you write
+<p>
+<pre>
+	const int num2 = 45;
+</pre>
+on the other hand, the main part of the compiler allocates a
+variable, of type <TT>int</TT>, and initializes it with the value 45,
+and makes a note to itself that it should complain if you ever
+try to modify this variable anywhere else in the source file.
+<p>
+The variable <TT>num2</TT> will, yes, exist in memory.  This means that
+you can create a pointer pointing at <TT>num2</TT>, and sometimes, this
+is important.
+<p>
+Normally we don't worry about the fact that <TT>const</TT> variables
+&ldquo;eat up&rdquo; memory while <TT>#define</TT>s do not.  Typically we're only
+talking about a few or a few dozen variables, which aren't going
+to consume vast amounts of memory in any case.
+<p>
+The only critical disadvantage of <TT>const</TT> variables in C is that
+you cannot use them in cases where you need a true compile-time
+constant.  You cannot say
+<p>
+<pre>
+	int array2[num2];
+</pre>
+or
+<p>
+<pre>
+	switch(var)
+		{
+		case num2:
+</pre>
+<p>
+You cannot declare a static or global variable and initialize it
+with the value of num2.
+<p>
+To summarize, then, we have:
+<p>
+<TT>#define</TT>:
+<p>
+<ul>
+<li>
+operates at compile time
+<li>
+consumes no memory (though this is not too important)
+<li>
+can use in compile-time constant expression
+<li>
+uses different syntax; can make mistake with ;
+<li>
+can't create pointers to
+<li>
+no type checking
+</ul>
+<p>
+<TT>const</TT>:
+<p>
+<ul>
+<li>
+operates at run time
+<li>
+consumes memory (though this is not too important)
+<li>
+can't use in compile-time constant expression
+<li>
+uses consistent syntax
+<li>
+can create pointers to
+<li>
+does type checking
+</ul>
+<p>
+There might be one or two other differences that I'm forgetting.
+<p>
+It's also worth noting that <TT>const</TT> behaves differently in C versus C++.
+In C++, <TT>const</TT> variables <em>can</em> be used in compile-time constant
+expressions, and (as I understand it) they don't occupy space at
+run time if they don't need to.
+</body>
+</html>

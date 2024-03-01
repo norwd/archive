@@ -1,0 +1,213 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file struct.sgml dated Wed Dec 21 16:15:32 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Structures, Unions, and Enumerations</title>
+</head>
+<body bgcolor="#ffffff">
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<H1>2. Structures, Unions, and Enumerations</H1>
+
+<p><a href="typedef.html" rel=subdocument>2.1</a>
+What's the difference between
+these two declarations?
+<pre>
+	struct x1 { ... };
+	typedef struct { ... } x2;
+</pre>
+</p><p><a href="impltypedef.html" rel=subdocument>2.2</a>
+Why doesn't
+<pre>
+struct x { ... };
+x thestruct;</pre>
+
+work?
+</p><p><a href="selfref.html" rel=subdocument>2.3</a>
+Can a structure contain a pointer
+to itself?
+</p><p><a href="opaquetypes.html" rel=subdocument>2.4</a>
+How can I implement
+opaque (abstract) data types in C?
+</p><p><a href="oop.html" rel=subdocument>2.4b</a>
+Is there a good way of simulating OOP-style inheritance,
+or other OOP features,
+in C?
+</p><p><a href="fcnproto.html" rel=subdocument>2.5</a>
+Why does the declaration
+<pre>
+extern int f(struct x *p);</pre>
+
+give me
+an obscure
+warning message
+about
+``struct x declared inside parameter list''?
+
+</p><p><a href="structhack.html" rel=subdocument>2.6</a>
+I came across some code that declared a structure
+like this:
+<pre>
+struct name {
+	int namelen;
+	char namestr[1];
+};
+</pre>
+and then did some tricky allocation to make
+the
+<TT>namestr</TT>
+array act like it
+had several elements,
+with the number
+recorded by <TT>namelen</TT>.
+How does this work?
+Is
+it
+legal or portable?
+</p><p><a href="firstclass.html" rel=subdocument>2.7</a>
+I heard
+that structures could be assigned
+to variables and passed to and from functions, but K&amp;R1
+says
+not.
+
+</p><p><a href="compare.html" rel=subdocument>2.8</a>
+Is there a way to
+compare structures
+automatically?
+</p><p><a href="passret.html" rel=subdocument>2.9</a>
+How
+are
+structure passing and returning
+implemented?
+</p><p><a href="anonstruct.html" rel=subdocument>2.10</a>
+How can
+I pass constant values to functions which accept structure arguments?
+How can I create nameless, immediate, constant structure values?
+</p><p><a href="io.html" rel=subdocument>2.11</a>
+How can I read/write structures from/to
+
+data files?
+
+</p><p><a href="padding.html" rel=subdocument>2.12</a>
+Why is my
+compiler
+leaving holes in structures,
+wasting space
+and preventing
+
+``binary'' I/O to external data
+files?
+Can
+I turn
+this
+off,
+or otherwise control the alignment of structure fields?
+
+</p><p><a href="endpad.html" rel=subdocument>2.13</a>
+Why does <TT>sizeof</TT> report a larger size than I expect for a
+structure type,
+as if there were padding at the end?
+</p><p><a href="offsetof.html" rel=subdocument>2.14</a>
+How can I determine the byte offset of a field within a structure?
+</p><p><a href="fieldnames.html" rel=subdocument>2.15</a>
+How can I access structure fields by name at run time?
+</p><p><a href="withxref.html" rel=subdocument>2.16</a>
+Does C have an equivalent to Pascal's
+<TT>with</TT> statement?
+
+</p><p><a href="decay.html" rel=subdocument>2.17</a>
+If an array name acts like a pointer to the base of an array,
+why isn't the same thing true of a structure?
+</p><p><a href="retcrash.html" rel=subdocument>2.18</a>
+This program
+works correctly, but
+it
+dumps core
+after it
+finishes.
+Why?
+<pre>
+	struct list {
+		char *item;
+		struct list *next;
+	}
+
+	/* Here is the main program. */
+
+	main(argc, argv)
+	{ ... }
+</pre>
+
+</p><p><a href="union.html" rel=subdocument>2.19</a>
+What's the difference between a structure and a union, anyway?
+</p><p><a href="initunion.html" rel=subdocument>2.20</a>
+Can I initialize unions?
+</p><p><a href="taggedunion.html" rel=subdocument>2.21</a>
+Is there an automatic way
+to keep track of which field of a union is in use?
+</p><p><a href="enumvsdefine.html" rel=subdocument>2.22</a>
+What's the difference between
+an enumeration and a set of
+preprocessor <TT>#define</TT>s?
+</p><p><a href="enumport.html" rel=subdocument>2.23</a>
+Are enumerations really portable?
+<br>Aren't they Pascalish?
+<br>
+</p><p><a href="enumprint.html" rel=subdocument>2.24</a>
+Is there an easy way to print enumeration values symbolically?
+</p><p><a href="bitfield0.html" rel=subdocument>2.25</a>
+I came across some structure declarations with colons and 
+numbers next to certain
+fields,
+like this:
+<pre>
+struct record {
+	char *name;
+	int refcount : 4;
+	unsigned dirty : 1;
+};
+</pre>
+What gives?
+</p><p><a href="bitfields.html" rel=subdocument>2.26</a>
+Why do people use explicit masks and
+bit-twiddling
+code so much,
+instead of declaring bit-fields?
+</p><hr>
+<p>
+<a href="../index.html">top</a>
+</p>
+<p>
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br>
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</p>
+</body>
+</html>

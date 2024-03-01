@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file struct.sgml dated Wed Dec 21 16:15:32 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 2.14</title>
+<link href="endpad.html" rev=precedes>
+<link href="fieldnames.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="endpad.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="fieldnames.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 2.14
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+How can I determine the byte offset of a field within a structure?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+ANSI C defines the <TT>offsetof()</TT> macro
+in <TT>&lt;stddef.h&gt;</TT>,
+
+which lets you compute
+the offset of field <TT>f</TT> in struct <TT>s</TT>
+as
+<TT>offsetof(struct&nbsp;s,&nbsp;f)</TT>.
+If for some reason you have to code this sort of thing yourself,
+one possibility is
+<pre>
+	#define offsetof(type, f) ((size_t) \
+		((char *)&amp;((type *)0)-&gt;f - (char *)(type *)0))
+</pre>
+</p><p>This implementation is not 100% portable;
+some compilers may legitimately refuse to accept it.
+</p><p>(The complexities
+
+of
+the definition above
+bear a bit of explanation.
+
+The subtraction of a carefully converted null pointer
+
+
+
+is
+supposed
+to guarantee
+that a simple offset is computed
+even if the internal representation of the null pointer
+is not 0.
+The casts to <TT>(char&nbsp;*)</TT> arrange
+that the offset
+so computed
+is a byte offset.
+The nonportability is in pretending,
+if only for the purposes of address calculation,
+that there is an instance of the <TT>type</TT> sitting at address 0.
+Note, however,
+that since the pretend instance is not actually referenced,
+an access violation is unlikely.)
+</p>
+
+
+
+<p>References:
+
+ISO Sec. 7.1.6
+<br>
+Rationale Sec. 3.5.4.2
+<br>
+H&amp;S Sec. 11.1 pp. 292-3
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="endpad.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="fieldnames.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<html>
+<head>
+<title></title>
+</head>
+<body>
+[This is extracted from a mail message I sent on 1997-09-23,
+to someone who asked for an example.]
+<p>
+From: scs@eskimo.com (Steve Summit)
+<br>
+Subject: Re: ADT??
+<br>
+Date: Tue, 23 Sep 1997 18:21:38 -0700 (PDT)
+<br>
+Message-Id: &lt;199709240121.SAA03216@mail.eskimo.com&gt;
+<p>
+...you might have, in <TT>adt.h</TT>, the declarations:
+<p>
+<pre>
+	extern struct adt *newadt(void);
+	extern int processadt(struct adt *);
+	extern void freeadt(struct adt *);
+</pre>
+<p>
+Then a client could do:
+<p>
+<pre>
+	#include "adt.h"
+	struct adt *theadt = newadt();
+	processadt(theadt);
+	freeadt(theadt);
+</pre>
+<p>
+The actual implementation of the ADT would start out like this:
+<p>
+<pre>
+	#include "adt.h"
+	struct adt
+		{
+		/* actual structure definition */
+		};
+
+	struct adt *
+	newadt(void)
+	{
+	...
+</pre>
+<p>
+Or, if the ADT's implementation comprises several source files,
+you could put the structure definition in, say, <TT>adtinternals.h</TT>:
+<p>
+<pre>
+	struct adt
+		{
+		/* actual structure definition */
+		};
+</pre>
+<p>
+Then, include both <TT>adt.h</TT> and <TT>adtinternals.h</TT> in each source file
+implementing the ADT:
+<p>
+<pre>
+	#include "adt.h"
+	#include "adtinternals.h"
+
+	struct adt *
+	newadt(void)
+	{
+	...
+</pre>
+<p>
+Occasionally, I find it useful to centralize all declarations
+concerning an ADT into one header file (<TT>"adt.h"</TT>, in the
+continuing example), in which case I do it like this:
+<p>
+<pre>
+	#ifdef ADT_INTERNALS
+	struct adt
+		{
+		/* actual structure definition */
+		};
+
+	#endif
+
+	extern struct adt *newadt(void);
+	extern int processadt(struct adt *);
+	extern void freeadt(struct adt *);
+</pre>
+<p>
+Then I define <TT>ADT_INTERNALS</TT> in each source file implementing the
+ADT, just before including <TT>adt.h</TT>:
+<p>
+<pre>
+	#define ADT_INTERNALS
+	#include "adt.h"
+
+	struct adt *
+	newadt(void)
+	{
+	...
+</pre>
+<p>
+This is obviously a weaker form of information hiding, because
+it's easier for a client to ``cheat'' and peek at the type's
+implementation.
+<p>
+Finally, when you use the first form, with the incomplete
+structure type, it's often useful to place an incomplete
+structure declaration in the public header file:
+<p>
+<pre>
+	struct adt;
+	extern struct adt *newadt(void);
+	extern int processadt(struct adt *);
+	extern void freeadt(struct adt *);
+</pre>
+<p>
+This prevents certain compiler warnings, and averts a couple of
+other obscure possible problems.
+</body>
+</html>

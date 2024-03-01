@@ -1,0 +1,204 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file expr.sgml dated Sat Jul  3 17:10:33 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+
+<title>Question 3.11</title>
+<link href="expec0.html" rev=precedes>
+<link href="prevspost.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="expec0.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="prevspost.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 3.11
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+How can I avoid these undefined evaluation order difficulties
+if I don't feel like learning the complicated rules?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+The easiest answer
+is that if you steer clear of expressions
+which don't have
+reasonably
+obvious
+interpretations,
+for the most part you'll steer clear of
+the undefined ones,
+too.
+(Of course,
+``reasonably obvious''
+means different things to different people.
+This answer works as long as you agree
+that
+<TT>a[i]&nbsp;=&nbsp;i++</TT> and <TT>i&nbsp;=&nbsp;i++</TT>
+are not ``reasonably obvious.'')
+</p><p>To be a bit more precise,
+here are some
+simpler rules which,
+though slightly more conservative than
+the ones in the Standard,
+will
+help to
+make sure that your code is
+``reasonably obvious''
+and
+equally understandable to both 
+the compiler <em>and</em> your fellow programmers:
+<OL><li>Make sure that each
+expression
+modifies at most one object.
+By ``object'' we mean either
+a simple variable,
+or
+a cell of an array,
+or
+the
+location
+pointed to by a pointer (e.g. <TT>*p</TT>).
+A ``modification'' is either
+simple assignment with the <TT>=</TT> operator,
+or
+a compound assignment
+with an operator like <TT>+=</TT>, <TT>-=</TT>, or <TT>*=</TT>,
+or an increment or decrement with <TT>++</TT> or <TT>--</TT>
+(in either pre or post forms).
+<li>If an object
+(as defined above)
+appears more than once in an expression,
+and is the object modified in the expression,
+make sure that
+<em>all</em> appearances of the object
+which fetch its value
+participate in the computation of the new value which is stored.
+This rule allows the expression
+<pre>
+	i = i + 1
+</pre>
+because although the object <TT>i</TT> appears twice and is modified,
+the appearance 
+(on the right-hand side)
+which fetches <TT>i</TT>'s old value
+is used to compute <TT>i</TT>'s new value.
+<li>If you want to break rule 1,
+make sure that the several objects being modified are distinctly different,
+
+and try to limit yourself to two or at most three modifications,
+and of a style matching those of the following examples.
+(Also,
+make sure that you continue to follow rule 2
+
+for each object modified.)
+
+The expression
+<pre>
+	c = *p++
+</pre>
+is allowed under this rule,
+because the two objects modified 
+(<TT>c</TT> and <TT>p</TT>)
+are distinct.
+The expression
+<pre>
+	*p++ = c
+</pre>
+is also allowed,
+because <TT>p</TT> and <TT>*p</TT>
+(i.e. <TT>p</TT> itself and what it points to)
+are both modified but are almost certainly distinct.
+Similarly, both
+<pre>
+	c = a[i++]
+and
+	a[i++] = c
+</pre>
+are allowed,
+because <TT>c</TT>, <TT>i</TT>, and <TT>a[i]</TT> are
+presumably
+
+all distinct.
+Finally, expressions like
+<pre>
+	*p++ = *q++
+</pre>
+and
+<pre>
+	a[i++] = b[j++]
+</pre>
+in which <em>three</em> things are modified
+(<TT>p</TT>, <TT>q</TT>, and <TT>*p</TT> in the first expression,
+and <TT>i</TT>, <TT>j</TT>, and <TT>a[i]</TT> in the second),
+are allowed <em>if</em> all three objects are distinct,
+i.e. only if two <em>different</em> pointers <TT>p</TT> and <TT>q</TT>
+or two <em>different</em> array indices <TT>i</TT> and <TT>j</TT>
+are used.
+<li>You may also break rule 1 or 2
+as long as you interpose
+a defined sequence point operator
+between the two modifications,
+or between the modification and the access.
+The expression
+<pre>
+	(c = getchar()) != EOF &amp;&amp; c != '\n'
+</pre>
+(commonly seen in a <TT>while</TT> loop while
+reading a line)
+is legal because
+the second access of the variable <TT>c</TT>
+occurs after the sequence point implied by <TT>&amp;&amp;</TT>.
+(Without the sequence point,
+the expression would be illegal
+because the access of <TT>c</TT> while comparing it to <TT>'\n'</TT>
+on the right
+does
+
+not ``determine the value to be stored''
+on the left.)
+</OL></p><!-- aend -->
+<p>
+<hr>
+<a href="expec0.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="prevspost.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

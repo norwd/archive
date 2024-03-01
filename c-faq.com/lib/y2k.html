@@ -1,0 +1,106 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file libdatetime.sgml dated Wed Dec 21 12:57:15 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+
+<title>Question 13.14b</title>
+<link href="calendar.html" rev=precedes>
+<link href="rand.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="calendar.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="rand.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 13.14b
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+Did C have any Year 2000 problems?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+No, although poorly-written C programs might have.
+</p><p>The
+<TT>tm_year</TT>
+field of <TT>struct&nbsp;tm</TT>
+holds the value of the year minus 1900;
+this field therefore contains the value 100 for the year 2000.
+Code that uses <TT>tm_year</TT> correctly
+(by adding or subtracting 1900
+when converting to or from human-readable 4-digit year representations)
+has no problems at the turn of the millennium.
+Any code that used <TT>tm_year</TT> incorrectly, however,
+such as by
+using it directly as a human-readable 2-digit year,
+or setting it from a 4-digit year with code like
+<pre>
+	tm.tm_year = yyyy % 100;	/* WRONG */
+</pre>
+or printing it as an allegedly human-readable 4-digit year
+with code like
+<pre>
+	printf("19%d", tm.tm_year);	/* WRONG */
+</pre>
+would have had
+grave y2k problems indeed.
+
+See also question <a href="../misc/leapyear.html">20.32</a>.
+</p><p>(The y2k problem is now mostly old history;
+all we have left to do
+is fix all the 32-bit <TT>time_t</TT> problems by 2038...)
+
+</p>
+
+
+<p>References:
+
+K&amp;R2 Sec. B10 p. 255
+<br>
+ISO Sec. 7.12.1
+<br>
+H&amp;S Sec. 18.4 p. 401
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="calendar.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="rand.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

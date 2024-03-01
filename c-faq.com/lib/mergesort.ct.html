@@ -1,0 +1,151 @@
+<html>
+<head>
+<title>Sorting linked lists</title>
+</head>
+<body>
+From: torek@elf.bsdi.com (Chris Torek)
+<br>
+Newsgroups: comp.lang.c
+<br>
+Subject: Re: Sorting linked lists
+<br>
+Date: 10 Jan 1999 05:39:20 -0800
+<br>
+Message-ID: &lt;77aai8$f48@elf.bsdi.com&gt;
+<p>
+Martin (Jambo@home.se) wrote:
+<br>
+&gt;&gt; ... is there any better way to sort linked list?
+<p>
+In article &lt;F5BpFJ.1Ms@fcshome.stoneham.ma.us&gt; fred smith
+&lt;fredex@fcshome.stoneham.ma.us&gt; wrote:
+<br>
+&gt;Sorting a linked list which already exists can be tedious and
+<br>
+&gt;resource-intensive.
+<p>
+Actually, a merge sort is generally both simple and efficient.
+The hardest part about a merge sort is breaking a list in half.
+If you do not care about "stable" sorts, you can break it in half
+the easy way, by alternation:
+<p>
+<pre>
+	/*
+	 * split the list (turning this into a function, or inserting
+	 * it into mergesort() below, is left as an exercise to the reader,
+	 * as are better methods of splitting).
+	 */
+	struct list *left, *right, **lp, **rp;
+
+	/* input: list != NULL; it has an even or odd number of entries */
+	lp = &amp;left;
+	rp = &amp;right;
+	do {
+		/* put one node on the left-hand list */
+		*lp = list;
+		lp = &amp;list-&gt;next;
+		list = list-&gt;next;
+
+		/* that could be the last node, so check */
+		if (list == NULL)
+			break;
+
+		/* put another node on the right-hand list */
+		*rp = list;
+		rp = &amp;list-&gt;next;
+		list = list-&gt;next;
+		/* and repeat until we run out of nodes */
+	} while (list != NULL);
+
+	/*
+	 * Make sure the two lists are properly terminated.  One of
+	 * these two assignments is unnecessary, but so what?
+	 */
+	*lp = NULL;
+	*rp = NULL;
+</pre>
+<p>
+Once you have broken the list into two halves, the left and right
+halves should be merge-sorted independently, and then the two lists
+can be merged together.  This is like taking a deck of cards that
+has been shuffled, giving each half to a friend and having him sort
+it, and then taking the two sorted piles and merging them pairwise:
+<p>
+<pre>
+/* merge left and right lists (of any length) */
+struct list *merge(struct list *left, struct list *right,
+    int (*compare)(struct list *, struct list *)) {
+	struct list *new, **np;
+
+	/*
+	 * Build the new list by putting in the smaller of each pair.
+	 */
+	np = &amp;new;
+	while (left != NULL &amp;&amp; right != NULL) {
+		if (compare(left, right) &gt; 0) {	/* left &gt; right */
+			*np = right;		/* so put the right node */
+			np = &amp;right-&gt;next;	/* onto the new list */
+			right = right-&gt;next;
+		} else {			/* left &lt;= right */
+			*np = left;		/* so put the left node */
+			np = &amp;left-&gt;next;	/* onto the new list */
+			left = left-&gt;next;
+		}
+	}
+
+	/*
+	 * Now at least one of "left" and "right" is NULL, but not both.
+	 * If the left list is non-empty, the right one is empty, and we
+	 * just need to tack the left one on to the total list.  If the
+	 * right list is non-empty, the left one is empty and we just need
+	 * to tack on the right-hand one.  If both are empty, we need to
+	 * set *np = NULL, but in this case, "*np = right" will do the
+	 * trick too, so one single ?: expression suffices.
+	 */
+	*np = left != NULL ? left : right;
+	return (new);
+}
+</pre>
+<p>
+That leaves only the degenerate case of sorting an empty list at the
+top of the overall sort routine, and you get something like this:
+<p>
+<pre>
+	struct list *mergesort(struct list *list,
+	    int (*compare)(struct list *, struct list *)) {
+		struct list *left, *right;
+
+		if (list == NULL)	/* nothing to split */
+			return NULL;
+		split(list, &amp;left, &amp;right);
+		left = mergesort(left, compare);
+		right = mergesort(right, compare);
+		return merge(left, right, compare);
+	}
+</pre>
+<p>
+In other words, each friend who has to sort half the card-deck does
+<em>his</em> job by splitting <em>that</em> half-deck in half, having two more
+friends sort those, and then merging those back.  (Given the
+construction above, unlike with people, it is easier to hand off
+"no cards" and take back "no cards" than it is to recognize that
+"one card" is already sorted.  Other merge-sort implementations
+are possible, including doing an initial "count the nodes" pass;
+in this case, you can stop at "<TT>count&nbsp;&lt;&nbsp;2</TT>".)
+<p>
+&gt;My preferred way is to make sure it is sorted when you build it.
+<p>
+In some applications, this is a good approach; however, it tends to
+be O(n^2), while merge sort is O(n log n).  Generally, if something
+should be kept sorted as you go along, some kind of tree structure
+is appropriate.
+<br>
+-- 
+<br>
+In-Real-Life: Chris Torek, Berkeley Software Design Inc
+<br>
+El Cerrito, CA	Domain:	torek@bsdi.com	+1 510 234 3167
+<br>
+http://claw.bsdi.com/torek/  (not always up)	I report spam to abuse@.
+</body>
+</html>

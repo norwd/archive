@@ -1,0 +1,89 @@
+<html>
+<head>
+<title>msb on significance of whitespace</title>
+</head>
+<body>
+<p>
+[Someone asked about whitespace in declarations,
+e.g. <TT>double&nbsp;*p</TT> versus <TT>double*&nbsp;p</TT>.
+Mark Brader sent this email reply to the original poster,
+but also copied me, and gave me permission to include the reply here.]
+<p>
+From: Mark Brader
+<br>
+Subject: Re: Newbie pointer question
+<br>
+Message-ID: &lt;9509101928.AA26628@sqrex.sq.com&gt;
+<br>
+Bcc: scs@eskimo.com
+<p>
+There is no difference; it's a choice of style.  White space next to
+a punctuation mark is significant in C in only four cases:
+<ol>
+<li><p>
+inside a string literal, as in <TT>" this "</TT>
+<li><p>
+inside a character constant, as in <TT>' '</TT>
+<li><p>
+when it serves to keep two characters from making a
+combination that would have another meaning, as in
+<pre>
+	x = y / *p;
+</pre>
+where you don't want to form the <TT>/*</TT> comment sign; and
+<li><p>
+after the macro name in the definition of an object-like
+macro (one without an argument list) where the macro
+body starts with a <TT>(</TT> character (and therefore looks
+like the argument list of a function-like macro), as in
+<pre>
+	#define X (z)
+</pre>
+which defines <TT>X</TT> to expand to <TT>(z)</TT>, whereas if the space
+after <TT>X</TT> had been omitted it would define <TT>X</TT> with one
+argument and expanding to nothing.
+</ol>
+<p>
+With the above exception, you are free to use whitespace next to all
+punctuation marks, or not use it, whichever makes the program more
+understandable to the reader.
+<p>
+Some people choose to write
+<p>
+<pre>
+	double* p;
+</pre>
+<p>
+because they think it's clearer that this declares <TT>p</TT> as a <TT>double&nbsp;*</TT>.
+However,
+<p>
+<pre>
+	double* p, q;
+</pre>
+<p>
+declares <TT>p</TT> as <TT>double *</TT> and <TT>q</TT> as <TT>double</TT>, <em>not</em> <TT>double&nbsp;*</TT>.  So that style
+is very misleading in this case.  The alternative
+<p>
+<pre>
+	double *p, q;
+</pre>
+<p>
+is clearer for this declaration, and most people then use it on the
+first one
+<p>
+<pre>
+	double *p;
+</pre>
+<p>
+because consistency also contributes to clarity.
+<p>
+Not posted because I imagine someone else will say the same thing.
+Feel free to post this if you think it would make a useful contribution.
+<p>
+<pre>
+Mark Brader             |  "It's simply a matter of style, and while there
+msb@sq.com              |   are many wrong styles, there really isn't any
+SoftQuad Inc., Toronto  |   one right style."      -- Ray Butterworth
+</pre>
+</body>
+</html>

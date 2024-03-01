@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file aryptr.sgml dated Wed Dec 21 12:50:38 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 6.18</title>
+<link href="non0based.html" rev=precedes>
+<link href="ary2dfunc2.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="non0based.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="ary2dfunc2.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 6.18
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+My compiler complained when I passed a two-dimensional array to a
+function expecting a pointer to a pointer.
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+The rule
+(see question <a href="aryptrequiv.html">6.3</a>)
+by which arrays decay into pointers is
+<em>not</em>
+applied recursively.
+
+(Once the rule has been applied once,
+the result is a pointer to which the rule no longer applies.)
+An array of arrays (i.e. a two-dimensional array in C) decays
+into a pointer to an array, not a pointer to a pointer.
+Pointers to arrays can be confusing,
+and must be treated carefully;
+see also question <a href="ptrtoarray.html">6.13</a>.
+</p><p>If you are passing a two-dimensional array to a function:
+<pre>
+	int array[NROWS][NCOLUMNS];
+	f(array);
+</pre>
+the function's declaration
+must match:
+<pre>
+	void f(int a[][NCOLUMNS])
+	{ ... }
+</pre>
+or
+<pre>
+	void f(int (*ap)[NCOLUMNS])	/* ap is a pointer to an array */
+	{ ... }
+</pre>
+In the first declaration,
+
+the compiler performs the usual
+implicit parameter rewriting
+of ``array of array''
+to ``pointer to array''
+(see questions
+<a href="aryptrequiv.html">6.3</a>
+and
+<a href="aryptrparam.html">6.4</a>);
+in the second form the pointer declaration is explicit.
+Since the called function does not allocate space for the array,
+it does not need to know the overall size,
+so the number of
+rows,
+
+<TT>NROWS</TT>,
+can be omitted.
+The
+width
+of the array is still important,
+so the
+column
+
+dimension
+<TT>NCOLUMNS</TT>
+(and, for three- or more dimensional arrays,
+the intervening ones)
+must be
+retained.
+</p><p>If a function is already declared as accepting a
+pointer to a pointer,
+it is
+almost certainly
+meaningless
+to pass a two-dimensional array directly to it.
+An intermediate pointer would have to be used when attempting to call it
+with a two-dimensional array:
+<pre>
+	extern g(int **ipp);
+
+	int *ip = &amp;array[0][0];
+	g(&amp;ip);		/* PROBABLY WRONG */
+</pre>
+but
+this usage is
+misleading
+and almost certainly
+incorrect,
+since the array has been ``flattened''
+(its shape has been lost).
+</p><p>See also questions <a href="aryvsadr.html">6.12</a> and <a href="dynlocarys.html">6.15</a>.
+</p>
+
+
+<p>References:
+
+K&amp;R1 Sec. 5.10 p. 110
+<br>
+K&amp;R2 Sec. 5.9 p. 113
+<br>
+H&amp;S Sec. 5.4.3 p. 126
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="non0based.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="ary2dfunc2.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

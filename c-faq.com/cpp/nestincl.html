@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file cpp.sgml dated Wed Dec 21 13:52:14 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 10.7</title>
+<link href="hfiles.html" rev=precedes>
+<link href="inclkinds.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="hfiles.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="inclkinds.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 10.7
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+Is it acceptable for one header file to <TT>#include</TT> another?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+It's a question of style,
+and thus receives considerable debate.
+Many people believe that
+``nested <TT>#include</TT> files''
+are to be avoided:
+
+the prestigious Indian Hill Style Guide
+(see question
+<a href="../style/guides.html">17.9</a>)
+disparages them;
+they can make it harder to find relevant definitions;
+they can lead to multiple-definition errors if a file is <TT>#include</TT>d twice;
+they can lead to
+increased compilation time;
+and
+they make manual Makefile maintenance very difficult.
+On the other hand,
+they make it possible to use header files in a modular way (a
+header file can <TT>#include</TT> what it needs itself,
+rather than
+
+
+requiring each <TT>#include</TT>r to do so);
+a tool like <TT>grep</TT>
+(or a tags file)
+makes it easy to find definitions no matter where they are;
+a popular trick
+along the lines of:
+
+
+<pre>
+	#ifndef HFILENAME_USED
+	#define HFILENAME_USED
+	...header file contents...
+	#endif
+</pre>
+(where a different
+bracketing
+macro name
+is used for each header file)
+makes a header file ``idempotent''
+so that it can safely be <TT>#include</TT>d multiple times;
+a clever compiler can avoid expending any more time
+on later instances of
+an already-included header;
+and automated Makefile maintenance tools
+(which are a virtual necessity in large projects anyway;
+see question <a href="../resources/tools.html">18.1</a>)
+handle dependency generation in the face of nested <TT>#include</TT> files easily.
+See also question <a href="../style/stylewars.html">17.10</a>.
+</p>
+<p>References:
+
+Rationale Sec. 4.1.2
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="hfiles.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="inclkinds.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

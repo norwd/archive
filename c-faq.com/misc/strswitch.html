@@ -1,0 +1,137 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:47 2005 by faqproc version 2.7 -->
+<!-- from source file misclang.sgml dated Wed Dec 21 13:02:49 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 20.17</title>
+<link href="switchimpl.html" rev=precedes>
+<link href="nonconstcase.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="switchimpl.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="nonconstcase.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 20.17
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+Is there a way to <TT>switch</TT> on strings?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+Not directly.
+Sometimes, it's appropriate
+to use a separate function to map strings to integer codes,
+and then switch on those:
+<pre>
+#define CODE_APPLE	1
+#define CODE_ORANGE	2
+#define CODE_NONE	0
+
+switch(classifyfunc(string)) {
+	case CODE_APPLE:
+		...
+
+	case CODE_ORANGE:
+		...
+
+	case CODE_NONE:
+		...
+}
+</pre>
+where <TT>classifyfunc</TT> looks something like
+<pre>
+static struct lookuptab {
+	char *string;
+	int code;
+} tab[] = {
+	{"apple",	CODE_APPLE},
+	{"orange",	CODE_ORANGE},
+};
+
+classifyfunc(char *string)
+{
+	int i;
+	for(i = 0; i &lt; sizeof(tab) / sizeof(tab[0]); i++)
+		if(strcmp(tab[i].string, string) == 0)
+			return tab[i].code;
+
+	return CODE_NONE;
+}
+</pre>
+
+</p><p>Otherwise, of course,
+you can fall back on
+
+a conventional <TT>if</TT>/<TT>else</TT> chain:
+<pre>
+	if(strcmp(string, "apple") == 0) {
+		...
+	} else if(strcmp(string, "orange") == 0) {
+		...
+	}
+</pre>
+(A macro like
+<TT>Streq()</TT>
+from question <a href="../style/strcmp.html">17.3</a>
+can make these comparisons a bit more convenient.)
+</p><p>See also
+questions <a href="../cpp/ifstrcmp.html">10.12</a>, <a href="switchimpl.html">20.16</a>, <a href="nonconstcase.html">20.18</a>, and <a href="hash.html">20.29</a>.
+</p>
+
+
+
+
+<p>References:
+
+K&amp;R1 Sec. 3.4 p. 55
+<br>
+K&amp;R2 Sec. 3.4 p. 58
+<br>
+ISO Sec. 6.6.4.2
+<br>
+H&amp;S Sec. 8.7 p. 248
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="switchimpl.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="nonconstcase.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

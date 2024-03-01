@@ -1,0 +1,878 @@
+Date: Sat, 4 May 1996 00:23:30 +0200 (MET DST)
+From: Jens M Andreasen <jens-and@dsv.su.se>
+To: Steve Summit <scs@eskimo.com>
+Subject: Re: comp.lang.c Answers to Frequently Asked Questions (FAQ List) 
+In-Reply-To: <1996May01.0302.scs.0001@eskimo.com> 
+Message-ID: <Pine.ULT.3.91.960504001243.21030A-100000@mars.dsv.su.se>
+
+
+Hej Steve
+
+Before I loose my account I will pass on this list of solutions to "kbhit"
+that I once received in personal email. You will recognize the beginning ...
+
+// Jens M Andreasen
+
+-------------------------------------------------------------------
+Here's some stuff I've been collecting on this general subject.
+I used to send it out in response to this question when it showed
+up in comp.lang.c, but I've stopped reading that group.
+
+The comp.lang.c Frequently Answered Questions list says, in part:
+
+Section 16. System Dependencies
+
+16.1:   How can I read a single character from the keyboard without
+        waiting for a newline?
+
+A:      Contrary to popular belief and many people's wishes, this is not
+        a C-related question.  (Nor are closely-related questions
+        concerning the echo of keyboard input.)  The delivery of
+        characters from a "keyboard" to a C program is a function of the
+        operating system in use, and has not been standardized by the C
+        language.  Some versions of curses have a cbreak() function
+        which does what you want.  If you're specifically trying to read
+        a short password without echo, you might try getpass().  Under
+        Unix, use ioctl to play with the terminal driver modes (CBREAK
+        or RAW under "classic" versions; ICANON, c_cc[VMIN] and
+        c_cc[VTIME] under System V or Posix systems).  Under MS-DOS, use
+        getch().  Under VMS, try the Screen Management (SMG$) routines,
+        or curses, or issue low-level $QIO's with the IO$_READVBLK (and
+        perhaps IO$M_NOECHO) function codes to ask for one character at
+        a time.  Under other operating systems, you're on your own.
+        Beware that some operating systems make this sort of thing
+        impossible, because character collection into input lines is
+        done by peripheral processors not under direct control of the
+        CPU running your program.
+
+NOTE--> Operating system specific questions are not appropriate for
+NOTE--> comp.lang.c .  Many common questions are answered in
+NOTE--> frequently-asked questions postings in such groups as
+NOTE--> comp.unix.questions and comp.os.msdos.programmer .  Note that
+NOTE--> the answers are often not unique even across different variants
+NOTE--> of a system; bear in mind when answering system-specific
+NOTE--> questions that the answer that applies to your system may not
+NOTE--> apply to everyone else's.
+
+        References: PCS Sec. 10 pp. 128-9, Sec. 10.1 pp. 130-1.
+
+16.2:   How can I find out if there are characters available for reading
+        (and if so, how many)?  Alternatively, how can I do a read that
+        will not block if there are no characters available?
+
+A:      These, too, are entirely operating-system-specific.  Some
+        versions of curses have a nodelay() function.  Depending on your
+        system, you may also be able to use "nonblocking I/O", or a
+        system call named "select", or the FIONREAD ioctl, or kbhit(),
+        or rdchk(), or the O_NDELAY option to open() or fcntl().
+
+The comp.unix.questions Frequently Answered Posting says:
+
+With the variety of Unix systems in the world, it's hard to guarantee
+that these answers will work everywhere.  Read your local manual pages
+before trying anything suggested here.  If you have suggestions or
+corrections for any of these answers, please send them to to
+tmatimar@nff.ncl.omron.co.jp.
+
+1)  How do I read characters from a terminal without requiring the user
+    to hit RETURN?
+
+    Check out cbreak mode in BSD, ~ICANON mode in SysV.
+
+    If you don't want to tackle setting the terminal parameters
+    yourself (using the "ioctl(2)" system call) you can let the stty
+    program do the work - but this is slow and inefficient, and you
+    should change the code to do it right some time:
+
+    #include <stdio.h>
+    main()
+    {
+            int c;
+
+            printf("Hit any character to continue\n");
+            /*
+             * ioctl() would be better here; only lazy
+             * programmers do it this way:
+             */
+            system("/bin/stty cbreak");        /* or "stty raw" */
+            c = getchar();
+            system("/bin/stty -cbreak");
+            printf("Thank you for typing %c.\n", c);
+
+            exit(0);
+    }
+
+    You might like to check out the documentation for the "curses"
+    library of portable screen functions.  Often if you're interested
+    in single-character I/O like this, you're also interested in doing
+    some sort of screen display control, and the curses library
+    provides various portable routines for both functions.
+
+
+The comp.so.msdos.programmer Frequently Answered Questions posting says:
+
+Q301. How can I read a character without echoing it to the screen, and
+      without waiting for the user to press the Enter key?
+
+    The C compilers from Microsoft and Borland offer getch (or getche to
+    echo the character); Turbo Pascal has ReadKey.
+
+    In other programming languages, load 8 in register AH and execute
+    INT 21; AL is returned with the character from standard input
+    (possibly redirected).  If you don't want to allow redirection, or
+    you want to capture Ctrl-C and other special keys, use INT 16 with
+    AH=10; this will return the scan code in AH and ASCII code (if
+    possible) in AL, except that AL=E0 with AH nonzero indicates one of
+    the grey "extended" keys was pressed.  (If your BIOS doesn't
+    support the extended keyboard, use INT 16 function 0 not 10.)
+
+Q302. How can I find out whether a character has been typed, without
+      waiting for one?
+
+    In Turbo Pascal, use KeyPressed.  Both Microsoft C and Turbo C offer
+    the kbhit( ) function.  All of these tell you whether a key has been
+    pressed.  If no key has been pressed, they return that information
+    to your program.  If a keystroke is waiting, they tell your program
+    that but leave the key in the input buffer.
+
+    You can use the BIOS call, INT 16 function 01 or 11, to check
+    whether an actual keystroke is waiting; or the DOS call, INT 21
+    function 0B, to check for a keystroke from stdin (subject to
+    redirection).  See Ralf Brown's interrupt list.
+
+And here's some more info:
+
+On a PC, Microsoft C provides a routine called getch().  I believe
+Turbo C provides a similar routine.  See your runtime library
+documentation for details.  Here is an example:
+
+#include <conio.h>
+main() {
+        int c;
+        printf("control-c to exit\n");
+        for(;;) {
+                c = getch();
+                printf("%02x\n", c);
+        }
+}
+
+Under unix, you can use curses.  Read the man page for curses for
+details.  Here is an example:
+
+
+/*
+** on a Sun, compile this as
+**    /usr/5bin/cc -o progname progname.c -lcurses
+*/
+#include <curses.h>
+main() {
+        int c;
+        initscr();
+        cbreak();
+        noecho();
+        for(;;)
+        {
+                c = getch();
+                wprintw(stdscr, "%02x\n", c);
+                if (c == 3)
+                        break;
+        }
+        endwin();
+        exit(0);
+}
+
+Also under unix, you can use ioctl.  Read the man pages for ioctl and
+termio for details.  Here is an example:
+
+
+#include <stdio.h>
+#include <sys/termio.h>
+
+#define ON    0
+#define OFF   1
+#define READ  2
+#define FALSE 0 == 1
+#define TRUE  !FALSE
+#define ETX 0x03
+#define EOT 0x04
+
+main()
+{
+    int c;
+
+    hitkey(ON);
+    while((c = hitkey(READ)) > 0) {
+        printf("%02x\n", c);
+        if (c == ETX || c == EOT)
+            break;
+    }
+    printf("\n");
+    hitkey(OFF);
+    exit(0);
+}
+
+int hitkey(select)
+int select;
+{
+   static int last = OFF;
+   static struct termio org;
+   struct termio tmp;
+   char c;
+   int rv = TRUE;
+   int fd = fileno(stdin);
+
+   if (last == select) {
+      return(rv);
+   }
+
+   switch(select) {
+   case ON: 
+        ioctl(fd, TCGETA, &org);
+        ioctl(fd, TCGETA, &tmp);
+        tmp.c_lflag = 0;
+        tmp.c_cc[VMIN] = 1;
+        tmp.c_cc[VTIME] = 0;
+        ioctl(fd, TCSETA, &tmp);
+        last = ON;
+        break;
+    case OFF:
+        ioctl(fd, TCSETA, &org);
+        last = OFF;
+        break;
+    case READ: 
+        if ((rv = read(fd, &c, 1)) == 1);
+            rv = c;
+        break;
+    default:
+        fprintf(stderr, "Invalid call to hitkey()");
+        exit(1);
+    }
+    return(rv);
+}
+
+and here's some more code someone posted:
+
+Article 25002 of comp.lang.c:
+Path: mdisea!uw-coco!uw-beaver!cs.ubc.ca!destroyer!sol.ctr.columbia.edu!spool.mu.edu!olivea!uunet!munnari.oz.au!comp.vuw.ac.nz!waikato.ac.nz!aukuni.ac.nz!cs18.cs.aukuni.ac.nz!pgut1
+From: pgut1@cs.aukuni.ac.nz (Peter Gutmann)
+Newsgroups: comp.lang.c
+Subject: Re: getch() replacement
+Message-ID: <1992Nov26.032122.8593@cs.aukuni.ac.nz>
+Date: 26 Nov 92 03:21:22 GMT
+References: <kT6suB1w165w@cibbs.UUCP>
+Organization: Computer Science Dept. University of Auckland
+Lines: 111
+
+In <kT6suB1w165w@cibbs.UUCP> root@cibbs.UUCP writes:
+
+>I am working with Borland C++ 3.1 and I am looking for a replacement for
+>Borland's getch() function. I would like this replacement to grab the input
+>from STDIN without having to press return. So far, I have had no luck.
+
+>Many posts back someone posted that in UNIX this can be done with the IOCTL
+>setup. DOS of course has an entirely different set of functions for this
+>command (I have explored that anvenue).
+
+(I'm replying here rather than via email since I've seen requests for this
+several times in the past).
+
+The following code will do what you want - note that you'll need a seperate
+version of the code for pretty well every version of Unix you're going to
+use it under (isn't "standard" Unix wonderful?).
+
+/* Get an input character, no echo */
+ 
+#if defined( POSIX ) || defined( SVR4 ) || defined( IRIX )
+ 
+#include <termios.h>
+ 
+int getch( void )
+    {
+    struct termios ttyInfo;
+    FD ttyFD = ERROR;
+    char ch;
+ 
+    /* Flush all pending output */
+    fflush( stdout );
+ 
+    /* Turn echo off */
+    if( isatty( STDERR ) && ( ttyFD = hopen( ttyname( STDERR ), O_RDWR ) ) != ERROR )
+        {
+        tcgetattr( ttyFD, &ttyInfo );
+#ifdef IRIX
+        ttyInfo.c_lflag &= ~ECHO;
+        ttyInfo.c_lflag &= ~ICANON;
+#else
+        ttyInfo.c_lflags &= ~ECHO;
+        ttyInfo.c_lflags |= CBREAK;
+#endif /* IRIX */
+        tcsetattr( ttyFD, TCSANOW, &ttyInfo );
+        }
+ 
+    /* Get the character */
+    read( ttyFD, &ch, 1 );
+ 
+    /* Turn echo on again if it was off */
+    if( ttyFD != ERROR )
+        {
+        tcgetattr( ttyFD, &ttyInfo );
+#ifdef IRIX
+        ttyInfo.c_lflag |= ECHO;
+        ttyInfo.c_lflag |= ICANON;
+#else
+        ttyInfo.c_lflags |= ECHO;
+        ttyInfo.c_lflags &= ~CBREAK;
+#endif /* IRIX */
+        tcsetattr( ttyFD, TCSANOW, &ttyInfo );
+        }
+ 
+    return( ch );
+    }
+ 
+#else
+ 
+#include <sgtty.h>
+ 
+int getch( void )
+    {
+    struct sgttyb ttyInfo;
+    FD ttyFD = ERROR;
+    char ch;
+ 
+    /* Flush all pending output */
+    fflush( stdout );
+ 
+    /* Turn echo off */
+    if( isatty( STDERR ) && ( ttyFD = hopen( ttyname( STDERR ), O_RDWR ) ) != ERROR )
+        {
+        gtty( ttyFD, &ttyInfo );
+        ttyInfo.sg_flags &= ~ECHO;
+        ttyInfo.sg_flags |= CBREAK;
+        stty( ttyFD, &ttyInfo );
+        }
+ 
+    /* Get the character */
+    read( ttyFD, &ch, 1 );
+ 
+    /* Turn echo on again if it was off */
+    if( ttyFD != ERROR )
+        {
+        gtty( ttyFD, &ttyInfo );
+        ttyInfo.sg_flags |= ECHO;
+        ttyInfo.sg_flags &= ~CBREAK;
+        stty( ttyFD, &ttyInfo );
+        }
+ 
+    return( ch );
+    }
+#endif /* POSIX || SVR4 || IRIX */
+
+--
+pgut1@cs.aukuni.ac.nz || gutmann_p@kosmos.wcc.govt.nz || peterg@kcbbs.gen.nz ||
+               peter@nacjack.gen.nz      (In order of preference)
+Warning!
+  Something large, scaly, and with fangs a foot long lives between <yoursite>
+and <mysite>.  Every now and then it kills and eats messages.  If you don't
+receive a reply within a week, try resending...
+
+
+Article 26728 of comp.lang.c:
+Newsgroups: comp.lang.c
+Path: mdisea!uw-coco!uw-beaver!micro-heart-of-gold.mit.edu!news.bbn.com!usc!zaphod.mps.ohio-state.edu!saimiri.primate.wisc.edu!ames!kum.kaist.ac.kr!usenet
+From: typhoon@stcon2.kaist.ac.kr (Han Yun-Su)
+Subject: Re: Unix equivalent to DOS kbhit() function?
+Message-ID: <1992Dec29.073337.2693@kum.kaist.ac.kr>
+Sender: usenet@kum.kaist.ac.kr (news)
+Organization: KAIST in Seoul, Korea
+X-Newsreader: Tin 1.1 PL3
+Date: Tue, 29 Dec 92 07:33:37 GMT
+Lines: 67
+
+I wrote 'kbhit()' function for UNIX.
+It's very simple..
+
+Here's example source.
+
+Save this article as 'kbhit.c', delete headers and signature..
+Compile with -lcurses -ltermcap options, that is,
+
+cc kbhit.c -o kbhit -lcurses -ltermcap
+
+and..type kbhit !
+test some characters..
+(This works totaly fine for my SUN)
+
+Er..sorry.. I'm not good at english..:)
+I can speak C more fluently than english..hehe :)
+But my major is NOT Computer Science but Life Science. 
+
+If you find better idea than this one, Please let me know.
+
+Good Luck!
+
+
+/* ---- Cut Here ---- */
+#include <sgtty.h>
+#include <curses.h>
+
+kbhit()
+{
+  static unsigned i;
+
+  ioctl(0, FIONREAD, &i);
+  return i;
+}
+
+main()
+{
+  unsigned long count = 0L;
+  int c = ' ';
+  int i = 0;
+
+  initscr();        /* initialize curses functions */
+  crmode();        /* cbreak mode */
+  noecho();        /* do not echo pressed character */
+
+  mvprintw(0, 0, "Press \'q\' to quit\n");
+  refresh();
+
+  while (c != 'q') {
+    count++;
+    if (kbhit()) {
+      c = getch();
+      mvprintw(1, 0, "%d: \'%c\' is pressed (count: %ld)\n", ++i, c, count);
+      refresh();
+      }
+    }
+
+  nocrmode();
+  echo();
+  endwin();        /* close curses... */
+}
+/* ---- Cut Here ---- */
+
+--
+Han Yun-Su, KAIST, Life Science    |   Life is short, DNA is long.
+Molecular Genetics Laboratory      |   DNAs, recombine in the neuclus!
+Tel: (042)-4061, 4786              |   Slow and steady evolves the life.
+
+
+Article 47456 of comp.lang.c:
+Path: mdisea!uw-coco!uw-beaver!nntp.cs.ubc.ca!unixg.ubc.ca!erich.triumf.ca!advax
+From: advax@erich.triumf.ca (A.Daviel)
+Newsgroups: comp.lang.c
+Subject: getch() for VMS
+Date: 15 Nov 1993 12:43 PST
+Organization: TRIUMF: Tri-University Meson Facility
+Lines: 34
+Distribution: world
+Message-ID: <15NOV199312432724@erich.triumf.ca>
+NNTP-Posting-Host: erich.triumf.ca
+News-Software: VAX/VMS VNEWS 1.41    
+
+I see in the FAQ that this is a frequently asked question (How does one do
+a DOS-type getch() on machine yy?). I wrote this for VMS; I don't pretend 
+that it is fast, elegant or even correct, but it seems to work.
+
+/* function getch */
+#include iodef  /* Input/Output defines */
+#include descrip /* VMS string descriptors */
+
+char getch()
+{
+int iosb[2] ; /* I/O status block */
+static int ichan = 0 ; 
+
+$DESCRIPTOR (lun,"SYS$INPUT") ;
+char ikey ;
+const read_noecho = IO$_READVBLK | IO$M_NOECHO ;
+int stat ;
+
+/* initialize channel if required */
+if (ichan==0)
+  {
+  stat = sys$assign(&lun,&ichan,0,0) ; 
+  if (stat!=1) lib$signal(stat) ;
+  }
+
+/* read one key */
+stat = sys$qiow(0,ichan,read_noecho,&iosb,0,0,&ikey,1,0,0,0,0) ;
+if (stat!=1) lib$signal(stat) ;
+return (ikey) ;
+}
+
+--
+ Andrew Daviel, Vancouver, Canada <advax@triumf.ca>
+  TRIUMF - home of the world's largest cyclotron
+
+
+Article 14000 of comp.unix.programmer:
+Path: mdisea!mmddvan!vanbc.wimsey.com!cyber2.cyberstore.ca!nntp.cs.ubc.ca!destroyer!caen!math.ohio-state.edu!cs.utexas.edu!uunet!pitt.edu!neurocog.lrdc.pitt.edu!hahn
+From: hahn@neurocog.lrdc.pitt.edu (Mark Hahn)
+Newsgroups: comp.unix.programmer
+Subject: Re: getchar() without waiting for '\n'
+Message-ID: <7332@blue.cis.pitt.edu>
+Date: 18 Nov 93 17:34:32 GMT
+References: <umshih02.751856583@silver.cs.umanitoba.ca> <1993Nov14.101627.7636@greco-prog.fr> <CGn5BA.FoM@cs.vu.nl>
+Sender: news+@pitt.edu
+Lines: 30
+X-Newsreader: TIN [version 1.2 PL2]
+
+> : Jun Shih (umshih02@silver.cs.umanitoba.ca) wrote:
+> : : How can I make getchar() to get a single character with waiting for
+> : : the newline (CR) char?   So after a user type a char, my progaram will
+> : : respond right away.
+
+here's a better and very portable way to do it:
+
+#include <stdio.h>
+#include <termios.h>
+
+int main() {
+    struct termios t, tOrg;
+    char ch;
+
+    tcgetattr(fileno(stdin), &t);
+    tOrg = t;
+    t.c_lflag &= ~(ECHO | ICANON);
+    t.c_cc[VMIN] = 1;
+    tcsetattr(fileno(stdin),TCSANOW,&t);
+
+    while((ch = getchar()) != 'q') {
+        fprintf(stderr,"character typed: %c\n", ch);
+    }
+    tcsetattr(fileno(stdin),TCSANOW,&tOrg);
+    return 0;
+}
+
+regards, mark hahn.
+--
+this space intentionally left non-blank.        hahn@neurocog.lrdc.pitt.edu
+
+
+Article 64646 of comp.lang.c:
+Path: mdisea!mmddvan!vanbc.wimsey.com!cyber2.cyberstore.ca!math.ohio-state.edu!uwm.edu!msuinfo!harbinger.cc.monash.edu.au!giaeb!lee
+From: lee@giaeb.cc.monash.edu.au (Lee Hollingworth)
+Newsgroups: comp.lang.c
+Subject: Re: VT100 - Immediate IO (on UNIX)
+Date: 12 Jun 94 02:43:05 GMT
+Organization: Monash University
+Lines: 97
+Message-ID: <lee.771388985@giaeb>
+References: <andrewb-120694113321@n160234.otago.ac.nz>
+NNTP-Posting-Host: giaeb.cc.monash.edu.au
+X-Newsreader: NN version 6.5.0 #4 (NOV)
+
+andrewb@atlas.otago.ac.nz (A Blakie) writes:
+
+>Does anybody know how we can read characters from the keyboard without
+>waiting
+>for a carriage return? If you have any solutions to my problem, or any
+>commands
+>that I may have overlooked to do this, then could you please write and tell
+>me.
+
+>ps : do these solutions wait until somebody presses a key? or just do a
+>quick
+>check (cf peek in basic)?
+
+Here is my rendition, do with it what you may :-)
+
+Lee.
+
+#include <unistd.h>     // read()
+#include <fcntl.h>      // setting keyboard flags
+#include <sys/ioctl.h>
+#include <termio.h>     // used to set terminal modes
+#include <termios.h>
+
+//
+// two global variables for tty and keybrd control
+//
+static struct termio term_orig;
+static int kbdflgs;
+
+//
+// function :   system_mode
+// purpose  :   reset the system to what it was before input_mode was
+//              called
+//
+void system_mode(void)
+{
+    if (ioctl(0, TCSETA, &term_orig) == -1) {
+        return;
+    }
+    fcntl(0, F_SETFL, kbdflgs);
+}
+
+//
+// function :   input_mode
+// purpose  :   set the system into raw mode for keyboard i/o
+// returns  :   0 - error
+//              1 - no error
+//
+int input_mode(void)
+{
+    struct termio term;    // to avoid ^S ^Q processing
+
+    //
+    // get rid of XON/XOFF handling, echo, and other input processing
+    //
+    if (ioctl(0, TCGETA, &term) == -1) {
+        return (0);
+    }
+    (void) ioctl(0, TCGETA, &term_orig);
+    term.c_iflag = 0;
+    term.c_oflag = 0;
+    term.c_lflag = 0;
+    term.c_cc[VMIN] = 1;
+    term.c_cc[VTIME] = 0;
+    if (ioctl(0, TCSETA, &term) == -1) {
+        return (0);
+    }
+    kbdflgs = fcntl(0, F_GETFL, 0);
+    //
+    // no delay on reading stdin
+    //
+    int flags = fcntl(0, F_GETFL);
+    flags &= ~O_NDELAY;
+    fcntl(0, F_SETFL, flags);
+    return (1);
+}
+
+//
+// function :   getch
+// purpose  :   read a single character from the keyboard without echo
+// returns  :   the keybress character
+//
+int getch(void)
+{
+    unsigned char ch;
+
+    input_mode();
+    while (read(0, &ch, 1) != 1) ;
+    system_mode();
+
+    return (ch);
+}
+
+int main()
+{
+    return (getch());
+}
+
+
+Article 65878 of comp.lang.c:
+Path: mdisea!mmddvan!vanbc.wimsey.com!deep.rsoft.bc.ca!sol.ctr.columbia.edu!howland.reston.ans.net!vixen.cso.uiuc.edu!uwm.edu!msuinfo!harbinger.cc.monash.edu.au!giaeb!lee
+From: lee@giaeb.cc.monash.edu.au (Lee Hollingworth)
+Newsgroups: comp.lang.c
+Subject: Re: getchar()
+Date: 25 Jun 94 10:07:29 GMT
+Organization: Monash University
+Lines: 104
+Message-ID: <lee.772538849@giaeb>
+References: <2uftsr$c9f@news.u.washington.edu>
+NNTP-Posting-Host: giaeb.cc.monash.edu.au
+Keywords: getchar
+X-Newsreader: NN version 6.5.0 #4 (NOV)
+
+jeffse@u.washington.edu (Jeffrey Seifer) writes:
+
+>Could someone please help me...
+
+>I have been writing c for years on IBM pc's, and now I am writing
+>under unix.  I have always used the function getch() to get a single
+>character from stdin (getchar() waits for you to press return).  Is
+>there a way to do this under unix?
+
+The trouble is that reading without a CR is ver O/S specific.
+
+Here is some code which does what you want and should compile on
+most (?) UNIX boxes...
+
+(It was written for HP-UX 8.02)
+
+Lee Hollingworth
+lee@giaeb.cc.monash.edu.au
+
+#include <unistd.h>     // read()
+#include <fcntl.h>      // setting keyboard flags
+#include <sys/ioctl.h>
+#include <termio.h>     // used to set terminal modes
+#include <termios.h>
+
+//
+// two global variables for tty and keybrd control
+//
+static struct termio term_orig;
+static int kbdflgs;
+
+//
+// function :   system_mode
+// purpose  :   reset the system to what it was before input_mode was
+//              called
+//
+void system_mode(void)
+{
+    if (ioctl(0, TCSETA, &term_orig) == -1) {
+        return;
+    }
+    fcntl(0, F_SETFL, kbdflgs);
+}
+
+//
+// function :   input_mode
+// purpose  :   set the system into raw mode for keyboard i/o
+// returns  :   0 - error
+//              1 - no error
+//
+int input_mode(void)
+{
+    struct termio term;    // to avoid ^S ^Q processing
+
+    //
+    // get rid of XON/XOFF handling, echo, and other input processing
+    //
+    if (ioctl(0, TCGETA, &term) == -1) {
+        return (0);
+    }
+    (void) ioctl(0, TCGETA, &term_orig);
+    term.c_iflag = 0;
+    term.c_oflag = 0;
+    term.c_lflag = 0;
+    term.c_cc[VMIN] = 1;
+    term.c_cc[VTIME] = 0;
+    if (ioctl(0, TCSETA, &term) == -1) {
+        return (0);
+    }
+    kbdflgs = fcntl(0, F_GETFL, 0);
+    //
+    // no delay on reading stdin
+    //
+    int flags = fcntl(0, F_GETFL);
+    flags &= ~O_NDELAY;
+    fcntl(0, F_SETFL, flags);
+    return (1);
+}
+
+//
+// function :   getch
+// purpose  :   read a single character from the keyboard without echo
+// returns  :   the keybress character
+//
+int getch(void)
+{
+    //
+    // no delays on reading stdin
+    //
+    input_mode();
+    //
+    // do a simple loop and get the response
+    //
+    unsigned char ch;
+    while (read(0, &ch, 1) != 1) ;
+
+    system_mode();
+    return (ch);
+}
+
+int main()
+{
+    return (getch());
+}
+
+
+Article 32001 of comp.unix.programmer:
+Path: mdisea!mmddvan!vanbc.wimsey.com!io.org!interlog.com!usenet.eel.ufl.edu!news.mathworks.com!uunet!in1.uu.net!spcuna!colcig3.colciencias.gov.co!calvin.univalle.edu.co!jmm
+From: jmm@news.univalle.edu.co (Jorge A. Mejia M.)
+Newsgroups: comp.unix.programmer
+Subject: Re: unix c problemz.
+Date: 2 Aug 1995 18:22:45 GMT
+Organization: Universidad del Valle
+Lines: 77
+Message-ID: <3vofpl$mg5@calvin.univalle.edu.co>
+References: <3vn4vl$r2l@news1.wolfe.net>
+NNTP-Posting-Host: cusiana.univalle.edu.co
+X-Newsreader: TIN [version 1.2 PL2]
+
+Cerridwyn Llewyellyn (ceridwyn@wolfe.net) wrote:
+: hi:  i'm just beginning to learn unix c programming after years of dos.
+: i'm for some reason having large quantities of trouble doing a seemingly 
+: simple task:  i want a while loop that executes a command continuously 
+: until a key (any key) is presssed:
+
+: while (!keypressed) {
+: 	do_something();
+: }
+
+: simple, eh?  well, in dos, the appropriate function is kbhit(), but i 
+: can't find any such thing in unix... if anyone could send a bit of 
+: example code on how to do what i'm doing, i'd worship you forever. please 
+: mail to ceridwyn@gonzo.wolfe.net.  thanx kindly...
+
+Newsgroups: comp.unix.programmer
+Path: calvin.univalle.edu.co!colcig3.colciencias.gov.co!news.new-york.net!spcuna!solaris.cc.vt.edu!news.alpha.net!news.mathworks.com!europa.chnt.gtegsc.com!howland.reston.ans.net!swrinde!elroy.jpl.nasa.gov!llyene!news
+From: rreed@bithound.jpl.nasa.gov (Randy Reed)
+Subject: Re: Unix C programmers, please help!
+Message-ID: <1995Jul20.165143.22919@llyene.jpl.nasa.gov>
+Sender: news@llyene.jpl.nasa.gov
+Reply-To: rreed@bithound.jpl.nasa.gov
+Organization: The Unconfigured xvnews people
+References: <3uinii$elg@eng_ser1.erg.cuhk.hk>
+Date: Thu, 20 Jul 1995 16:51:43 GMT
+Lines: 34
+
+
+I have been annoyed since the inception of the C language that an asynchronous
+keyboard routine was not part of the standard library.  Anyway, I have been 
+using this version on unix for several years and it seems to do the job. 
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/time.h>
+#include <sys/ioctl.h>
+#include <sgtty.h>
+
+#define TTY_DESCR 0
+/*===============================================================
+ ROUTINE: kbhit
+ PURPOSE: Use select to see if a key has been pressed.
+ RETURNS: 0 If no key has been hit.
+          1 If a key has been pressed.
+================================================================*/
+int kbhit()
+{
+    struct timeval wait;
+    int readfd,ret;
+    int zero=0;
+
+    wait.tv_sec  = 0;
+    wait.tv_usec = 0;
+    readfd = 1 << TTY_DESCR;
+    ret = select(TTY_DESCR + 1, &readfd, &zero, &zero, &wait);
+    return(ret);
+}
+
+
+ 
+
+
+
+
+--
+********************************
+*                              *	   
+*      Jorge A. Mejia M.       *
+* Observatorio Sismologico del *
+*     Suroccidente - OSSO      *
+*    Universidad del Valle     *
+*      Ap. Aereo 25360         *
+*      Cali - Colombia         *
+*                              *
+*   jmm@osso.univalle.edu.co   *
+*                              *	   
+********************************
+
+
+-- 
+mitchell@mdd.comm.mot.com (Bill Mitchell)

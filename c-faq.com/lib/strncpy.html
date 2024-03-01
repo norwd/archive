@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file lib1.sgml dated Sat Feb  7 18:46:53 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 13.2</title>
+<link href="itoa.html" rev=precedes>
+<link href="substr.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="itoa.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="substr.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 13.2
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+Why does <TT>strncpy</TT> not always
+place a <TT>'\0'</TT> terminator
+in the destination string?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+<TT>strncpy</TT>
+
+was first designed to handle a now-obsolete data structure,
+the fixed-length, not-necessarily-<TT>\0</TT>-terminated
+``string.''
+<a href="strncpyexamp.html" rel=subdocument>[footnote]</a>
+<TT>strncpy</TT> is admittedly a bit cumbersome to use in other contexts,
+since you must often append a
+<TT>'\0'</TT> to the destination
+string by hand.
+</p><p>You can get around the problem by using <TT>strncat</TT>
+instead of <TT>strncpy</TT>.
+If
+the destination string starts out empty
+(that is, if you do
+<TT>*dest&nbsp;=&nbsp;'\0'</TT>
+first),
+<TT>strncat</TT> does what you probably wanted 
+<TT>strncpy</TT> to do:
+<pre>
+	*dest = '\0';
+	strncat(dest, source, n);
+</pre>
+This code copies up to <TT>n</TT> characters,
+and always appends a <TT>\0</TT>.
+</p><p>Another possibility is
+
+
+<pre>
+<TT>sprintf(dest,&nbsp;"%.*s",&nbsp;n,&nbsp;source)</TT>
+</pre>
+(though,
+strictly speaking,
+this is only guaranteed to work for <TT>n</TT> &lt;= 509).
+</p><p>When
+arbitrary
+bytes
+(as opposed to strings)
+are being copied,
+<TT>memcpy</TT> is usually a more appropriate function to use
+than <TT>strncpy</TT>.
+</p><!-- aend -->
+<p>
+<hr>
+<a href="itoa.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="substr.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

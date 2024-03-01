@@ -1,0 +1,124 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file malloc.sgml dated Wed Dec 21 13:50:44 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 7.14</title>
+<link href="malloc0xref.html" rev=precedes>
+<link href="sizetlong.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="malloc0xref.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="sizetlong.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 7.14
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+I've heard that some operating systems
+
+don't actually allocate <TT>malloc</TT>'ed memory
+until
+the
+
+program tries to
+use
+it.
+Is this legal?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+It's hard to say.
+The Standard doesn't say that systems can act this way,
+but it doesn't
+
+
+
+explicitly
+say that they can't, either.
+
+
+
+(Such a ``deferred failure'' implementation
+would not seem to conform to the implied requirements of the Standard.)
+</p><p>The
+
+conspicuous
+problem is that,
+by the time
+the program gets around to trying to use the memory,
+there might not be any.
+The
+program
+in this case must typically be killed by the operating system,
+since the semantics of C provide no recourse.
+(Obviously,
+<TT>malloc</TT> is supposed to return a null pointer
+if there's no memory,
+so that the program--as
+long as it checks <TT>malloc</TT>'s return value at all--never
+tries to use more memory than is available.)
+</p><p>Systems that
+do this ``lazy allocation''
+usually provide extra signals
+
+indicating that memory is dangerously low,
+but portable or na&iuml;ve programs won't catch them.
+Some systems that do lazy allocation
+also provide a way to turn it off
+(reverting to traditional <TT>malloc</TT> semantics),
+on a per-process or per-user basis,
+but the details vary from system to system.
+
+</p><p>Additional links:
+A
+<a href="lazyalloc2.html">longer explanation</a>
+of the tradeoffs concerning ``lazy allocation''
+</p>
+<p>References:
+
+ISO Sec. 7.10.3
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="malloc0xref.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="sizetlong.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

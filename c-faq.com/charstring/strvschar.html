@@ -1,0 +1,110 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file charstring.sgml dated Sat Feb  7 18:22:16 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 8.1</title>
+<link href="../malloc/alloca.html" rev=precedes>
+<link href="stringeq.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="../malloc/alloca.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="stringeq.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 8.1
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+
+Why doesn't
+<pre>
+strcat(string,&nbsp;'!');</pre>
+
+work?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+There is a very real
+difference
+between characters and strings,
+and
+<TT>strcat</TT> concatenates
+<em>strings</em>.
+</p><p>A
+character constant
+like
+<TT>'!'</TT> represents a single character.
+A string literal between double quotes
+usually represents multiple characters.
+
+A string literal like <TT>"!"</TT> seems to represent a single character,
+but it actually contains two:
+the <TT>!</TT> you requested,
+
+and the <TT>\0</TT> which terminates all strings in C.
+</p><p>Characters in C are represented by small integers corresponding 
+to their character set values
+(see also question <a href="asciivals.html">8.6</a>).
+Strings are represented by arrays of characters;
+you usually manipulate a pointer
+to the first character of the array.
+It is never correct to use one when the other is expected.
+To
+append a <TT>!</TT> to a string,
+use
+<pre>
+	strcat(string, "!");
+</pre>
+</p><p>See also questions
+<a href="../decl/strlitinit.html">1.32</a>,
+<a href="../malloc/malloc2.html">7.2</a>,
+and
+<a href="../strangeprob/strlitnomod.html">16.6</a>.
+</p>
+<p>References:
+
+CT&amp;P Sec. 1.5 pp. 9-10
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="../malloc/alloca.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="stringeq.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

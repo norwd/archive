@@ -1,0 +1,162 @@
+<html>
+<head>
+<title>OOP in C</title>
+</head>
+<body>
+From: James C Hu
+<br>
+Subject: Re: struct inheritence (OOP C)
+<br>
+Date: Thu, 22 Jan 1998 19:48:56 -0600 (CST)
+<br>
+Message-ID: &lt;slrn6cfto4.ijc.jxh@lambada.cs.wustl.edu&gt;
+<p>
+On Thu, 22 Jan 1998 15:23:25 -0800, Wayne O. Cochran wrote:
+<br>
+&gt; I am writing some OOP code in C and am trying to decide
+<br>
+&gt; on the best way to implement inheritence without abusing
+<br>
+&gt; the C standard. Say I have a class POINT (implemented
+<br>
+&gt; as in the structure below) and I want another class CIRCLE
+<br>
+&gt; to inherit the fields of POINT, but I want to be able to
+<br>
+&gt; pass instances of CIRCLE to functions that manipulate
+<br>
+&gt; instances of POINT. The code below depends on exactly
+<br>
+&gt; how structures lay out their fields -- The ANSI C standard
+<br>
+&gt; states that the address offsets of the fields occur
+<br>
+&gt; in increasing order they appear in the struct template.
+<br>
+&gt; Is this abusing the C standard? I note that the X11 Xt
+<br>
+&gt; widget toolkit uses a similar techinique for OOP in C.
+<br>
+&gt; BTW, I didn't find this one the FAQ.
+<br>
+&gt;
+<br>
+&gt; typedef struct {
+<br>
+&gt;   int x,y;
+<br>
+&gt; } POINT;
+<br>
+&gt;
+<br>
+&gt; typedef struct {
+<br>
+&gt;   POINT center;
+<br>
+&gt;   int radius;
+<br>
+&gt; } CIRCLE;
+<br>
+&gt;
+<br>
+&gt; void setLocation(POINT *p, int x, int y) {
+<br>
+&gt;   p-&gt;x = x;
+<br>
+&gt;   p-&gt;y = y;
+<br>
+&gt; }
+<br>
+&gt;
+<br>
+&gt; CIRCLE c;
+<br>
+&gt; setLocation(&amp;c, 10,15);
+<p>
+Except for the fact that a cast is required
+<p>
+<pre>
+setLocation((POINT *)&amp;c, 10, 15);
+</pre>
+<p>
+this is fine.  ANSI/ISO 9899-1990 6.5.2.1 states that ``a pointer to a
+structure object, suitably converted, points to its initial member''.
+Hence, a pointer to a CIRCLE in your case can be suitably converted to
+point to a POINT.
+<p>
+This question is becoming a more and more popular question lately.
+It may be time to update the FAQ.  Comments and corrections to the
+following are welcome.
+<p>
+Q. How can I implement object-oriented (OO) inheritance in C with
+structures?
+<p>
+A. First, make sure that using an OO language (such as C++) is not a
+good option.  The C language was not designed with OO in mind, and
+so facilities to support OO programming are limited.  Think through
+just what OO features you will need, and think about how you expect
+to implement them in C.
+<p>
+That said, it is possible to implement single inheritance in C by
+nesting a structure inside of a structure.  This techniques works
+since a pointer to a structure object, when suitably converted,
+points to its initial member.  Thus, single inheritance of a ``parent''
+structure is accomplished by creating a new ``child'' structure whose
+initial member is the same type as the ``parent''.  The following
+example (thanks to Wayne O. Cochran) illustrates how this is done.
+<p>
+<pre>
+typedef struct {
+  int x;
+  int y;
+} point;
+
+typedef struct {
+  point center;
+  int radius;
+} circle;
+
+void init_point(point *p, int x, int y)
+{
+  p-&gt;x = x;
+  p-&gt;y = y;
+}
+
+void init_circle(circle *c, int x, int y, int r)
+{
+  init_point((void *)c, x, y);
+  c-&gt;radius = r;
+}
+</pre>
+<p>
+In this example, we see that `circle' inherits from `point' the
+integer members `x' and `y'.  Note that the following function is
+invalid
+<p>
+<pre>
+void bad_init_circle(circle *c, int x, int y, int r)
+{
+  c-&gt;x = x;  /* should be ((point *)c)-&gt;x = x; */
+  c-&gt;y = y;  /* should be ((point *)c)-&gt;y = y; */
+  c-&gt;radius = r;
+}
+</pre>
+<p>
+since the pointer to circle `c' has not yet been suitably converted
+to point to the type of its first member.
+<p>   
+References:
+<br>
+ANSI Sec. 3.5.2.1
+<br>
+ISO Sec. 6.5.2.1
+<p>
+-- 
+<br>
+James C. Hu &lt;jxh@cs.wustl.edu&gt;       Computer Science Doctoral Student 
+<br>
+<a href="http://www.cs.wustl.edu/~jxh/">http://www.cs.wustl.edu/~jxh/</a>        Washington University in Saint Louis
+<br>
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; I use *SpamBeGone* &lt;URL:<a href="http://www.internz.com/SpamBeGone/">http://www.internz.com/SpamBeGone/</a>&gt;
+</body>
+</html>

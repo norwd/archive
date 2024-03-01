@@ -1,0 +1,177 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file aryptr.sgml dated Wed Dec 21 12:50:38 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 6.20</title>
+<link href="ary2dfunc2.html" rev=precedes>
+<link href="aryparmsize.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="ary2dfunc2.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="aryparmsize.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 6.20
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+How can I use statically- and dynamically-allocated
+multidimensional arrays interchangeably when passing them to functions?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+There is no single perfect method.
+Given the
+
+
+
+declarations
+<pre>
+	int array[NROWS][NCOLUMNS];
+	int **array1;			/* ragged */
+	int **array2;			/* contiguous */
+	int *array3;			/* "flattened" */
+	int (*array4)[NCOLUMNS];
+<br>	int (*array5)[NROWS][NCOLUMNS];
+</pre>
+with the pointers
+initialized
+as
+in the code fragments in question
+<a href="dynmuldimary.html">6.16</a>,
+and functions declared as
+
+
+<pre>
+	void f1a(int a[][NCOLUMNS], int nrows, int ncolumns);
+	void f1b(int (*a)[NCOLUMNS], int nrows, int ncolumns);
+	void f2(int *aryp, int nrows, int ncolumns);
+	void f3(int **pp, int nrows, int ncolumns);
+</pre>
+where
+<TT>f1a</TT> and <TT>f1b</TT> accept conventional two-dimensional arrays,
+<TT>f2</TT> accepts a ``flattened'' two-dimensional array,
+and
+<TT>f3</TT> accepts a pointer-to-pointer, simulated array
+(see also questions
+<a href="pass2dary.html">6.18</a> 
+and
+<a href="ary2dfunc2.html">6.19</a>),
+the following calls
+should
+work as expected:
+<pre>
+	f1a(array, NROWS, NCOLUMNS);
+	f1b(array, NROWS, NCOLUMNS);
+	f1a(array4, nrows, NCOLUMNS);
+	f1b(array4, nrows, NCOLUMNS);
+<br>	f1(*array5, NROWS, NCOLUMNS);
+<br>	f2(&amp;array[0][0], NROWS, NCOLUMNS);
+	f2(*array, NROWS, NCOLUMNS);
+	f2(*array2, nrows, ncolumns);
+	f2(array3, nrows, ncolumns);
+	f2(*array4, nrows, NCOLUMNS);
+<br>	f2(**array5, NROWS, NCOLUMNS);
+<br>	f3(array1, nrows, ncolumns);
+	f3(array2, nrows, ncolumns);
+</pre>
+The following
+calls would probably work
+
+
+
+on most systems,
+but involve questionable casts,
+and work
+
+only if the dynamic <TT>ncolumns</TT>
+matches the static <TT>NCOLUMNS</TT>:
+<pre>
+	f1a((int (*)[NCOLUMNS])(*array2), nrows, ncolumns);
+	f1a((int (*)[NCOLUMNS])(*array2), nrows, ncolumns);
+	f1b((int (*)[NCOLUMNS])array3, nrows, ncolumns);
+	f1b((int (*)[NCOLUMNS])array3, nrows, ncolumns);
+</pre>
+</p><p>It will be noticed that only <TT>f2</TT> can conveniently be made to work
+with both statically- and dynamically-allocated arrays,
+though
+it will
+<em>not</em>
+work with the traditional
+``ragged'' array implementation,
+
+<TT>array1</TT>.
+However,
+it must also
+be noted that
+passing <TT>&amp;array[0][0]</TT>
+(or, equivalently, <TT>*array</TT>)
+to <TT>f2</TT>
+is not strictly conforming;
+see question
+<a href="ary2dfunc2.html">6.19</a>.
+</p><p>If you can understand why all of the above calls work and are
+written as they are,
+and if you understand why the combinations that are not listed
+would not work,
+then you have a
+<em>very</em>
+good understanding of arrays and pointers
+in C.
+</p><p>Rather than worrying about all of this,
+one approach to using multidimensional arrays of various sizes
+is to make them <em>all</em> dynamic,
+as in question <a href="dynmuldimary.html">6.16</a>.
+If there are no static multidimensional arrays--if
+all arrays are allocated like <TT>array1</TT> or <TT>array2</TT>
+in question <a href="dynmuldimary.html">6.16</a>--then
+all functions can be written like <TT>f3</TT>.
+
+</p><p>Additional links:
+<a href="aryptr.c">Sample source code</a>
+(``torture test'')
+illustrating all these techniques
+</p><!-- aend -->
+<p>
+<hr>
+<a href="ary2dfunc2.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="aryparmsize.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<html>
+<head>
+<title></title>
+</head>
+<body>
+[Someone asked me what the
+``big controversy, question, secret, or otherwise in this question''
+was,
+correctly noting that the answer is somewhat wishy-washy,
+and wondering what the point of the question was.
+This was my reply.]
+<p>
+From: Steve Summit
+<br>
+Date: Mon, 15 Oct 2001 21:48:01 -0400
+<br>
+Subject: Re: One of your C.L.C FAQ Questions
+<br>
+Message-Id: &lt;2001Oct15.2148.scs.001@aeroroot.scs.ndip.eskimo.net&gt;
+<p>
+[The point of the question is]
+Mostly trying to lay an old, recurring flame war to rest.
+<p>
+Part 1 of the story is that, once upon a time, someone allegedly
+discovered that many programs malloc far more memory than they
+ever actually use.  But the kernel has to allocate VM (physical
+memory and/or backing store in swap space) for the memory anyway,
+because of course the program <em>might</em> use it; the kernel has no
+way of knowing.  This can (and this is still ``allegedly''; I
+haven't personally seen these reports) lead to lots of ``wasted''
+swap space, with deleterious effects if swap space is prematurely
+exhausted.
+<p>
+Part 2 of the story is that some versions of Unix (I believe
+including AIX and IRIX) have adopted a ``lazy'' allocation
+strategy.  When a program calls malloc (or, more precisely, when
+malloc calls brk to extend the program's data space), the kernel
+does <em>not</em> actually allocate any memory right away, neither in
+physical memory nor swap space.  <em>If</em> the program tries to use
+the memory, a page fault results, and when handling it, the
+kernel discovers that there's no backing store for that page yet,
+and allocates it on the fly.
+<p>
+But part 3 of the story is that there's a potential problem here:
+what if, at that point, there isn't any free swap space to be
+had?  The kernel is now in a bind: it has promised the calling
+program it can use the memory (that promise was made when the
+call to malloc/brk succeeded), but now the kernel might have to
+renege on that promise.
+<p>
+Part 4 of the story is that, under kernels which support this
+``lazy'' allocation strategy, there's a new signal or two which
+the kernel can send.  It can, in effect, say to a process:
+``Oh, shoot, I'm out of swap space, deal with it somehow''.
+There may be two of these signals, one nonfatal one which
+requests that the program deallocate some memory somewhere
+to free up some swap space so that the kernel can satisfy the
+page fault, and a second, fatal one which is sent after the
+reclamation attempts fail.  It's not clear to me whether these
+signals are sent to the process which has just suffered the
+unsatisfiable page fault, or to some <em>other</em> process that the
+kernel would like to swipe some memory or swap space back from.
+<p>
+Part 5 of the story is that there are some people (myself
+included) who think that this is a lousy strategy, no matter how
+well-intentioned it is or how real the overallocated-unused swap
+space problem was.  When malloc succeeds, it means I've got the
+memory, darn it, and if I later get killed by a signal because
+the kernel ``overbooked the flight'', so to speak, I'm seriously
+annoyed.  Sure, I could catch the relevant signals to protect
+myself (i.e., at the very least, to save any vital in-memory
+data to disk before the second, fatal signal kills me), but
+that's a surprising, non-default thing for me to have to do,
+and unfortunately the default on such a system, if I don't go out
+of my way to protect myself (or if I don't even know I have to)
+seems to be that I can lose.
+<p>
+People who dislike the lazy allocation strategy would like to
+be able to point at the C Standard and say, ``Look, if malloc
+succeeds, I'm supposed to be able to use that memory; a
+conforming implementation isn't allowed to renege on the
+promise.''  But part 6 of the story is that the defenders of the
+lazy allocation strategy can themselves point at the Standard
+and say, ``Look, there's nothing in there disallowing it''.
+And they're right.
+</body>
+</html>

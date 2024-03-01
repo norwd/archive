@@ -1,0 +1,176 @@
+<html>
+<!-- &lt;2004May25.2101.scs.0024@artichoke.scs.ndip.eskimo.net&gt; -->
+<head>
+<title></title>
+</head>
+<body>
+<p>
+[Someone asked me why after invoking
+<pre>
+	p = malloc(1);
+</pre>
+it was apparently possible to copy long strings --
+much longer than 1 byte long --
+to <TT>p</TT>.
+This was my reply.]
+<p>
+There are several different answers here, depending on just what
+it is you're trying to ask.
+<p>
+It sounds like you're aware of the reasons the program might not work.
+You're right, it might not work, it can't be expected to work.
+If, based on the fact that the program &ldquo;just happens&rdquo; to work,
+you're tempted to conclude that those other reasons were wrong,
+don't do this!  The program is definitely wrong.  But there's an
+unfortunate paradox about software testing: if a program does not
+work, it definitely has a bug of some sort, but if on the other
+hand it seems to work, we can <em>not</em> conclude from this that it
+has no bugs!
+<p>
+Another way of answering the question is this: You are walking
+along a deserted street at 3:00 in the morning.  You come to an
+intersection.  The light is red, and the sign says &ldquo;Don't Walk&rdquo;.
+You decide to cross the street anyway, even though this is
+Illegal and Wrong.  As you cross the street, you are not hit by
+a car, and no policeman arrests you -- you reach the other side
+unscathed.  Why?
+<p>
+Or, as Roger Miller has written, &ldquo;Somebody told me that in
+basketball you can't hold the ball and run.  I got a basketball
+and tried it and it worked just fine.  He obviously didn't
+understand basketball.&rdquo;
+<p>
+If you want to understand at a low level how the program could
+work, in spite of its egregious error, the explanation is
+actually not too far from the traffic light parable above.
+You asked <TT>malloc</TT> for a pointer to 1 byte of memory.  <TT>malloc</TT> gave
+you such a pointer, but your computer certainly has more than 1
+byte of memory available, so the pointer <TT>malloc</TT> gives you points
+somewhere in the middle of all the memory your program has
+available to it.  You're only <em>supposed</em> to write 1 byte to the
+memory <TT>malloc</TT> &ldquo;gave&rdquo; you, because that's all you asked for, but
+there's memory sitting there beyond the 1 byte you asked for, and
+there's no mechanism, no policeman which will immediately notice
+and complain if you write more than you should.
+<p>
+(Perhaps a better analogy is this.  Your mother and father run a
+general store.  One day you ask your mother for a dollar.  Your
+mother trusts you, so she says you can go to the cash register at
+the front of the store and take a dollar out of it.  You open the
+drawer of the cash register, and there's $500 in there.  What
+happens if you take more, much more, then the single dollar you
+were entrusted to take?  You might get caught eventually, but you
+probably won't get caught right away.)
+<p>
+If you want to convince yourself that writing more to a malloc'ed
+region than you're supposed to is wrong, if you want to see the
+kind of errors that typically arise if you do, you'll need a
+program that tries to do a bit more, after it makes its mistake,
+so that you and/or the computer and/or the malloc library will
+have a chance to notice that things are going wrong.  For
+example, you can malloc two pointers, and notice that when you
+overflow one of them, the second string is (probably) affected:
+<p>
+<pre>
+	#include &lt;stdio.h&gt;
+	#include &lt;stdlib.h&gt;
+	#include &lt;string.h&gt;
+
+	int main()
+	{
+		char *p1 = malloc(1);
+		char *p2 = malloc(20);
+
+		strcpy(p2, "Hello, world!");
+
+		printf("p2 = \"%s\"\n", p2);
+
+		strcpy(p1, "This is more than I should write to one byte");
+
+		printf("p1 = \"%s\"\n", p1);
+		printf("p2 = \"%s\"\n", p2);
+
+		return 0;
+	}
+</pre>
+<p>
+Or, you can copy some huge number of characters:
+<p>
+<pre>
+	#include &lt;stdio.h&gt;
+	#include &lt;stdlib.h&gt;
+	#include &lt;string.h&gt;
+
+	int main()
+	{
+		char *p1 = malloc(1);
+		char *p2 = malloc(1);
+
+		memcpy(p1, p2, 1000000);
+
+		return 0;
+	}
+</pre>
+<p>
+I have tested both of these programs on my computer, and they
+fail as expected (though I can't promise they'll fail, or in the
+same way, for you).
+<p>
+Another way to notice when things are going wrong with malloc'ed
+memory is to <em>always</em> check the return value from <TT>malloc</TT>.
+It's tempting not to check the return value, especially when
+you're allocating a small amount of memory, and in fact
+I myself succumbed to the temptation in the two programs above.
+After all, as we just pointed out, our computer certainly has
+more than one byte of memory in it, so a call to <TT>malloc(1)</TT> can
+&ldquo;never&rdquo; fail, right?  Well, no, actually it can.  <TT>malloc</TT> will
+typically
+also return NULL if it notices that you've written more than you
+were supposed to to one of the pointers it previously gave you.
+So you should <em>always</em> check malloc's return value.  (And,
+anyway, some day you might actually run out of memory.)
+So here is one more test program:
+<p>
+<pre>
+	#include &lt;stdio.h&gt;
+	#include &lt;stdlib.h&gt;
+	#include &lt;string.h&gt;
+
+	int main()
+	{
+		char *p1, *p2;
+
+		p1 = malloc(1);
+		if(p1 == NULL)
+			{
+			fprintf(stderr, "malloc failed\n");
+			exit(EXIT_FAILURE);
+			}
+
+		strcpy(p1, "This is more than I should write to one byte");
+
+		printf("p1 = \"%s\"\n", p1);
+
+		p2 = malloc(1);
+		if(p2 == NULL)
+			{
+			fprintf(stderr, "second malloc failed\n");
+			exit(EXIT_FAILURE);
+			}
+
+		printf("p1 = \"%s\"\n", p1);
+
+		*p2 = 'X';
+
+		printf("p1 = \"%s\"\n", p1);
+
+		return EXIT_SUCCESS;
+	}
+</pre>
+<p>
+I expected that the second call to <TT>malloc</TT> would fail, due to the
+fact that I copied more text to <TT>p1</TT> than I was supposed to.  For
+some reason, on my computer, the second call to malloc actually
+succeeded, but there's a good chance it will fail on yours.
+</body>
+</html>

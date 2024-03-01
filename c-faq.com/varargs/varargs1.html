@@ -1,0 +1,266 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file varargs.sgml dated Sun Nov 25 08:09:42 2001 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 15.4</title>
+<link href="proto2.html" rev=precedes>
+<link href="vprintf.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="proto2.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="vprintf.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 15.4
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+How can I write a function that takes a variable number of
+arguments?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+Use
+the facilities of
+the <TT>&lt;stdarg.h&gt;</TT>
+header.
+</p><p>
+
+
+Here is a function which concatenates an arbitrary number of
+strings into <TT>malloc</TT>'ed memory:
+</p><pre>
+#include &lt;stdlib.h&gt;		/* for malloc, NULL, size_t */
+#include &lt;stdarg.h&gt;		/* for va_ stuff */
+#include &lt;string.h&gt;		/* for strcat et al. */
+
+char *vstrcat(const char *first, ...)
+{
+	size_t len;
+	char *retbuf;
+	va_list argp;
+	char *p;
+
+	if(first == NULL)
+		return NULL;
+
+	len = strlen(first);
+
+	va_start(argp, first);
+
+	while((p = va_arg(argp, char *)) != NULL)
+		len += strlen(p);
+
+	va_end(argp);
+
+	retbuf = malloc(len + 1);	/* +1 for trailing \0 */
+
+	if(retbuf == NULL)
+		return NULL;		/* error */
+
+	(void)strcpy(retbuf, first);
+
+	va_start(argp, first);		/* restart; 2nd scan */
+
+	while((p = va_arg(argp, char *)) != NULL)
+		(void)strcat(retbuf, p);
+
+	va_end(argp);
+
+	return retbuf;
+}
+</pre>
+(Note that
+a second call to <TT>va_start</TT> is needed
+to re-start the scan
+when the argument list is processed a second time.
+Note the calls to <TT>va_end</TT>:
+they're important for portability,
+even if they don't seem to do anything.)
+<p>A call to <TT>vstrcat</TT> looks 
+something like
+<pre>
+	char *str = vstrcat("Hello, ", "world!", (char *)NULL);
+</pre>
+Note the cast on the last argument;
+see questions <a href="../null/null2.html">5.2</a> and <a href="proto2.html">15.3</a>.
+(Also note that the caller must free the returned,
+<TT>malloc</TT>'ed storage.)
+</p><p><TT>vstrcat</TT> accepts
+a variable number of arguments,
+all of type <TT>char&nbsp;*</TT>.
+Here is an example which 
+accepts a variable number of arguments of different types;
+it is a stripped-down version
+of the familiar <TT>printf</TT> function.
+Note that each invocation of <TT>va_arg()</TT> 
+specifies the type of the argument
+being
+
+
+
+retrieved
+from the argument list.
+</p><p>(The <TT>miniprintf</TT> function here uses
+<TT>baseconv</TT>
+from question <a href="../misc/hexio.html">20.10</a> to format
+
+numbers.
+It
+
+is
+significantly
+imperfect
+in that it will not usually be able to print
+
+the smallest integer, <TT>INT_MIN</TT>, properly.)
+<pre>
+#include &lt;stdio.h&gt;
+#include &lt;stdarg.h&gt;
+#ifdef MAIN
+
+void miniprintf(const char *, ...);
+
+main()
+{
+	miniprintf("Hello, world!\n");
+	miniprintf("%c %d %s\n", '1', 2, "three");
+	miniprintf("%o %d %x\n", 10, 10, 10);
+	miniprintf("%u\n", 0xffff);
+	return 0;
+}
+
+#endif
+
+extern char *baseconv(unsigned int, int);
+
+void
+miniprintf(const char *fmt, ...)
+{
+	const char *p;
+	int i;
+	unsigned u;
+	char *s;
+	va_list argp;
+
+	va_start(argp, fmt);
+
+	for(p = fmt; *p != '\0'; p++) {
+		if(*p != '%') {
+			putchar(*p);
+			continue;
+		}
+
+		switch(*++p) {
+		case 'c':
+			i = va_arg(argp, int);
+			/* *not* va_arg(argp, char); see Q <a href="float.html">15.10</a> */
+			putchar(i);
+			break;
+
+		case 'd':
+			i = va_arg(argp, int);
+			if(i &lt; 0) {
+				/* XXX won't handle INT_MIN */
+				i = -i;
+				putchar('-');
+			}
+			fputs(baseconv(i, 10), stdout);
+			break;
+
+		case 'o':
+			u = va_arg(argp, unsigned int);
+			fputs(baseconv(u, 8), stdout);
+			break;
+
+		case 's':
+			s = va_arg(argp, char *);
+			fputs(s, stdout);
+			break;
+
+		case 'u':
+			u = va_arg(argp, unsigned int);
+			fputs(baseconv(u, 10), stdout);
+			break;
+
+		case 'x':
+			u = va_arg(argp, unsigned int);
+			fputs(baseconv(u, 16), stdout);
+			break;
+
+		case '%':
+			putchar('%');
+			break;
+		}
+	}
+
+	va_end(argp);
+}
+</pre>
+</p><p>See also question <a href="oldvarargs.html">15.7</a>.
+</p>
+
+
+
+
+
+
+
+
+<p>References:
+
+K&amp;R2 Sec. 7.3 p. 155, Sec. B7 p. 254
+<br>
+ISO Sec. 7.8
+<br>
+Rationale Sec. 4.8
+<br>
+H&amp;S Sec. 11.4 pp. 296-9
+<br>
+CT&amp;P Sec. A.3 pp. 139-141
+<br>
+PCS Sec. 11 pp. 184-5, Sec. 13 p. 242
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="proto2.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="vprintf.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

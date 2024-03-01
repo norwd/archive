@@ -1,0 +1,166 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file varargs.sgml dated Sun Nov 25 08:09:42 2001 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+
+<title>Question 15.7</title>
+<link href="vscanf.html" rev=precedes>
+<link href="nargs.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="vscanf.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="nargs.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 15.7
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+I have
+a pre-ANSI
+compiler,
+without <TT>&lt;stdarg.h&gt;</TT>.
+What can I do?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+There's an older header, <TT>&lt;varargs.h&gt;</TT>,
+which offers about the same functionality.
+</p><p>Here is
+the <TT>vstrcat</TT> function from question <a href="varargs1.html">15.4</a>,
+rewritten to use <TT>&lt;varargs.h&gt;</TT>:
+
+<pre>
+#include &lt;stdio.h&gt;
+#include &lt;varargs.h&gt;
+#include &lt;string.h&gt;
+
+extern char *malloc();
+
+char *vstrcat(va_alist)
+va_dcl		/* no semicolon */
+{
+	int len = 0;
+	char *retbuf;
+	va_list argp;
+	char *p;
+
+	va_start(argp);
+
+	while((p = va_arg(argp, char *)) != NULL)	/* includes first */
+		len += strlen(p);
+
+	va_end(argp);
+
+	retbuf = malloc(len + 1);		/* +1 for trailing \0 */
+
+	if(retbuf == NULL)
+		return NULL;			/* error */
+
+	retbuf[0] = '\0';
+
+	va_start(argp);			/* restart for second scan */
+
+	while((p = va_arg(argp, char *)) != NULL)	/* includes first */
+		strcat(retbuf, p);
+
+	va_end(argp);
+
+	return retbuf;
+}
+</pre>
+(Note
+that there is no semicolon after <TT>va_dcl</TT>.
+Note that in this case,
+no special treatment for the first argument is necessary.)
+
+You may also have to
+declare the string functions by hand
+rather than using <TT>&lt;string.h&gt;</TT>.
+</p><p>If you can manage to find a system with <TT>vfprintf</TT>
+but without <TT>&lt;stdarg.h&gt;</TT>,
+here is a version of the <TT>error</TT> function
+(from question <a href="vprintf.html">15.5</a>)
+using <TT>&lt;varargs.h&gt;</TT>:
+<pre>
+#include &lt;stdio.h&gt;
+#include &lt;varargs.h&gt;
+
+void error(va_alist)
+va_dcl		/* no semicolon */
+	{
+	char *fmt;
+	va_list argp;
+	fprintf(stderr, "error: ");
+	va_start(argp);
+	fmt = va_arg(argp, char *);
+	vfprintf(stderr, fmt, argp);
+	va_end(argp);
+	fprintf(stderr, "\n");
+}
+</pre>
+(Note
+that
+in contrast to <TT>&lt;stdarg.h&gt;</TT>,
+under <TT>&lt;varargs.h&gt;</TT> <em>all</em> arguments are variable,
+so
+
+
+
+
+the <TT>fmt</TT> argument must also be picked up via <TT>va_arg</TT>.)
+</p>
+
+
+
+<p>References:
+
+H&amp;S Sec. 11.4 pp. 296-9
+<br>
+CT&amp;P Sec. A.2 pp. 134-139
+<br>
+PCS Sec. 11 pp. 184-5, Sec. 13 p. 250
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="vscanf.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="nargs.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

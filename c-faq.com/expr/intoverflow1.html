@@ -1,0 +1,121 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file expr.sgml dated Sat Jul  3 17:10:33 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 3.14</title>
+<link href="transitivity.html" rev=precedes>
+<link href="intovf3.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="transitivity.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="intovf3.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 3.14
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+Why doesn't the code
+<pre>
+int&nbsp;a&nbsp;=&nbsp;1000,&nbsp;b&nbsp;=&nbsp;1000;
+long&nbsp;int&nbsp;c&nbsp;=&nbsp;a&nbsp;*&nbsp;b;</pre>
+
+work?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+Under C's integral promotion rules,
+the multiplication is carried out using <TT>int</TT> arithmetic,
+and the result may overflow
+or be truncated before being
+promoted and
+assigned to the <TT>long&nbsp;int</TT> left-hand side.
+Use an explicit cast
+on at least one of the operands
+to force long arithmetic:
+<pre>
+	long int c = (long int)a * b;
+</pre>
+or perhaps
+<pre>
+	long int c = (long int)a * (long int)b;
+</pre>
+(both forms are equivalent).
+</p><p>Notice that
+the expression
+<TT>(long&nbsp;int)(a&nbsp;*&nbsp;b)</TT> would
+<em>not</em>
+have the desired effect.
+An
+explicit cast of this form
+(i.e.
+applied to the result of
+the multiplication)
+is equivalent to the implicit conversion which would occur anyway
+when the value is assigned to the <TT>long&nbsp;int</TT>
+left-hand side,
+and like the implicit conversion,
+it happens too late,
+after the damage has been done.
+
+</p><p>See also question <a href="truncation1.html">3.15</a>.
+</p>
+
+
+
+
+<p>References:
+
+K&amp;R1 Sec. 2.7 p. 41
+<br>
+K&amp;R2 Sec. 2.7 p. 44
+<br>
+ISO Sec. 6.2.1.5
+<br>
+H&amp;S Sec. 6.3.4 p. 176
+<br>
+CT&amp;P Sec. 3.9 pp. 49-50
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="transitivity.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="intovf3.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

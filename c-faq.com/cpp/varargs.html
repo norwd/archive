@@ -1,0 +1,179 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file cpp.sgml dated Wed Dec 21 13:52:14 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 10.26</title>
+<link href="notgeneral.html" rev=precedes>
+<link href="debugmacs.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="notgeneral.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="debugmacs.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 10.26
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+How can I write a macro which takes a variable number of
+arguments,
+or use the preprocessor to ``turn off'' a function call with a
+variable number of arguments?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+One popular trick is to
+define and invoke the macro
+with a single, parenthesized ``argument''
+which in the macro expansion becomes the entire argument list,
+parentheses and all,
+for a function such as <TT>printf</TT>:
+<pre>
+	#define DEBUG(args) (printf("DEBUG: "), printf args)
+
+	if(n != 0) DEBUG(("n is %d\n", n));
+</pre>
+The obvious disadvantage
+is that the caller must
+always remember to use the extra parentheses.
+Another problem is that
+the macro expansion cannot insert any additional arguments
+(that is,
+<TT>DEBUG()</TT> couldn't expand to
+something like
+<TT>fprintf(debugfd,&nbsp;</TT>...<TT>)</TT>).
+</p><p><TT>gcc</TT> has an extension
+which allows a function-like macro to accept a variable number of arguments,
+but it's not standard.
+Other
+
+possible
+solutions are:
+<UL><li>Use
+
+
+different macros (<TT>DEBUG1</TT>, <TT>DEBUG2</TT>, etc.) depending on
+the number of arguments.
+<li>Play
+
+
+games
+with commas:
+<pre>
+	#define DEBUG(args) (printf("DEBUG: "), printf(args))
+	#define _ ,
+
+	DEBUG("i = %d" _ i);
+</pre>
+<li>Play horrendous games
+with mismatched parentheses:
+<pre>
+	#define DEBUG fprintf(stderr,
+
+	DEBUG "%d", x);
+</pre>
+</UL>(These all require care on the part of the user,
+and all of them are rather ugly.)
+</p><p>
+C99 introduces
+formal support for
+function-like
+macros with variable-length argument lists.
+The notation <TT>...</TT> can appear
+at the end of the macro ``prototype''
+(just as it does for varargs functions),
+and the pseudomacro <TT>__VA_ARGS__</TT>
+in the macro definition
+is replaced by
+the variable arguments during invocation.
+</p><p>Finally,
+you can always
+use a bona-fide function, which can
+take a variable number
+of arguments in a well-defined way.
+See questions
+<a href="../varargs/varargs1.html">15.4</a> 
+and
+<a href="../varargs/vprintf.html">15.5</a>.
+(If you needed a macro replacement,
+try using a function plus a non-function-like macro,
+e.g. <TT>#define&nbsp;printf&nbsp;myprintf</TT>
+.)
+</p><p>When you want to turn the debugging printouts off,
+you can
+either use a different version of your debug macro:
+<pre>
+	#define DEBUG(args) /* empty */
+</pre>
+or,
+if you're using real function calls,
+use
+still more
+preprocessor tricks to remove the function
+name but not the arguments,
+such
+
+as
+
+<pre>
+	#define DEBUG (void)
+or<br>	#define DEBUG if(1) {} else printf
+or<br>	#define DEBUG 1 ? 0 : (void)
+</pre>
+(These
+tricks are
+predicated on the assumption that a good
+optimizer will remove any ``dead'' <TT>printf</TT> calls or
+degenerate cast-to-void parenthesized comma expressions.)
+See also question <a href="ifddef.html">10.14</a>.
+</p><p>Additional links:
+<a href="sd9.html" rel=subdocument>more ideas</a>
+</p>
+
+<p>References:
+
+C9X Sec. 6.8.3, Sec. 6.8.3.1
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="notgeneral.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="debugmacs.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

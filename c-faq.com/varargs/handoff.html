@@ -1,0 +1,208 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file varargs.sgml dated Sun Nov 25 08:09:42 2001 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 15.12</title>
+<link href="funcptr.html" rev=precedes>
+<link href="invvarargs.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="funcptr.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="invvarargs.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 15.12
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+How can I write a function which takes a variable number of
+arguments and passes them to some other function 
+(which takes a variable number of arguments)?
+
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+In general, you cannot.
+Ideally,
+you should provide a version of that other function which accepts a
+<TT>va_list</TT> pointer.
+</p><p>Suppose you want to write a <TT>faterror</TT> function
+which will print a fatal error message, then exit.
+You might like to write it in terms of the <TT>error</TT> 
+function of question <a href="vprintf.html">15.5</a>:
+<pre>
+	void faterror(const char *fmt, ...)
+	{
+		error(fmt, <I>what goes here?</I> );
+		exit(EXIT_FAILURE);
+	}
+</pre>
+but it's not obvious how to hand <TT>faterror</TT>'s arguments 
+off to <TT>error</TT>.
+</p><p>Proceed as follows.
+First split up the existing <TT>error</TT> function
+to create a new <TT>verror</TT>
+which accepts not a variable argument list
+but a single <TT>va_list</TT> pointer.
+(Note that doing so is little
+extra work,
+because <TT>verror</TT> contains much of the code
+that used to be in <TT>error</TT>,
+and the new <TT>error</TT> becomes a simple wrapper
+around <TT>verror</TT>.)
+<pre>
+#include &lt;stdio.h&gt;
+#include &lt;stdarg.h&gt;
+
+void verror(const char *fmt, va_list argp)
+{
+	fprintf(stderr, "error: ");
+	vfprintf(stderr, fmt, argp);
+	fprintf(stderr, "\n");
+}
+
+void error(const char *fmt, ...)
+{
+	va_list argp;
+	va_start(argp, fmt);
+	verror(fmt, argp);
+	va_end(argp);
+}
+</pre>
+</p><p>Now you can write <TT>faterror</TT>,
+and have it call <TT>verror</TT>, too:
+<pre>
+#include &lt;stdlib.h&gt;
+
+void faterror(const char *fmt, ...)
+{
+	va_list argp;
+	va_start(argp, fmt);
+	verror(fmt, argp);
+	va_end(argp);
+	exit(EXIT_FAILURE);
+}
+</pre>
+Note that the
+relation
+between <TT>error</TT> and <TT>verror</TT>
+is exactly that which holds between
+e.g. <TT>printf</TT> and <TT>vprintf</TT>.
+In fact,
+as Chris Torek has observed,
+
+whenever you find yourself writing a varargs function,
+it's a good idea to write two versions of it:
+one
+(like <TT>verror</TT>)
+which
+accepts a <TT>va_list</TT> and does the work,
+and one
+(like the revised <TT>error</TT>)
+which is a simple wrapper.
+
+
+
+The only real restriction on this technique
+is that
+a function like <TT>verror</TT>
+can scan the arguments just once;
+there is no way for it to reinvoke va_start.
+</p><p>If you do not have the option
+of rewriting
+the lower-level function
+(<TT>error</TT>, in this example)
+to accept a <TT>va_list</TT>,
+such that you find yourself needing to pass
+the variable arguments that
+one function
+(e.g. <TT>faterror</TT>)
+receives
+on to another as actual arguments,
+no portable solution is possible.
+(The problem
+could perhaps
+be solved by resorting to machine-specific
+assembly language;
+see also
+question <a href="invvarargs.html">15.13</a>.)
+</p><p>One approach that would <em>not</em> work would be something like
+<pre>
+	void faterror(const char *fmt, ...)
+	{
+		va_list argp;
+		va_start(argp, fmt);
+		error(fmt, argp);		/* WRONG */
+		va_end(argp);
+		exit(EXIT_FAILURE);
+	}
+</pre>
+A
+<TT>va_list</TT> is
+<em>not</em>
+itself a variable argument list;
+it's really sort of a pointer to one.
+That is, a function which accepts a <TT>va_list</TT> is not itself varargs,
+nor vice versa.
+</p><p>Another kludge that is sometimes used,
+and which sometimes works even though it is grossly nonportable,
+is to use a lot of <TT>int</TT> arguments,
+hoping that there are enough of them and that they can somehow 
+pass through pointer, floating-point, and other arguments as well:
+<pre>
+	void faterror(fmt, a1, a2, a3, a4, a5, a6)
+	char *fmt;
+	int a1, a2, a3, a4, a5, a6;
+	{
+		error(fmt, a1, a2, a3, a4, a5, a6);	/* VERY WRONG */
+		exit(EXIT_FAILURE);
+	}
+</pre>
+
+This example is presented
+only for the purpose of urging you <em>not</em> to use it;
+please don't try it just because you saw it here.
+</p><!-- aend -->
+<p>
+<hr>
+<a href="funcptr.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="invvarargs.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file strangeprob.sgml dated Tue Jun 29 21:44:40 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+
+<title>Question 16.7</title>
+<link href="strlitnomod.html" rev=precedes>
+<link href="segv.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="strlitnomod.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="segv.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 16.7
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+I've got some code that's trying to unpack external structures, 
+but it's crashing
+with a message about an ``unaligned access.''
+What does this mean?
+The code looks like this:
+<pre>
+struct mystruct {
+	char c;
+	long int i32;
+	int i16;
+} s;
+
+char buf[7], *p;
+fread(buf, 7, 1, fp);
+p = buf;
+s.c = *p++;
+s.i32 = *(long int *)p;
+p += 4;
+s.i16 = *(int *)p;
+</pre>
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+The problem is that you're playing too fast and loose with 
+your
+
+pointers.
+Some machines require that data values be stored at 
+appropriately aligned addresses.
+For instance,
+two-byte <TT>short&nbsp;int</TT>s
+might be constrained to sit at even addresses,
+and four-byte <TT>long&nbsp;int</TT>s at multiples of four.
+(See also question <a href="../struct/padding.html">2.12</a>.)
+By converting a <TT>char&nbsp;*</TT>
+(which can point to any byte)
+to an <TT>int&nbsp;*</TT> or <TT>long&nbsp;int&nbsp;*</TT>,
+and then indirecting
+
+on it,
+you
+can end up
+asking the
+processor to
+fetch a
+multibyte
+value from an unaligned
+address,
+which it isn't willing to do.
+</p><p>A better way to unpack
+external structures
+is with code like
+
+<pre>
+	unsigned char *p = buf;
+
+	s.c = *p++;
+
+	s.i32 = (long)*p++ &lt;&lt; 24;
+	s.i32 |= (long)*p++ &lt;&lt; 16;
+	s.i32 |= (unsigned)(*p++ &lt;&lt; 8);
+	s.i32 |= *p++;
+
+	s.i16 = *p++ &lt;&lt; 8;
+	s.i16 |= *p++;
+</pre>
+</p><p>This code
+also gives you control over byte order.
+(This example,
+though,
+assumes
+that a <TT>char</TT> is 8 bits,
+and that the <TT>long&nbsp;int</TT> and <TT>int</TT>
+being unpacked from the ``external structure''
+are 32 and 16 bits, respectively.)
+
+See question <a href="../stdio/extconform.html">12.42</a>
+(which contains some similar code)
+for a few explanations
+and caveats.
+</p><p>See also question <a href="../ptrs/castincr.html">4.5</a>.
+</p>
+
+
+<p>References:
+
+ISO Sec. 6.3.3.2, Sec. 6.3.4
+<br>
+H&amp;S Sec. 6.1.3 pp. 164-5
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="strlitnomod.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="segv.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:47 2005 by faqproc version 2.7 -->
+<!-- from source file misclang.sgml dated Wed Dec 21 13:02:49 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 20.21</title>
+<link href="multibreak.html" rev=precedes>
+<link href="circshift.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="multibreak.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="circshift.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 20.21
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+There seem to be a few missing operators, like <TT>^^</TT>, 
+<TT>&amp;&amp;=</TT>, and <TT>-&gt;=</TT>.
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+A logical
+exclusive-or operator
+(hypothetically ``<TT>^^</TT>'')
+would be nice,
+but it couldn't possibly have short-circuiting
+
+behavior
+analogous to <TT>&amp;&amp;</TT> and <TT>||</TT>
+(see question <a href="../expr/shortcircuit.html">3.6</a>).
+Similarly,
+it's not clear how short-circuiting would apply to
+hypothetical assignment operators <TT>&amp;&amp;=</TT> and <TT>||=</TT>.
+(It's also not clear
+how often <TT>&amp;&amp;=</TT> and <TT>||=</TT>
+would actually be needed.)
+</p><p>Though <TT>p&nbsp;=&nbsp;p-&gt;next</TT> is an extremely common 
+idiom for traversing a linked list,
+<TT>-&gt;</TT> is not a binary arithmetic operator.
+A
+hypothetical
+<TT>-&gt;=</TT> operator
+therefore wouldn't really fit the pattern
+of the other assignment operators.
+</p><p>You can write an exclusive-or macro in several ways:
+<pre>
+	#define XOR(a, b) ((a) &amp;&amp; !(b) || !(a) &amp;&amp; (b))	/* 1 */
+	#define XOR(a, b) (!!(a) ^ !!(b))		/* 2 */
+	#define XOR(a, b) (!!(a) != !!(b))		/* 3 */
+	#define XOR(a, b) (!(a) ^ !(b))			/* 4 */
+	#define XOR(a, b) (!(a) != !(b))		/* 5 */
+	#define XOR(a, b) ((a) ? !(b) : !!(b))		/* 6 */
+</pre>
+
+The first is straight from the definition,
+but is poor because it may evaluate its arguments multiple times
+(see question <a href="../cpp/safemacros.html">10.1</a>).
+The second and third
+``normalize''
+their operands
+<a href="norml.html" rel=subdocument>[footnote]</a>
+to strict 0/1 by negating them twice--the
+second then applies bitwise exclusive or
+(to the single remaining bit);
+the third one implements exclusive-or as <TT>!=</TT>.
+The fourth and fifth are based on an elementary
+identity in Boolean algebra,
+namely that
+<blockquote>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_&nbsp;&nbsp;&nbsp;_
+<br>a&nbsp;(+)&nbsp;b&nbsp;=&nbsp;a&nbsp;(+)&nbsp;b
+</blockquote>(where (+) is exclusive-or
+and an overbar indicates negation).
+Finally,
+the sixth one,
+suggested by Lawrence Kirby
+and Dan Pop,
+uses the <TT>?:</TT> operator
+to guarantee a sequence point between the two operands,
+as for <TT>&amp;&amp;</TT> and <TT>||</TT>.
+(There is still no ``short circuiting'' behavior,
+though,
+nor can there be.)
+</p><p>Additional links:
+A
+
+
+
+
+<a href="xor.dmr.html">definitive answer</a>
+from Dennis Ritchie about <TT>^^</TT>
+</p><!-- aend -->
+<p>
+<hr>
+<a href="multibreak.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="circshift.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

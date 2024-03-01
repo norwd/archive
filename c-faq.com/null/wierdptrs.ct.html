@@ -1,0 +1,58 @@
+<html>
+<head>
+<title></title>
+</head>
+<body>
+[I and correspondent were discussing, among other things, the
+fact that pointer types aren't necessarily all identical
+and that pointer casts might therefore involve actual conversions.
+I drew Chris Torek into the conversation,
+and the text below is excerpted from his contribution.]
+<p>
+From: Chris Torek
+<br>
+Date: Sat, 5 Nov 1994 05:32:05 -0800
+<br>
+Message-Id: &lt;199411051332.FAA11040@elf.bsdi.com&gt;
+<br>
+Subject: Re: Q: How do you assign a float to a (void) data?
+<p>
+I just want to add one or two specifics to Steve's message...
+<p>
+&gt;Word-addressed machines are by no means hypothetical.  I can
+<br>
+&gt;never remember the details, but I believe that machines
+<br>
+&gt;manufactured by Data General, PR1ME, and/or Cray have used such
+<br>
+&gt;schemes, and C compilers have been written for these machines.
+<br>
+&gt;(Writing code for these machines, and especially porting existing
+<br>
+&gt;code to such machines, is a real lesson in portable pointer usage.)
+<p>
+I have never used a Cray, but I believe the list above is correct
+(if not complete).  On the other hand, I have used the Data General
+MV-series machines.  These have `word pointers' and `byte pointers',
+where words are made up of two bytes.  (This seems odd at first,
+as the machine has 32-bit integers, but is due to the history of
+the machine; the pointer format is an extension of that used on
+the DG Nova, a 16-bit word-addressed machine.  The Nova also had
+only 8 ALU ops, including a subtract-with-borrow but no subtract-
+without-borrow.  This was because they used a 74xx series ALU, that
+had 16 ops, but had only 3 bits left in the instruction, so they
+hardwired one of the ALU operand pins to a `1'.  The MV series
+fixed <em>that</em> particular annoyance.)
+<p>
+On the DG, to convert a word pointer to a byte pointer, you shift
+the word pointer left, introducing a 0 bit as the `byte offset'
+bit.  The top bit of a word pointer is an `indirection' bit; this
+is lost in the conversion.  Similarly, to convert a byte pointer
+to a word pointer, you shift the byte pointer right, losing the
+byte offset and introducing a 0 bit as the `indirection' bit.  Such
+a shift also moves the segment and ring bits, and I can no longer
+recall whether they were expected to be shifted this way, or whether
+there was a special pair of shift instructions that preserved these
+bits, moving only the address bits.
+</body>
+</html>

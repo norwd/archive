@@ -1,0 +1,183 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file fp.sgml dated Fri Jul  2 23:51:18 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 14.5</title>
+<link href="degrees.html" rev=precedes>
+<link href="round.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="degrees.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="round.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 14.5
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+What's a good way to check for ``close enough''
+floating-point equality?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+Since the absolute accuracy of floating point values varies,
+by definition,
+with their magnitude,
+
+the
+best way
+of comparing two floating point values
+is to use an accuracy threshold
+which is relative
+to the magnitude of the numbers being compared.
+Rather than
+
+<pre>
+	double a, b;
+	...
+	if(a == b)	/* WRONG */
+</pre>
+use something like
+
+<pre>
+	#include &lt;math.h&gt;
+
+	if(fabs(a - b) &lt;= epsilon * fabs(a))
+</pre>
+where
+<TT>epsilon</TT>
+is a value chosen to set the
+degree of ``closeness''
+(and where you know that <TT>a</TT> will not be zero).
+The precise value of <TT>epsilon</TT> may still have to be chosen with
+care:
+its appropriate value may be quite small and related only to the
+machine's floating-point
+precision,
+or
+
+it may be larger
+if the numbers being compared
+are inherently less accurate
+or are the results of
+a chain of calculations
+which
+compounds
+
+accuracy losses
+over several steps.
+(Also,
+you may have to make the threshold
+a function of <TT>b</TT>,
+or of both <TT>a</TT> and <TT>b</TT>.)
+</p><p>A decidedly inferior approach,
+not generally recommended,
+would be to use an absolute threshold:
+<pre>
+	if(fabs(a - b) &lt; 0.001)		/* POOR */
+</pre>
+Absolute
+``fuzz factors''
+like
+0.001
+never seem to work
+for very long,
+however.
+As the numbers
+being compared
+change,
+it's likely that two
+small
+numbers
+that should be taken as different
+happen to be within 0.001 of each other,
+or that two large numbers,
+which should have been treated as equal,
+differ by more than 0.001 .
+(And,
+
+of course,
+the problems merely shift around,
+and do not go away,
+when the fuzz factor is tweaked to 0.005,
+or 0.0001,
+or any other absolute number.)
+</p><p>
+
+
+Doug Gwyn suggests
+using
+the
+following
+``relative difference''
+function.
+It
+returns the relative difference of two real numbers:
+0.0 if they are exactly the same,
+otherwise the ratio of the difference to the larger of the two.
+<pre>
+#define Abs(x)    ((x) &lt; 0 ? -(x) : (x))
+#define Max(a, b) ((a) &gt; (b) ? (a) : (b))
+
+double RelDif(double a, double b)
+{
+	double c = Abs(a);
+	double d = Abs(b);
+
+	d = Max(c, d);
+
+	return d == 0.0 ? 0.0 : Abs(a - b) / d;
+}
+</pre>
+Typical usage is
+<pre>
+	if(RelDif(a, b) &lt;= TOLERANCE) ...
+</pre>
+</p>
+<p>References:
+
+Knuth Sec. 4.2.2 pp. 217-8
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="degrees.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="round.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

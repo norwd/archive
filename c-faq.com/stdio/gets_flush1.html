@@ -1,0 +1,137 @@
+<html>
+<head>
+<title>fflush vs gets</title>
+</head>
+<body>
+From: Chris Torek
+<br>
+Subject: Re: <TT>fflush</TT> vs <TT>gets</TT>
+<br>
+Date: 2000/01/20
+<br>
+Message-ID: &lt;clcm-20000120-0031@plethora.net&gt;
+<p>
+Peter S. Shenkin wrote:
+<br>
+&gt;I know I'm being dense here, but could someone explain to me
+<br>
+&gt;what problem this person is trying to solve?  I've read this
+<br>
+&gt;and the FAQ section posted by Dann Corbitt, and I still don't
+<br>
+&gt;get it.
+<br>
+&gt;
+<br>
+&gt;Why would you possibly want to discard the user's input, and
+<br>
+&gt;how in the world would you know what part to discard?
+<p>
+The short answers are: &ldquo;You don't, and you don't.&rdquo;
+<p>
+What is going on here is a kludge piled on top of an already &ldquo;bad&rdquo;
+(in some sense) program.  Instead of fixing the actual <em>problem</em>,
+certain books that purport to teach C suggest fixing the <em>symptoms</em>.
+<p>
+This is a bit like going in to the doctor with incipient pneumonia
+and being given a cough suppressant.
+<p>
+The root of the problem is the use of <TT>scanf()</TT>.  The <TT>scanf()</TT> function
+is a large and complex beast that often does something almost but
+not quite entirely unlike what you desired.
+<p>
+The entire <TT>scanf()</TT> family works by interpreting &ldquo;directives&rdquo;.  These
+directives are not well suited to interactive (&ldquo;talking to a human&rdquo;)
+input.  In particular, a directive like &ldquo;&nbsp;&rdquo; or &ldquo;<TT>\n</TT>&rdquo; means: &ldquo;skip as
+much input white space as you can find, INCLUDING NEWLINES.&rdquo;  Most
+conversion directives (including <TT>%d</TT> and <TT>%f</TT>) have an implicit skip as
+well.  This means that if you print a prompt:
+<p>
+<pre>
+	printf("please enter a number: ");
+	fflush(stdout);
+</pre>
+<p>
+and then ask for input using `<TT>scanf("%d",&nbsp;&amp;var)</TT>', and the human enters
+a blank line, the computer simply sits there, rather than re-prompting.
+<p>
+The next problem is that the <TT>scanf()</TT> family tend to leave unconsumed
+input.  Anything that does not &ldquo;meet the requirements&rdquo; is left in
+place.  If the user, who is supposed to enter a number, enters
+&ldquo;three&rdquo; instead of &ldquo;3&rdquo;, the &ldquo;t&rdquo; does not meet the requirements for
+&ldquo;<TT>%d</TT>&rdquo;.  The entire line (&ldquo;three\n&rdquo;) is left in the input stream.
+If the user <em>does</em> enter a number, such as &ldquo;3&rdquo;, only the newline
+is left in the stream.  If the user enters a number followed by a
+blank (or tab or other whitespace), the blank and newline are both
+left in the stream.
+<p>
+This characteristic (of leaving &ldquo;extra&rdquo; input behind as a trap to
+the unwary) leads people to write the &ldquo;discard user's input&rdquo; code.
+Unfortunately, they often use implementation-specific constructs like
+<TT>fflush(stdin)</TT>, or broken ones like an unadorned <TT>getchar()</TT> or a
+<TT>scanf</TT> format like &ldquo;<TT>%*[^\n]%*c</TT>&rdquo;.  To see why this last format is broken,
+read the next paragraphs.
+<p>
+Another substantial problem with the <TT>scanf()</TT> functions is that they
+interpret directives sequentially, and stop as soon as they get a
+&ldquo;matching failure&rdquo;.  This seems often to surprise people.  In
+particular, consider the format directive &ldquo;<TT>%*[^\n]</TT>&rdquo;.  This consists
+of several parts.  The &ldquo;<TT>%</TT>&rdquo; introduces the conversion.  The asterisk
+&ldquo;<TT>*</TT>&rdquo; suppresses assignment of the result of the conversion, so that
+no additional buffer is required.  The &ldquo;<TT>[</TT>&rdquo; specifies that the
+conversion is to do a character-class match, the initial &ldquo;<TT>^</TT>&rdquo; inverts
+the class, and the class itself consists only of a single character,
+&ldquo;<TT>\n</TT>&rdquo;.  The &ldquo;<TT>]</TT>&rdquo; terminates the class and is the end of that directive.
+This directive thus means &ldquo;match things that are not newlines&rdquo;.
+<p>
+The tricky bit here is that any <TT>%[</TT> directive MUST MATCH AT LEAST
+ONE CHARACTER.  If it fails to match at least one character, the
+scan terminates.  The call returns without looking at any further
+directives.  Thus, if the next input character is a newline, this
+&ldquo;<TT>%*[</TT>&rdquo; directive fails, and the &ldquo;<TT>%*c</TT>&rdquo; NEVER OCCURS.  The format
+sequence &ldquo;<TT>%*[^\n]%*c</TT>&rdquo; only clears out the rest of a line if there
+is at least one character before the newline.
+<p>
+This problem can be fixed (as others noted) by using two separate
+calls.  An initial <TT>scanf()</TT> with &ldquo;<TT>%*[^\n]</TT>&rdquo; will either eat everything
+up to but not including a newline, or fail.  A subsequent &ldquo;<TT>%*c</TT>&rdquo;
+(or plain old <TT>getchar()</TT>) will consume the newline, if there was one.
+<p>
+That last &ldquo;if&rdquo; matters too: perhaps the user signalled EOF.  In this
+case, the <TT>getchar()</TT> or <TT>scanf("%*c")</TT> might -- this decision is left
+to the people who write your compiler -- either immediately return
+EOF, or go back to the user for more input.  If the implementors
+choose the latter, the user might have to click on &ldquo;end this thing&rdquo;
+(<TT>^D</TT>, <TT>^Z</TT>, mouse button, front panel switch, or whatever) one extra
+time.  This is annoying, if nothing else.
+<p>
+(Incidentally, offhand, I think <TT>%[</TT> and <TT>%c</TT> are the only two directives
+that do not immediately skip whitespace, including newlines.)
+<p>
+So what <em>is</em> the &ldquo;right&rdquo; answer?  There are various ways to do
+this.  You can write horrendously complicated code using <TT>getchar</TT>,
+<TT>ungetc</TT>, and <TT>scanf</TT>, carefully checking all the return values.  You
+can call <TT>fgets()</TT> to read a complete line, then -- having &ldquo;sandboxed&rdquo;
+it, as it were, use <TT>sscanf()</TT> and not worry too much about bad input.
+You can call <TT>fgets()</TT> and use <TT>strtol()</TT> and other string-parsing
+functions.  The simpler approaches all share one common characteristic,
+though:  they first read a complete line (including the terminating
+newline), and only then try to pick it apart.  That gives users
+time to mull over their answer, type something in, erase it, type
+something else, erase that, think a bit more, and then give Regis
+Philbin their &ldquo;final answers&rdquo; by pressing ENTER or RETURN. :-) You
+then get the whole thing at once, and can dissect it as needed.
+<br>
+-- 
+<br>
+In-Real-Life: Chris Torek, Berkeley Software Design Inc
+<br>
+El Cerrito, CA, USA
+<br>
+http://claw.bsdi.com/torek/  (not always up)	I report spam to abuse@.
+<br>
+-- 
+<br>
+comp.lang.c.moderated - moderation address: clcm@plethora.net
+</body>
+</html>

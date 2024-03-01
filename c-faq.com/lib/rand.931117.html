@@ -1,0 +1,269 @@
+<html>
+<head>
+<title>Re: help with random #s!</title>
+</head>
+<body>
+[text edited slightly since first posted]
+<p>
+Newsgroups: comp.lang.c
+<br>
+From: scs@eskimo.com (Steve Summit)
+<br>
+Subject: Re: help with random #s!
+<br>
+Date: Wed, 17 Nov 1993 06:10:36 GMT
+<br>
+Message-ID: &lt;CGMH5u.1r7@eskimo.com&gt;
+<p>
+In article &lt;2c80r2INN4js@umbc8.umbc.edu&gt;, Jonas Schlein
+writes:
+<br>
+&gt; ...Why not just do the <TT>%</TT> operator? For instance if I wanted a number
+<br>
+&gt; from 0 - 99 I would do something like:
+<br>
+&gt;&nbsp;&nbsp;&nbsp;&nbsp;<TT>rand () % 100;</TT>
+<p>
+This ought to work, but has problems if the implementation of
+<TT>rand()</TT> is poor, which is all too common.
+<p>
+In article &lt;ZY7IBWQQ@math.fu-berlin.de&gt;,
+denholm writes:
+<br>
+&gt; doesn't this introduce a non-uniformity..?
+<br>
+&gt; it is clearer if one considers <TT>RAND_MAX</TT>=150
+<br>
+&gt; <TT>rand() % 100</TT>  will give 0-&gt;49 twice as often as 50-&gt;99
+<br>
+&gt; 
+<br>
+&gt; <TT>(double) rand() / RAND_MAX</TT>   will give a real 0-&gt;1 ...
+<p>
+It won't be a ``real'' 0-1 range; it will still be quantized into
+150 (i.e. <TT>RAND_MAX</TT>) distinct values, and the nonuniformity will
+persist.
+<p>
+The question of how to produce pseudorandom numbers in a given
+range is frequently-asked and not nearly as trivial as it might
+at first appear.  One might well wonder why it is not addressed
+in the comp.lang.c FAQ list -- the reason is that I have not been
+satisfied with my own understanding of the subject.  Having spent
+much of today exploring at least one facet of the issue to my
+satisfaction, I am ready to say a few words about this latest
+incarnation of the ``help with random #s!'' thread, and provide an
+inverse outline of the entry which I will soon add to the FAQ
+list. (I say ``inverse outline'' because the entry to be added to
+the FAQ list will in fact be an outline or summary of this
+article, which will be considerably too long for an FAQ list
+entry.)
+<p>
+We will consider several ways of writing the routine
+<pre>
+	int myrand(unsigned int n)
+</pre>
+, which is supposed to return well-distributed random integers in
+the half-open interval [0,&nbsp;<TT>n</TT>); that is, integers x such that
+0 &lt;= x &lt; <TT>n</TT>.  All of our attempts at writing <TT>myrand</TT> will be based
+on the underlying, ANSI Standard <TT>rand</TT> routine, which returns
+integers in the closed interval [0,&nbsp;<TT>RAND</TT>_MAX].  (It is obviously
+trivial to use our extend <TT>myrand</TT> to generate random numbers for
+ranges which are not 0-based.)  <TT>RAND_MAX</TT> is #defined in
+<TT>&lt;stdlib.h&gt;</TT>; that header should be considered to be #included in
+the code fragments below.
+<p>
+There are a couple of things to worry about when writing <TT>myrand</TT>.
+One is that many existing <TT>rand</TT> implementations are deficient; in
+particular, they are not very random in the low-order bits.
+Another is that unless <TT>n</TT> is much less than <TT>RAND_MAX</TT>, <TT>myrand</TT>'s
+output distribution is likely to be lopsided.
+<p>
+The most obvious way of writing <TT>myrand</TT> is
+<p>
+<pre>
+	myrand1(n)
+	unsigned int n;
+	{
+	return rand() % n;
+	}
+</pre>
+<p>
+It is a very great tragedy that this implementation cannot be
+generally used, because it otherwise displays a number of
+significant virtues, and would otherwise be preferable to the
+alternatives which I shall consider, all of which have
+deficiencies of their own.
+<p>
+One of <TT>myrand1</TT>'s virtues is that it is very obvious how it works,
+and that it works.  Another is that it does not require knowing
+<TT>RAND_MAX</TT>, which is useful when code must be portable to pre-ANSI
+systems.  Still another is that its output distribution is
+superior (when <TT>n</TT> is not much less than <TT>RAND_MAX</TT>) to another
+alternative which I shall consider later on.
+<p>
+However, the widespread existence of poor <TT>rand</TT> implementations
+dooms <TT>myrand1</TT> for general-purpose use.  If the underlying <TT>rand</TT>
+implementation is a linear congruential random number generator
+with period m, and if <TT>n</TT> in <TT>myrand1</TT> is a divisor of m, then
+<TT>myrand1</TT>'s output will repeat with period <TT>n</TT> [Knuth Volume 2
+Sec. 3.2.1.1; p. 12 in the second edition].  If m matches the
+computer's word size and is a power of 2 (a popular choice), then
+sequential calls to <TT>myrand1(2)</TT> will generate output which
+alternates 0, 1, 0, 1, 0, 1...
+<p>
+Our second attempt at implementing <TT>myrand</TT> gets at the higher
+order bits of <TT>rand</TT>'s output by using <TT>RAND_MAX</TT> and floating point:
+<p>
+<pre>
+	myrand2(n)
+	unsigned int n;
+	{
+	return (double)rand() / ((double)RAND_MAX + 1) * n;
+	}
+</pre>
+<p>
+<TT>myrand2</TT> works well; its only real disadvantage is that it uses
+floating point, which can decrease speed and increase executable
+size.
+<p>
+(It is often claimed that an implementation like <TT>myrand2</TT> will
+also overcome distribution problems if <TT>n</TT> approaches <TT>RAND_MAX</TT>; but
+this belief is quite false, as a moment's thought will
+demonstrate.  As long as <TT>rand</TT>'s output domain is quantized and
+consists of <TT>RAND_MAX+1</TT> values, no simple mapping, floating or
+integral, can avoid maldistribution when <TT>(RAND_MAX+1)&nbsp;%&nbsp;n</TT>&nbsp;!=&nbsp;0.)
+<p>
+If we can't trust <TT>rand</TT> to be random in the low-order bits, and we
+don't want to use floating point, we can use what amounts to a
+fixed-point version of <TT>myrand2</TT>:
+<p>
+<pre>
+	myrand3(n)
+	unsigned int n;
+	{
+	return rand() / (RAND_MAX / n + 1);
+	}
+</pre>
+<p>
+This is probably the preferable routine for general-purpose use.
+Its only drawback is that if <TT>n</TT> is greater than about <TT>RAND_MAX/2</TT>,
+it will not only distribute its outputs unevenly, but some values
+will not appear at all.  (As <TT>n</TT> approaches <TT>RAND_MAX</TT>, <TT>myrand1</TT> has a
+bimodal distribution, but <TT>myrand3</TT> tends to have a trimodal
+distribution, with some values at zero.  <TT>myrand2</TT>, on the other
+hand, will display the same number of ``heavy'' outputs as myrand1,
+but spread out over the range.)  However, as long as <TT>n</TT> is much
+less than <TT>RAND_MAX</TT>, as is usually the case, <TT>myrand3</TT> should be
+perfectly adequate.
+<p>
+If you want to avoid the discrepancies that arise when
+<TT>(RAND_MAX+1)&nbsp;%&nbsp;n</TT>&nbsp;!=&nbsp;0, you don't have much choice but to call
+<TT>rand</TT> multiple times, as in our final attempt:
+<p>
+<pre>
+	#define MAXTIMES 5 
+	myrand4(n)
+	unsigned int n;
+	{
+	int d = ((unsigned)RAND_MAX + 1) / n;
+	unsigned int m = d * n;
+	int i;
+	int r;
+
+	for(i = 0; i &lt; MAXTIMES; i++)
+		{
+		r = rand();
+		if((unsigned)r &lt; m)
+			return r / d;
+		}
+
+	return r / (RAND_MAX / n + 1);
+	}
+</pre>
+<p>
+Here, we throw away some of <TT>rand</TT>'s output values, to simulate
+another random number generator with a period which is a multiple
+of <TT>n</TT>.  The obvious concern is that if we're really unlucky, we
+may hit a long run of these discarded values, and waste a lot of
+time calling <TT>rand</TT> during one call to <TT>myrand4</TT>.  (In fact, if we
+wait long enough, we
+might get an arbitrarily long
+string of values we need
+to discard.)  Therefore, the code above implements a limit; if it
+gets too many bad values in a row, it falls back to to <TT>myrand3</TT>'s
+algorithm.  (The code displays a classic tradeoff between time
+and accuracy: the larger you make <TT>MAXTIMES</TT>, the less will be the
+accumulated error, but the longer you might spend on a particular
+call.  If <TT>MAXTIMES</TT> is 1, <TT>myrand4</TT> is essentially <TT>myrand3</TT>.)
+<p>
+Since this is obviously a rather pedagogical article, I can't
+resist suggesting a few exercises for the reader.  (I include
+these as exercises not only because they are interesting but also
+because it's getting late and I don't feel like figuring out and
+presenting their answers; therefore, please don't send me e-mail
+asking for the answers or inquiring whether your answers are
+correct.)
+<ol>
+<p><li>
+Write <TT>myrandmn(int m,&nbsp;int n)</TT>, which returns integers in
+the range <TT>m</TT> to <TT>n</TT>.  Use <TT>myrand</TT> to do most of the work.
+Should <TT>myrandmn</TT> be defined in terms of a closed or
+half-open interval?
+<p><li>
+Explain the presence of the +1 ``fudge factors'' in
+<TT>myrand2</TT>, <TT>myrand3</TT>, and <TT>myrand4</TT>.  Is the expression in
+<TT>myrand3</TT> parenthesized correctly?
+<p><li>
+Why does <TT>myrand</TT> accept an unsigned value?  (This one I do
+have an answer for; see below.)
+<p><li>
+Fix <TT>myrand3</TT> so that in the worst case it has a bimodal
+rather than trimodal distribution, yet still uses no
+floating point.  Consider using something like Walker's
+Algorithm [Knuth Volume 2 Sec. 3.4.1; p. 115 in the
+second edition].
+<p><li>
+Improve <TT>myrand4</TT> so that when it does have to break out of
+the loop to avoid too many calls to rand, it at least
+spreads the ``leftover'' values around evenly, rather than
+always favoring the same values that <TT>myrand3</TT> favors.
+Hint: you'll probably need a local static variable.
+<p><li>
+Investigate the behavior of various <TT>myrand</TT>
+implementations, in conjunction with several underlying
+<TT>rand</TT> implementations, some with good and some with poor
+randomness properties.  Make <TT>RAND_MAX</TT> artificially small,
+to explore in detail the behavior as <TT>n</TT> approaches
+<TT>RAND_MAX</TT>.  Collect histograms to display the output
+distribution.  Verify whether the output repeats with
+unacceptably low period.
+</ol>
+<p>
+Finally, a few disclaimers.  As I mentioned, random numbers are
+subtle, and not nearly as trivial as they might at first appear.
+Knuth devotes some 177 pages to the subject, not all of which I
+can claim to understand completely, yet he does not touch on many
+of the implementation issues I have raised here.  This article
+satisfies one level of my own curiosity about the subject, but is
+by no means definitive.  My assessment of the tradeoffs between
+the four code fragments I have presented is superficial; there
+are a few additional factors I haven't fully explained, and
+doubtless more which I'm not fully aware of.  I just wrote
+<TT>myrand3</TT> today and don't distinctly remember seeing something like
+it before, it may have some lurking deficiency as ultimately
+fatal as <TT>myrand1</TT>'s.
+<p>
+<address>
+					Steve Summit
+<br>
+					scs@eskimo.com
+</address>
+<p>
+Answers to selected exercises:
+<p>
+3.
+<TT>myrand</TT> accepts unsigned values so that it works in
+the limiting case, namely <TT>myrand(RAND_MAX+1)</TT>, when
+<TT>RAND_MAX&nbsp;==&nbsp;INT_MAX</TT> (as is usually the case).
+</body>
+</html>

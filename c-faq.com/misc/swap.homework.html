@@ -1,0 +1,111 @@
+<html>
+<head>
+<title>swapping with or without temporaries</title>
+</head>
+<body>
+<p>
+[This is part of my reply to someone who asked
+how to swap two values without using a third object.]
+<p>
+From: scs@eskimo.com (Steve Summit)
+<br>
+Subject: Re: Swapping two values
+<br>
+Date: Fri, 13 Jun 1997 07:27:59 -0700 (PDT)
+<br>
+Message-Id: &lt;199706131427.HAA06631@mail.eskimo.com&gt;
+<p>
+You wrote:
+<br>
+&gt; I have a question for you :
+<br>
+&gt;    I need to swap the value of two scalar's without using a third object.
+<p>
+There are two possible reasons you might be asking me this question:
+<br>
+1. This requirement is part of some project concerning your employment.
+<br>
+2. This is a homework or examination question.
+<p>
+If the former, please go back and convince the architect or
+manager who has imposed this requirement to reconsider.  The
+trick for swapping values without using temporaries is useful
+only in assembly language, when for some reason registers are in
+short supply.  The trick has no place in a higher-level language
+such as C, because temporary variables are essentially free.
+If
+you're using C, the right way to swap two
+values <TT>a</TT> and <TT>b</TT> is to use a temporary <TT>t</TT>:
+<p>
+<pre>
+	t = a;
+	a = b;
+	b = t;
+</pre>
+<p>
+Using the trick would only make your program slightly larger,
+slightly slower, and slightly harder to understand.
+<p>
+If the latter, I normally do not give people the answers to
+homework problems, but since this question is
+ill-advised, I'm willing to make an exception.
+<p>
+If <TT>a</TT> and <TT>b</TT> are integers, you can swap them by using this curious
+set of exclusive-or operations:
+<p>
+<pre>
+	a ^= b;
+	b ^= a;
+	a ^= b;
+</pre>
+<p>
+But this works only if <TT>a</TT> and <TT>b</TT> are integers, and it has an
+additional disadvantage, which is that if for some reason you
+have pointers to the integers you want to swap, such that you're
+tempted to write
+<p>
+<pre>
+	*p1 ^= *p2;
+	*p2 ^= *p1;
+	*p1 ^= *p2;
+</pre>
+<p>
+then in the case where <TT>p1 == p2</TT>, you'll zero out both <TT>*p1</TT>
+and <TT>*p2</TT>. (The case could arise if you wrote something like
+<pre>
+	swap(&amp;a[i], &amp;b[j]);
+</pre>
+in the context of a sorting routine, and <TT>i==j</TT>.)
+<p>
+If <TT>a</TT> and <TT>b</TT> are floating-point variables, I think there are
+triple sequences of additions and subtractions which will
+accomplish a swap, but they're all subject to overflow.
+<p>
+Again, these ``tricks,'' even if they work, are likely to be
+significantly slower and bulkier than the obvious three-assignment
+swap using a temporary.  These tricks are intellectual
+curiosities only; they offer no advantages over the more obvious
+swap; they have virtually no place in modern programming.
+<p>
+If, in fact, this was a homework question,
+please request your instructor not to assign it in the future.
+It is essentially meaningless and misleading; it serves mostly to
+induce students to use these tricks in real programs, where they
+have no place.
+Also, if your instructor offers as a
+solution to this question the version of the exclusive-or trick
+expressed as
+<p>
+<pre>
+	a ^= b ^= a ^= b;
+</pre>
+please inform your instructor that this expression is undefined
+in C.
+<p>
+<address>
+<a href="http://www.eskimo.com/~scs/">Steve Summit</a>
+<br>
+<a href="mailto:scs@eskimo.com">scs@eskimo.com</a>
+</address>
+</body>
+</html>

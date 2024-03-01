@@ -1,0 +1,84 @@
+<html>
+<head>
+<title>alignment and padding</title>
+</head>
+<body>
+<p>
+[Someone asked me why it was that structures need internal paddding.
+This was my reply.]
+<p>
+From: scs@eskimo.com (Steve Summit)
+<br>
+Date: Sun, 17 Mar 2002 20:56:35 -0500
+<br>
+Message-Id: &lt;2002Mar17.2056.scs.007@aeroroot.scs.ndip.eskimo.net&gt;
+<p>
+You wrote:
+<br>
+&gt; ...what is still haunting my brain is why structures
+<br>
+&gt; need internal padding
+<p>
+It's for ``alignment''.  Many processors can't access 2- and
+4-byte quantities (e.g. ints and long ints) if they're crammed
+in every-which-way.
+<p>
+Suppose you have this structure:
+<p>
+<pre>
+	struct	{
+		char a[3];
+		short int b;
+		long int c;
+		char d[3];
+		};
+</pre>
+<p>
+Now, you might think that it ought to be possible to pack this
+structure into memory like this:
+<p>
+<pre>
+	+-------+-------+-------+-------+
+	|           a           |   b   |
+	+-------+-------+-------+-------+
+	|   b   |           c           |
+	+-------+-------+-------+-------+
+	|   c   |           d           |
+	+-------+-------+-------+-------+
+</pre>
+<p>
+But it's much, much easier on the processor if the compiler
+arranges it like this:
+<p>
+<pre>
+	+-------+-------+-------+
+	|           a           |
+	+-------+-------+-------+
+	|       b       |
+	+-------+-------+-------+-------+
+	|               c               |
+	+-------+-------+-------+-------+
+	|           d           |
+	+-------+-------+-------+
+</pre>
+<p>
+In the ``packed'' version, notice how it's at least a little bit
+hard for you and me to see how the b and c fields wrap around?
+In a nutshell, it's hard for the processor, too.
+Therefore, most compilers will ``pad'' the structure
+(as if with extra, invisible fields)
+like this:
+<p>
+<pre>
+	+-------+-------+-------+-------+
+	|           a           | pad1  |
+	+-------+-------+-------+-------+
+	|       b       |     pad2      |
+	+-------+-------+-------+-------+
+	|               c               |
+	+-------+-------+-------+-------+
+	|           d           | pad3  |
+	+-------+-------+-------+-------+
+</pre>
+</body>
+</html>

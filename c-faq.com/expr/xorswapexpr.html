@@ -1,0 +1,97 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file expr.sgml dated Sat Jul  3 17:10:33 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 3.3b</title>
+<link href="ieqiplusplus.html" rev=precedes>
+<link href="precvsooe.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="ieqiplusplus.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="precvsooe.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 3.3b
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+Here's a slick expression:
+<pre>
+a&nbsp;^=&nbsp;b&nbsp;^=&nbsp;a&nbsp;^=&nbsp;b</pre>
+
+It swaps <TT>a</TT> and <TT>b</TT> without using a temporary.
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+Not portably,
+it doesn't.
+It attempts to modify
+the variable
+<TT>a</TT> twice between sequence points,
+so
+its behavior is undefined.
+</p><p>
+For example, it has been reported
+that
+
+
+
+
+
+
+when given the code
+<pre>
+	int a = 123, b = 7654;
+	a ^= b ^= a ^= b;
+</pre>
+the SCO Optimizing C compiler (<TT>icc</TT>)
+sets <TT>b</TT> to 123 and <TT>a</TT> to 0.
+</p><p>See also questions
+<a href="evalorder1.html">3.1</a>,
+<a href="seqpoints.html">3.8</a>,
+<a href="../cpp/swapmacro.html">10.3</a>,
+and <a href="../misc/swapnotemp.html">20.15c</a>.
+</p><!-- aend -->
+<p>
+<hr>
+<a href="ieqiplusplus.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="precvsooe.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

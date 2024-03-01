@@ -1,0 +1,70 @@
+<html>
+<head>
+<title></title>
+</head>
+<body>
+From: tstyles@my-dejanews.com
+<br>
+Newsgroups: comp.lang.c
+<br>
+Subject: Re: Macros with variable number of arguments?
+<br>
+Date: Mon, 22 Mar 1999 08:24:26 GMT
+<br>
+Message-ID: &lt;7d4unk$2rc$1@nnrp1.dejanews.com&gt;
+<p>
+In article &lt;SouthSide-2003990057220001@bns.vip.best.com&gt;,
+<br>
+  SouthSide@kagi.com (Bob Bradley) wrote:
+<br>
+&gt; Is it possible to create a macro with a variable number of arguments? I
+<br>
+&gt; want to create a debugging macro that accepts a variable-number of
+<br>
+&gt; arguments to call a printf-like routine, but when a preprocessor flag is
+<br>
+&gt; off, I want it to completely eliminate the function call. For example:
+<br>
+&gt;
+<br>
+&gt; #if( DEBUG )
+<br>
+&gt;    #define  DebugMacro( ... )    printf( ... )
+<br>
+&gt; #else
+<br>
+&gt;    #define  DebugMacro( ... )
+<br>
+&gt; #endif
+<p>
+<pre>
+#if( DEBUG )
+   #define  DebugMacro(Fmt_and_Args)    printf(Fmt_and_Args)
+   #define  Arg(X)                      , (X)
+#else
+   #define  DebugMacro(Fmt_and_Args)
+   #define  Arg(X)
+#endif
+</pre>
+<p>
+Usage
+<pre>
+   DebugMacro("Index %d, value %f"Arg(i)Arg(value));
+</pre>
+This then allows you to insert 'hidden' arguments, eg
+<pre>
+#if( DEBUG )
+   #define  DebugMacro(Fmt_and_Args) fprintf(stderr,Fmt_and_Args)
+</pre>
+or even,
+<pre>
+#if( DEBUG )
+   #define  DebugMacro(Fmt_and_Args) dbgprintf(__FILE__,__LINE__,Fmt_and_Args)
+</pre>
+Tristan Styles #1485
+<p>
+Failure is not an Option
+<br>
+It is Standard Operating Procedure
+</body>
+</html>

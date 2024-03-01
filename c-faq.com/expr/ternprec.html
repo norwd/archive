@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file expr.sgml dated Sat Jul  3 17:10:33 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 3.17</title>
+<link href="qcolonlhs.html" rev=precedes>
+<link href="unswarn.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="qcolonlhs.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="unswarn.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 3.17
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+I have
+some code
+containing expressions
+like
+<pre>
+a ? b = c : d</pre>
+
+and some compilers are accepting it but some are not.
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+In the original definition of
+the language,
+<TT>=</TT> was of lower precedence
+than <TT>?:</TT>,
+so early compilers tended to trip up on an expression like
+the one above,
+attempting to parse it as
+if it had been written
+<pre>
+	(a ? b) = (c : d)
+</pre>
+Since it has no other sensible meaning, however,
+later compilers have allowed
+the expression,
+and interpret it
+as if
+an inner set of
+parentheses were implied:
+<pre>
+	a ? (b = c) : d
+</pre>
+Here,
+the left-hand operand of the <TT>=</TT> is simply <TT>b</TT>,
+not the invalid <TT>a&nbsp;?&nbsp;b</TT>.
+In fact,
+the grammar specified in the ANSI/ISO C Standard
+effectively requires this interpretation.
+(The grammar in the Standard
+is not precedence-based,
+and says that any expression may appear between
+the <TT>?</TT> and <TT>:</TT> symbols.)
+</p><p>An expression like the one in the question is
+
+perfectly acceptable to an ANSI compiler,
+but if you ever have to compile it under an older compiler,
+you can always add the explicit, inner parentheses.
+
+</p>
+
+
+<p>References:
+
+K&amp;R1 Sec. 2.12 p. 49
+<br>
+ISO Sec. 6.3.15
+<br>
+Rationale Sec. 3.3.15
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="qcolonlhs.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="unswarn.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

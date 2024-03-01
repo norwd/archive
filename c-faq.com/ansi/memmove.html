@@ -1,0 +1,135 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file ansi.sgml dated Wed Aug 11 00:43:45 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+
+<title>Question 11.25</title>
+<link href="voidparith.html" rev=precedes>
+<link href="malloc0.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="voidparith.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="malloc0.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 11.25
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+What's the difference between
+<TT>memcpy</TT> and
+<TT>memmove</TT>?
+
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+<TT>memmove</TT> offers guaranteed behavior
+if the
+memory
+regions
+
+pointed to by the
+source and destination arguments
+
+overlap.
+<TT>memcpy</TT> makes no such guarantee,
+and may therefore be more efficiently implementable.
+When in doubt, it's safer to use <TT>memmove</TT>.
+</p><p>It seems
+simple enough to implement <TT>memmove</TT>;
+the overlap guarantee
+apparently requires
+only an additional test:
+<pre>
+void *memmove(void *dest, void const *src, size_t n)
+{
+	register char *dp = dest;
+	register char const *sp = src;
+	if(dp &lt; sp) {
+		while(n-- &gt; 0)
+			*dp++ = *sp++;
+	} else {
+		dp += n;
+		sp += n;
+		while(n-- &gt; 0)
+			*--dp = *--sp;
+	}
+
+	return dest;
+}
+</pre>
+The problem
+with this code
+is in that additional test:
+the comparison
+<TT>(dp&nbsp;&lt;&nbsp;sp)</TT>
+is not quite portable
+(it compares two pointers
+which do not necessarily point within the same object)
+and may not be as cheap as it looks.
+On some machines
+(particularly segmented architectures),
+it may be tricky and significantly less efficient
+<a href="norml.html" rel=subdocument>[footnote]</a>
+to implement.
+</p>
+
+
+
+
+
+<p>References:
+
+K&amp;R2 Sec. B3 p. 250
+<br>
+ISO Sec. 7.11.2.1, Sec. 7.11.2.2
+<br>
+Rationale Sec. 4.11.2
+<br>
+H&amp;S Sec. 14.3 pp. 341-2
+<br>
+PCS Sec. 11 pp. 165-6
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="voidparith.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="malloc0.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

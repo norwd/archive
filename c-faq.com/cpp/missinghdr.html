@@ -1,0 +1,205 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file cpp.sgml dated Wed Dec 21 13:52:14 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+
+<title>Question 10.11</title>
+<link href="extlibs.html" rev=precedes>
+<link href="ifstrcmp.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="extlibs.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="ifstrcmp.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 10.11
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+I'm compiling a program, and
+I seem to be missing
+one
+of the
+header files it
+requires.
+Can someone send me
+a copy?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+There are several situations, depending on what sort of header
+file it is that's ``missing''.
+</p><p>If the missing header file is
+truly
+a standard one
+(that is,
+one defined by the ANSI C Standard,
+such as <TT>&lt;stdio.h&gt;</TT>),
+there's a problem with your compiler.
+Either
+the compiler
+wasn't installed properly,
+or your project is somehow not configured
+to find the standard header files.
+You'll need to contact your vendor,
+or someone knowledgeable about your particular compiler,
+for help.
+</p><p>In
+the case of nonstandard headers,
+the situation is considerably more complicated.
+Some
+headers
+(such as <TT>&lt;dos.h&gt;</TT>)
+are completely system- or compiler-specific.
+Some
+are completely unnecessary,
+and should be replaced by
+their Standard equivalents.
+(For example,
+instead of
+the nonstandard
+<TT>&lt;malloc.h&gt;</TT>
+and
+<TT>&lt;memory.h&gt;</TT>,
+portable
+source code should instead <TT>#include</TT>
+<TT>&lt;stdlib.h&gt;</TT>
+and
+<TT>&lt;string.h&gt;</TT>,
+respectively.)
+Other
+headers,
+such as those associated with popular add-on libraries,
+may be reasonably portable.
+</p><p>If the missing header file is an OS-specific one,
+such as
+<TT>&lt;sgtty.h&gt;</TT>,
+<TT>&lt;sys/stat.h&gt;</TT>,
+<TT>&lt;netinet/in.h&gt;</TT>,
+or
+<TT>&lt;dos.h&gt;</TT>,
+it may be that the program you're compiling was
+tailored to
+an operating system other than the one you're using.
+(It's also possible that
+some conditional compilation settings need to be adjusted.)
+
+
+
+
+It likely won't be possible to get the program working
+without rewriting its system-dependent portions.
+Simply getting copies of the missing header files wouldn't help--they
+typically contain declarations of the interfaces
+to the various system calls and libraries.
+Obtaining copies of the header files wouldn't get you copies of the libraries,
+and the libraries wouldn't be of any use
+(that is, they wouldn't work)
+without the underlying system calls, anyway.
+See also
+questions <a href="../osdep/cbreak.html">19.1</a>, <a href="../osdep/termcap.html">19.4</a>, <a href="../osdep/modtime.html">19.12b</a>, and <a href="../osdep/int86.html">19.40c</a>.
+</p><p>If the missing header file is for
+some external, add-on, third-party
+library,
+look for the header where you got the library.
+If you have some source code
+which #includes what appears to be an add-on header,
+but
+which
+
+you don't have,
+you probably don't have the library, either,
+and you'll need both.
+See question <a href="../lib/extlibs.html">13.25</a>;
+see also question <a href="../resources/sources.html">18.16</a>.
+</p><p>If the header file is unique to
+(that is, part of)
+the program you're trying to compile,
+your search will obviously begin
+at the spot
+where you found the program.
+(Again, see question <a href="../resources/sources.html">18.16</a>.)
+</p><p>In general, however, asking if someone can
+``send you a copy''
+of a missing header file is not likely to be productive.
+Standard headers exist in part so that definitions appropriate to your
+compiler,
+operating system,
+and
+processor
+can be supplied.
+You cannot
+just
+pick up a copy of someone else's header file
+and expect it to work,
+unless that person is using exactly the same environment.
+Nonstandard headers--such as
+those specific to
+a particular operating system
+or third-party library--aren't
+generally any more portable;
+the OS-specific ones are likely to be <em>very</em> specific
+to a particular version and release of the OS,
+and the third-party ones are likely to be equally tied
+to a particular version of the library.
+</p><p>The bottom line is that
+a random person on the net
+is unlikely to be able to send you a working copy
+of the header file you
+(seem to)
+need.
+You may actually have a
+portability problem
+
+(see section <a href="../osdep/index.html">19</a>),
+or a compiler problem
+(in which case you might be able to
+ask your compiler vendor why the file was not provided,
+or to send a replacement copy).
+Otherwise
+(if the header is third-party or application-specific),
+see question <a href="../resources/sources.html">18.16</a>.
+</p><!-- aend -->
+<p>
+<hr>
+<a href="extlibs.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="ifstrcmp.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

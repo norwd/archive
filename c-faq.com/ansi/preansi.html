@@ -1,0 +1,165 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file ansi.sgml dated Wed Aug 11 00:43:45 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 11.29a</title>
+<link href="noalias.html" rev=precedes>
+<link href="preansi2.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="noalias.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="preansi2.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 11.29a
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+My compiler is rejecting the simplest possible test programs,
+with all kinds of syntax errors.
+It's complaining about the
+first line of
+<pre>
+	main(int argc, char **argv)
+	{
+		return 0;
+	}
+</pre>
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+Perhaps it is a pre-ANSI compiler,
+unable to accept function prototypes and the like.
+</p><p>See also questions
+<a href="../decl/autoaggrinit.html">1.31</a>,
+<a href="../cpp/headerglom.html">10.9</a>,
+<a href="preansilib.html">11.30</a>,
+and
+<a href="../strangeprob/unclosed.html">16.1b</a>.
+</p><p>If you don't have access to an ANSI compiler,
+and you need to convert some newer code
+(such as that in this list)
+so that you can compile it,
+perform these steps:
+
+</p><OL><li>Remove
+the argument type information from
+function prototype declarations,
+and convert prototype-style function definitions to old style.
+The new-style declarations
+<pre>
+	extern int f1(void);
+	extern int f2(int);
+	int main(int argc, char **argv) { ... }
+	int f3(void) { ... }
+</pre>
+would be
+
+rewritten as
+<pre>
+	extern int f1();
+	extern int f2();
+	int main(argc, argv) int argc; char **argv; { ... }
+	int f3() { ... }
+</pre>
+
+(Beware
+of parameters with ``narrow'' types;
+see question <a href="argpromos.html">11.3</a>.)
+<li>Replace <TT>void *</TT> with <TT>char *</TT>
+.
+<li>Perhaps insert explicit casts where converting between
+``generic'' pointers
+(<TT>void&nbsp;*</TT>, which you've just replaced with <TT>char&nbsp;*</TT>)
+and other pointer types
+(for instance in calls to <TT>malloc</TT> and <TT>free</TT>,
+and in <TT>qsort</TT> comparison functions;
+see questions <a href="../malloc/cast.html">7.7</a> and <a href="../lib/qsort2.html">13.9</a>).
+<li>
+
+
+Insert casts when passing the ``wrong'' numeric
+types as function arguments, e.g. <TT>sqrt((double)i);</TT>.
+<li>
+Rework calls to <TT>realloc</TT>
+that use <TT>NULL</TT> or <TT>0</TT> as first or second arguments
+(see question <a href="../malloc/reallocnull.html">7.30</a>).
+<li>Remove <TT>const</TT> and <TT>volatile</TT> qualifiers.
+<li>Modify any initialized automatic aggregates
+(see question <a href="../decl/autoaggrinit.html">1.31</a>).
+<li>Use older library functions
+(see question <a href="../lib/oldlibfcns.html">13.24</a>).
+
+<li>Re-work any preprocessor macros involving <TT>#</TT> or <TT>##</TT>
+(see questions <a href="../cpp/oldpaste.html">10.20</a>, <a href="../cpp/charize.html">10.21</a>,
+and <a href="macstrexp.html">11.18</a>).
+<li>
+Rework conditional compilation
+involving <TT>#elif</TT>.
+<li>Convert from the facilities of <TT>&lt;stdarg.h&gt;</TT>
+to <TT>&lt;varargs.h&gt;</TT>
+(see question <a href="../varargs/oldvarargs.html">15.7</a>).
+<li>Cross your fingers.
+(In other words, the
+steps listed here
+are not always
+sufficient;
+more complicated changes may be required which aren't covered 
+by any cookbook conversions.)
+</OL><p>It is possible to make many of these changes with the preprocessor
+rather than by editing source code.
+
+
+
+
+
+
+
+</p><p>See also the
+Rationale's list of ``quiet changes''
+(see question <a href="avail.html">11.2</a>).
+</p><p>See also question <a href="cproto.html">11.31</a>.
+</p><!-- aend -->
+<p>
+<hr>
+<a href="noalias.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="preansi2.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

@@ -1,0 +1,197 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file librand.sgml dated Sat Jul  3 13:09:31 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+
+<title>Question 13.20</title>
+<link href="fprand.html" rev=precedes>
+<link href="rand48.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="fprand.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="rand48.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 13.20
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+How can I generate random numbers with a
+normal or
+Gaussian distribution?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+There are a number of ways of doing this.
+</p><OL><li>Exploit
+the
+Central Limit Theorem
+(``law of large numbers'')
+and add up several uniformly-distributed random numbers:
+<pre>
+#include &lt;stdlib.h&gt;
+#include &lt;math.h&gt;
+
+#define NSUM 25
+
+double gaussrand()
+{
+	double x = 0;
+	int i;
+	for(i = 0; i &lt; NSUM; i++)
+		x += (double)rand() / RAND_MAX;
+
+	x -= NSUM / 2.0;
+	x /= sqrt(NSUM / 12.0);
+
+	return x;
+}
+</pre>
+(Don't overlook the <TT>sqrt(NSUM&nbsp;/&nbsp;12.)</TT> correction,
+though
+it's easy to do so accidentally,
+especially when <TT>NSUM</TT> is 12.)
+<li>Use a method described by
+Abramowitz
+and
+Stegun:
+<pre>
+#include &lt;stdlib.h&gt;
+#include &lt;math.h&gt;
+
+#define PI 3.141592654
+
+double gaussrand()
+{
+	static double U, V;
+	static int phase = 0;
+	double Z;
+
+	if(phase == 0) {
+		U = (rand() + 1.) / (RAND_MAX + 2.);
+		V = rand() / (RAND_MAX + 1.);
+		Z = sqrt(-2 * log(U)) * sin(2 * PI * V);
+	} else
+		Z = sqrt(-2 * log(U)) * cos(2 * PI * V);
+
+	phase = 1 - phase;
+
+	return Z;
+}
+</pre>
+<li>Use a
+method
+discussed
+in
+Knuth
+and due originally
+to Marsaglia:
+<pre>
+#include &lt;stdlib.h&gt;
+#include &lt;math.h&gt;
+
+double gaussrand()
+{
+	static double V1, V2, S;
+	static int phase = 0;
+	double X;
+
+	if(phase == 0) {
+		do {
+			double U1 = (double)rand() / RAND_MAX;
+			double U2 = (double)rand() / RAND_MAX;
+
+			V1 = 2 * U1 - 1;
+			V2 = 2 * U2 - 1;
+			S = V1 * V1 + V2 * V2;
+			} while(S &gt;= 1 || S == 0);
+
+		X = V1 * sqrt(-2 * log(S) / S);
+	} else
+		X = V2 * sqrt(-2 * log(S) / S);
+
+	phase = 1 - phase;
+
+	return X;
+}
+</pre>
+</OL>These
+methods
+all
+generate numbers with mean 0
+and standard deviation
+
+1.
+(To adjust to some
+other distribution,
+multiply by
+the standard deviation
+and add the mean.)
+Method 1 is poor ``in the tails''
+(especially if <TT>NSUM</TT> is small),
+but methods 2 and 3 perform
+quite
+well.
+See the references for more information.
+<p><a href="sd16.html" rel=subdocument>Additional links</a>
+</p>
+
+
+
+
+
+<p>References:
+
+Knuth Sec. 3.4.1 p. 117
+<br>
+Box and Muller, ``A Note on the Generation of Random Normal Deviates''
+<br>
+Marsaglia and Bray, ``A Convenient Method for Generating Normal Variables''
+<br>
+Abramowitz and Stegun, <I>Handbook of Mathematical Functions</I>
+<br>
+Press et al., <I>Numerical Recipes in C</I> Sec. 7.2 pp. 288-290
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="fprand.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="rand48.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

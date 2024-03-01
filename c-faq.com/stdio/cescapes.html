@@ -1,0 +1,140 @@
+<html>
+<head>
+<title></title>
+</head>
+<body>
+<p>
+[Someone asked me whether it was or wasn't obvious that the way to
+print a single <TT>%</TT> sign using <TT>printf</TT> was with the (correct)
+<TT>"%%"</TT> or the (incorrect) <TT>"\%"</TT>.
+This is part of my reply, edited slightly for this web page.]
+<p>
+From: Steve Summit
+<br>
+Subject: Re: printf("%")
+<br>
+In-Reply-To: your message &lt;199703310107.RAA19240@mx2.eskimo.com&gt;
+<br>
+	of Sun, 30 Mar 1997 17:05:57 -0800
+<br>
+<!-- XXX need Date:, Message-ID: -->
+Cc: scs@eskimo.com
+<p>
+If you're used to thinking 
+about how a C program really ``works'' -- how the compiler 
+generates an executable program, and how functions get called at 
+run time -- then it really can be obvious that <TT>\%</TT> can't possibly 
+work, and that the solution has to be something like <TT>%%</TT>.
+<p>
+Suppose that you write this program:
+<p>
+<pre>
+	main()
+	{
+	char line[80];
+	fgets(line, 80, stdin);
+	fputs(line, stdout);
+	}
+</pre>
+<p>
+Obviously, this program reads one line from standard input and 
+prints it right back out again.  Suppose that the line you type 
+at it consists of the 8 characters
+<p>
+<pre>
+	abc\ndef
+</pre>
+<p>
+What gets printed?
+The answer is,
+one line, consisting of the 8 characters
+<p>
+<pre>
+	abc\ndef
+</pre>
+<p>
+You might think that it would instead print the two lines
+<p>
+<pre>
+	abc
+	def
+</pre>
+<p>
+(In fact, it occurs to me that ``Why <em>doesn't</em> it print two 
+lines?'' is an FAQ which I've never added to the list.)
+<br>
+[But I was wrong; it's question 8.8.]
+<p>
+Why <em>doesn't</em> it print two lines?  Why aren't the two characters 
+<TT>\n</TT> interpreted as a single newline character, as they are in 
+character and string constants in source code?  Because those 
+backslash escapes for various special characters are 
+interpreted <em>only</em> in character and string constants in source 
+code.  Furthermore, they're interpreted by the compiler, at 
+compile time, in the process of converting your source code into 
+an executable program.  None of the standard I/O functions 
+(<TT>fgets</TT>, <TT>fputs</TT>, <TT>printf</TT>, etc.) ever do any interpretation of 
+backslashes.  As far as they're concerned, a backslash is just 
+another character
+being read or written.
+By the time these functions are running, any 
+backslashes which had been in the source code (that is, in 
+character or string constants which had been handed to these 
+functions to work on) will already have been processed.
+<p>
+That is, when 
+<TT>fgets()</TT> reads a <TT>\</TT> from the input file, it just places it into 
+the array with all of the other characters.  But when you write
+<p>
+<pre>
+	printf("Hello, world!\n");
+</pre>
+<p>
+<TT>printf</TT> receives a string consisting of 14 characters (not 
+including the terminating <TT>\0</TT>).  The 14th character in the string 
+is a single newline character, however that's represented 
+internally.  <TT>printf</TT> does <em>not</em> receive the two characters <TT>\</TT> and <TT>n</TT>,
+nor does it have to translate them into a newline character.
+The compiler did that already.
+<p>
+If you understand this, it's pretty obvious that
+<p>
+<pre>
+	printf("\%");
+</pre>
+<p>
+can't work.  What will the compiler translate <TT>\%</TT> into?
+As it happens, <TT>\%</TT> isn't a legal special-character sequence, but
+by analogy with <TT>\'</TT>, <TT>\"</TT>, and <TT>\\</TT>, it's likely that the compiler 
+will convert <TT>\%</TT> into a single <TT>%</TT> character.  (It may also 
+generate a warning message about the undefined escape sequence.)
+So <TT>printf</TT> will probably receive a string consisting of a single <TT>%</TT>, 
+<em>exactly</em> as if you'd simply typed
+<p>
+<pre>
+	printf("%");
+</pre>
+<p>
+Whenever printf sees a <TT>%</TT> character in its format string, it 
+<em>always</em> looks at the next character(s) to decide what to print.  
+But there is no following character, so <TT>printf</TT> is confused.
+<p>
+I understand why you expect <TT>\%</TT> to work -- in some contexts,
+at least, the <TT>\</TT> ``turns off'' the special interpretation of the 
+following character.  (That's what it's doing when you write <TT>'\''</TT>
+or <TT>"This string contains a \" and a \\"</TT>.)  So when you want to 
+print a single <TT>%</TT>, you want to ``turn off'' <TT>printf</TT>'s special 
+interpretation of the <TT>%</TT> character, and the first thing you think 
+of is the backslash.  But wait: the backslash turns off special 
+interpretation of characters <em>by the compiler</em>, while what you 
+want is to turn off special interpretation of a character <em>by
+<TT>printf</TT></em>.  The two contexts are completely separate, so the rules 
+might be different, and in fact the rules <em>are</em> different.
+(The first context is ``string constants being processed by the 
+compiler'', and in that context, the rule for turning off special 
+interpretation of certain characters is to precede them with a
+backslash.  The second context is ``format strings being
+interpreted by <TT>printf''</TT>, and in that context, the rule is
+that if you want a single <TT>%</TT>, you write <TT>%%</TT>.)
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file ansi.sgml dated Wed Aug 11 00:43:45 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 11.10</title>
+<link href="constptrconst.html" rev=precedes>
+<link href="typedefconst.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="constptrconst.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="typedefconst.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 11.10
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+
+
+
+Why can't I pass a <TT>char&nbsp;**</TT> to a function which expects a
+<TT>const&nbsp;char&nbsp;**</TT>?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+You can use a pointer-to-T (for any type T) where a
+pointer-to-const-T is expected.
+However,
+the
+rule
+(an explicit exception)
+which permits slight mismatches
+in qualified pointer
+types
+is not applied recursively,
+but only at the top level.
+(<TT>const&nbsp;char&nbsp;**</TT> is
+pointer-to-pointer-to-const-char,
+and the exception
+
+therefore does not apply.)
+</p><p>The reason that you cannot assign a
+<TT>char&nbsp;**</TT> value to a <TT>const&nbsp;char&nbsp;**</TT>
+pointer is somewhat obscure.
+Given that the <TT>const</TT> qualifier exists at all,
+the compiler would like to help you keep your promises not to 
+modify <TT>const</TT> values.
+That's why you can assign
+a <TT>char&nbsp;*</TT> to a <TT>const&nbsp;char&nbsp;*</TT>,
+but not the other way around:
+it's clearly safe to ``add'' <TT>const</TT>-ness to a simple pointer,
+but it would be dangerous to take it away.
+However, suppose you performed the following
+
+more complicated
+series of
+assignments:
+<pre>
+	const char c = 'x';		/* 1 */
+	char *p1;			/* 2 */
+	const char **p2 = &amp;p1;		/* 3 */
+	*p2 = &amp;c;			/* 4 */
+	*p1 = 'X';			/* 5 */
+</pre>
+In line 3,
+we assign a <TT>char&nbsp;**</TT> to a <TT>const&nbsp;char&nbsp;**</TT>.
+(The compiler should complain.)
+In line 4,
+we assign a <TT>const&nbsp;char&nbsp;*</TT> to a <TT>const&nbsp;char&nbsp;*</TT>;
+this is clearly legal.
+In line 5,
+we modify what a <TT>char&nbsp;*</TT> points to--this is supposed to be legal.
+However, <TT>p1</TT> ends up pointing to <TT>c</TT>,
+which is <TT>const</TT>.
+This came about in line 4,
+because <TT>*p2</TT> was really <TT>p1</TT>.
+This was set up in line 3,
+which is an assignment of a form that is disallowed,
+and this is exactly <em>why</em> line 3 is disallowed.
+</p><p>Assigning a <TT>char&nbsp;**</TT> to a <TT>const&nbsp;char&nbsp;**</TT>
+(as in line 3, and in the original question)
+is not immediately dangerous.
+But it sets up a situation in which <TT>p2</TT>'s promise--that
+the ultimately-pointed-to value won't be modified--cannot
+be kept.
+</p><p>(C++
+has more complicated rules
+for assigning <TT>const</TT>-qualified pointers
+which let you make more kinds of assignments
+without incurring warnings,
+but still protect against inadvertent attempts
+to modify <TT>const</TT> values.
+C++ would still not allow
+assigning a <TT>char&nbsp;**</TT> to a <TT>const&nbsp;char&nbsp;**</TT>,
+but it would let you get away with
+assigning a <TT>char&nbsp;**</TT>
+to a <TT>const&nbsp;char&nbsp;*&nbsp;const&nbsp;*</TT>.)
+</p><p>In C,
+if
+you must
+assign or pass
+pointers which have qualifier mismatches at
+other than the first level of indirection,
+you
+must use explicit casts
+(e.g. <TT>(const&nbsp;char&nbsp;**)</TT> in this case),
+although as always,
+the need for such a cast may indicate a deeper problem
+which the cast doesn't really fix.
+
+</p>
+
+
+
+<p>References:
+
+ISO Sec. 6.1.2.6, Sec. 6.3.16.1, Sec. 6.5.3
+<br>
+H&amp;S Sec. 7.9.1 pp. 221-2
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="constptrconst.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="typedefconst.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<html>
+<head>
+<title>"inverse varargs problem", take 10</title>
+</head>
+<body>
+[This message was originally sent on May 27, 2001,
+to someone who was asking about constructing variable-length argument lists.
+I have edited the text slightly for this web page.]
+<p>
+From: scs@eskimo.com (Steve Summit)
+<br>
+Date: Sun, 27 May 2001 10:49:32 -0500
+<br>
+Message-Id: &lt;2001May27.1049.scs.009@aeroroot.scs.ndip.eskimo.net&gt;
+<br>
+Subject: Re: Variable Argument lists in C
+<p>
+You wrote:
+<br>
+&gt; Hi, I was searching on Google for a way to build a variable of type
+<br>
+&gt; va_list.  My task is to accept a variable number of parameters with
+<br>
+&gt; one function, remove a few arguments from that list, and then pass the
+<br>
+&gt; va_list to another function, probably vprintf or vsprintf...
+<br>
+&gt; Do you know how this could be accomplished?  I either need
+<br>
+&gt; to simply remove the args from the va_list that I obtain from the
+<br>
+&gt; first function call, or build a new va_list and omit the unwanted args.
+<p>
+Well, there are two very different answers to this question.
+The first is that there is no portable way of doing this sort
+of thing at all; the "solutions" all involve either assembly
+language or ghastly kludges, or both.  If at all possible, you
+should find some other way of accomplishing your higher task
+that doesn't involve trying to build or manipulate argument lists
+on the fly.  Getting involved with dynamic argument lists is
+a lot like getting involved with absinthe: darkly exotic and
+stimulating at first, but destructive and mind-rotting in the
+end.
+<p>
+That's the sober, responsible answer.  The second answer is that
+dynamic function calls <em>are</em> exotic and stimulating and tons of
+fun.  But they're not easy; they <em>do</em> require either assembly
+language or ghastly kludges (or both).  This is what <a href="../~scs/C-faq/q15.13.html">question
+15.13</a> in the <a href="http://www.eskimo.com/~scs/C-faq/top.html">comp.lang.c FAQ list</a> is about; I'm appending my
+<a href="wackyideas.html">collection of "wacky ideas"</a> at the end of this message.  Besides
+the ideas there, lately I've been having mostly good luck with a
+set of gcc extensions: <TT>__builtin_apply_args</TT>, <TT>__builtin_apply</TT>, and
+<TT>__builtin_return</TT>.  (I can't tell you how to use these, because
+I barely understand them myself, but if you're using gcc, they
+might be an option for you.  The only documentation I know of
+for them is the gcc Info node "Constructing Calls".)
+<p>
+<address>
+<a href="http://www.eskimo.com/~scs/">Steve Summit</a>
+<br>
+<a href="mailto:scs@eskimo.com">scs@eskimo.com</a>
+</address>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:47 2005 by faqproc version 2.7 -->
+<!-- from source file osdepproc.sgml dated Sat Feb  7 19:18:20 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 19.28</title>
+<link href="system.html" rev=precedes>
+<link href="systemret.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="system.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="systemret.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 19.28
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+How can I call <TT>system</TT> when parameters
+(filenames, etc.)
+of the executed command
+aren't known until run time?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+Just use <TT>sprintf</TT>
+(or perhaps <TT>strcpy</TT> and <TT>strcat</TT>)
+to build the command string in a
+buffer,
+then call <TT>system</TT> with that 
+buffer.
+(Make sure the buffer is allocated with enough space;
+see also questions <a href="../malloc/malloc2.html">7.2</a> and <a href="../stdio/sprintfsize.html">12.21</a>.)
+</p><p>Here is
+a contrived example
+suggesting how you might
+build a data file,
+then sort it
+(assuming the existence of a sort utility,
+and Unix-
+or MS-DOS-style
+input/output redirection):
+<pre>
+	char *datafile = "file.dat";
+	char *sortedfile = "file.sort";
+	char cmdbuf[50];
+	FILE *fp = fopen(datafile, "w");
+
+	/* ...write to fp to build data file... */
+
+	fclose(fp);
+
+	sprintf(cmdbuf, "sort &lt; %s &gt; %s", datafile, sortedfile);
+	system(cmdbuf);
+
+	fp = fopen(sortedfile, "r");
+	/* ...now read sorted data from fp... */
+</pre>
+</p><p>See also question <a href="../stdio/constrpath.html">12.28b</a>.
+</p><!-- aend -->
+<p>
+<hr>
+<a href="system.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="systemret.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

@@ -1,0 +1,184 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file lib1.sgml dated Sat Feb  7 18:46:53 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 13.6</title>
+<link href="toupper.html" rev=precedes>
+<link href="regex.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="toupper.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="regex.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 13.6
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+How can I split up a
+string
+into
+whitespace-separated fields?
+<br>How can I duplicate the process
+by which <TT>main()</TT>
+is handed <TT>argc</TT> and <TT>argv</TT>?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+The only Standard function
+available
+for
+this kind of
+``tokenizing''
+is
+<TT>strtok</TT>,
+although it can be tricky to use
+<a href="strtokstate.html" rel=subdocument>[footnote]</a>
+and it may not do everything you want it to.
+(For instance, it does not handle quoting.)
+Here is a usage example,
+which simply prints each field as it's extracted:
+<pre>
+#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+char string[] = "this is a test";	/* not char *; see Q <a href="../strangeprob/strlitnomod.html">16.6</a> */
+char *p;
+for(p = strtok(string, " \t\n"); p != NULL;
+			p = strtok(NULL, " \t\n"))
+	printf("\"%s\"\n", p);
+</pre>
+</p><p>As an alternative,
+here is a routine I use
+
+for building an <TT>argv</TT> all at once:
+<pre>
+#include &lt;ctype.h&gt;
+
+int makeargv(char *string, char *argv[], int argvsize)
+{
+	char *p = string;
+	int  i;
+	int argc = 0;
+
+	for(i = 0; i &lt; argvsize; i++) {
+		/* skip leading whitespace */
+		while(isspace(*p))
+			p++;
+
+		if(*p != '\0')
+			argv[argc++] = p;
+		else {
+			argv[argc] = 0;
+			break;
+		}
+
+		/* scan over arg */
+		while(*p != '\0' &amp;&amp; !isspace(*p))
+			p++;
+		/* terminate arg: */
+		if(*p != '\0' &amp;&amp; i &lt; argvsize-1)
+			*p++ = '\0';
+	}
+
+	return argc;
+}
+</pre>
+</p><p>Calling <TT>makeargv</TT> is straightforward:
+<pre>
+	char *av[10];
+	int i, ac = makeargv(string, av, 10);
+	for(i = 0; i &lt; ac; i++)
+		printf("\"%s\"\n", av[i]);
+</pre>
+</p><p>If you want each separator character to be significant,
+for instance if you want two tabs in a row to indicate an omitted field,
+it's probably
+more straightforward
+to use <TT>strchr</TT>:
+<pre>
+#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+
+char string[] = "this\thas\t\tmissing\tfield";
+char *p = string;
+
+while(1) {		/* break in middle */
+	char *p2 = strchr(p, '\t');
+	if(p2 != NULL)
+		*p2 = '\0';
+	printf("\"%s\"\n", p);
+	if(p2 == NULL)
+		break;
+	p = p2 + 1;
+}
+</pre>
+</p><p>All the
+code fragments
+presented here
+modify the
+input string,
+by inserting
+<TT>\0</TT>'s
+to terminate each field
+(meaning that the string must be writable;
+see question <a href="../decl/strlitinit.html">1.32</a>).
+If you'll need the original string later,
+make a copy before breaking it up.
+</p>
+
+
+
+
+<p>References:
+
+K&amp;R2 Sec. B3 p. 250
+<br>
+ISO Sec. 7.11.5.8
+<br>
+H&amp;S Sec. 13.7 pp. 333-4
+<br>
+PCS p. 178
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="toupper.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="regex.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

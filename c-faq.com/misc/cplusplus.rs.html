@@ -1,0 +1,89 @@
+<html>
+<head>
+<title></title>
+</head>
+<body>
+From: Richard Stamp
+<br>
+Newsgroups: comp.lang.c
+<br>
+Subject: Re: FAQ 20.27:  Is C++ a superset of C? Can I use a C++ compiler to compile C code?
+<br>
+Date: Mon, 1 Feb 1999 10:24:40 -0000
+<br>
+Message-ID: &lt;793v82$hs6$1@flex.london.pipex.net&gt;
+<p>
+Larry Weiss wrote...
+<br>
+&gt;What specific instances can anyone recall of C code having
+<br>
+&gt;different semantics if given to a C++ compiler?  (I don't have
+<br>
+&gt;the H&amp;S reference cited above, but I assume that it details
+<br>
+&gt;some of these scenarios?)
+<br>
+<p>
+I posted the following on 14 Feb 1998 summarising the cases noted in H&amp;S.
+Apologies for the somewhat assertive phrasing -- it was appropriate in
+context:
+<p>
+---
+<br>
+In C++, you can't use the identifiers asm, bool, catch, class, const_cast,
+delete, dynamic_cast, false, friend, inline, mutable, namespace, new,
+operator, private, protected, public, reinterpret_cast, static_cast,
+template, this, throw, true, try, typeid, using, or virtual.  You can't
+declare a type inside a struct definition and have it visible outside.
+You can't have storage class specifiers in type declarations.  You
+can't refer to a top-level 'const' object with no explicit storage
+class from another translation unit.  You can't initialise a character
+array from a string literal which is "too long".  You can't call a
+function without declaring it first.  You can't use old-style function
+definitions.  You can't use enumeration constants as integers (without
+an explicit cast).  You can't convert from a '<TT>void&nbsp;*</TT>' to another pointer
+type without an explicit cast.  You can't declare types inside sizeof
+expressions, parameter lists or return types.  You can't jump into a
+compound statement if this would skip declarations with initialisers.
+You can't do a 'return' with no value from a non-void function, even
+if you never use the "result".  You can't call 'main' recursively.
+<p>
+Also, you may get different behaviour in C++ because: // comments are
+recognised; structure tags are implicitly declared as typedef names;
+a declaration like 'int f()' is a prototype declaration and signifies
+that the function takes no arguments.
+<br>
+---
+<p>
+If by "different semantics" you mean a program which is valid C and valid
+C++ but has a different meaning under each, the examples of this tend to be
+a bit improbable.  The one which always surfaces on occasions such as these
+is
+<p>
+<pre>
+  int x = 2 //* Would anyone actually write this? */ 2
+    ;
+</pre>
+<p>
+which sets x to 2 in C++ (because everything after the // disappears) or 1
+in C (because only the /*...*/ goes).
+<p>
+Another one is:
+<p>
+<pre>
+  typedef int x;
+  {
+    struct x { int a, b; };
+    printf ("%d\n", (int) sizeof (x));
+  }
+</pre>
+<p>
+This prints sizeof(int) in C.  In C++, the struct tag 'x' shadows the outer
+typedef so the size of the structure -- at least 2*sizeof(int) -- is
+displayed.
+<p>
+Cheers,
+<br>
+Richard
+</body>
+</html>

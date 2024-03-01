@@ -1,0 +1,59 @@
+<html>
+<head>
+<title></title>
+</head>
+<body>
+From: Luben
+<br>
+Subject: C-FAQ, q. 13.20
+<br>
+Message-ID: &lt;Pine.GSO.3.95.980510025115.27152A-100000@chimp&gt;
+<br>
+Date: Sun, 10 May 1998 03:12:21 -0400
+<p>
+The following version uses explictly the inverse of the density function
+of the Normal distribution, as well as you can specify mean and standard
+deviation. It's no longer than the one at q. 13.20 and simpler.
+Check it out.
+<p>
+<pre>
+/* Generate random numbers with mean mean, standard deviation std_dev, */
+/* with a Normal (Gaussian) distribution.                              */
+/* mean is any real number, std_dev &gt; 0 (or machine epsilon).          */
+/* The formula used is the inverse of the density function of the      */
+/* Normal distribution:                                                */
+/* x = mean +/- std_dev * sqrt((-2.0) * log(y)), 0 &lt; y &lt;= 1            */
+/* The client should call srand(int) to initialize the seed,           */
+/* before any calls to gauss_rand().                                   */
+/* L.T., May 3, 1998, University of Toronto                            */
+
+#include &lt;math.h&gt;
+#include &lt;float.h&gt;
+#include &lt;errno.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+double gauss_rand(double mean, double std_dev)
+{
+  double   y;
+  unsigned bin;
+
+  errno = 0;
+
+  /* std_dev must be greater than 0.0 (or machine epsilon) */
+  if ( ! (std_dev &gt; DBL_EPSILON)) {
+    errno = EDOM;                      /* domain error */
+    perror("gaussrand: std_dev too small or zero");
+    return mean;
+  }
+
+  y = (double) rand() / (RAND_MAX + 1.0);   /* 0.0 &lt;= y &lt; 1.0 */
+  bin  = (y &lt; 0.5) ? 0 : 1;
+  y = fabs(y - 1.0);                        /* 0.0 &lt; y &lt;= 1.0 */
+  y = std_dev * sqrt((-2.0) * log(y));
+
+  return bin ? (mean + y) : (mean - y);
+}
+</pre>
+</body>
+</html>

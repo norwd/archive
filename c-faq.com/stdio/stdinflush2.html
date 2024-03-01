@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file stdio.sgml dated Wed Dec 21 13:07:57 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 12.26b</title>
+<link href="stdinflush.html" rev=precedes>
+<link href="fopenfp.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="stdinflush.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="fopenfp.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 12.26b
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+If <TT>fflush</TT> won't work,
+what can I use to flush input?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+It depends on what you're trying to do.
+If you're trying to get rid of
+an unread newline
+or other unexpected input
+after calling <TT>scanf</TT>
+(see questions <a href="scanfinterlace.html">12.18a</a>-<a href="scanfjam.html">12.19</a>),
+you really need to rewrite or replace
+the call to <TT>scanf</TT>
+(see question <a href="scanfprobs.html">12.20</a>).
+Alternatively, you can consume the rest of a partially-read line
+with a simple code fragment like
+<pre>
+	while((c = getchar()) != '\n' &amp;&amp; c != EOF)
+		/* discard */ ;
+</pre>
+</p><p>(You may also be able to
+use the curses <TT>flushinp</TT> function.)
+</p><p>There is no standard way to discard unread characters from a
+stdio input
+stream.
+Some vendors do implement <TT>fflush</TT>
+so that <TT>fflush(stdin)</TT> discards unread characters,
+although portable programs
+cannot depend on this.
+(Some versions of
+the stdio library
+implement <TT>fpurge</TT>
+or <TT>fabort</TT> calls
+which do the same thing,
+but these aren't standard, either.)
+Note, too, that flushing stdio input buffers
+is not necessarily
+sufficient:
+unread characters can also accumulate in other, OS-level input
+buffers.
+If you're trying to actively discard
+input
+(perhaps in anticipation of issuing
+an unexpected
+prompt
+to confirm a destructive action,
+for which an accidentally-typed ``y'' could be disastrous),
+you'll have
+to use a system-specific technique to detect the presence of typed-ahead input;
+see
+questions
+<a href="../osdep/cbreak.html">19.1</a>
+and <a href="../osdep/readavail.html">19.2</a>.
+
+
+
+Keep in mind that users can become frustrated
+if you discard input that happened to be typed
+too quickly.
+
+
+</p>
+
+<p>References:
+
+ISO Sec. 7.9.5.2
+<br>
+H&amp;S Sec. 15.2
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="stdinflush.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="fopenfp.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>
