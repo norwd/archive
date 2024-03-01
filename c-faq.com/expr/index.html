@@ -1,0 +1,210 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file expr.sgml dated Sat Jul  3 17:10:33 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Expressions</title>
+</head>
+<body bgcolor="#ffffff">
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<H1>3. Expressions</H1>
+
+<p><a href="evalorder1.html" rel=subdocument>3.1</a>
+Why doesn't
+this code:
+
+<pre>
+a[i] = i++;</pre>
+
+work?
+</p><p><a href="evalorder2.html" rel=subdocument>3.2</a>
+Under my compiler, the code
+<pre>
+int i&nbsp;=&nbsp;7;
+printf("%d\n",&nbsp;i++&nbsp;*&nbsp;i++);</pre>
+
+prints 49.
+Regardless of the order of evaluation, shouldn't it print 56?
+</p><p><a href="ieqiplusplus.html" rel=subdocument>3.3</a>
+I've experimented with
+the code
+<pre>
+int i&nbsp;=&nbsp;3;
+i&nbsp;=&nbsp;i++;</pre>
+
+on several compilers.
+Some gave <TT>i</TT> the
+
+value 3,
+and
+some gave 4.
+Which compiler is correct?
+</p><p><a href="xorswapexpr.html" rel=subdocument>3.3b</a>
+Here's a slick expression:
+<pre>
+a&nbsp;^=&nbsp;b&nbsp;^=&nbsp;a&nbsp;^=&nbsp;b</pre>
+
+It swaps <TT>a</TT> and <TT>b</TT> without using a temporary.
+</p><p><a href="precvsooe.html" rel=subdocument>3.4</a>
+Can I use explicit parentheses to force
+the order of evaluation I want,
+and control these side effects?
+Even if I don't, doesn't precedence dictate it?
+</p><p><a href="seqpointops.html" rel=subdocument>3.5</a>
+But what about the
+<TT>&amp;&amp;</TT>
+and
+<TT>||</TT>
+
+
+operators?
+<br>I see code like 
+``<TT>while((c&nbsp;=&nbsp;getchar())&nbsp;!=&nbsp;EOF&nbsp;&amp;&amp;&nbsp;c&nbsp;!=&nbsp;'\n')</TT>'' ...
+</p><p><a href="shortcircuit.html" rel=subdocument>3.6</a>
+Is it safe to assume
+that the right-hand side
+of the
+<TT>&amp;&amp;</TT>
+and
+<TT>||</TT>
+operators
+won't be evaluated
+if the left-hand side determines the outcome?
+</p><p><a href="comma.html" rel=subdocument>3.7</a>
+Why did
+<pre>
+printf("%d&nbsp;%d",&nbsp;f1(),&nbsp;f2());</pre>
+
+call <TT>f2</TT> first?
+I thought the comma operator guaranteed left-to-right evaluation.
+</p><p><a href="seqpoints.html" rel=subdocument>3.8</a>
+How can I understand
+complex expressions like the ones in this section,
+and avoid writing undefined ones?
+What's a ``sequence point''?
+</p><p><a href="evalorder4.html" rel=subdocument>3.9</a>
+So
+if I write
+<pre>
+a[i]&nbsp;=&nbsp;i++;</pre>
+
+and I don't care
+
+which cell of <TT>a[]</TT> gets written to,
+the code is fine,
+and <TT>i</TT> gets
+incremented by one,
+right?
+
+</p><p><a href="experiment.html" rel=subdocument>3.10a</a>
+People keep saying that the behavior
+of <TT>i&nbsp;=&nbsp;i++</TT>
+is undefined,
+but
+I just tried
+it
+on an ANSI-conforming compiler,
+and got the results I expected.
+
+</p><p><a href="expec0.html" rel=subdocument>3.10b</a>
+People told me that if I evaluated an undefined expression,
+or accessed an uninitialized variable,
+I'd get a random, garbage value.
+But I tried it, and got <em>zero</em>.
+What's up with that?
+</p><p><a href="confused.html" rel=subdocument>3.11</a>
+How can I avoid these undefined evaluation order difficulties
+if I don't feel like learning the complicated rules?
+</p><p><a href="prevspost.html" rel=subdocument>3.12a</a>
+What's the difference between <TT>++i</TT> and <TT>i++</TT>?
+</p><p><a href="plusplus.html" rel=subdocument>3.12b</a>
+If I'm not using the value of the expression,
+should I use <TT>++i</TT> or <TT>i++</TT> to increment a variable?
+</p><p><a href="transitivity.html" rel=subdocument>3.13</a>
+I need to check whether one number lies between two others.
+Why doesn't
+<pre>
+if(a &lt; b &lt; c)</pre>
+
+work?
+</p><p><a href="intoverflow1.html" rel=subdocument>3.14</a>
+Why doesn't the code
+<pre>
+int&nbsp;a&nbsp;=&nbsp;1000,&nbsp;b&nbsp;=&nbsp;1000;
+long&nbsp;int&nbsp;c&nbsp;=&nbsp;a&nbsp;*&nbsp;b;</pre>
+
+work?
+</p><p><a href="intovf3.html" rel=subdocument>3.14b</a>
+How can I ensure that integer arithmetic doesn't overflow?
+
+</p><p><a href="truncation1.html" rel=subdocument>3.15</a>
+Why does the code
+<pre>
+double degC, degF;
+degC = 5 / 9 * (degF - 32);</pre>
+
+keep giving me 0?
+</p><p><a href="qcolonlhs.html" rel=subdocument>3.16</a>
+I have a complicated expression which
+I have
+to assign
+to one 
+of two variables,
+depending on a condition.
+Can I use code like this?
+<pre>
+	((condition) ? a : b) = complicated_expression;
+</pre>
+</p><p><a href="ternprec.html" rel=subdocument>3.17</a>
+I have
+some code
+containing expressions
+like
+<pre>
+a ? b = c : d</pre>
+
+and some compilers are accepting it but some are not.
+</p><p><a href="unswarn.html" rel=subdocument>3.18</a>
+What does the warning
+``semantics of `<TT>&gt;</TT>' change in ANSI C''
+mean?
+</p><p><a href="preservingrules.html" rel=subdocument>3.19</a>
+What's the difference between the ``unsigned preserving''
+and ``value preserving'' rules?
+</p><hr>
+<p>
+<a href="../index.html">top</a>
+</p>
+<p>
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br>
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</p>
+</body>
+</html>

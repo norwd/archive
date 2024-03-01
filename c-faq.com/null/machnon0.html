@@ -1,0 +1,121 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file null.sgml dated Wed Dec 21 13:03:25 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 5.5</title>
+<link href="macro.html" rev=precedes>
+<link href="safermacs.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="macro.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="safermacs.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 5.5
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+How should <TT>NULL</TT> be defined on a machine which uses a nonzero bit
+pattern as the internal representation of a null pointer?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+The same as
+on
+any other machine: as <TT>0</TT>
+(or some version of <TT>0</TT>; see question <a href="macro.html">5.4</a>).
+</p><p>Whenever
+a programmer requests a null pointer,
+
+either
+by writing ``<TT>0</TT>'' or ``<TT>NULL</TT>'',
+
+it is the compiler's
+
+responsibility
+to generate
+whatever bit pattern the machine uses for that null pointer.
+(Again, the compiler can tell that an unadorned
+
+<TT>0</TT> requests a null
+pointer when the <TT>0</TT> is in a pointer context;
+see question <a href="null2.html">5.2</a>.)
+
+Therefore, #defining <TT>NULL</TT> as <TT>0</TT> on a machine for which internal
+null pointers are nonzero is as valid as on any other:
+the compiler must
+always
+be able to
+
+generate the machine's correct
+null pointers in response to
+unadorned <TT>0</TT>'s seen in pointer contexts.
+A constant <TT>0</TT> is a null pointer constant;
+<TT>NULL</TT> is just a convenient name for it
+(see also question <a href="varieties.html">5.13</a>).
+</p><p>(Section 4.1.5 of the C Standard states that <TT>NULL</TT>
+``expands to an implementation-defined null pointer constant,''
+which means that the implementation gets to choose
+which form of <TT>0</TT> to use
+and whether to
+use a <TT>void&nbsp;*</TT> cast;
+see questions <a href="safermacs.html">5.6</a> and <a href="long0.html">5.7</a>.
+``Implementation-defined'' here does <em>not</em> mean
+that <TT>NULL</TT> might be <TT>#define</TT>d to match some
+implementation-specific nonzero internal null pointer value.)
+</p><p>See also questions
+<a href="null2.html">5.2</a>,
+
+<a href="macsochange.html">5.10</a>
+and <a href="machexamp.html">5.17</a>.
+</p>
+
+<p>References:
+
+ISO Sec. 7.1.6
+<br>
+Rationale Sec. 4.1.5
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="macro.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="safermacs.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

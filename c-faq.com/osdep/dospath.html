@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:47 2005 by faqproc version 2.7 -->
+<!-- from source file osdepfile.sgml dated Sat Jun 26 20:52:13 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+
+<title>Question 19.17</title>
+<link href="copy.html" rev=precedes>
+<link href="fopenenv.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="copy.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="fopenenv.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 19.17
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+Why can't I open a file by its explicit path?
+The
+call
+<pre>
+fopen("c:\newdir\file.dat",&nbsp;"r")</pre>
+
+is failing.
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+The file you actually requested--with
+the characters <TT>\n</TT> and <TT>\f</TT> in its
+name--probably
+doesn't exist,
+and isn't what you thought you were trying to open.
+</p><p>In character constants and string literals,
+the backslash <TT>\</TT> is an escape character,
+giving special meaning to the character following it.
+In order
+for
+literal backslashes in
+a pathname to
+be
+passed through to <TT>fopen</TT>
+(or any other function)
+correctly,
+they have to be doubled,
+so that the first
+backslash in each pair
+quotes the second one:
+<pre>
+	fopen("c:\\newdir\\file.dat", "r")
+</pre>
+Alternatively,
+under MS-DOS,
+it turns out that
+forward slashes are also 
+accepted as directory separators,
+so you could use
+<pre>
+	fopen("c:/newdir/file.dat", "r")
+</pre>
+(Note, by the way, that
+header file names
+mentioned in
+preprocessor <TT>#include</TT> directives
+
+are <em>not</em> string 
+literals,
+so you may not have to worry about backslashes there.)
+</p><!-- aend -->
+<p>
+<hr>
+<a href="copy.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="fopenenv.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

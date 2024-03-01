@@ -1,0 +1,93 @@
+<html>
+<head>
+<title></title>
+</head>
+<body>
+From: msb@sq.com (Mark Brader)
+<br>
+Subject: Re: routine for yesterday's date
+<br>
+Message-ID: your message &lt;9603300430.AA19052@sqrex.sq.com&gt;
+<br>
+Date: Fri, 29 Mar 96 23:30:02 EST
+<p>
+Bruce Coghill writes:
+<br>
+&gt; In my C manual the time.h and time functions are described
+<br>
+&gt; and how I can pull off each element in the structure (like year,
+<br>
+&gt; month, day, day-of-the-year), but it isn't clear to me how to subtract
+<br>
+&gt; a day.
+<p>
+This is question 13.14 on the FAQ list, but I'd like to expand a bit
+on what it says there.
+<p>
+Bruce, you have gotten as far as calling <TT>time()</TT> and <TT>localtime()</TT>.  The
+next thing is to use the normalizing feature of <TT>mktime()</TT>.  Suppose that
+you have a variable of type <TT>struct&nbsp;tm</TT> called <TT>x</TT>, and you've just put the
+current time into it using <TT>localtime()</TT>.  Now you basically just want to
+do something like this:
+<p>
+<pre>
+	x.tm_day--;      	/* back 1 day */
+	(void) mktime (&amp;x);	/* normalize */
+</pre>
+<p>
+And probably someone is going to post to suggest just that.  The above
+code will work most of the time, but it has two problems.  First, <TT>mktime()</TT>
+is allowed to fail, so it's as well to check for it and report the error.
+<p>
+Second, it finds the date 24 hours ago.  If there was a daylight saving
+time transition, 24 hours ago might be today or the day before yesterday.
+<p>
+You might think to fix the first problem by adding the line:
+<pre>
+	x.tm_isdst = -1;
+</pre>
+at the top, effectively forcing <TT>mktime()</TT> to work by wall clock time.
+Now you are asking for the same time yesterday, rather than the time 24
+hours ago.  But this doesn't fix the problem -- in the case of a daylight
+saving time transition, ``the same time yesterday'' might be ambiguous or
+not exist.  In such a case a failure of <TT>mktime()</TT> is allowed (or perhaps
+required, depending on how one interprets the standard).
+<p>
+The correct fix is to let the daylight saving time transition take its
+effect by leaving <TT>tm_isdst</TT> alone, but to ask for the time 24 hours before
+a time near noon today.  Even if that time is 11 am or 1 pm, it will still
+be yesterday.  So the final version of the code is:
+<p>
+<pre>
+	x.tm_day--;      	/* back 1 day (well, 24 hours) */
+	x.tm_hour = 12;         /* from some time between noon and 1 pm */
+
+				/* and normalize */
+	if (mktime (&amp;x) == (time_t) -1) {
+		fprintf (stderr, "mktime failed!!\n");
+		exit(1);
+	}
+</pre>
+<p>
+The structure now contains the correct year, month, and day values for
+yesterday.  As always, remember that the representation of a <TT>struct&nbsp;tm</TT>
+requires you to add 1900 to the year and 1 to the month to get the correct
+values if displaying them numerically.
+<p>
+There is a terser version of the ``final'' code: replace the first two lines by
+<pre>
+	x.tm_hour = -12;	/* 12 hours before sometime between
+				 * midnight and 1 am this morning */
+</pre>
+but the meaning of this is less obvious, so I don't recommend it.
+<p>
+<pre>
+-- 
+Mark Brader                  "To err is human, but to really mess things up
+msb@sq.com                    you need a timetable planner!"
+SoftQuad Inc., Toronto                               -- Richard Porter
+</pre>
+<p>
+My text in this article is in the public domain.
+</body>
+</html>

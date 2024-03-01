@@ -1,0 +1,93 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:47 2005 by faqproc version 2.7 -->
+<!-- from source file misceff.sgml dated Sat Feb  7 19:26:17 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+
+<title>Question 20.15</title>
+<link href="eff2.html" rev=precedes>
+<link href="unsshift.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="eff2.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="unsshift.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 20.15
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+I've been replacing multiplications and divisions
+with shift operators,
+because shifting is more efficient.
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+This is an excellent example of a potentially risky
+and usually unnecessary optimization.
+Any compiler worthy of the name can replace a
+constant, power-of-two
+multiplication with a left shift,
+or a
+similar
+division of an unsigned quantity with a right shift.
+(Ritchie's original PDP-11 compiler,
+though it ran in less than 64K of memory
+and omitted several features now considered mandatory,
+performed both of these optimizations,
+without even
+turning on its optional optimization pass.)
+
+Furthermore,
+a compiler will make these optimizations only when they're correct;
+many programmers overlook the fact
+that shifting a negative value
+to the
+right
+is <em>not</em> equivalent to division.
+(Therefore,
+when you need to make sure that these optimizations are performed,
+you may have to declare relevant variables as <TT>unsigned</TT>.)
+</p><!-- aend -->
+<p>
+<hr>
+<a href="eff2.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="unsshift.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

@@ -1,0 +1,284 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:47 2005 by faqproc version 2.7 -->
+<!-- from source file misceff.sgml dated Sat Feb  7 19:26:17 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 20.13</title>
+<link href="bitcount.html" rev=precedes>
+<link href="eff2.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="bitcount.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="eff2.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 20.13
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+What's the best way of making my program efficient?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+By picking good algorithms,
+implementing them carefully,
+and making sure that your program isn't doing any extra work.
+For example,
+the most microoptimized character-copying loop in the world
+will be beat by code which avoids having to copy characters at all.
+</p><p>When worrying about efficiency,
+it's important to keep several things in perspective.
+First of all,
+although efficiency is
+an enormously popular
+topic,
+it
+is not
+always as important
+as people tend to think it is.
+Most of the code in most programs is not time-critical.
+When code is not time-critical,
+it is
+usually
+more important that it be written clearly and portably
+than that it be written maximally efficiently.
+(Remember that
+computers are very, very fast,
+and that seemingly ``inefficient'' code
+may be quite efficiently compilable,
+and
+run without apparent delay.)
+</p><p>It is notoriously difficult to predict
+what
+the ``hot spots'' in a program will be.
+When efficiency is a concern,
+it is important to use profiling software
+to determine which parts of the program deserve attention.
+Often, actual computation time is swamped by peripheral tasks
+such as I/O and memory allocation,
+which can be sped up by using buffering and caching
+techniques.
+</p><p>Even
+for
+code that <em>is</em> time-critical,
+one of the least effective optimization techniques
+is to fuss with
+the coding details.
+Many of the ``efficient coding tricks''
+which are frequently suggested
+are performed automatically
+by even
+simpleminded
+compilers.
+Heavyhanded optimization attempts can make code so
+bulky that performance is actually degraded,
+by increasing the number of page faults or
+by
+overflowing 
+instruction caches or pipelines.
+Furthermore,
+optimization tricks
+are rarely portable
+(i.e. they may speed things up on one machine
+but slow them down on another).
+In any case,
+tweaking the coding usually results in
+at best linear performance improvements;
+the big payoffs are in better
+algorithms.
+</p><p>If the performance of your code is so important
+that you are willing to invest programming time
+in source-level optimizations,
+make sure that you are using
+the best optimizing compiler
+you can afford.
+(Compilers,
+even mediocre ones,
+can perform optimizations
+that are impossible at the source level).
+</p><p>When efficiency is truly
+important,
+the best algorithm has been chosen,
+and even the coding details matter,
+the following suggestions may be useful.
+(These are mentioned merely
+to keep followups down;
+appearance here does
+<em>not</em>
+necessarily
+constitute endorsement by the author.
+Note that several of these techniques
+cut both ways,
+and
+may make things worse.)
+<OL><li>Sprinkle the code liberally with <TT>register</TT> declarations for
+oft-used variables;
+place them in inner blocks,
+if applicable.
+(On the other hand, most modern compilers ignore <TT>register</TT>
+declarations, on the assumption that they can perform register 
+analysis and assignment better than the programmer can.)
+<li>Check the algorithm carefully.
+Exploit symmetries where possible to reduce the number of explicit cases.
+<li>Examine the control flow:
+make sure that common cases are checked for first,
+and handled more easily.
+If one side of
+an expression involving <TT>&amp;&amp;</TT> or <TT>||</TT>
+will usually determine the outcome,
+
+make it the left-hand side,
+if possible.
+(See also question <a href="../expr/shortcircuit.html">3.6</a>.)
+<li>Use <TT>memcpy</TT> instead of
+<TT>memmove</TT>,
+if appropriate
+(see question
+<a href="../ansi/memmove.html">11.25</a>).
+<li>Use machine- and vendor-specific routines and <TT>#pragma</TT>s.
+<li>Manually place
+common subexpressions
+in temporary variables.
+(Good compilers do this for you.)
+<li>Move critical, inner-loop code
+out of functions
+and into macros or in-line functions
+(and out of the loop, if invariant).
+If the termination condition of a loop is a complex
+but loop-invariant
+expression,
+precompute it and place it in a temporary variable.
+(Good compilers do these for you.)
+<li>
+
+
+Change recursion to iteration, if possible.
+<li>Unroll small loops.
+
+<li>Discover whether
+<TT>while</TT>, <TT>for</TT>,
+or <TT>do/while</TT>
+loops produce the best code under your compiler,
+and whether incrementing or decrementing
+the loop control variable
+works best.
+<li>Remove <TT>goto</TT> statements--some compilers can't optimize 
+as well in their presence.
+<li>Use pointers rather than array subscripts to step through arrays
+(but see question <a href="eff2.html">20.14</a>).
+<li>Reduce precision.
+(Using <TT>float</TT> instead of <TT>double</TT>
+may result in faster,
+single-precision arithmetic under an ANSI compiler,
+though
+older compilers convert everything to <TT>double</TT>,
+so using <TT>float</TT> can also be slower.)
+Replace time-consuming trigonometric and logarithmic functions
+with your own,
+tailored to the range and precision you need,
+and perhaps using table lookup.
+(Be sure to give your versions
+<em>different</em>
+names;
+see question <a href="../decl/namespace.html">1.29</a>.)
+<li>Cache or precompute
+tables of frequently-needed values.
+(See also question <a href="bitcount.html">20.12</a>.)
+<li>
+
+
+Use standard library functions in preference to your own.
+(Sometimes the compiler
+inlines or
+specially optimizes
+its own functions.)
+On the other hand,
+if your program's calling patterns are
+particularly regular,
+your own special-purpose implementation may be able to beat
+the library's general-purpose version.
+(Again, if you do write your own version,
+give it a different name.)
+<li>As a last,
+<em>last</em>
+resort, hand-code critical routines in assembly language
+(or hand-tune the compiler's assembly language output).
+Use <TT>asm</TT> directives, if possible.
+</OL></p><p>Here are some things <em>not</em> to worry about:
+<OL><li>17x.
+whether <TT>i++</TT> is faster than <TT>i&nbsp;=&nbsp;i&nbsp;+&nbsp;1</TT>
+<li>18x.
+whether <TT>i&nbsp;&lt;&lt;&nbsp;1</TT>
+(or <TT>i&nbsp;&gt;&gt;&nbsp;1</TT>, or <TT>i&nbsp;&amp;&nbsp;1</TT>)
+is faster than <TT>i&nbsp;*&nbsp;2</TT>
+(respectively <TT>i&nbsp;/&nbsp;2</TT>, <TT>i&nbsp;%&nbsp;2</TT>).
+</OL></p><p>(These are examples of optimizations which compilers regularly 
+perform for you;
+see questions <a href="eff2.html">20.14</a>
+and <a href="shifts.html">20.15</a>.)
+</p><p>It is not the intent here to suggest that efficiency can be
+completely ignored.
+Most of the time,
+however,
+by simply paying attention to good algorithm choices,
+implementing them
+cleanly,
+and avoiding obviously inefficient blunders
+(i.e. make sure you don't end up with an
+O(n**3)
+implementation of an
+O(n**2)
+algorithm),
+
+perfectly acceptable results can be achieved.
+</p><p>For more discussion of efficiency tradeoffs,
+as well as good advice on how to improve efficiency when it is important,
+see
+chapter 7 of Kernighan and Plauger's
+<I>The Elements of Programming Style</I>,
+and Jon Bentley's
+<I>Writing Efficient Programs</I>.
+</p><p>See also question <a href="../style/vsefficiency.html">17.11</a>.
+</p><!-- aend -->
+<p>
+<hr>
+<a href="bitcount.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="eff2.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

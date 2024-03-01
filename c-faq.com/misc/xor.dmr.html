@@ -1,0 +1,94 @@
+<html>
+<!-- &lt;199507200321.UAA09304@mail.eskimo.com&gt; -->
+<head>
+<title>dmr on XOR</title>
+</head>
+<body>
+<p>
+Back in July of 1995,
+Adam Moscowitz posed this question to Dennis Ritchie:
+<p>
+<blockquote>
+I teach C programming classes, and I'm often asked why C has a bitwise
+exclusive-OR operator but not a logical one. Is this simply an
+historical accident, or was there a specific reason it was omitted?
+Also, is there any reason why the C9x committee shouldn't consider
+adding it to the standard?
+</blockquote>
+<p>
+Dennis replied:
+<p>
+I've often been asked this in person, and it comes up on netnews too.
+Since I formulated a mildly coherent answer, I'm sending it along
+to Steve in case a suitably edited version is suitable for the C FAQ.
+<p>
+<hr>
+<p>
+Answer:
+<p>
+There are both historical and practical reasons why there is no <TT>^^</TT> operator.
+<p>
+The practical is: there's not much use for the operator.  The main point
+of <TT>&amp;&amp;</TT> and <TT>||</TT> is to take advantage of their short-circuit evaluation not
+only for efficiency reasons, but more often for expressiveness and correctness.
+For example, in
+<pre>
+	if (cond1() &amp;&amp; cond2()) ...
+</pre>
+it is often important that <TT>cond1()</TT> is done first, because if it's false
+<TT>cond2()</TT> may not be well defined, or because <TT>cond1()</TT> is cheap and
+<TT>cond2()</TT> is expensive.  Syntax to handle the situation has made it into lots
+of languages; compare Ada's `and then'.
+<p>
+By contrast, an <TT>^^</TT> operator would always force evaluation of both arms
+of the expression, so there's no efficiency gain.  Furthermore, situations
+in which <TT>^^</TT> is really called for are pretty rare, though examples can
+be created.  These situations get rarer and stranger as you
+stack up the operator--
+<pre>
+	if (cond1() ^^ cond2() ^^ cond3() ^^ ...) ...
+</pre>
+does the consequent exactly when an odd number of the
+<TT>condx()</TT>s are true.   By contrast, the <TT>&amp;&amp;</TT> and <TT>||</TT> analogs remain
+fairly plausible and useful.
+<p>
+Historical:  C's predecessors (B and BCPL) had only the bitwise
+versions of <TT>|</TT> <TT>&amp;</TT> <TT>^</TT>.   They also had a special rule, namely that
+in an statement like
+<pre>
+	if (a &amp; b) ...
+</pre>
+the `<TT>&amp;</TT>', being at the `top level' of the expression occurring  in
+`truth-value context' (inside the <TT>if()</TT>)  was interpreted just
+like C's <TT>&amp;&amp;</TT>.  Similarly for <TT>|</TT>. But not so for <TT>^</TT>.
+<p>
+One of the early bits of C evolution was the creation of separate
+<TT>&amp;&amp;</TT> and <TT>||</TT> operators.  This was better than the special rule, which was hard
+to explain.
+<p>
+In other words, the whole question arises because of the particular method
+of symmetry-breaking that C chose.   Suppose I had reacted to
+the situation of BCPL and B taking their notion of
+<p>
+<pre>
+	if (a &amp; b) ...
+</pre>
+<p>
+and had people say
+<p>
+<pre>
+	if (a) andif (b) ...
+</pre>
+(and similarly with `<TT>orif</TT>').  One can make a case that this kind of syntax is
+better than <TT>&amp;&amp;</TT> and <TT>||</TT>.  If it had happened, would people be asking for `<TT>xorif</TT>'?
+Probably not.
+<p>
+My guess is that <TT>&amp;</TT>,<TT>&amp;&amp;</TT>; <TT>|</TT>,<TT>||</TT>; <TT>^</TT>,<TT>^^</TT> is a false symmetry.  But it's
+one that people seem to want, and, though it's not much help,
+adding it wouldn't do much harm.
+<p>
+<blockquote>
+	Dennis
+</blockquote>
+</body>
+</html>

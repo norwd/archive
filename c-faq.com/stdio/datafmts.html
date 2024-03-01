@@ -1,0 +1,178 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file stdio.sgml dated Wed Dec 21 13:07:57 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+
+<title>Question 12.16</title>
+<link href="scanfvwid.html" rev=precedes>
+<link href="scanfhang.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="scanfvwid.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="scanfhang.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 12.16
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+How can I read data from
+data files with particular formats?
+<br>How can I read ten floats without having to use a jawbreaker 
+<TT>scanf</TT> format
+<br>like
+<TT>"%f&nbsp;%f&nbsp;%f&nbsp;%f&nbsp;%f&nbsp;%f&nbsp;%f&nbsp;%f&nbsp;%f&nbsp;%f"</TT>?
+<br>How can I read an arbitrary number of fields from a line into an array?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+In general, there are three
+
+main ways
+of parsing data lines:
+</p><OL><li>Use
+<TT>fscanf</TT> or <TT>sscanf</TT>,
+with
+an appropriate format string.
+Despite the limitations
+mentioned in this section
+(see question <a href="scanfprobs.html">12.20</a>),
+the <TT>scanf</TT> family is quite powerful.
+Though whitespace-separated fields are always the easiest to 
+deal with,
+<TT>scanf</TT> format strings can also be used
+with more 
+compact,
+column oriented, FORTRAN-style data.
+For instance, the line
+<pre>
+	1234ABC5.678
+</pre>
+could be
+read
+with <TT>"%d%3s%f"</TT>.
+(See also the last example in question <a href="scanfjam.html">12.19</a>.)
+<li>Break the line into
+fields separated by
+whitespace
+(or some other delimiter),
+using <TT>strtok</TT> or the equivalent
+(see question <a href="../lib/strtok.html">13.6</a>),
+then deal with each field individually,
+perhaps with functions like <TT>atoi</TT>
+and <TT>atof</TT>.
+(Once the line is broken up,
+the code for handling the fields
+is much like the traditional code in <TT>main()</TT>
+for handling the <TT>argv</TT> array;
+see question <a href="../misc/argv.html">20.3</a>.)
+This method is particularly useful
+for reading an arbitrary
+(i.e. not known in advance)
+number
+of fields from a line into an array.
+<p>Here is a simple example
+which copies a line of
+up to 10
+floating-point numbers
+
+
+
+(separated by whitespace)
+into an array:
+<pre>
+#define MAXARGS 10
+
+char line[] = "1 2.3 4.5e6 789e10";
+char *av[MAXARGS];
+int ac, i;
+double array[MAXARGS];
+
+ac = makeargv(line, av, MAXARGS);
+for(i = 0; i &lt; ac; i++)
+	array[i] = atof(av[i]);
+</pre>
+
+(See question <a href="../lib/strtok.html">13.6</a>
+for the definition of <TT>makeargv</TT>.)
+</p><li>Use whatever pointer manipulations
+and library routines
+are handy
+to parse the line in an
+ad-hoc way.
+(The ANSI <TT>strtol</TT> and <TT>strtod</TT> functions
+are particularly useful for this style of parsing,
+because they can return a pointer
+indicating where they stopped reading.)
+This
+
+is obviously the most general way,
+but it's also the most difficult and error-prone:
+the
+thorniest
+parts
+of
+many
+C programs
+are
+those which use lots of
+tricky
+little pointers to pick apart strings.
+</OL><p>When
+possible, design data files and input formats
+so that they don't require arcane manipulations,
+but
+can
+instead
+be parsed with easier techniques
+such as 1 and 2:
+dealing with the files will
+then
+
+be
+much more pleasant
+all around.
+</p><!-- aend -->
+<p>
+<hr>
+<a href="scanfvwid.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="scanfhang.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

@@ -1,0 +1,196 @@
+<html>
+<head>
+<title></title>
+</head>
+<body>
+From: esr@netaxs.com (Eric Raymond)
+<br>
+Newsgroups: comp.lang.c,comp.std.c,comp.arch
+<br>
+Subject: Criticism of C-FAQ submission invited
+<br>
+Followup-To: comp.lang.c
+<br>
+Date: 21 Sep 1994 22:52:16 GMT
+<br>
+Message-ID: &lt;35qdf0$7iq@netaxs.com&gt;
+<p>
+I'm working this up for Steve Summit's C-FAQ.  Criticisms invited.
+Cross-posted to comp.arch because it makes some assertions about standard alignment
+conditions on various architectures.  All corrections cheerfully accepted.
+<p>
+<hr>
+<p>
+Q: What is ``alignment'', and how does it affect the layout of my compound C
+types?
+<p>
+A: Under most compilers on older word-oriented machines, each C data item
+other than a component of a <TT>char</TT> array must begin on a byte address that
+is a multiple of the word size of the machine (that is, each type must be
+``word-aligned'').  Such implementations are becoming rare as ancient 16-
+and 36-bit machines pass away.
+<p>
+On modern 32-bit machines like the SPARC or the Intel [34]86, or any
+Motorola chip from the 68020 up, each data iten must usually be
+``self-aligned'', beginning on an address that is a multiple of its type size.
+Thus, 32-bit types must begin on a 32-bit boundary, 16-bit types on a 16-bit
+boundary, 8-bit types may begin anywhere, struct/array/union types have the
+alignment of their most restrictive member.  The first member of each
+continuous group of bit fields is typically word-aligned, with all following
+being continuously packed into following words (though ANSI C requires the
+latter only for bit-field groups of less than word size).
+<p>
+These rules are consequences of the use your compiler gets out of the
+machine's native addressing modes.  Eliminating alignment requirements
+would often slow down memory access by requiring the generation of code to
+do field accesses across word boundaries, or from odd addresses that are
+slower to access.  A few compilers make it possible to force this with a
+pragma, non-default compiler option or directive that says ``optimize for
+space''.  Using this is almost never a good idea, unless you are required
+to match an externally-defined layout and but are also sure you will not
+be bitten by big-endian vs. little-endian incompatibilities, etc.
+<p>
+Q: How do I figure the ``true size'' (with trailing padding) of a type when
+it occurs in a struct or array?
+<p>
+A: By rounding up its apparent size to a multiple of its alignment.  What
+makes the general case tricky is that this rule has to be applied to
+each element of a struct or array in turn, in order to count internal
+padding; and when a struct or array has struct or array elements, the
+rule must be applied recursively.
+<p>
+Under the ``self-aligned'' requirement, the true size of any scalar type
+is the same as its apparent size.  The compound cases are most easily
+understood by example (assume a 32-bit architecture with normal C sizes
+of long=4, int=4, short=2, and char=1 on all these unless otherwise
+specified).
+<p>
+(1) <TT>struct {char&nbsp;*; long;}</TT> has no trailing padding and is (4 + 4) = 8 bytes
+long, or (8 + 8) = 16 with no padding on a 64-bit architecture.  But (2)
+<TT>struct {char&nbsp;*; short;}</TT> will also be two machine words long, even though
+a <TT>short</TT> is only a half-word, because the leading <TT>char&nbsp;*</TT> would force word
+alignment on a following instance.  Accordingly, (3) <TT>struct {char&nbsp;*;
+short; short;}</TT> will be the same two-word size as example 2; the final <TT>short</TT>
+simply takes up what would have been padding.
+<p>
+(4) <TT>struct {char&nbsp;*; short; long;}</TT> will have a half-word of padding after
+the <TT>short</TT> because <TT>long</TT> has to be word-aligned, and is thus the same size as 
+<TT>struct {char&nbsp;*; short; short; long;}</TT>.  (5) <TT>struct {short; char;}</TT> would
+have one byte of trailing padding; (6) <TT>struct {short; char; char;}</TT> would
+be the same size as example 5, but with no padding.  On the other hand,
+(7) <TT>struct {long; char;}</TT> would have 3 bytes of trailing padding, and
+(8) <TT>struct {long; char; short}</TT> would have 1 byte of padding after the
+<TT>char</TT>, be the same size as example 7, and have no trailing padding. 
+<p>
+Q: How can I squeeze the padding out of a structure to make it smaller?
+<p>
+A: On older, rigidly word-oriented architectures it may require drastic
+measures (see below).
+A simple rule that minimize padding in the ``self-aligned'' case (and does
+no harm in most others) is to order your struct members by decreasing size.
+On 16-bit machines and older word-oriented and 36-bit machines you need to
+find out how long pointers are explicity; they may differ in size from 
+scalar types due to memory-model complexity or odd char-pointer formats. 
+No padding will be required within groups of members of the same size, and
+no group will require leading padding; the only place you can lose is at the
+end of the structure.
+<p>
+The above rule assumes your members are all normal scalar or pointer types,
+and so have decreasing sizes of 8, 4, 2, and 1.  If your members are bit
+fields, structs, arrays or unions, life becomes a little more complicated.
+You need to think in terms of the ``true size'' of a member (see above), which
+may not be a power of two.  Order your members by decreasing true size, then
+pick members from the end to move to after each non-scalar type to fill the
+trailing padding of the last component.  In the most common case, you'll
+want to follow 17-to-24-bit members (like an 18-bit bitfield, 3-byte array,
+or <TT>struct {short x; char y}</TT>) with a <TT>char</TT> rather than a <TT>short</TT>.
+<p>
+As a very drastic measure, you can declare all members as bit-fields (see
+&lt;forward-reference to next question&gt;).  
+<p>
+However, you should think twice before taking even the first measure,
+because the space gains tend to be very marginal unless your struct is
+repeated thousands of times in an array or disk file.  Your time would
+probably be better spent space-tuning the algorithm or representation you
+are using.
+<p>
+Q: How can I get complete control of the bit-level layout of a struct?
+<p>
+A: This is what bit-fields are for.  Declare all your members as bit fields.
+The structure may still have invisible trailing padding (unless your last
+bit field exactly fills to the end of the last machine word), but on modern
+architectures this will eliminate all other padding and give you complete
+control of the bit layout of the declared parts (albeit at a significant
+cost in access time).  However, ANSI does <em>not</em> guarantee this
+well-behavedness, so look out for snags.
+<p>
+Note about bit fields: though modern compilers default them to unsigned,
+ANSI does not require this, leading to some potentially surprising behavior
+in the case of a 1-bit field with no signedness declaration.
+<p>
+On some poorly-implemented C compilers on very old 36-bit word-oriented
+architectures, even this may not be enough; a bit field that runs over
+the end of a word boundary may force the next bit field to start at the
+beginning of the following word, leaving an invisible gap of up to 35 bits.
+On these machines, your only option is to declare the struct as a single
+char array and do the field accesses yourself in C.
+<p>
+See K&amp;R II, A8.3, page 213.
+<p>
+Q: Why can't I pass structs back and forth between the heterogenous machines
+on my network?  It's all C, isn't it?
+<p>
+A: First, you'd have to be sure that all your machine/compiler combinations
+have identical scalar type sizes.  If they're all 32-bit machines, this is
+likely, with the sizes being long=4, int=4, short=2.  Even this is not 
+certain, however -- some 680x0 compilers use 2-byte ints for faster 
+arithmetic code.  If any of your boxes are (64-bit) DEC Alphas or (16-bit)
+286 machines, forget it.
+<p>
+Then, you have to be sure you won't be nailed by big-endian vs.
+little-endian incompatibilities.  And, in many applications,
+floating-point-format incompatibilities.  And perhaps, character signedness.
+<p>
+Then, you have to be sure that all your compilers have the same alignment
+and struct-padding requirements.  This is hard, because they are usually 
+not documented.  In fact, this is usually the show-stopper.
+<p>
+To pass structure data over a network, you will typically need a tool
+like ASN.1 or SUN RPC.
+<p>
+<br>
+<p>
+And a free extra answer:
+<p>
+Q: I came to C from Pascal, and the one feature I miss is Pascal's `with'
+construct.  Shouldn't C have an equivalent?
+<p>
+A: No, it's too dangerous.  Let's give `with' the obvious syntax and look at an
+example:
+<pre>
+   struct symbol
+   {
+       char *name;
+       int  class;
+   };
+
+   struct symbol mysym;
+   int value = 17;
+
+   with mysym
+   {
+      name = "sample"
+      class = value;
+   }
+
+   if (value != 17)
+	die_horribly();
+</pre>
+<p>
+So far, so good.  But now, suppose the struct symbol definition lives in
+an <TT>#include</TT> file far from this use --- and someone adds a `value' member
+there without noticing the `with'.  The meaning of the `value' reference
+would suddenly and silently change, making the final value of `class'
+random and probably causing the above code to die horribly.
+</body>
+</html>

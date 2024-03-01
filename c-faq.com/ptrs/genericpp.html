@@ -1,0 +1,173 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file pointers.sgml dated Wed Dec 21 13:07:10 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+
+
+<title>Question 4.9</title>
+<link href="passptrinit.html" rev=precedes>
+<link href="refconst.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="passptrinit.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="refconst.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 4.9
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+Suppose I want to write a function that takes a generic pointer
+as an argument and I want to simulate passing it by reference.
+Can I give the formal parameter type <TT>void&nbsp;**</TT>,
+and do something like this?
+<pre>
+	void f(void **);
+	double *dp;
+	f((void **)&amp;dp);
+</pre>
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+Not portably.
+Code like this may work and is sometimes recommended,
+but it
+relies on
+all pointer types having the same internal representation
+(which is common, but not universal;
+see question <a href="../null/machexamp.html">5.17</a>).
+</p><p>There is no generic pointer-to-pointer type in C.
+<TT>void&nbsp;*</TT> acts as a generic pointer
+only because
+conversions
+(if necessary)
+are applied automatically when other pointer types
+are assigned to and from <TT>void&nbsp;*</TT>'s;
+these conversions cannot be performed
+if an attempt is made
+to indirect upon a <TT>void&nbsp;**</TT> value
+which points at
+a pointer type
+other than <TT>void&nbsp;*</TT>.
+
+When you make use of a <TT>void&nbsp;**</TT> pointer value
+(for instance, when you use the <TT>*</TT> operator
+to access the <TT>void&nbsp;*</TT> value
+to which the <TT>void&nbsp;**</TT> points),
+the compiler has no way of knowing
+whether that <TT>void&nbsp;*</TT> value
+was once converted from some other pointer type.
+It must assume that it is nothing more than a <TT>void&nbsp;*</TT>;
+it cannot perform any implicit conversions.
+</p><p>In other words,
+any <TT>void&nbsp;**</TT> value you play with
+must be the address of an actual <TT>void&nbsp;*</TT> value somewhere;
+casts like <TT>(void&nbsp;**)&amp;dp</TT>,
+though they may shut the compiler up,
+are
+nonportable
+(and may not even do what you want;
+see also question <a href="../lib/qsort2.html">13.9</a>).
+If the pointer that the <TT>void&nbsp;**</TT> points to
+is not a <TT>void&nbsp;*</TT>,
+and if
+it
+has a different size or representation than a <TT>void&nbsp;*</TT>,
+then
+the compiler
+
+isn't going to be able to access it correctly.
+
+</p><p>To make the code fragment above work,
+you'd have to use an intermediate <TT>void&nbsp;*</TT> variable:
+<pre>
+	double *dp;
+	void *vp = dp;
+	f(&amp;vp);
+	dp = vp;
+</pre>
+The assignments to and from <TT>vp</TT>
+give the compiler the opportunity to perform any conversions,
+if necessary.
+</p><p>Again,
+
+the discussion so far assumes that different pointer types
+might have different sizes or representations,
+which is rare today,
+but not unheard of.
+To
+appreciate the
+problem with <TT>void&nbsp;**</TT> more clearly,
+compare the situation to an analogous one involving, say,
+types <TT>int</TT> and <TT>double</TT>,
+which probably have different sizes
+and certainly have different representations.
+If we have a function
+<pre>
+	void incme(double *p)
+	{
+		*p += 1;
+	}
+</pre>
+then we can do something like
+<pre>
+	int i = 1;
+	double d = i;
+	incme(&amp;d);
+	i = d;
+</pre>
+and <TT>i</TT> will be incremented by 1.
+(This is analogous to the correct <TT>void&nbsp;**</TT> code 
+involving the auxiliary <TT>vp</TT>.)
+If, on the other hand,
+we were to attempt something like
+<pre>
+	int i = 1;
+	incme((double *)&amp;i);	/* WRONG */
+</pre>
+(this code is analogous to the fragment in the question),
+it would be highly unlikely to work.
+</p><!-- aend -->
+<p>
+<hr>
+<a href="passptrinit.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="refconst.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

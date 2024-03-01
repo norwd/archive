@@ -1,0 +1,47 @@
+<html>
+<head>
+<title></title>
+</head>
+<body>
+<p>
+From: Douglas A. Gwyn
+<br>
+Subject: Re: precision of a double ?
+<br>
+Date: 18 Aug 2000 00:00:00 GMT
+<br>
+Message-ID: &lt;clcm-20000818-0004@plethora.net&gt;
+<br>
+Newsgroups: comp.lang.c.moderated
+<p>
+"rhim.m" wrote:
+<br>
+&gt; I'm looking for a function such as
+<br>
+&gt; <TT>void setprecision(int precision , double in, double *out )</TT> .
+<br>
+&gt; this function can set the precision  of a double  (numbre of decimals ).
+<br>
+&gt; for exemple , a double "35.425" and a precision "1" are the inputs ;
+<br>
+&gt; the output is "35.4".
+<p>
+This is usually called ``rounding''.  It's really not very hard:
+<pre>
+        #include &lt;assert.h&gt;
+        #include &lt;math.h&gt;
+        double round2mod(double x, double module) {
+                if (module == 0) return x;
+                assert(module &gt; 0);
+                if (x &lt; 0) return -round2mod(-x, module);
+                return x + module/2 - fmod(x + module/2, module);
+        }
+        void setprecision(int precision, double in, double *out) {
+                *out = round2mod(in, pow(10, -precision));
+        }
+</pre>
+-- 
+<br>
+comp.lang.c.moderated - moderation address: clcm@plethora.net
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:47 2005 by faqproc version 2.7 -->
+<!-- from source file miscbits.sgml dated Wed Dec 21 13:02:12 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 20.7</title>
+<link href="intovf.html" rev=precedes>
+<link href="bitsets.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="intovf.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="bitsets.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 20.7
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+How can I manipulate individual bits?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+Bit manipulation is
+straightforward
+in C,
+and commonly done.
+To extract
+(test)
+a bit,
+use the bitwise AND (<TT>&amp;</TT>)
+operator,
+along with a bit mask
+representing the bit(s) you're interested in:
+<pre>
+	value &amp; 0x04
+</pre>
+To set a bit,
+use the bitwise OR (<TT>|</TT> or <TT>|=</TT>) operator:
+<pre>
+	value |= 0x04
+</pre>
+To clear a bit,
+use the bitwise complement (<TT>~</TT>)
+and the AND (<TT>&amp;</TT> or <TT>&amp;=</TT>) operators:
+<pre>
+	value &amp;= ~0x04
+</pre>
+(The preceding three examples all manipulate
+the third-least significant,
+or
+2**2,
+bit,
+expressed as the constant bitmask <TT>0x04</TT>.)
+</p><p>To manipulate an arbitrary bit, use the shift-left operator
+(<TT>&lt;&lt;</TT>) to generate the mask you need:
+<pre>
+	value &amp; (1 &lt;&lt; bitnumber)
+	value |= (1 &lt;&lt; bitnumber)
+	value &amp;= ~(1 &lt;&lt; bitnumber)
+</pre>
+Alternatively,
+you may wish to precompute
+an array of masks:
+<pre>
+	unsigned int masks[] =
+		{0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80};
+
+	value &amp; masks[bitnumber]
+	value |= masks[bitnumber]
+	value &amp;= ~masks[bitnumber]
+</pre>
+</p><p>
+
+
+To avoid surprises involving the sign bit,
+it is often a good idea to use unsigned integral types
+in code
+which manipulates
+bits and bytes.
+</p><p>See also questions <a href="../bool/bool2.html">9.2</a> and <a href="bitsets.html">20.8</a>.
+</p>
+
+
+
+
+
+
+
+
+
+<p>References:
+
+K&amp;R1 Sec. 2.9 pp. 44-45
+<br>
+K&amp;R2 Sec. 2.9 pp. 48-49
+<br>
+ISO Sec. 6.3.3.3, Sec. 6.3.7, Sec. 6.3.10, Sec. 6.3.12
+<br>
+H&amp;S Sec. 7.5.5 p. 197, Sec. 7.6.3 pp. 205-6, Sec. 7.6.6 p. 210
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="intovf.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="bitsets.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

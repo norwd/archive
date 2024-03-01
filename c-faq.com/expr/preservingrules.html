@@ -1,0 +1,252 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file expr.sgml dated Sat Jul  3 17:10:33 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 3.19</title>
+<link href="unswarn.html" rev=precedes>
+<link href="../ptrs/goodfor.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="unswarn.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="../ptrs/goodfor.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 3.19
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+What's the difference between the ``unsigned preserving''
+and ``value preserving'' rules?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+These rules concern the behavior
+when
+an unsigned type must be promoted to a ``larger'' type.
+Should it be promoted to a larger signed or unsigned type?
+(To foreshadow the answer,
+it may depend
+on whether the larger type is truly larger.)
+</p><p>Under the unsigned preserving
+(also called ``sign preserving'')
+rules,
+the promoted type
+is always unsigned.
+This rule has the virtue of simplicity,
+but it
+can lead to surprises
+(see the first example below).
+</p><p>Under the value preserving rules,
+the conversion depends on the actual sizes of the
+original and promoted
+types.
+If the promoted type is truly larger--which
+means that it can represent all the values of the
+original, unsigned
+type as signed values--then the promoted type
+is signed.
+If the two types are actually the same size,
+then the promoted type is unsigned
+(as for the unsigned preserving rules).
+</p><p>Since the <em>actual</em> sizes of the types are used
+in making the determination,
+the results
+will vary from machine to machine.
+On some machines,
+<TT>short&nbsp;int</TT> is smaller than <TT>int</TT>,
+but on some machines, they're the same size.
+On some machines,
+<TT>int</TT> is smaller than <TT>long&nbsp;int</TT>,
+but on some machines, they're the same size.
+</p><p>
+
+
+
+In practice, the difference between the unsigned and
+value preserving rules matters most often when one operand of
+a binary
+operator is (or promotes to) <TT>int</TT>
+and the other one might,
+depending on the promotion rules, be either <TT>int</TT> or
+<TT>unsigned int</TT>.
+If one operand is <TT>unsigned int</TT>, the other
+will be converted to that type--almost certainly causing
+an undesired result if its value was negative
+(again, see the first example below).
+When the ANSI
+C Standard was established, the value preserving rules were
+chosen, to reduce the number of cases where
+these surprising results occur.
+(On the other hand,
+the value preserving rules also reduce
+the number of <em>predictable</em> cases,
+because portable programs cannot depend on a machine's type sizes
+and hence cannot know which way the value preserving rules will fall.)
+</p><p>Here is a contrived example
+showing the sort of surprise
+that can
+
+occur under the unsigned preserving rules:
+<pre>
+	unsigned short us = 10;
+	int i = -5;
+	if(i &gt; us)
+		printf("whoops!\n");
+</pre>
+The important issue is how
+the expression <TT>i&nbsp;&gt;&nbsp;us</TT> is evaluated.
+Under the unsigned preserving rules
+(and under the value preserving rules on a machine where 
+<TT>short</TT> integers and plain integers are the same size),
+<TT>us</TT> is promoted to 
+<TT>unsigned&nbsp;int</TT>.
+The usual integral conversions say that when types
+<TT>unsigned&nbsp;int</TT> and <TT>int</TT> meet across a binary operator,
+both operands are converted to unsigned,
+so <TT>i</TT> is converted to <TT>unsigned&nbsp;int</TT>, as well.
+The old value of <TT>i</TT>, -5,
+is converted to some 
+large unsigned value (65,531 on a 16-bit machine).
+This converted value is greater than 10,
+so the code prints ``whoops!''
+</p><p>Under the value preserving rules,
+on a machine where
+plain integers are larger than <TT>short</TT> integers,
+<TT>us</TT> is converted to a plain <TT>int</TT>
+(and retains its value, 10),
+and <TT>i</TT> remains a plain <TT>int</TT>.
+The
+expression is not true,
+and the code prints nothing.
+(To see why the values can be preserved only when the signed type is larger,
+remember that a value like 40,000 can be represented
+as an unsigned 16-bit integer but not as a signed one.)
+</p><p>Unfortunately, the value preserving rules
+do not prevent all surprises.
+The example just presented still prints ``whoops''
+on a machine where short and plain integers are the same size.
+The
+value preserving rules
+may also inject a few surprises of their
+own--consider
+the code:
+<pre>
+	unsigned char uc = 0x80;
+	unsigned long ul = 0;
+	ul |= uc &lt;&lt; 8;
+	printf("0x%lx\n", ul);
+</pre>
+Before being left-shifted, <TT>uc</TT> is promoted.
+Under the unsigned preserving rules,
+it is promoted to an <TT>unsigned&nbsp;int</TT>,
+and the code goes on to print <TT>0x8000</TT>,
+as expected.
+Under the value preserving rules, however,
+<TT>uc</TT> is promoted to a <em>signed</em> int
+(as long as <TT>int</TT>'s are larger than <TT>char</TT>'s,
+which is usually the case).
+The intermediate result <TT>uc&nbsp;&lt;&lt;&nbsp;8</TT>
+goes on to
+meet
+<TT>ul</TT>,
+which is <TT>unsigned&nbsp;long</TT>.
+The signed, intermediate result must therefore be promoted as well,
+and if <TT>int</TT> is smaller than <TT>long</TT>,
+the intermediate result
+is sign-extended,
+becoming
+<TT>0xffff8000</TT> on a machine with 32-bit <TT>long</TT>s.
+On such a machine,
+the code prints <TT>0xffff8000</TT>,
+which is probably not what was expected.
+(On machines where <TT>int</TT> and <TT>long</TT> are the same size,
+the code
+prints <TT>0x8000</TT>
+under either set of rules.)
+</p><p>To avoid surprises
+(under either set of rules,
+or due to an unexpected change of rules),
+it's best to avoid mixing signed and unsigned types in the same 
+expression,
+although as the second example shows,
+this rule is not always sufficient.
+You can
+always
+use explicit casts
+to indicate,
+unambiguously,
+exactly
+where and how you want conversions performed;
+see questions
+<a href="../stdio/extconform.html">12.42</a>
+and
+<a href="../strangeprob/ptralign.html">16.7</a>
+for examples.
+(Some compilers attempt to warn you when they detect ambiguous 
+cases
+or expressions which would have behaved differently under the 
+unsigned preserving rules,
+although sometimes these warnings fire too often;
+see also question <a href="unswarn.html">3.18</a>.)
+</p>
+
+
+
+
+
+
+
+
+<p>References:
+
+K&amp;R2 Sec. 2.7 p. 44, Sec. A6.5 p. 198, Appendix C p. 260
+<br>
+ISO Sec. 6.2.1.1, Sec. 6.2.1.2, Sec. 6.2.1.5
+<br>
+Rationale Sec. 3.2.1.1
+<br>
+H&amp;S Secs. 6.3.3,6.3.4 pp. 174-177
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="unswarn.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="../ptrs/goodfor.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

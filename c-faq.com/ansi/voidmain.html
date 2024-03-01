@@ -1,0 +1,128 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file ansi.sgml dated Wed Aug 11 00:43:45 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+
+<title>Question 11.12b</title>
+<link href="maindecl.html" rev=precedes>
+<link href="envp.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="maindecl.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="envp.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 11.12b
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+
+Can I declare <TT>main</TT> as <TT>void</TT>,
+to shut off these annoying
+``main returns no value'' messages?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+No.
+<TT>main</TT> must be declared as returning an <TT>int</TT>,
+and as
+taking either zero or two arguments,
+of the appropriate types.
+If you're calling <TT>exit()</TT> but still getting warnings,
+you may have to insert a redundant <TT>return</TT> statement
+(or use some kind
+of ``not reached'' directive,
+if available).
+</p><p>Declaring a function as <TT>void</TT> does not merely
+shut off or rearrange
+warnings:
+it may also result in a different
+
+function call/return sequence,
+
+incompatible with what the caller
+(in <TT>main</TT>'s case, the C run-time startup code)
+expects.
+
+That is,
+if the calling sequences for <TT>void</TT>-
+and <TT>int</TT>-valued functions differ,
+
+the startup code is going to be calling <TT>main</TT>
+using
+specifically the
+<TT>int</TT>-valued conventions,
+and if <TT>main</TT> has been improperly declared as <TT>void</TT>,
+it may not
+work.
+
+(See also question <a href="../struct/retcrash.html">2.18</a>.)
+</p><p>(Note that
+this discussion of <TT>main</TT>
+pertains only to ``hosted'' implementations;
+none of it applies to ``freestanding'' implementations,
+which may not even have <TT>main</TT>.
+However,
+freestanding implementations are comparatively rare,
+and if you're using one,
+you probably know it.
+If you've never heard of the distinction,
+you're probably using a hosted implementation,
+and the above rules apply.)
+</p><p>Additional links:
+<a href="sd11.html" rel=subdocument>further reading</a>
+</p>
+
+
+
+<p>References:
+
+ISO Sec. 5.1.2.2.1, Sec. G.5.1
+<br>
+H&amp;S Sec. 20.1 p. 416
+<br>
+CT&amp;P Sec. 3.10 pp. 50-51
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="maindecl.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="envp.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

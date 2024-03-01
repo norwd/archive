@@ -1,0 +1,173 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file stdio.sgml dated Wed Dec 21 13:07:57 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 12.20</title>
+<link href="scanfjam.html" rev=precedes>
+<link href="sprintfsize.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="scanfjam.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="sprintfsize.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 12.20
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+Why does everyone say not to use <TT>scanf</TT>?
+What should I use instead?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+<TT>scanf</TT>
+has
+a number of problems--see questions
+<a href="scanfhang.html">12.17</a>,
+<a href="scanfinterlace.html">12.18a</a>,
+and
+<a href="scanfjam.html">12.19</a>.
+Also, its <TT>%s</TT>
+
+format has the same problem
+that <TT>gets()</TT> has
+(see question <a href="getsvsfgets.html">12.23</a>)--it's
+hard to guarantee that
+the receiving buffer
+won't overflow.
+<a href="overflow.html" rel=subdocument>[footnote]</a>
+</p><p>More generally,
+<TT>scanf</TT> is designed for relatively structured,
+formatted input
+(its name is
+in fact
+derived from
+``scan
+formatted'').
+If you pay attention,
+it will tell you whether it succeeded or failed,
+but it can tell you only approximately where it failed,
+and not at all how or why.
+You have very little opportunity to do any error recovery.
+</p><p>Yet interactive user input
+is the least structured
+input there is.
+A well-designed user interface
+will allow for the possibility of the user typing just about 
+anything--not
+just letters or punctuation when digits were expected,
+but also more or fewer characters than were expected,
+or no characters at all
+(i.e. just the RETURN key),
+or premature EOF,
+or anything.
+It's nearly
+impossible
+to deal gracefully
+with all of these potential problems
+when using <TT>scanf</TT>;
+it's
+far
+easier
+to read entire lines
+(with <TT>fgets</TT> or the like),
+then interpret them,
+either using <TT>sscanf</TT>
+or some other techniques.
+(Functions like
+<TT>strtol</TT>,
+<TT>strtok</TT>,
+and
+<TT>atoi</TT>
+are often useful;
+see also
+questions <a href="datafmts.html">12.16</a> and <a href="../lib/strtok.html">13.6</a>.)
+If you do use
+any <TT>scanf</TT> variant,
+be sure
+to check the return value
+to make sure that the expected number of items were
+
+found.
+Also,
+if you use <TT>%s</TT>,
+be sure to guard
+against buffer overflow.
+
+</p>
+<p>Note,
+by the way,
+that
+criticisms of
+<TT>scanf</TT>
+are not necessarily indictments of
+<TT>fscanf</TT>
+and <TT>sscanf</TT>.
+<TT>scanf</TT> reads from <TT>stdin</TT>,
+which is usually an interactive keyboard
+and is therefore the least
+constrained,
+leading to the most problems.
+
+When a data file has a known format,
+on the other hand,
+it may be appropriate to read it with <TT>fscanf</TT>.
+It's perfectly appropriate to parse strings with <TT>sscanf</TT>
+(as long as the return value is checked),
+because it's so easy to regain control,
+restart the scan,
+discard the input if it didn't match,
+etc.
+</p><p>Additional links:
+<UL><li><a href="gets_flush1.html">longer explanation</a> by Chris Torek
+<li><a href="gets_flush2.html">longer explanation</a> by yours truly
+</UL></p>
+
+
+<p>References:
+
+K&amp;R2 Sec. 7.4 p. 159
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="scanfjam.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="sprintfsize.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

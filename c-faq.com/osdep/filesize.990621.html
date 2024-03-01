@@ -1,0 +1,72 @@
+<html>
+<head>
+<title></title>
+</head>
+<body>
+From: scs@eskimo.com (Steve Summit)
+<br>
+Newsgroups: comp.lang.c
+<br>
+Subject: Re: File size
+<br>
+Date: 21 Jun 1999 13:08:17 GMT
+<br>
+Message-ID: &lt;7kldg1$liv$1@eskinews.eskimo.com&gt;
+<p>
+In article &lt;7khuqi$a72$1@nnrp1.deja.com&gt;, Syco writes:
+<br>
+&gt; Yes, I have read that portion of the FAQ...
+<br>
+&gt; It doesn't say how to find the file size, at least, not in a portable
+<br>
+&gt; manner, which it needs to be because I'm programming this on a Windows
+<br>
+&gt; machine but I think I'm going to have to compile it on a SCO Unix
+<br>
+&gt; machine.
+<br>
+<p>
+If there were a portable way of determining file sizes, believe
+you me the FAQ list would mention it.
+<p>
+The only portable way of determining a file's ``size'' is to open
+it, read it, and count the characters, but this (a) may not give
+you the answer you wanted, and (b) is likely to be unacceptably,
+pointlessly inefficient.
+<p>
+If you truly need a file's size in advance, go ahead and use
+something OS-specific (and, hence, not portable).  Under
+Unix-like and Posix-compatible systems, definitely use <TT>stat()</TT>
+(or maybe <TT>fstat</TT>).  <TT>stat()</TT> has existed under MS-DOS compilers
+I've used, too.  (I can't help you with Windows, however.)
+<p>
+If the reason you need a file's size in advance is so that you
+can malloc a buffer big enough for reading in the file all at
+once, however, you have two other options.  One is to process
+the file sequentially, rather than reading it in all at once;
+reading it in all at once isn't always the best idea, after all.
+The other option is that if you can guess the file's size,
+or get an approximation to it somehow (for example, <TT>stat()</TT> under
+MS-DOS gives the ``wrong'' size due to CRLF &lt;=&gt; <TT>\n</TT> translations),
+you can fairly easily write some code that malloc's the approximate
+amount, starts reading the file, and realloc's if necessary.
+If you'd like to see this worked out in detail, see section 11.3 of
+my C Programming Notes at <a href="http://www.eskimo.com/~scs/cclass/cclass.html">http://www.eskimo.com/~scs/cclass/cclass.html</a>,
+and the answers to introductory assignment 6.  (The examples there
+show how to read a file line-by-line, not as a contiguous block,
+but they should give you some ideas.)
+<p>
+Once in a very long while you may have to write code to read a
+file twice (once to count the characters in it, and a second to
+do something with them, once you know precisely how many of them
+there are), but this should be an absolute last resort, because
+it's likely to lead to some pretty severe performance problems,
+at least for large files.
+<p>
+<address>
+<a href="http://www.eskimo.com/~scs/">Steve Summit</a>
+<br>
+<a href="mailto:scs@eskimo.com">scs@eskimo.com</a>
+</address>
+</body>
+</html>

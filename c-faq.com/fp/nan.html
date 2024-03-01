@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file fp.sgml dated Fri Jul  2 23:51:18 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 14.9</title>
+<link href="mpi.html" rev=precedes>
+<link href="fpexcepts.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="mpi.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="fpexcepts.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 14.9
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+How do I
+set variables to, or
+test for
+IEEE NaN
+(``Not a Number'')
+and other special values?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+Many systems
+
+with high-quality IEEE floating-point implementations provide
+facilities
+(e.g.
+predefined constants,
+and functions
+like
+<TT>isnan()</TT>,
+either
+as nonstandard extensions
+in <TT>&lt;math.h&gt;</TT>
+or perhaps
+in
+<TT>&lt;ieee.h&gt;</TT>
+or
+<TT>&lt;nan.h&gt;</TT>)
+
+to deal with these values cleanly,
+and
+work is being done
+to formally standardize such facilities.
+A crude but usually effective test for NaN
+can be written based on the fact that IEEE NaN's
+never compare equal to anything,
+even themselves;
+therefore
+a number that doesn't compare equal to itself
+must be a NaN:
+<pre>
+	#define isnan(x) ((x) != (x))
+</pre>
+Beware, though, that
+non-IEEE-aware compilers may
+optimize the test away.
+(Note also that
+even if you do have a predefined constant like <TT>NAN</TT>,
+you <em>cannot</em> use it in comparisons like 
+<TT>if(x&nbsp;==&nbsp;NAN)</TT>,
+again because
+NaN's do not compare equal to themselves.)
+</p><p>C99 provides
+<TT>isnan()</TT>,
+<TT>fpclassify()</TT>,
+and several other classification routines.
+</p><p>Another
+possibility
+is
+to format
+the value in question
+using
+<TT>sprintf</TT>:
+on
+many systems
+it
+
+generates
+strings like <TT>"NaN"</TT> and <TT>"Inf"</TT>
+which you could compare for
+
+in a pinch.
+
+</p><p>To initialize variables with these values
+(and if your system does not provide cleaner solutions),
+you may be able to get away with some compile-time
+``arithmetic'':
+<pre>
+	double nan = 0./0.;
+	double inf = 1./0.;
+</pre>
+Don't be too
+surprised,
+though,
+if these don't work
+(or if they abort the compiler with a floating-point exception).
+</p><p>(The most reliable way of setting up these special values
+would use a hex representation of their internal bit patterns,
+but initializing a floating-point value with a bit pattern
+would require using a union or some other type punning mechanism
+and
+would obviously be
+machine-dependent.)
+</p><p>See also question <a href="../osdep/fpexcepts.html">19.39</a>.
+</p>
+<p>References:
+
+C9X Sec. 7.7.3
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="mpi.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="fpexcepts.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

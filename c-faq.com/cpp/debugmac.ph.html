@@ -1,0 +1,107 @@
+<html>
+<head>
+<title></title>
+</head>
+<body>
+From: Phil Howard
+<br>
+Subject: Re: how to give variable number of args for macro
+<br>
+Newsgroups: comp.lang.c
+<br>
+Message-ID: &lt;Vv0D2.339$v8.10430@newsfeed.slurp.net&gt;
+<br>
+Date: Wed, 03 Mar 1999 01:46:29 GMT
+<p>
+Here's another way that's not in the FAQ.  It does depend on the <TT>vfprintf</TT>
+function being in your library and on a compiler that optimizes out
+expressions that cannot be executed.  Most modern libraries and compilers
+do have this.  Even if the optimization is absent, the trick will still
+work although the executeable will have some dead code in it.
+<p>
+I start by defining the symbol "debug" according to the state of the
+symbol "DEBUG" like so:   (this can be in your .h file)
+<pre>
+#ifdef DEBUG
+#define debug                   _debug_call
+#else
+#define debug                   1?0:
+#endif
+</pre>
+<p>
+Then I define a function called "_debug_call()" which accepts one or more
+fixed arguments followed by a variable number of arguments.  For example:
+<pre>
+        int _debug_call( int msglev, const char *msgfmt, ... )
+</pre>
+<p>
+That function will need to include stdarg.h and have a variable defined:
+<pre>
+        va_list arg_list;
+</pre>
+<p>
+Then following any code which does things like deciding whether the message
+should even be printed (I have varying debug levels, for example), I have
+<pre>
+        va_start( arg_list, msgfmt );
+        vfprintf( stderr, msgfmt , arg_list );
+        putc( '\n', stderr );
+</pre>
+<p>
+Now if the symbol DEBUG is not defined, then the symbol debug is define
+with the string "1?0:".  When the pre-processor sees something like
+<pre>
+        debug( 1, "begin %s", argv[0] );
+</pre>
+It turns it into:
+<pre>
+        1?0:(1,"begin %s",argv[0]);
+</pre>
+which is now a <TT>?:</TT> expression which evaluates the left side of <TT>:</TT> but not
+the right side.  The right side is merely a parenthesized expression
+which, if it were evaluated, would discard all comma separated expressions
+but the last, yielding the last.  But the <TT>?:</TT> causes it to not be evaluated
+and a good compiler will recognize that since 1 is a constant, the right
+side of <TT>:</TT> cannot ever be evaluated, and not even compile it it.  This it
+becomes a free standing value.  If you did choose to assign <TT>debug()</TT> to
+something line:
+<pre>
+        result = debug( 1, "begin %s", argv[0] );
+</pre>
+Then you get:
+<pre>
+        result = 1?0:(1,"begin %s",argv[0]);
+</pre>
+which has the effect of:
+<pre>
+        result = 0;
+</pre>
+Now if <TT>DEBUG</TT> is defined, then it becomes:
+<pre>
+        _debug_call(1,"begin %s",argv[0]);
+</pre>
+and voila, it is compiled as a function call.  You do have to place the
+definition of "DEBUG" before the pre-processor code that decides how to
+define "debug".  I do this by having the part the decides how to define
+"debug" in a header file, called debug.h, and I simply define, or not,
+the symbol "DEBUG" before including debug.h.
+<p>
+Above I have given a simple version.  My actual debug package is a bit
+more complex, having features to manage debug levels, which files to
+output to, and a separately named duplication called <TT>trace</TT> (the same
+thing all over again, but with a new name which I can use for a different
+group of concepts, and a separate messaging level state).
+<p>
+If anyone wants to include the above trick in an FAQ or publish it or
+whatever, feel free to do so.
+<p>
+<pre>
+--
+ --    *-----------------------------*      Phil Howard KA9WGN       *    --
+  --   | Inturnet, Inc.              | Director of Internet Services |   --
+   --  | Business Internet Solutions |       eng at intur.net        |  --
+    -- *-----------------------------*      phil at intur.net        * --
+</pre>
+</body>
+</html>
+

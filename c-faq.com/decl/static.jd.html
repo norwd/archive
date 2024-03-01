@@ -1,0 +1,74 @@
+<html>
+<head>
+<title></title>
+</head>
+<body>
+From: Jutta Degener
+<br>
+Newsgroups: comp.lang.c
+<br>
+Subject: Re: static declarations of functions
+<br>
+Date: 5 Oct 1993 09:09:10 GMT
+<br>
+Message-ID: &lt;28rdjm$74r@news.cs.tu-berlin.de&gt;
+<p>
+Jos Horsmeier writes:
+<br>
+&gt;In article &lt;....&gt; Larry Jones writes:
+<br>
+&gt;|In article &lt;....&gt;, David Alan Boles writes:
+<br>
+&gt;|&gt; <TT>static void dummy(int, int, int *);</TT>
+<br>
+&gt;|&gt; <TT>void dummy(int a, int b, int *c) { *c = a + b; }</TT>
+<br>
+&gt;|&gt; 
+<br>
+&gt;|&gt; Looking at Steele's book, it seems to say that the word <TT>static</TT> must
+<br>
+&gt;|&gt; be present in both places, but it is not clear on this. [...]
+<br>
+&gt;|
+<br>
+&gt;|It says you have to have <TT>static</TT> in both places. [...]
+<br>
+&gt;
+<br>
+&gt; No, if the first declaration declares the object to be a static object
+<br>
+&gt; (no external linkage), following declarations (and the definition) can
+<br>
+&gt; omit the `static' keyword. The other way around would result in a
+<br>
+&gt; compiler warning though ...
+<br>
+<p>
+Jos Horsmeier has started talking about objects now where Larry Jones
+and David Alan Boles were discussing functions.  Unfortunately, function
+and object linkages are treated differently.
+<p>
+The rules that Larry thought apply to functions apply to objects,
+while the rules that Jos states for objects apply to functions.
+<p>
+Example:
+<p>
+<pre>
+/* object */	  /* function */
+
+int o1;		  int f1();		/* external linkage */
+static int o2;	  static int f2();	/* internal linkage */
+static int o3;	  static int f3();	/* internal linkage */
+
+static int o1;	  static int f1();	/* ERROR, both have external linkage */
+int o2;					/* ERROR, o2 has internal linkage */
+		  int f2();		/* OK, picks up internal linkage */
+extern int o3;	  extern int f3();	/* OK, both pick up internal linkage */
+</pre>
+<p>
+The difference is case (2); where functions do pick up a previous
+linkage even without "extern", objects don't.
+<p>
+Jutta Degener
+</body>
+</html>

@@ -1,0 +1,147 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file stdio.sgml dated Wed Dec 21 13:07:57 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 12.40</title>
+<link href="stdinbinary.html" rev=precedes>
+<link href="structio.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="stdinbinary.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="structio.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 12.40
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+What's the difference between text and binary I/O?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+In text mode,
+a file is assumed to consist of
+lines of printable characters
+(perhaps including tabs).
+The routines in the stdio library
+(<TT>getc</TT>, <TT>putc</TT>, and all the rest)
+translate between
+the underlying system's
+end-of-line representation
+and the single <TT>\n</TT> used in C programs.
+C programs
+which simply read and write text
+therefore don't have to worry about
+the underlying system's
+newline conventions:
+when a C program writes a <TT>'\n'</TT>,
+the stdio library
+writes
+the appropriate end-of-line indication,
+and when the stdio library detects
+an end-of-line while reading,
+it returns a single <TT>'\n'</TT>
+to the calling program.
+<a href="recfs.html" rel=subdocument>[footnote]</a>
+</p><p>In binary mode, on the other hand,
+bytes are read and written between the program and the file 
+without any interpretation.
+(On MS-DOS systems,
+binary mode also turns off
+testing for control-Z
+as an in-band
+end-of-file character.)
+</p><p>Text mode translations
+also
+affect the apparent size of a file as it's read.
+Because the characters
+read from and written to
+a file in text mode
+do not necessarily match
+the characters
+stored in the file 
+exactly,
+the
+size of the file on disk
+may not always match
+the number of characters which can be read from it.
+Furthermore,
+for analogous reasons,
+the <TT>fseek</TT> and
+<TT>ftell</TT> functions
+do not
+necessarily
+deal in pure byte offsets from the beginning of the file.
+(Strictly speaking,
+in text mode,
+the offset values used by <TT>fseek</TT> and <TT>ftell</TT>
+should not be interpreted at all:
+a value returned by <TT>ftell</TT>
+should only be used as a later argument to <TT>fseek</TT>,
+and <em>only</em> values returned by <TT>ftell</TT>
+should be used as arguments to <TT>fseek</TT>.)
+</p><p>In binary mode,
+<TT>fseek</TT> and <TT>ftell</TT> do use pure byte offsets.
+However,
+some systems may have to append
+a number of
+null bytes at the end
+of a binary file
+to pad it out to
+a full record.
+</p><p>See also questions <a href="binaryio.html">12.37</a> and <a href="../osdep/filesize.html">19.12</a>.
+</p>
+
+
+
+<p>References:
+
+ISO Sec. 7.9.2
+<br>
+Rationale Sec. 4.9.2
+<br>
+H&amp;S Sec. 15 p. 344, Sec. 15.2.1 p. 348
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="stdinbinary.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="structio.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

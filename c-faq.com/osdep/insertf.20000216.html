@@ -1,0 +1,88 @@
+<html>
+<head>
+<title></title>
+</head>
+<body>
+<p>
+[Someone asked me for clarification
+on question 19.14 in the comp.lang.c FAQ list.
+This was my reply.]
+<p>
+Date: Wed, 16 Feb 2000 10:55:50 -0800 (PST)
+<br>
+Message-Id: &lt;200002161855.KAA11838@mail.eskimo.com&gt;
+<br>
+From: scs@eskimo.com (Steve Summit)
+<br>
+Subject: Re: 'q' - answer
+<br>
+In-Reply-To: your message &lt;37D0E174.AB9D0DA0@srasys.co.in&gt;
+<br>
+	of Sat, 04 Sep 1999 14:38:04 +0530
+<br>
+Cc: scs@eskimo.com
+<p>
+You wrote:
+<br>
+&gt; i just want to know whether i can insert a line  in a existing file..?
+<br>
+&gt; eventhough the question was very straight forward but not the
+<br>
+&gt; answer( certainly)
+<br>
+&gt; yes/no
+<br>
+&gt; the only word i can understand from your reply is ``YOU PROBABLY CAN'T''
+<p>
+Right.
+<p>
+&gt; if you don't mind could u calrify whether it is possible or not.
+<br>
+&gt; actually file appending is allowed in the same way why can't the
+<br>
+&gt; insertion of a line
+<p>
+The problem is that the basic model for file access under
+virtually all operating systems is ``sequential'', meaning that
+a file is a stream of bytes which you access sequentially.
+It's easy to add bytes at the end (that's essentially what you
+do every time you write to the file), but there's no way to
+insert bytes in the middle.  You can usually seek back into the
+file and start writing, but you overwrite, rather than inserting.
+The only way for the OS to allow you to insert bytes would be if
+it could move all the displaced bytes farther towards the end of
+the file, but it turns out there's no reasonable way for the OS
+to allow you to do that, at least not in an efficient or general
+way.  (Some operating systems support record-oriented file types
+which might allow you to insert records, but in that case you'd
+be limited to inserting numbers of bytes which were an exact
+multiple of the record size.)
+<p>
+The answer really is, ``You probably can't.''  If you could,
+there would be a function call in C's stdio library with a
+name like ``<TT>finsert</TT>'', and there would be a system call in the
+operating system's filesystem interface with a name like
+``<TT>insert</TT>''.  But neither of these calls exist, so whether we
+wish there were a way to insert or not, there simply isn't;
+the operating system and the C run-time library simply don't
+support the operation.  (At some level, there's only one way to
+write to a file, and if you're in the middle of the file when
+you do it, the interpretation is ``overwrite'', not ``insert.'')
+<p>
+&gt; any other procedures is available
+<p>
+You really do have to rewrite the file if you want the effect
+of inserting text in the middle.  This isn't too hard, really
+(although I agree that sometimes it can be a nuisance).
+<p>
+You may be wondering why you can't insert characters in the
+middle of a file, when it seems like text editors do it all the
+time.  But text editors never work with a disk file directly;
+they always work with fancier structures, either in memory or
+in temporary files, which make inserting and deleting and
+rearranging text relatively easy.  Whenever you edit a file,
+the text editor reads the file into its internal data structures,
+then lets you edit, then writes the modified data structures back
+out to the file (overwriting the whole thing).
+</body>
+</html>

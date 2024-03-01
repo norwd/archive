@@ -1,0 +1,165 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file librand.sgml dated Sat Jul  3 13:09:31 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 13.16</title>
+<link href="rand.html" rev=precedes>
+<link href="srand.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="rand.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="srand.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 13.16
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+How can I get random integers in a certain range?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+The obvious way,
+<pre>
+	rand() % N		/* POOR */
+</pre>
+(which tries to return numbers from <TT>0</TT> to <TT>N-1</TT>)
+is poor,
+because
+the low-order bits of many random
+number
+generators are distressingly <em>non</em>-random.
+(See question
+<a href="notveryrand.html">13.18</a>.)
+A better
+method is something like
+<pre>
+	(int)((double)rand() / ((double)RAND_MAX + 1) * N)
+</pre>
+</p><p>If you'd rather not use floating point,
+another method is
+<pre>
+	rand() / (RAND_MAX / N + 1)
+</pre>
+If you just need to do something with probability 1/<TT>N</TT>,
+you could use
+<pre>
+	if(rand() &lt; (RAND_MAX+1u) / N)
+</pre>
+All these
+methods
+obviously require knowing <TT>RAND_MAX</TT>
+(which ANSI <TT>#define</TT>s in <TT>&lt;stdlib.h&gt;</TT>),
+and
+assume
+
+that <TT>N</TT> is much less than <TT>RAND_MAX</TT>.
+</p><p>When <TT>N</TT> is close to <TT>RAND_MAX</TT>,
+and if the range of the random number generator
+is not a multiple of <TT>N</TT>
+(i.e. if <TT>(RAND_MAX+1)&nbsp;%&nbsp;N&nbsp;!=&nbsp;0</TT>),
+all of these methods break down:
+some outputs
+occur more often than others.
+(Using floating point does <em>not</em> help;
+the problem is that <TT>rand</TT> returns <TT>RAND_MAX+1</TT>
+distinct values,
+which cannot
+always be evenly
+divvied up
+into <TT>N</TT> buckets.)
+If this is a problem, about the only thing you can do
+is to call <TT>rand</TT> multiple times,
+discarding certain values:
+<pre>
+	unsigned int x = (RAND_MAX + 1u) / N;
+	unsigned int y = x * N;
+	unsigned int r;
+	do {
+		r = rand();
+	} while(r &gt;= y);
+	return r / x;
+</pre>
+
+</p><p>For any of these techniques,
+it's
+straightforward to shift
+the range,
+if necessary;
+numbers in the range [M, N] could be generated
+with something like 
+<pre>
+	M + rand() / (RAND_MAX / (N - M + 1) + 1)
+</pre>
+
+</p><p>(Note, by the way, that
+<TT>RAND_MAX</TT> is a <em>constant</em>
+telling you what the fixed range
+of the C library <TT>rand</TT> function is.
+You cannot set <TT>RAND_MAX</TT> to some other value,
+and there is no way of requesting that <TT>rand</TT>
+return numbers in some other range.)
+</p><p>If you're starting with a random number generator
+which returns floating-point values
+between 0 and 1
+(such as the last version of <TT>PMrand</TT>
+alluded to in question <a href="rand.html">13.15</a>,
+or <TT>drand48</TT> in question <a href="rand48.html">13.21</a>),
+all you have to do
+to get integers from 0 to <TT>N-1</TT>
+is multiply the output of that generator by <TT>N</TT>:
+<pre>
+	(int)(drand48() * N)
+</pre>
+</p><p><a href="sd15.html" rel=subdocument>Additional links</a>
+</p>
+
+<p>References:
+
+K&amp;R2 Sec. 7.8.7 p. 168
+<br>
+PCS Sec. 11 p. 172
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="rand.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="srand.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

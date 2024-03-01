@@ -1,0 +1,370 @@
+<html>
+<head>
+<title>``Converting Binary to Decimal''</title>
+</head>
+<body>
+<p>
+[This is a message I composed in response to someone
+who was asking how to write a function to convert binary numbers to decimal.
+I have paraphrased the original correspondent's queries.]
+<p>
+From: scs@eskimo.com (Steve Summit)
+<br>
+Subject: Re: please help
+<br>
+Date: Sat, 29 Apr 2000 12:36:07 -0700 (PDT)
+<br>
+Message-Id: &lt;200004291936.MAA18560@mail.eskimo.com&gt;
+<p>
+You wrote:
+<br>
+<TT>&gt;</TT> I am trying to write a function that takes a binary number and returns
+<br>
+<TT>&gt;</TT> its the decimal value.  Is there a library function that does this?
+<p>
+Sort of; in fact depending on how you think about the question,
+there are several functions.  But those functions don't work
+quite like you think they do, because you're thinking about the
+question in a different way, one which it turns out doesn't make
+as much sense.
+<p>
+<TT>&gt;</TT> The sort of function I'm thinking of is:
+<br>
+<TT>&gt;</TT>
+<pre>
+&gt;	#include &lt;math.h&gt;
+&gt;
+&gt;	int binary_to_decimal(int number)
+&gt;	{
+&gt;		int decimal = 0;
+&gt;		int i, digit;
+&gt;
+&gt;		for(i = 0; i &lt; length(number); i++)
+&gt;		{
+&gt;			digit = substring(number, i);
+&gt;			/* where, say, substring(11011, 2) returns 0 */
+&gt;			/* but I'm not sure about this part */
+&gt;
+&gt;			if(digit == 1)
+&gt;				decimal += pow(2,i);
+&gt;		}
+&gt;
+&gt;		return decimal;
+&gt;	}
+</pre>
+<p>
+You've got the right basic algorithm there, and if your ``number''
+variable (that is, the input of your function) was a <em>string</em>,
+you'd have a perfectly useful function.  Notice, too, that if you
+changed the lines
+<p>
+<pre>
+	if(digit == 1)
+		decimal += pow(2,i);
+</pre>
+to
+<pre>
+	decimal += digit * pow(2, i);
+</pre>
+you could make the program work for any base, just by changing
+the value 2 to something else.
+<p>
+<TT>&gt;</TT> but I don't know how to get <TT>substring(number, i)</TT> to work.
+<p>
+That's because you're thinking of a ``number'' as a string of
+digits.  But integers are <em>not</em> represented internally as strings
+of digits.
+<p>
+Now, <em>if</em> your function did accept a string of digits (that is,
+if its input argument were of type string, not int), it would be
+easy enough to get your hands on each digit, because of course
+it's always easy to get your hand on the individual characters
+that make up a string.
+<p>
+(There is no standard ``substring'' function in C, although it's
+easy enough to write one, although as its name implies, it's
+almost invariably designed to solve the general problem of
+extracting substrings from a string, not necessarily single
+digits.  And, once again, what it would be extracting from is
+a string variable, not an integer variable.)
+<p>
+How were you planning on passing a ``binary'' number to your
+function?  Were you thinking of calling something like this?
+<p>
+<pre>
+	binary_to_decimal(11011);
+</pre>
+In that call, you haven't passed the binary number
+one-one-oh-one-one; you've passed the <em>decimal</em> number eleven
+thousand and eleven.  I suppose you could write some code that
+accepted decimal numbers with the digits all 0 or 1, and
+pretended it was a binary number, and ``converted'' it to decimal,
+but this would be a confusing and not very useful function.
+(To get at the digits, you'd end up dividing by 10, which would
+be a strange thing to do to extract bits which you were thinking
+of as being in base two.)
+<p>
+You were trying to write a function that accepted an int, and
+that returned an int.  Presumably you were intending one of those
+ints to be in ``base 2'' and one of them to be in ``base 10''.  But
+it really doesn't make sense to talk about what ``base'' an integer
+is in; an integer is just a <em>number</em>.  The ``base'' only matters
+when we write numerals out on paper.
+<p>
+Here is an example.  How many x's are there on this line?
+<pre>
+	xxxxxxxxxxxxxxxxx
+</pre>
+Is your answer in base two or base ten?  The question doesn't
+make much sense.  If you said ``seventeen'', your answer is not in
+base two or base ten; your answer is in English.  Seventeen is
+the <em>number</em> of x's on the line.
+<p>
+We can represent numbers in different bases.  If we represent
+the number seventeen in base ten, we get the numeral 17.  If we
+represent it in base two, we get the numeral 10001.  But the
+number of x's on the line didn't change when we switched from
+17 base ten to 10001 base two.
+<p>
+I believe that the right way to think of the numbers stored in
+int variables as just that: numbers.  It doesn't really matter,
+or make sense to ask, what base they're in.  (In truth, on a
+modern computer, integers are virtually always stored in binary,
+but most of the time, that fact really doesn't concern us.)
+<p>
+Here's one way to convince yourself that ints in C are just
+numbers.  Suppose you have an int variable
+<pre>
+	int i;
+</pre>
+and you print it out using <TT>printf</TT>:
+<p>
+<pre>
+	printf("%d\n", i);
+</pre>
+<p>
+Now, as you probably know, <TT>printf</TT> can also print things out in
+base 8 and base 16.  So we could also write
+<p>
+<pre>
+	printf("%o\n", i);
+</pre>
+or
+<pre>
+	printf("%x\n", i);
+</pre>
+<p>
+Do we have to match the <TT>printf</TT> format we use (<TT>%d</TT>, <TT>%o</TT>, or <TT>%x</TT>) to
+the base of the number we're printing?  No, because as I was
+saying, the int variable <TT>i</TT> is just a number; it doesn't have any
+inherent base.  (Or, if it does have an inherent base, it's base
+two, meaning that all three <TT>printf</TT> conversions involve a conversion
+from base 2 to some other base.)
+<p>
+In fact, one answer to the question ``how do I convert a binary
+number to decimal?'' in C is, ``print it out using <TT>printf %d</TT>''.
+The answer only works if you think of ints as being base two
+internally, and it probably isn't the answer you expected if you
+were trying to convert binary to decimal explicitly, but it is a
+very real answer.  (If the binary number you had was a string of
+0's and 1's, then what you really wanted to do was just to
+convert that string to an int, perhaps so that you could print
+it back out using %d.)
+<p>
+If we believe (as I do) that int variables are ``just numbers'',
+then the only times it makes sense to talk about what base
+they're in are when we print them out for people in the real
+world to look at on paper or on the screen, or when we read them
+in from people in the real world who are poking at keyboards
+containing keys with the digits 0 through 9 on them.  In those
+cases, just about all of the conversions are taken care for us
+automatically, without our hardly being aware of it:
+<p>
+<OL>
+<li>
+When we write a C program containing a line like
+<pre>
+	int i = 1234;
+</pre>
+the C compiler automatically converts those decimal
+digits <TT>1&nbsp;2&nbsp;3&nbsp;4</TT> to an integer.  If we want to, we can
+enter integer constants in base 8 or base 16:
+<pre>
+	int j = 0123;
+	int k = 0x123;
+</pre>
+and the compiler does octal or hexadecimal conversion,
+as appropriate.
+<p>
+<li>
+When we print an integer, using <TT>printf</TT> or the like, it's
+printed in base 10 if we use <TT>%d</TT>, or in base 8 or 16 if
+we use <TT>%o</TT> or <TT>%x</TT>.
+<p>
+<li>
+When we request numeric input from the user, and we
+choose to use <TT>scanf</TT> or the like, we again select the base
+using the format character, <TT>%d</TT>, <TT>%o</TT>, or <TT>%x</TT>.
+<p>
+<li>
+When we have a string that we want to convert to an
+integer, we can call the <TT>atoi</TT> function:
+<pre>
+	char *str = "123";
+	int i = atoi(str);
+</pre>
+<TT>atoi</TT> always does decimal conversion.
+<p>
+<li>
+Finally, if we have a string in an arbitrary base, we
+can convert it to an integer using the <TT>strtol</TT> function:
+<pre>
+	char *str2 = "1234";
+	i = strtol(str2, NULL, 7);
+</pre>
+This converts the string <TT>"1234"</TT>, interpreted as a numeral
+in base 7, to an integer, and stores it in <TT>i</TT>.  (If we
+then printed <TT>i</TT> back out using <TT>%d</TT>, we'd see the decimal
+numeral 466, which is 1234 base 7.)
+</OL>
+<p>
+So <TT>strtol</TT> is the other standard C library function that's often
+useful in realistic base conversion problems, and it's one of the
+only standard C library functions that lets you specify an
+arbitrary base.  (You can also specify the base as 0, in which
+case <TT>strtol</TT> will use the same rules the C compiler uses, namely
+that a leading 0 indicates base 8 and a leading <TT>0x</TT> indicates base
+16.  It turns out that <TT>scanf</TT> can do this, too, using the <TT>%i</TT>
+format.)
+<p>
+You'll notice that every standard function (or other language
+feature) that seems to have anything to do with base conversion
+is either converting from an integer to a string or printed
+representation, or is converting from a string or printed
+representation to an integer.  You won't find a ``base conversion''
+function that ``converts'' from integer to integer, because as I've
+explained, that ``conversion'' doesn't make sense.  Integers are
+not stored internally as strings of digits.  If, however, you
+want to think about the ``base'' of a numeral, that's a concept
+which only makes sense (in fact, which is defined) in terms of
+strings of digits.
+<p>
+If you'd like to truly understand base conversion, in the
+contexts where it really comes up when writing modern computer
+programs, here are a few functions for you to write.
+<p>
+<OL>
+<li>
+Write a function which accepts a string of digits and
+converts it to an integer, interpreting the string of
+digits as a numeral in base 10.  This function will
+actually be a lot like the ``conversion'' function you were
+trying to write, except that (a) it accepts a string, not
+an int; (b) it will be easy to access the digits (that
+is, to perform the ``substring'' operation), because a
+string in C is just an array of characters, and array
+subscripting is easy; and (c) you'll be converting from
+base 10, not base 2.  (Also, you can get away without
+calling <TT>pow()</TT> at all, if you arrange things right.  If
+you convert the digits in left-to-right order, all you
+have to do is keep a running sum, and at each digit,
+multiply the previous sum by 10 before adding in the new
+digit.)
+<p>
+If you write this function, you'll essentially have
+reimplemented the standard library <TT>atoi()</TT> function.
+<p>
+One other problem you may encounter is dealing with
+digits as characters.  Your input is a string like
+<TT>"1234"</TT>, so the digits are characters, like <TT>'1'</TT>.
+But the value of the character <TT>'1'</TT> in ASCII is <em>not</em> 1.
+But it turns out that converting digit characters to
+their appropriate digit values is easy: just subtract the
+character set value of the character <TT>'0'</TT>, whatever that is.
+<TT>'0'&nbsp;-&nbsp;'0'</TT> is obviously 0, no matter what value <TT>'0'</TT> has.
+Similarly, <TT>'1'&nbsp;-&nbsp;'0'</TT> is 1.  So if you have a character
+variable <TT>c</TT>, containing one of the digit characters <TT>'0'</TT>
+through <TT>'9'</TT>, then <TT>c&nbsp;-&nbsp;'0'</TT> is the decimal value of that
+digit.
+[The point here is that you do <em>not</em> need to know what
+the character set value of the character <TT>'0'</TT> is;
+all you need to do is subtract the character constant <TT>'0'</TT>.]
+<p>
+<li>
+Write a function which accepts a string of digits and an
+integer value <TT>b</TT>, and converts the string to an integer,
+interpreting the string of digits as a numeral in base <TT>b</TT>.
+Basically, all you'll have to do is take your function
+from #1 and change ``10'' to ``<TT>b</TT>''.  When you're done, you'll
+have reimplemented part of the standard library <TT>strtol()</TT>
+function.
+[And you can use it, if you like, to perform ``binary to decimal conversion'',
+by calling it with a base of 2.
+As we've discussed, this is actually ``binary to number conversion'',
+not ``binary to decimal''.]
+<p>
+<li>
+Write a function which accepts an integer and creates a
+string of digits forming the base 10 representation of
+the integer.  (Your compiler may already have such a
+function, perhaps called ``<TT>itoa</TT>'', although it's not a
+Standard function.)  As you write this function, you'll
+essentially be reimplementing the task which <TT>printf</TT>
+performs when it prints something using <TT>%d</TT>.
+<p>
+It's actually easy enough to compute the digits of a
+number's base-10 representation: you can take <TT>i&nbsp;%&nbsp;10</TT> to
+pick off the rightmost digit, and then say <TT>i&nbsp;=&nbsp;i&nbsp;/&nbsp;10</TT> to
+throw away the rightmost digit (since you already picked
+it off), and then say <TT>i&nbsp;%&nbsp;10</TT> again to pick off what had
+been the next-to-rightmost digit, etc.
+<p>
+One tricky part of writing this function is that it gives
+you the digits the wrong way around: it picks them off in
+right-to-left order, while you probably wanted to print
+them out, or store them in string, in left-to-right
+order.  There are various ways around this problem.
+(Another tricky part is converting digit values to
+characters, but here all you have to do is use the
+inverse of the trick mentioned under #1 above: if <TT>d</TT>
+is a digit value you've computed, then <TT>d&nbsp;+&nbsp;'0'</TT> is the
+character value you want.)
+<p>
+<li>
+Write a function which accepts an integer and creates a
+string of digits forming the base <TT>b</TT> representation of the
+integer, where <TT>b</TT> is another int argument to the function.
+(Some compilers come with an <TT>itoa</TT> function which also
+accepts a base.)  Basically, all you'll have to do is
+take your function from #3 and change ``10'' to ``<TT>b</TT>''.
+</ol>
+<p>
+Finally, if you do write these functions, and get them to work,
+take a look: your functions in #1 and #2 convert <em>from</em> base 10
+or base <TT>b</TT>, and your functions in #3 and #4 convert <em>to</em> base 10
+or base <TT>b</TT>.  But what base do your functions in #1 and #2 convert
+<em>to</em>?  What base do your functions in #3 and #4 convert <em>from</em>?
+You can't tell; all they really convert to and from is ``ints''.
+The base (if it's even meaningful to ask what it is) is implicit;
+the details of the internal representation of integers are all
+taken care of for you by your C compiler, the machine code it
+generates, and by your machine's CPU.  You did a certain amount
+of multiplying or dividing by 10 or <TT>b</TT>, but the ``other'' base was
+essentially built in to the multiplication and division
+operators.  If you had to ``port'' the code you wrote from a
+machine that used binary integers internally to a hypothetical
+one that used decimal integers internally, you wouldn't have to
+change a thing.  All of these facts underlie my claim that it
+doesn't make much sense to ask what base these ints are in;
+they're just numbers.
+<p>
+See also the comp.lang.c FAQ list, question 20.10 (and 13.1,
+while you're at it).
+<p>
+<address>
+<a href="http://www.eskimo.com/~scs/">Steve Summit</a>
+<br>
+<a href="mailto:scs@eskimo.com">scs@eskimo.com</a>
+</address>
+</body>
+</html>

@@ -1,0 +1,49 @@
+From: Jim Dalsimer
+To: scs@eskimo.com
+Subject: New FAQ  & answer
+Date: Thu, 13 Mar 1997 22:35:04 -0500
+Message-ID: <3328C768.6134@worldnet.att.net>
+
+Steve - I've been lurking/posting for about a year now.  I see a
+possibility for a new FAQ and answer -- although it's a little off
+topic.
+
+Q: I'm trying to open more than 20 files using Borland c 3.x and I can't
+do it.  My CONFIG.SYS has FILES=30.
+
+A: (from the Borland C vers 3.1 (DOS) readme file
+  - You can now increase the number of files that can be open
+    at one time in a DOS program by a simple modification of the
+    runtime library.
+
+    First, modify _NFILE.H in your INCLUDE directory by changing
+    the #define for _NFILE_:
+
+       #define _NFILE_ n
+
+    where n is the number of files you want to open. Make sure the
+    FILES statement in your CONFIG.SYS file specifies at least
+    this number.
+
+    Then compile the two files FILES.C and FILES2.C in the LIB
+    directory:
+
+       BCC -c -m<model> files.c files2.c
+
+    where <model> is the memory model you're using.
+
+    Then link them directly with the program which opens the files,
+    for instance:
+
+       BCC myfile.c files.obj files2.obj
+
+    If you want the change to apply to all modules, add
+    FILES.OBJ and FILES2.OBJ created above to the libraries
+    you use; from the LIB directory, type:
+
+       TLIB c<model> +-files.obj +-files2.obj
+
+    where <model> matches what you used for the BCC command
+    above.
+======================================
+Jim Dalsimer

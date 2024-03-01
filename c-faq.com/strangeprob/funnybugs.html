@@ -1,0 +1,160 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file strangeprob.sgml dated Tue Jun 29 21:44:40 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 16.5</title>
+<link href="crashatexit.html" rev=precedes>
+<link href="strlitnomod.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="crashatexit.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="strlitnomod.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 16.5
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+This program runs perfectly on
+one machine,
+but I get weird results on
+another.
+Stranger still,
+adding or
+removing a debugging printout
+changes the symptoms...
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+Lots of things could be going wrong;
+here are a few of the more common things to check:
+<UL><li>uninitialized local variables
+<a href="stktrash.html" rel=subdocument>[footnote]</a>
+(see also question <a href="../malloc/malloc1.html">7.1</a>)
+<li>integer overflow,
+especially on 16-bit machines,
+especially of an intermediate result when doing
+things like <TT>a&nbsp;*&nbsp;b&nbsp;/&nbsp;c</TT>
+(see also question <a href="../expr/intoverflow1.html">3.14</a>)
+<li>undefined evaluation order
+(see questions <a href="../expr/evalorder1.html">3.1</a> through
+<a href="../expr/precvsooe.html">3.4</a>)
+<li>omitted
+declaration
+of external functions,
+especially 
+those which
+return
+something
+other than <TT>int</TT>,
+or have ``narrow'' or variable arguments
+(see questions
+<a href="../decl/implfdecl.html">1.25</a>,
+<a href="../ansi/argpromos.html">11.3</a>,
+<a href="../fp/fpdecl.html">14.2</a>,
+and <a href="../varargs/protos.html">15.1</a>)
+<li>dereferenced
+
+null pointers
+(see section <a href="../null/index.html">5</a>)
+<li>improper <TT>malloc</TT>/<TT>free</TT> use:
+assuming <TT>malloc</TT>'ed memory contains 0,
+assuming <TT>free</TT>d storage persists,
+<TT>free</TT>ing something twice,
+corrupting the <TT>malloc</TT> arena
+(see also questions
+<a href="../malloc/crash.html">7.19</a>
+and
+<a href="../malloc/useafterfree.html">7.20</a>)
+<li>pointer problems in general
+(see also
+questions <a href="ptralign.html">16.7</a> and <a href="segv.html">16.8</a>)
+<li>mismatch between
+<TT>printf</TT> format
+and arguments,
+especially trying to print <TT>long&nbsp;int</TT>s using <TT>%d</TT>
+(see
+questions <a href="../stdio/printftypes.html">12.7</a> and <a href="../stdio/scanfvsprintf.html">12.9</a>)
+<li>
+trying to
+allocate
+
+
+
+more memory than an <TT>unsigned&nbsp;int</TT> can count,
+especially on machines with limited memory
+(see also questions <a href="../malloc/sizewrap.html">7.16</a>
+and <a href="../osdep/bigdatastr.html">19.23</a>)
+<li>array bounds problems,
+especially of small, temporary
+buffers,
+perhaps used for constructing strings with <TT>sprintf</TT>
+<a href="gonzo.html" rel=subdocument>[footnote]</a>
+(see also
+questions <a href="../malloc/malloc1.html">7.1</a>, <a href="../stdio/sprintfsize.html">12.21</a>, and <a href="../osdep/system2.html">19.28</a>)
+<li>invalid assumptions about the mapping of <TT>typedef</TT>s,
+especially <TT>size_t</TT>
+(see question <a href="../malloc/sizetlong.html">7.15</a>)
+<li>floating point problems
+(see questions <a href="../fp/printfprec.html">14.1</a> and <a href="../fp/strangefp.html">14.4a</a>)
+<li>
+
+
+anything you thought was a clever exploitation
+of the
+way you believe code is generated for your
+specific
+system
+</UL></p><p>Proper use of
+function prototypes
+can catch several of these problems;
+<TT>lint</TT> would catch several more.
+See also questions 
+<a href="biglocal.html">16.3</a>,
+<a href="crashatexit.html">16.4</a>,
+and
+<a href="../resources/lint1.html">18.4</a>.
+</p><!-- aend -->
+<p>
+<hr>
+<a href="crashatexit.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="strlitnomod.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

@@ -1,0 +1,172 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file aryptr.sgml dated Wed Dec 21 12:50:38 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Arrays and Pointers</title>
+</head>
+<body bgcolor="#ffffff">
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<H1>6. Arrays and Pointers</H1>
+
+<p><a href="aryptr1.html" rel=subdocument>6.1</a>
+I had the definition <TT>char&nbsp;a[6]</TT> in one source file, and in
+another I declared <TT>extern&nbsp;char&nbsp;*a</TT>.
+Why didn't it work?
+</p><p><a href="aryptr2.html" rel=subdocument>6.2</a>
+But I heard that <TT>char a[]</TT> was identical to <TT>char&nbsp;*a</TT>.
+</p><p><a href="aryptrequiv.html" rel=subdocument>6.3</a>
+So what is meant by the ``equivalence of pointers and arrays'' in C?
+</p><p><a href="aryptrparam.html" rel=subdocument>6.4</a>
+If they're so different,
+then
+
+why
+are array and pointer declarations interchangeable as
+function formal parameters?
+</p><p><a href="arypbref.html" rel=subdocument>6.4b</a>
+So arrays are passed by reference,
+even though the rest of C uses pass by value?
+</p><p><a href="arrayassign.html" rel=subdocument>6.5</a>
+Why can't
+I
+do something like this?
+<pre>
+	extern char *getpass();
+	char str[10];
+	str = getpass("Enter password: ");
+</pre>
+</p><p><a href="aryparmasgn.html" rel=subdocument>6.6</a>
+If you can't assign to arrays,
+then
+how can
+<pre>
+	int f(char str[])
+	{
+		if(str[0] == '\0')
+			str = "none";
+		...
+	}
+</pre>
+work?
+</p><p><a href="aryasgn3.html" rel=subdocument>6.6b</a>
+And what about this?
+Isn't this an array assignment?
+<pre>
+	char a[] = "Hello, world!\n";
+</pre>
+</p><p><a href="arraylval.html" rel=subdocument>6.7</a>
+How can an array be an lvalue, if you can't assign to it?
+</p><p><a href="practdiff.html" rel=subdocument>6.8</a>
+Practically speaking,
+what
+is the
+difference between arrays and pointers?
+</p><p><a href="constptr.html" rel=subdocument>6.9</a>
+Someone explained to me that arrays were really just constant pointers.
+</p><p><a href="ptrkindofary.html" rel=subdocument>6.10</a>
+I'm still mystified.
+
+Is a pointer a kind of array,
+or is an array a kind of pointer?
+</p><p><a href="joke.html" rel=subdocument>6.11</a>
+
+I came across some ``joke'' code containing the ``expression''
+<TT>5["abcdef"]</TT> .
+How can this be legal C?
+</p><p><a href="aryvsadr.html" rel=subdocument>6.12</a>
+Since array references decay into pointers,
+if <TT>arr</TT> is an array,
+what's
+the difference between
+<TT>arr</TT> and <TT>&amp;arr</TT>?
+</p><p><a href="ptrtoarray.html" rel=subdocument>6.13</a>
+How do I declare a pointer to an array?
+</p><p><a href="dynarray.html" rel=subdocument>6.14</a>
+How can I set an array's size at run time?
+<br>How can I avoid
+
+fixed-sized arrays?
+</p><p><a href="dynlocarys.html" rel=subdocument>6.15</a>
+How can I declare local arrays of a size matching a passed-in array?
+
+</p><p><a href="dynmuldimary.html" rel=subdocument>6.16</a>
+How can I dynamically allocate a multidimensional array?
+</p><p><a href="non0based.html" rel=subdocument>6.17</a>
+Here's a neat trick: if I write
+<pre>
+	int realarray[10];
+	int *array = &amp;realarray[-1];
+</pre>
+I can treat <TT>array</TT> as if it were a 1-based array.
+</p><p><a href="pass2dary.html" rel=subdocument>6.18</a>
+My compiler complained when I passed a two-dimensional array to a
+function expecting a pointer to a pointer.
+</p><p><a href="ary2dfunc2.html" rel=subdocument>6.19</a>
+How do I write functions which accept two-dimensional arrays
+when the width is not known at compile time?
+</p><p><a href="ary2dfunc3.html" rel=subdocument>6.20</a>
+How can I use statically- and dynamically-allocated
+multidimensional arrays interchangeably when passing them to functions?
+</p><p><a href="aryparmsize.html" rel=subdocument>6.21</a>
+Why doesn't <TT>sizeof</TT> properly report the size of an array
+when the array
+is a parameter to a function?
+I have a test routine
+<pre>
+	f(char a[10])
+	{
+		int i = sizeof(a);
+		printf("%d\n", i);
+	}
+</pre>
+and it prints
+4, not 10.
+</p><p><a href="extarysize.html" rel=subdocument>6.22</a>
+How can code in a file where an array is declared as <TT>extern</TT>
+(i.e. it is defined, and its size determined, in some other file)
+
+determine the size of the array?
+<TT>sizeof</TT> doesn't seem to work.
+</p><p><a href="arraynels.html" rel=subdocument>6.23</a>
+I want to know how many elements are in an array,
+but <TT>sizeof</TT> yields the size in bytes.
+</p><p><a href="arybits.html" rel=subdocument>6.24</a>
+Is there a way to have an array of bits?
+</p><hr>
+<p>
+<a href="../index.html">top</a>
+</p>
+<p>
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br>
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</p>
+</body>
+</html>

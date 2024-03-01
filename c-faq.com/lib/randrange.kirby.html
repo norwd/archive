@@ -1,0 +1,66 @@
+<html>
+<head>
+<title></title>
+</head>
+<body>
+From: Lawrence Kirby
+<br>
+Newsgroups: comp.lang.c
+<br>
+Subject: Re: why aren't my random numbers random ?
+<br>
+Date: Wed, 09 Jun 99 01:38:49 GMT
+<br>
+Message-ID: &lt;928892329snz@genesis.demon.co.uk&gt;
+<p>
+In article &lt;7jm48e$606$1@eskinews.eskimo.com&gt;
+scs@eskimo.com "Steve Summit" writes:
+<br>
+...
+<br>
+&gt; When N is close to RAND_MAX...  about the
+<br>
+&gt; only thing you can do is to call rand() multiple times,
+<br>
+&gt; discarding certain values:
+<br>
+&gt;
+<br>
+&gt; [code omitted]
+<p>
+This is very similar to something I've posted a few times.
+<p>
+<pre>
+#include &lt;stdlib.h&gt;
+
+int randnum(int range)
+{
+    int divisor = RAND_MAX / range;
+    int threshold = RAND_MAX - RAND_MAX % range;
+    int randval;
+
+    while ((randval = rand()) &gt;= threshold)
+        ;
+
+    return randval / divisor;
+}
+</pre>
+<p>
+In theory this could loop indefinitely. However the chance of exiting the
+loop on each iteration is always greater than 0.5 and usually much closer
+to 1. Therefore the chances of the loop continuing become vanishingly
+small after relatively few iterations (after 100 iterations it is
+probably much less than 1 chance in 10^^30). This does assume however
+that rand() isn't severely broken i.e. that it doesn't churn out large
+groups of large numbers. However even poor PRNG algorithms don't
+tend to do that (which leaves a genuinely buggy implementation).
+<p>
+<pre>
+-- 
+-----------------------------------------
+Lawrence Kirby | fred@genesis.demon.co.uk
+Wilts, England | 70734.126@compuserve.com
+-----------------------------------------
+</pre>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file malloc.sgml dated Wed Dec 21 13:50:44 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 7.7b</title>
+<link href="cast.html" rev=precedes>
+<link href="mallocnocast2.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="cast.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="mallocnocast2.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 7.7b
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+What's wrong with casting <TT>malloc</TT>'s return value?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+
+Suppose that you
+call <TT>malloc</TT>
+but forget to <TT>#include &lt;stdlib.h&gt;</TT>.
+The compiler is likely to assume that <TT>malloc</TT>
+is a function returning <TT>int</TT>,
+which is of course incorrect, and will lead to trouble.
+Now, if
+your call to <TT>malloc</TT> is of the form
+<pre>
+	char *p = malloc(10);
+</pre>
+the compiler will notice
+that you're seemingly assigning an integer to a pointer,
+and will likely emit a warning of the form
+``assignment of pointer from integer lacks a cast''
+(see question <a href="decl.html">7.6</a>),
+which will alert you to the problem.
+(The problem is of course that you forgot to <TT>#include &lt;stdlib.h&gt;</TT>,
+not that you forgot to use a cast.)
+If, on the other hand, your call to <TT>malloc</TT>
+includes a cast:
+<pre>
+	char *p = (char *)malloc(10);
+</pre>
+the compiler is likely to assume that you know what you're doing,
+that you really do want to convert the <TT>int</TT> returned by
+<TT>malloc</TT> to a pointer, and the compiler
+therefore probably <em>won't</em> warn you.
+But of course <TT>malloc</TT> does not return an <TT>int</TT>,
+so trying to convert the <TT>int</TT> that it doesn't return
+to a pointer is likely to lead to a different kind of trouble,
+which will be harder to track down.
+</p><p>(Of course, compilers are increasingly likely--especially under C99--to
+emit warnings whenever functions are called without prototypes in scope,
+and such a warning would alert you to the lack of <TT>&lt;stdlib.h&gt;</TT>
+whether casts were used or not.)
+</p><!-- aend -->
+<p>
+<hr>
+<a href="cast.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="mallocnocast2.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

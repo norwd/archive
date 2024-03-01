@@ -1,0 +1,48 @@
+<html>
+<head>
+<title>a ``common'' extension</title>
+</head>
+<body>
+[This is a mail reply I sent to someone who wondered what I meant by
+``this behavior is mentioned as a `common extension' by the ANSI Standard,
+no pun intended.'']
+<!-- Date: Sun, 03 Dec 2000 09:07:08 -0600 -->
+<!-- Message-Id: &lt;2000Dec03.0907.scs.0011@rutabaga.scs.ndip.eskimo.net&gt; -->
+<p>
+I guess it's sorta obscure if you don't know too much about FORTRAN.
+<p>
+In FORTRAN, there were data structures called ``COMMON blocks''
+which were, as I recall, the main way of sharing global data
+between the modules of a separately-compiled program.  They were
+a nuisance to use: you had to mention the same variable names,
+in the same order, in the COMMON directive at the top of each
+source file.  (Actually, you could use deliberate mismatches of
+variable names or types in COMMON blocks to inspect the bits of
+a value of one type as if it were another, much as you might do
+with a union in C.)  When you added another variable to a COMMON
+block, you had to remember to add it to all the definitions of
+that COMMON block, in all source files.  If you'd never heard of
+preprocessors or source file inclusion (that is, of mechanisms
+like C's <TT>#include</TT>) you invented the idea for yourself, and wished
+that it existed in FORTRAN.  (It didn't, at least not in the
+standard versions of FORTRAN when I used it, although some
+compilers -- probably including Unix's -- supported it as an
+extension.)
+<p>
+That's by way of background.  In C, there's always been some
+uncertainty about the precise way global variables are handled,
+which is of course why FAQ 1.7 exists.  In particular, in the
+classic implementations of C, it was possible to define a
+global variable like
+<p>
+<pre>
+	int i;
+</pre>
+in several source files, and as long as no more than one of
+the definitions had an explicit initializer, the linker would
+realize that they were all the same variable, and essentially
+overlay them in memory.  This was referred to as the ``common
+model'', not because it was popular or widespread (though it
+was), but because it was reminiscent of FORTRAN COMMON blocks.
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file ansi.sgml dated Wed Aug 11 00:43:45 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+
+<title>Question 11.3</title>
+<link href="updates.html" rev=precedes>
+<link href="mixoldandnew.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="updates.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="mixoldandnew.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 11.3
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+My ANSI compiler
+complains about a mismatch when it sees
+<pre>
+	extern int func(float);
+
+	int func(x)
+	float x;
+	{ ...
+</pre>
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+You have mixed the new-style
+prototype
+declaration ``<TT>extern&nbsp;int&nbsp;func(float);</TT>''
+with the old-style definition ``<TT>int&nbsp;func(x) float&nbsp;x;</TT>''.
+It is usually
+possible
+to mix the
+two
+styles
+(see question
+<a href="mixoldandnew.html">11.4</a>),
+but not in this case.
+</p><p>Old C
+(and ANSI C, in the absence of prototypes,
+and in
+
+variable-length argument lists;
+see question <a href="../varargs/promos.html">15.2</a>)
+``widens'' certain arguments when they are passed to functions.
+<TT>float</TT>s
+are
+
+promoted to <TT>double</TT>,
+and
+
+characters and
+short integers
+are promoted to <TT>int</TT>.
+(For old-style function definitions,
+the values are automatically converted back
+to the corresponding narrower types
+within the body of the called function,
+if they are declared that way there.)
+
+Therefore,
+the old-style definition above
+actually says that <TT>func</TT> takes a <TT>double</TT>
+(which will be converted to <TT>float</TT> inside the function).
+</p><p>This problem can be fixed either by using new-style syntax
+consistently in the definition:
+<pre>
+	int func(float x) { ... }
+</pre>
+</p><p>or by changing the new-style prototype declaration to match the old-style
+definition:
+<pre>
+	extern int func(double);
+</pre>
+(In this case, it would be clearest to change the old-style
+definition to use <TT>double</TT> as well.
+<a href="fn49.html" rel=subdocument>[footnote]</a>
+)
+</p><p>It
+is arguably much
+safer
+
+
+to avoid ``narrow''
+(<TT>char</TT>, <TT>short&nbsp;int</TT>, and <TT>float</TT>)
+
+function arguments and return
+types
+
+altogether.
+
+</p><p>See also question
+<a href="../decl/implfdecl.html">1.25</a>.
+</p>
+
+
+
+
+
+
+
+
+
+<p>References:
+
+K&amp;R1 Sec. A7.1 p. 186
+<br>
+K&amp;R2 Sec. A7.3.2 p. 202
+<br>
+ISO Sec. 6.3.2.2, Sec. 6.5.4.3
+<br>
+Rationale Sec. 3.3.2.2, Sec. 3.5.4.3
+<br>
+H&amp;S Sec. 9.2 pp. 265-7, Sec. 9.4 pp. 272-3
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="updates.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="mixoldandnew.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

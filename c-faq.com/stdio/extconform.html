@@ -1,0 +1,141 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file stdio.sgml dated Wed Dec 21 13:07:57 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 12.42</title>
+<link href="structio.html" rev=precedes>
+<link href="runtimesc2.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="structio.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="runtimesc2.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 12.42
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+How can I write code to conform to these old, binary data file formats?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+It's hard,
+because of word size and byte order differences,
+floating-point formats,
+and
+structure padding.
+To
+get the control you need over
+these
+particulars,
+you may have to read and write
+things
+a byte at a time,
+shuffling and rearranging as you go.
+(This isn't always as bad as it sounds,
+and gives you both portability
+of your code
+and complete control.)
+</p><p>For example, to read
+a data structure
+consisting of a character, a 32-bit integer, and a 16-bit integer,
+from the stream <TT>fp</TT>,
+
+into the C structure
+
+<pre>
+struct mystruct {
+	char c;
+	long int i32;
+	int i16;
+} s;
+</pre>
+you might use
+code like this:
+<pre>
+	s.c = getc(fp);
+
+	s.i32 = (long)getc(fp) &lt;&lt; 24;
+	s.i32 |= (long)getc(fp) &lt;&lt; 16;
+	s.i32 |= (unsigned)(getc(fp) &lt;&lt; 8);
+	s.i32 |= getc(fp);
+
+	s.i16 = getc(fp) &lt;&lt; 8;
+	s.i16 |= getc(fp);
+</pre>
+This code assumes that <TT>getc</TT> reads
+8-bit characters,
+and that the data is stored
+most significant byte first
+(``big endian'').
+The casts to <TT>(long)</TT> ensure that the 16- and 24-bit shifts
+operate on <TT>long</TT> values
+(see question <a href="../expr/intoverflow1.html">3.14</a>),
+and the cast to <TT>(unsigned)</TT> guards against sign extension.
+(In general,
+it's safer to use all <TT>unsigned</TT>
+types when writing code like this,
+but see question <a href="../expr/preservingrules.html">3.19</a>.)
+</p><p>The corresponding code to write the structure might look like:
+<pre>
+	putc(s.c, fp);
+
+	putc((unsigned)((s.i32 &gt;&gt; 24) &amp; 0xff), fp);
+	putc((unsigned)((s.i32 &gt;&gt; 16) &amp; 0xff), fp);
+	putc((unsigned)((s.i32 &gt;&gt; 8) &amp; 0xff), fp);
+	putc((unsigned)(s.i32 &amp; 0xff), fp);
+
+
+	putc((s.i16 &gt;&gt; 8) &amp; 0xff, fp);
+	putc(s.i16 &amp; 0xff, fp);
+</pre>
+</p><p>See also questions
+<a href="../struct/padding.html">2.12</a>,
+<a href="fopenbinary.html">12.38</a>,
+<a href="../strangeprob/ptralign.html">16.7</a>,
+and
+<a href="../misc/binaryfiles.html">20.5</a>.
+</p><!-- aend -->
+<p>
+<hr>
+<a href="structio.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="runtimesc2.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

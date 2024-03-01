@@ -1,0 +1,313 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file malloc.sgml dated Wed Dec 21 13:50:44 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Memory Allocation</title>
+</head>
+<body bgcolor="#ffffff">
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<H1>7. Memory Allocation</H1>
+
+<p><a href="malloc1.html" rel=subdocument>7.1</a>
+Why doesn't
+this fragment
+work?
+<pre>
+	char *answer;
+	printf("Type something:\n");
+	gets(answer);
+	printf("You typed \"%s\"\n", answer);
+</pre>
+</p><p><a href="malloc2.html" rel=subdocument>7.2</a>
+I can't get <TT>strcat</TT> to work.
+I tried
+<pre>
+	char *s1 = "Hello, ";
+	char *s2 = "world!";
+	char *s3 = strcat(s1, s2);
+</pre>
+but I got strange results.
+</p><p><a href="attitude.html" rel=subdocument>7.3</a>
+
+
+But the
+man page
+for <TT>strcat</TT> says that
+it takes two <TT>char&nbsp;*</TT>'s as arguments.
+How am
+
+I supposed to know to allocate things?
+</p><p><a href="lucky.html" rel=subdocument>7.3b</a>
+I just tried the code
+<pre>
+char *p;
+strcpy(p, "abc");</pre>
+
+and it worked.
+How?
+Why didn't it crash?
+</p><p><a href="ptrvaralloc.html" rel=subdocument>7.3c</a>
+How much memory does a pointer variable allocate?
+</p><p><a href="linebfdur.html" rel=subdocument>7.4</a>
+I'm
+reading
+lines from a file into an
+array,
+with this code:
+<pre>
+	char linebuf[80];
+	char *lines[100];
+	int i;
+
+	for(i = 0; i &lt; 100; i++) {
+		char *p = fgets(linebuf, 80, fp);
+		if(p == NULL) break;
+		lines[i] = p;
+	}
+</pre>
+Why do all the lines end up containing copies of the last line?
+</p><p><a href="retaggr.html" rel=subdocument>7.5a</a>
+I have a function that is supposed to return a string,
+but when it returns to its caller,
+the returned string is garbage.
+</p><p><a href="retaggr2.html" rel=subdocument>7.5b</a>
+So what's the right way to return a string
+or other aggregate?
+</p><p><a href="decl.html" rel=subdocument>7.6</a>
+Why am I getting
+``warning: assignment of pointer from integer lacks a cast''
+for calls to <TT>malloc</TT>?
+</p><p><a href="cast.html" rel=subdocument>7.7</a>
+Why does some code carefully cast the values returned by <TT>malloc</TT>
+to the pointer type being allocated?
+</p><p><a href="mallocnocast.html" rel=subdocument>7.7b</a>
+What's wrong with casting <TT>malloc</TT>'s return value?
+</p><p><a href="mallocnocast2.html" rel=subdocument>7.7c</a>
+In a call to <TT>malloc</TT>,
+what does an error like
+``Cannot convert `<TT>void&nbsp;*</TT>' to `<TT>int&nbsp;*'''
+mean?
+</TT></p><p><a href="sizeofchar.html" rel=subdocument>7.8</a>
+I see code like
+<pre>
+	char *p = malloc(strlen(s) + 1);
+	strcpy(p, s);
+</pre>
+Shouldn't that be <TT>malloc((strlen(s) + 1) * sizeof(char))</TT>?
+</p><p><a href="mymallocretp.html" rel=subdocument>7.9</a>
+I wrote a little wrapper around <TT>malloc</TT>,
+but it doesn't work:
+<pre>
+	#include &lt;stdio.h&gt;
+	#include &lt;stdlib.h&gt;
+
+	mymalloc(void *retp, size_t size)
+	{
+		retp = malloc(size);
+		if(retp == NULL) {
+			fprintf(stderr, "out of memory\n");
+			exit(EXIT_FAILURE);
+		}
+	}
+</pre>
+</p><p><a href="mimic3.html" rel=subdocument>7.10</a>
+I'm trying to declare a pointer and allocate some space for it,
+but it's
+not working.
+What's wrong with
+this code?
+<pre>
+char *p;
+*p = malloc(10);</pre>
+
+
+</p><p><a href="fcninit2.html" rel=subdocument>7.10a</a>
+What's wrong with
+this initialization?
+<pre>
+char *p = malloc(10);</pre>
+
+My compiler is complaining about
+an ``invalid initializer'',
+or something.
+
+</p><p><a href="lintpalign2.html" rel=subdocument>7.10b</a>
+How can I shut off the
+``warning: possible pointer alignment problem''
+message
+which
+<TT>lint</TT> gives me for each call to <TT>malloc</TT>?
+
+</p><p><a href="dynarray2.html" rel=subdocument>7.11</a>
+How can I dynamically allocate arrays?
+</p><p><a href="memavail2.html" rel=subdocument>7.12</a>
+How can I find out how much memory is available?
+
+</p><p><a href="malloc0xref.html" rel=subdocument>7.13</a>
+What should <TT>malloc(0)</TT> do?
+Return a null pointer or a pointer to 0 bytes?
+
+</p><p><a href="lazyalloc.html" rel=subdocument>7.14</a>
+I've heard that some operating systems
+
+don't actually allocate <TT>malloc</TT>'ed memory
+until
+the
+
+program tries to
+use
+it.
+Is this legal?
+</p><p><a href="sizetlong.html" rel=subdocument>7.15</a>
+<TT>malloc</TT>
+is
+returning crazy pointer values,
+but I <em>did</em> read question <a href="decl.html">7.6</a>
+and I have included the line
+<pre>
+	extern void *malloc();
+</pre>
+before I call it.
+</p><p><a href="sizewrap.html" rel=subdocument>7.16</a>
+I'm allocating a large array for some numeric work,
+using the line
+<pre>
+	double *array = malloc(300 * 300 * sizeof(double));
+</pre>
+<TT>malloc</TT> isn't returning null,
+but
+the program is acting strangely,
+as if it's overwriting memory,
+or <TT>malloc</TT> isn't allocating as much as I asked for,
+or something.
+</p><p><a href="segment.html" rel=subdocument>7.17</a>
+I've got 8 meg of memory in my PC.
+Why can I only seem to <TT>malloc</TT> 640K or so?
+</p><p><a href="efficiency.html" rel=subdocument>7.18</a>
+My application depends heavily on
+dynamic allocation of nodes for data structures,
+and <TT>malloc</TT>/<TT>free</TT> overhead
+is
+becoming
+a bottleneck.
+What can
+I do?
+</p><p><a href="crash.html" rel=subdocument>7.19</a>
+My program is crashing, apparently somewhere down inside
+<TT>malloc</TT>,
+but I can't see anything wrong with it.
+Is there a bug in <TT>malloc</TT>?
+</p><p><a href="noscale.html" rel=subdocument>7.19b</a>
+</p><p>I'm dynamically allocating an array, like this:
+<pre>
+	int *iarray = (int *)malloc(nints);
+</pre>
+<TT>malloc</TT> isn't returning NULL,
+but the code isn't working.
+</p><p><a href="useafterfree.html" rel=subdocument>7.20</a>
+You can't use dynamically-allocated memory after you free it, can you?
+</p><p><a href="ptrafterfree.html" rel=subdocument>7.21</a>
+Why isn't a pointer
+null
+after calling
+<TT>free</TT>?
+
+<br>
+How unsafe is it to use
+(assign, compare)
+a pointer value after it's been freed?
+</p><p><a href="local.html" rel=subdocument>7.22</a>
+When I call <TT>malloc</TT> to allocate memory for a
+pointer which is local to a function,
+do I have to explicitly <TT>free</TT> it?
+</p><p><a href="freeforall.html" rel=subdocument>7.23</a>
+I'm allocating structures which contain pointers to other
+dynamically-allocated objects.
+When I free
+a structure,
+do I
+also
+have to free each subsidiary pointer?
+</p><p><a href="freeb4exit.html" rel=subdocument>7.24</a>
+Must I free allocated memory before the program exits?
+</p><p><a href="freetoOS.html" rel=subdocument>7.25</a>
+I have a program which <TT>malloc</TT>s
+and later
+<TT>free</TT>s a lot
+of memory,
+but
+I can see from the operating system
+that
+memory usage
+doesn't
+actually
+go back down.
+</p><p><a href="freesize.html" rel=subdocument>7.26</a>
+How does <TT>free</TT> know how many bytes to free?
+
+</p><p><a href="querysize.html" rel=subdocument>7.27</a>
+So can I query the malloc package to find out how big an
+allocated block is?
+</p><p><a href="sizeof.html" rel=subdocument>7.28</a>
+Why doesn't <TT>sizeof</TT> tell me the size of
+the block of memory pointed to by a pointer?
+</p><p><a href="realloc.html" rel=subdocument>7.29</a>
+Having dynamically allocated an array
+(as in question <a href="../aryptr/dynarray.html">6.14</a>),
+can I change its size?
+</p><p><a href="reallocnull.html" rel=subdocument>7.30</a>
+Is it legal to pass a null pointer as the first argument to <TT>realloc</TT>?
+Why would you want to?
+</p><p><a href="calloc.html" rel=subdocument>7.31</a>
+What's the difference between <TT>calloc</TT> and <TT>malloc</TT>?
+Which should I
+
+use?
+
+Is it safe to take advantage of <TT>calloc</TT>'s
+zero-filling?
+Does <TT>free</TT> work
+on memory allocated with <TT>calloc</TT>,
+or do you
+
+need a <TT>cfree</TT>?
+</p><p><a href="alloca.html" rel=subdocument>7.32</a>
+What is <TT>alloca</TT> and why is its use discouraged?
+</p><hr>
+<p>
+<a href="../index.html">top</a>
+</p>
+<p>
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br>
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</p>
+</body>
+</html>

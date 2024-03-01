@@ -1,0 +1,180 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file aryptr.sgml dated Wed Dec 21 12:50:38 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 6.3</title>
+<link href="aryptr2.html" rev=precedes>
+<link href="aryptrparam.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="aryptr2.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="aryptrparam.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 6.3
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+So what is meant by the ``equivalence of pointers and arrays'' in C?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+Much of the confusion surrounding
+arrays and
+pointers in C can be traced to
+a misunderstanding of
+this statement.
+Saying that arrays and pointers are ``equivalent''
+means
+neither
+that they are
+identical
+nor
+even
+interchangeable.
+What it means is that array and pointer arithmetic is defined
+such that a pointer can be conveniently used
+to access an array
+or to simulate an array.
+In other words, as Wayne Throop has put it,
+it's
+
+
+
+
+``pointer <em>arithmetic</em> and array <em>indexing</em>
+[that]
+are equivalent in C, pointers and arrays are <em>different</em>.'')
+</p><p>Specifically,
+the cornerstone of the equivalence is this
+key definition:
+<blockquote>A reference to an object
+
+of type array-of-T
+which appears in an
+expression
+decays
+
+(with three exceptions)
+into a pointer to its first element;
+the type of the resultant pointer is pointer-to-T.
+</blockquote></p><p>That is,
+whenever an array appears in an expression,
+the compiler implicitly generates a pointer to the array's
+first element,
+just as if the programmer had written <TT>&amp;a[0]</TT>.
+(The exceptions are when the array is the operand of
+a <TT>sizeof</TT>
+or
+<TT>&amp;</TT>
+operator,
+or is a string literal initializer for a character
+array.
+<a href="stringw.html" rel=subdocument>[footnote]</a>
+See questions
+<a href="arraynels.html">6.23</a>,
+<a href="aryvsadr.html">6.12</a>,
+and
+<a href="../decl/strlitinit.html">1.32</a>,
+respectively.)
+</p><p>As a consequence of
+this definition,
+and in spite of the fact that
+the underlying arrays and pointers are quite different,
+the compiler doesn't apply the array subscripting operator
+<TT>[]</TT>
+that differently
+to arrays and pointers,
+after all.<a href="fn28.html" rel=subdocument>[footnote]</a>
+
+Given an array <TT>a</TT> and pointer <TT>p</TT>,
+an expression of the form <TT>a[i]</TT>
+causes the array to decay
+into a pointer,
+following the rule above,
+and
+then to be
+subscripted just as would be a pointer variable in
+the expression <TT>p[i]</TT>
+(although the eventual memory accesses will be different,
+as explained in question
+<a href="aryptr2.html">6.2</a>).
+If you were to assign the array's address to the pointer:
+<pre>
+	p = a;
+</pre>
+
+
+
+then <TT>p[3]</TT> and <TT>a[3]</TT> would access the same element.
+</p><p>This
+harmony
+
+of access explains how pointers can access arrays,
+serve in their stead as function parameters
+(see question <a href="aryptrparam.html">6.4</a>),
+and simulate dynamic arrays
+(see question <a href="dynarray.html">6.14</a>).
+</p><p>See also 
+questions <a href="practdiff.html">6.8</a>, <a href="ptrkindofary.html">6.10</a>, and <a href="dynarray.html">6.14</a>.
+
+</p>
+
+
+
+
+
+
+<p>References:
+
+K&amp;R1 Sec. 5.3 pp. 93-6
+<br>
+K&amp;R2 Sec. 5.3 p. 99
+<br>
+ISO Sec. 6.2.2.1, Sec. 6.3.2.1, Sec. 6.3.6
+<br>
+H&amp;S Sec. 5.4.1 p. 124
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="aryptr2.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="aryptrparam.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

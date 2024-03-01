@@ -1,0 +1,165 @@
+<html>
+<head>
+<title></title>
+</head>
+<body>
+Newsgroups: comp.lang.c
+<br>
+From: msb@sq.sq.com (Mark Brader)
+<br>
+Subject: Re: Help qsort
+<br>
+Message-ID: &lt;1994Apr29.005016.9449@sq.sq.com&gt;
+<br>
+Date: Fri, 29 Apr 94 00:50:16 GMT
+<p>
+&gt; Is it also ok to declare the compare function with the correct types for
+<br>
+&gt; what is being compared and then do a typecast to a defined type like
+<br>
+&gt; '<TT>typedef int (*fptr)(const void *, const void *);</TT>' inside of the <TT>qsort</TT> call?
+<br>
+&gt; Please no flames!
+<p>
+Well, at least a rebuke is certainly called for, because this exact question
+is answered in the FAQ list.  NO YOU CAN'T do that.  Or more precisely, most
+C implementations will get away with it, but it isn't a portable construct;
+code that uses it is not ``strictly conforming'' to the C standard.
+<p>
+&gt; I got this directly out of the help pages for the
+<br>
+&gt; Borland C++ 3.1 compiler.
+<p>
+Presumably those help pages are concerned only with what works on the machines
+where the compiler is used, or else their author simply got it wrong.
+<p>
+&gt; It seems to work and don't see why it wouldn't
+<br>
+&gt; be portable, but that's why I figured I'd ask anyway ;-).
+<p>
+Now this question, ``Why can't I?'', is one that's not in the FAQ list.
+<p>
+First consider this code, which I hope most people will agree is
+obviously wrong.
+<p>
+<pre>
+	void fun1(i)
+	int i;
+	{
+		...
+	}
+
+	main()
+	{
+		...
+		fun1 (3.14);
+		...
+	}
+</pre>
+<p>
+Why is it wrong (other than ``because the standard says so'')?  Clearly, it's
+because the implementation will put a 3.14 in the place where it passes
+doubles, and then in the called function, try to pull an int from the
+place where it passes ints.  Now these may or may not be the same place, or
+the same size, but even if they are the same place and the same size, the
+value received in i will obviously not be 3.14.  Nor will it be <TT>(int)3.14</TT>,
+i.e. 3, because nothing in the code calls for a conversion.
+<p>
+If you declare the function with a prototype, the rules change:
+<p>
+<pre>
+	void fun2 (int i)
+	{
+		...
+	}
+
+	main()
+	{
+		...
+		fun2 (3.14);
+		...
+	}
+</pre>
+<p>
+This is okay because the 3.14 is converted to int before being passed.
+The initial value of <TT>i</TT> will be 3.
+<p>
+Now consider
+<p>
+<pre>
+	void fun3 (int i)
+	{
+		...
+	}
+
+	main()
+	{
+		void (*funp)(double);
+		...
+		funp = (void (*)(double)) fun3;
+		funp (3.14);
+		...
+	}
+</pre>
+<p>
+At the point where the call is made, the implementation is seeing a pointer
+to a function whose argument is double, and therefore it will cheerfully
+put the 3.14 in the place where it passes doubles, without converting it.
+It DOESN'T KNOW at that point that that pointer-to-function was actually
+DERIVED FROM a function expecting a different type of argument.  And so,
+this code will fail in just the same way as the first example.
+<p>
+And it makes no difference, of course, if the cast and the function call
+take place in different functions:
+<p>
+<pre>
+	void fun4 (int i)
+	{
+		...
+	}
+
+	void funq (void (*funp) (double))
+	{
+		funp (3.14);
+	}
+
+	main()
+	{
+		...
+		funq ((void (*)(double)) fun4);
+		...
+	}
+</pre>
+<p>
+But now we have arrived at a form equivalent to the one that was being
+asked about.  <TT>funq()</TT> corresponds to <TT>qsort()</TT>, in that it expects an argument
+which is a pointer to a function with a particular argument type.  And here
+it is being given a pointer derived from a function taking a different
+argument type.  Again, the code fails in the same way as the first example.
+<p>
+There is one difference between the above examples and the situation asked
+about.  In the examples, the types are <TT>int</TT> and <TT>double</TT>; in the <TT>qsort()</TT> case,
+they are two different pointer types.
+<p>
+Now it happens that on the most commonly used C implementations today,
+all pointer types have the same representation and are passed to functions
+in the same way.  This fact masks the bug: if the caller places a pointer
+of type <TT>struct&nbsp;gnu&nbsp;*</TT> into the place where pointers of that type are placed,
+and the called function looks at the place where pointers of type
+<TT>const&nbsp;void&nbsp;*</TT> are placed, and it's the same place and the two pointer types have
+the same representation, then the code will work.  On machines that don't
+work that way, it won't work.
+<p>
+It's easy to write the code the right way in the first place -- see the
+FAQ list for examples.  So do it right.  Please.  And maybe pass this
+article on to the next person you see doing it wrong.
+<pre>
+-- 
+Mark Brader                  "`char **' parameters are packaged in GREEN
+msb@sq.com                    envelopes and placed on the FIFTH shelf."
+SoftQuad Inc., Toronto                                       -- Chris Torek
+</pre>
+<p>
+This article is in the public domain.
+</body>
+</html>

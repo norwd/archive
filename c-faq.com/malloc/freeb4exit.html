@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file malloc.sgml dated Wed Dec 21 13:50:44 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 7.24</title>
+<link href="freeforall.html" rev=precedes>
+<link href="freetoOS.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="freeforall.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="freetoOS.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 7.24
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+Must I free allocated memory before the program exits?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+You shouldn't have to.
+A real operating system
+definitively reclaims
+all memory
+and other resources
+when a program exits;
+the system
+cannot afford
+to have
+memory integrity
+depend
+on the whims of random programs.
+(Strictly speaking,
+
+it is not even <TT>free</TT>'s job
+to return memory to the operating system;
+see question <a href="freetoOS.html">7.25</a>.)
+Nevertheless, some personal computers
+
+are said not to reliably recover memory
+unless it was freed before exiting,
+and all that can be inferred from the ANSI/ISO C Standard
+is that this is a ``quality of implementation issue.''
+</p><p>On the other hand,
+the C library <TT>free</TT> function rarely returns memory back
+to the operating system
+(see question <a href="freetoOS.html">7.25</a>),
+so calling <TT>free</TT> probably isn't the way to guarantee
+that an exiting program's memory is recovered by the system, anyway.
+</p><p>In any case,
+it can be considered good practice to explicitly free all
+memory--for
+example,
+in case the program is ever rewritten
+to perform its main task more than once
+(perhaps under a Graphical User Interface).
+<a href="prleak.html" rel=subdocument>[footnote]</a>
+On the other hand,
+
+
+
+there are programs
+(such as interpreters)
+that don't know what
+memory
+they're done with
+(i.e. what memory could be freed)
+until it's time to exit,
+and since all memory should be released at exit,
+it would be a needless,
+potentially
+expensive, and
+error-prone exercise
+for the program to explicitly free all of it.
+</p><p>Additional links:
+<a href="freeb4exit2.html">further explanation</a>
+</p>
+<p>References:
+
+ISO Sec. 7.10.3.2
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="freeforall.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="freetoOS.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

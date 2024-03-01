@@ -1,0 +1,154 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file expr.sgml dated Sat Jul  3 17:10:33 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 3.2</title>
+<link href="evalorder1.html" rev=precedes>
+<link href="ieqiplusplus.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="evalorder1.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="ieqiplusplus.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 3.2
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+Under my compiler, the code
+<pre>
+int i&nbsp;=&nbsp;7;
+printf("%d\n",&nbsp;i++&nbsp;*&nbsp;i++);</pre>
+
+prints 49.
+Regardless of the order of evaluation, shouldn't it print 56?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+It's true that
+the postincrement and postdecrement operators <TT>++</TT> and <TT>--</TT>
+perform
+their
+operations after yielding the former value.
+What's often misunderstood are
+
+the
+implications
+and
+precise definition
+
+of
+the word
+``after.''
+It is
+<em>not</em>
+guaranteed that
+an increment or decrement
+is performed immediately after
+giving up the previous value and before any other part of the
+expression is evaluated.
+It is merely guaranteed that the update will be performed
+sometime before the expression is considered ``finished''
+(before the next
+``sequence point,'' in ANSI C's terminology;
+see question <a href="seqpoints.html">3.8</a>).
+In the example, the compiler chose to multiply the previous value
+by itself and to perform both increments later.
+</p><p>The behavior of code which contains
+multiple, ambiguous side effects
+has always been undefined.
+(Loosely speaking, by
+``multiple, ambiguous side effects''
+we mean
+any combination of
+increment, decrement, and assignment operators
+(<TT>++</TT>, <TT>--</TT>, <TT>=</TT>, <TT>+=</TT>,
+<TT>-=</TT>, etc.)
+in a single expression
+which causes the same
+object
+either to be
+modified twice
+or
+modified and then inspected.
+This is a rough definition;
+see question <a href="seqpoints.html">3.8</a> for a precise one,
+question <a href="confused.html">3.11</a> for a simpler one,
+and question
+<a href="../ansi/undef.html">11.33</a> for the meaning of 
+``undefined.'')
+Don't even try to find out how your compiler implements such 
+things,
+let alone write code which depends on them
+
+(contrary to the ill-advised exercises in many C textbooks);
+as
+Kernighan and Ritchie
+wisely point out,
+``if you don't know
+<em>how</em>
+they are done on various machines,
+that innocence may help to protect you.''
+</p>
+
+
+
+
+
+<p>References:
+
+K&amp;R1 Sec. 2.12 p. 50
+<br>
+K&amp;R2 Sec. 2.12 p. 54
+<br>
+ISO Sec. 6.3
+<br>
+H&amp;S Sec. 7.12 pp. 227-9
+<br>
+CT&amp;P Sec. 3.7 p. 47
+<br>
+PCS Sec. 9.5 pp. 120-1
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="evalorder1.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="ieqiplusplus.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

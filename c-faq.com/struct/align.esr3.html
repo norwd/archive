@@ -1,0 +1,145 @@
+<html>
+<head>
+<title></title>
+</head>
+<body>
+Newsgroups: comp.lang.c
+<br>
+From: Clive D.W. Feather
+<br>
+Subject: Re: Criticism of C-FAQ submission invited
+<br>
+Date: Thu, 22 Sep 1994 13:08:17 GMT
+<br>
+Message-ID: &lt;CwJ8Hu.8y6@scone.london.sco.com&gt;
+<p>
+In article &lt;35qdf0$7iq@netaxs.com&gt;, Eric Raymond wrote:
+<br>
+&gt; The first member of each
+<br>
+&gt; continuous group of bit fields is typically word-aligned, with all following
+<br>
+&gt; being continuously packed into following words (though ANSI C requires the
+<br>
+&gt; latter only for bit-field groups of less than word size).
+<p>
+False. ISO C (please get the name right) requires that the first bit
+field be put into some addressable object, but there is no requirement
+that it be a ``word'' (thus an 11 bit field might be put into a halfword
+on a 32 bit system). If the following field will fit in the same object
+it must be put there. If it doesn't it can be overlapped between two
+objects or put into a new object. Thus:
+<p>
+<pre>
+    int a : 11;
+    int b :  2;
+    int c : 11;
+    int d :  7;
+</pre>
+<p>
+could be packed as:
+<p>
+<pre>
+    32-bit object: a, b, c, d
+</pre>
+<p>
+or as:
+<p>
+<pre>
+    16-bit object: a, b
+    16-bit object: c
+    16-bit object: d
+</pre>
+<p>
+or as:
+<p>
+<pre>
+    16-bit object: a, b, 3 bits of c
+    16-bit object: 8 bits of c, d
+</pre>
+<p>
+&gt; Q: How do I figure the ``true size'' (with trailing padding) of a type when
+<br>
+&gt; it occurs in a struct or array?
+<p>
+In a struct:
+<p>
+<pre>
+    offsetof (structure, next field) - offsetof (structure, field)
+</pre>
+<p>
+or:
+<p>
+<pre>
+    sizeof (structure) - offsetof (structure, last field)
+</pre>
+<p>
+There is no padding in an array.
+<p>
+&gt; A: By rounding up its apparent size to a multiple of its alignment.
+<p>
+Not necessarily. The padding can depend on what is following.
+<p>
+&gt; (assume a 32-bit architecture with normal C sizes
+<br>
+&gt; of long=4, int=4, short=2, and char=1 on all these unless otherwise
+<br>
+&gt; specified).
+<p>
+and assuming pointer=4.
+<p>
+&gt; (4) struct {char *; short; long;} will have a half-word of padding after
+<br>
+&gt; the short
+<p>
+or before it. On big-endian machines it may be easier to access the
+half-word in the low-order half.
+<p>
+&gt; Q: How can I get complete control of the bit-level layout of a struct?
+<br>
+&gt; A: This is what bit-fields are for.  Declare all your members as bit fields.
+<br>
+&gt; The structure may still have invisible trailing padding (unless your last
+<br>
+&gt; bit field exactly fills to the end of the last machine word), but on modern
+<br>
+&gt; architectures this will eliminate all other padding and give you complete
+<br>
+&gt; control of the bit layout of the declared parts (albeit at a significant
+<br>
+&gt; cost in access time).  However, ANSI does <em>not</em> guarantee this well-
+<br>
+&gt; behavedness, so look out for snags.
+<p>
+Firstly, there may be padding whenever fields don't fit exactly. Secondly,
+you still aren't guaranteed the order of the bit-fields within each
+``addressable object''.
+<p>
+&gt; On some poorly-implemented C compilers on very old 36-bit word-oriented
+<br>
+&gt; architectures, even this may not be enough; a bit field that runs over
+<br>
+&gt; the end of a word boundary may force the next bit field to start at the
+<br>
+&gt; beginning of the following word, leaving an invisible gap of up to 35 bits.
+<p>
+Or on well-implemented compilers on modern architectures that choose not
+to go to the effort of splitting bit-fields across word boundaries.
+<p>
+&gt; On these machines, your only option is to declare the struct as a single
+<br>
+&gt; char array and do the field accesses yourself in C.
+<p>
+And you still won't know the ordering of bits within the word relative
+to the external format you are conforming to. This can't be solved in a
+strictly conforming manner.
+<p>
+<pre>
+-- 
+Clive D.W. Feather     | Santa Cruz Operation    | If you lie to the compiler,
+clive@sco.com          | Croxley Centre          | it will get its revenge.
+Phone: +44 1923 813541 | Hatters Lane, Watford   |   - Henry Spencer
+Fax:   +44 1923 813811 | WD1 8YN, United Kingdom | &lt;= NOTE: NEW PHONE NUMBERS
+</pre>
+</body>
+</html>

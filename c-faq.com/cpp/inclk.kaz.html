@@ -1,0 +1,64 @@
+<html>
+<head>
+<title></title>
+</head>
+<body>
+From: Kaz Kylheku
+<br>
+Newsgroups: comp.lang.c
+<br>
+Subject: Re: include "file" or include &lt;file&gt;?
+<br>
+Message-ID: &lt;slrn7j29e6.loc.kaz@ashi.FootPrints.net&gt;
+<br>
+Date: Thu, 06 May 1999 05:16:54 GMT
+<p>
+On 6 May 1999 01:19:13 GMT, RaMzEyMe wrote:
+<br>
+&gt;What's the difference between putting
+<br>
+&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;include "file"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;include &lt;file&gt;
+<br>
+&gt;in the preprocessor?
+<p>
+Let me draw you a diagram.
+<p>
+<pre>
+        +-----------------------------------------------+
+        |                                               |
+        |         +--------------------------+          |
+        |         | places searched          |          |
+        |         | for &lt;&gt; includes          |          |
+        |         +--------------------------+          |
+        | places searched for "" includes               |
+        +-----------------------------------------------+
+</pre>
+<p>
+Mnemonic: the <TT>&lt;&gt;</TT> suggests enclosure.
+<p>
+According to the language standard, a C implementation searches for headers in
+two different ``places'' if they are included with <TT>""</TT>. It first looks in one
+place, and if it doesn't find the header there, it looks in the other place. 
+<p>
+Headers that are included with <TT>&lt;&gt;</TT> are only searched for in the second place.
+<p>
+Imagine that the above diagram is being visited from outside in.
+<p>
+How this is done in actual implementations is quite commonly like this:
+headers included with <TT>""</TT> are first looked for in the same place where their
+parent file (the one containing the <TT>#include</TT>) is located. If they are not found
+there, certain pre-defined places are searched; usually directories containing
+headers that came with the implementation.
+<p>
+Various compilers have various ways to influence the behavior, which leads some
+programmers to structure their projects in various clever ways, such as
+separating the include files from the source files.  Sometimes people even
+influence the compilers to use <TT>&lt;&gt;</TT> searching for their own 
+<p>
+The most portable thing to do is to use <TT>""</TT> for including files within your
+project, to use <TT>&lt;&gt;</TT> only for implementation supplied files.  Furthermore, at
+least for small to moderately sized projects, the easiest thing to do is to
+have all of the files collected in one place (i.e directory). This poses the
+fewest build management and portability headaches.
+</body>
+</html>

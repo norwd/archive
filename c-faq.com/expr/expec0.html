@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file expr.sgml dated Sat Jul  3 17:10:33 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 3.10b</title>
+<link href="experiment.html" rev=precedes>
+<link href="confused.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="experiment.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="confused.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 3.10b
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+People told me that if I evaluated an undefined expression,
+or accessed an uninitialized variable,
+I'd get a random, garbage value.
+But I tried it, and got <em>zero</em>.
+What's up with that?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+It's hard to answer this question,
+because it's hard to see
+what the
+
+citation of
+the ``unexpected'' value of 0 is supposed to prove.
+C does guarantee that
+certain
+values will be initialized to 0
+(see question <a href="../decl/initval.html">1.30</a>),
+but for the rest
+(and certainly for the results of those undefined expressions),
+it <em>is</em> true that you might get garbage.
+The fact that you happened to get 0
+one time
+does not mean
+you were wrong to have expected garbage,
+nor does it mean that you can depend on this happening next time
+(much less
+that you should
+write code which depends on it!).
+</p><p>Most memory blocks newly delivered by the operating system,
+and most as-yet-untouched stack frames,
+do tend to be zeroed,
+so
+the first time you access them,
+they may happen to contain 0,
+but after a program has run for a while,
+these regularities rapidly disappear.
+(And programs which unwittingly depend on
+a circumstantial initial value of an uninitialized variable
+can be <em>very</em> difficult to debug,
+because the ``expected'' values may coincidentally arise
+in all the small, easy test cases,
+while the unexpected values and the attendant crashes happen
+only in the larger, longer-running, much-harder-to-trace-through invocations.)
+</p><!-- aend -->
+<p>
+<hr>
+<a href="experiment.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="confused.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

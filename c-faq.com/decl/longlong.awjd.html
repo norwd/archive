@@ -1,0 +1,73 @@
+<html>
+<head>
+<title></title>
+</head>
+<body>
+[This was written by Alan Watson and Jutta Degener,
+and sent to me by Alan.]
+<!-- Date: Sat, 5 Apr 1997 12:48:17 -0700 -->
+<!-- Message-Id: &lt;9704051948.AA31977@oldp.nmsu.edu&gt; -->
+<p>
+<center>ABSTRACT</center>
+<p>
+<blockquote>
+This document proposes a new type <TT>long&nbsp;long</TT>,
+an integral type with a guaranteed precision of at least
+64 bits.  This follows widespread <i>de facto</i> standard
+established by compiler vendors, who, faced with their
+customers' requests for large integer types, preferred
+to extend the language rather than change the size of
+an existing type.
+</blockquote>
+<p>
+<h3>I.  Introduction</h3>
+<p>
+Large data bases, large file systems, and object
+request broker systems need large integers.  C9X should
+respond to this need by providing an integer type with a
+guaranteed precision of at least 64 bits.
+<p>
+At first glance,
+it might seem that this can be easily accomplished by
+requiring <TT>long</TT> to have at least 64 bits of precision.
+However, a C9X Standard that did this would force vendors to
+break their customers' code; not just unportable code that
+follows the widespread assumption of 32-bit long integers,
+but also any code that uses precompiled libraries and binary
+format data.  Such a standard might well meet resistance from
+a significant fraction of vendors and users.
+<p>
+Vendors have considerable freedom of choice of the size
+of the basic data types when they introduce a completely new
+system (on which all of the software will be new and will share
+the same data sizes), but changing the size or representation
+of a basic data type on an existing system has
+widespread consequences.
+<p>
+Consider what happens when a customer modifies and
+recompiles an application on an implementation which has
+just changed the size of a <TT>long</TT> from 32 bits to 64 bits.
+Raw binary data files break.  Perhaps more importantly,
+calls to libraries compiled with the old implementation
+break (the library source file says that the argument to a
+particular function is a <TT>long</TT>, which was 32 bits in the old
+implementation, so the function in the library object file
+expects to be passed a 32 bit type; the library header file,
+included by the application, also says that the argument to
+the same function is a <TT>long</TT>, which is now 64 bits, so the
+application passes a 64 bit type).
+<p>
+The consequence is that the customer cannot modify an
+application without recompiling (if they have source) or
+obtaining recompiled versions of (if they do not) all of the
+libraries used by that application.  Everything has to
+change at once; there is no gentle transition.  For this
+reason, many system vendors chose to avoid changing the
+sizes of the basic integer types and instead established
+<TT>long&nbsp;long</TT> as a de facto standard.
+<p>
+C9X should follow the vendors' practice and introduce
+<TT>long&nbsp;long</TT> as a new basic integer type with a guaranteed
+minimum precision of 64 bits.
+</body>
+</html>

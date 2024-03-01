@@ -1,0 +1,151 @@
+<html>
+<head>
+<title></title>
+</head>
+<body>
+From: scs@eskimo.com (Steve Summit)
+<br>
+Newsgroups: comp.lang.c
+<br>
+Subject: Re: function that returns string [repost]
+<br>
+Date: 23 Jun 1997 22:14:59 GMT
+<br>
+Message-ID: &lt;5omsh3$4jb$1@eskinews.eskimo.com&gt;
+<br>
+X-Original-Date: 18 Jun 1997 17:50:13 GMT
+<br>
+X-Original-Message-ID: &lt;5o974l$df6$1@eskinews.eskimo.com&gt;
+<br>
+See-Also: &lt;1992Aug4.170926.2335@athena.mit.edu&gt;
+<p>
+With regards to the multiple static return buffer technique most
+recently posted by John Winters, brucemo@seanet.com wrote:
+<p>
+&gt; I think that technique is awful because it adds unnecessary "cute" code, 
+<br>
+&gt; uses up 200 bytes of static data, introduces something you need to 
+<br>
+&gt; document (the fact that buffers returned by the function eventually will 
+<br>
+&gt; get over-written), and introduces bugs (caused by the above time-bomb 
+<br>
+&gt; combined with failure to read or remember this documentation), all in a 
+<br>
+&gt; dubious effort to save someone the hassle of allocating a buffer on the 
+<br>
+&gt; stack and passing a pointer to this buffer to the function.
+<br>
+&gt; 
+<br>
+&gt; Sorry, but this thread has made me cringe.  I can't stand to see people 
+<br>
+&gt; turn a simple function into a complicated "system" for no reason.  This 
+<br>
+&gt; kind of coding leads to byzantine structures that make the person you 
+<br>
+&gt; hand your code off to want to drink too much.
+<p>
+It all depends.  In many circumstances, I'd agree with you
+completely that gratuitous complexity or cleverness serves only
+to stroke the original coder's ego and to make everyone else's
+lives miserable.  But not always.
+<p>
+Software engineering is all about managing complexity.  If you've
+got complexity spread out all over the place, sort of like the
+pink sludge in The Cat In The Hat Comes Back, you've got problems.
+And if you or Little Cat Z can figure out a way to sweep at least
+some of the complexity off into one little corner, so that you
+can ignore it except when you have occasion to venture into that
+corner, then that's a good thing.
+<p>
+I'm lazy.  I like simple code, that's easy to understand and that
+writes itself.  But I will occasionally bend 'way over backwards,
+and toil away an entire day writing some miserably complicated,
+excessively general function, if that function will then serve
+as a workhorse which I can punt all the hard work to from the
+rest of the program, such that the rest of the program becomes
+pleasantly, falling-off-a-log easy to write.
+<p>
+In C, at least, returning strings from functions can be a little
+bit hard, and any technique for doing so is more complex than
+it is to return a simple, non-aggregate value.  When you're
+specifying any functional interface, it's often a delicate
+question how much of the work you should have the function do
+and how much you should require the caller to do.  It's not
+enough that the specification be correct and complete; if it's
+too cumbersome to use, or makes the caller do too much work,
+then the would-be caller may get discouraged, and decide that
+it's too much trouble to call the function after all, such that
+the benefit of having the function is at least partially lost.
+The tradeoffs can be subtle, and can depend on many things,
+but it's certainly not possible to (in this case) declare
+unilaterally either that the caller should always allocate
+space for the string result, or that the function should
+always allocate it.  Different situations may require
+different approaches (at least for best results).
+<p>
+The multiple static return buffer technique certainly isn't a
+panacea.  John wasn't advocating using it all of the time, and
+although it's a technique I like a lot, I hardly ever find myself
+actually using it, either.  But once in a while, the tradeoffs
+are such that it is quite attractive and (I believe) appropriate.
+<p>
+Some time ago, I wrote a long article discussing some of the
+options for returning strings and other aggregates, and their
+relative merits and applicability.  I was going to mount a search
+for it, but then last night, in a directory and on a machine
+where I wouldn't even have looked, I came across a copy (as it
+happens, while looking for directories to clean up to save some
+disk space).  <a href="retaggr.920804.html">Here it is</a>.
+<p>
+<hr>
+<p>
+[Well, <a href="retaggr.920804.html">there it was</a>,
+but an hour later I found
+<a href="retaggr.940616.html">another one</a>...]
+<p>
+<hr>
+<p>
+From: scs@eskimo.com (Steve Summit)
+<br>
+Newsgroups: comp.lang.c
+<br>
+Subject: Re: function that returns string [repost]
+<br>
+Date: 23 Jun 1997 22:15:07 GMT
+<br>
+Message-ID: &lt;5omshb$4jg$1@eskinews.eskimo.com&gt;
+<br>
+X-Original-Date: 18 Jun 1997 18:53:06 GMT
+<br>
+X-Original-Message-ID: &lt;5o9aqi$fcq$1@eskinews.eskimo.com&gt;
+<br>
+See-Also: &lt;CrHu2G.D3B@eskimo.com&gt;
+<p>
+In article &lt;5o974l$df6$1@eskinews.eskimo.com&gt;, I wrote:
+<br>
+&gt; Some time ago, I wrote a long article discussing some of the
+<br>
+&gt; options for returning strings and other aggregates, and their
+<br>
+&gt; relative merits and applicability.  I was going to mount a search
+<br>
+&gt; for it, but then last night, in a directory and on a machine
+<br>
+&gt; where I wouldn't even have looked, I came across a copy (as it
+<br>
+&gt; happens, while looking for directories to clean up to save some
+<br>
+&gt; disk space).
+<p>
+And I was so pleased at having done so that I neglected to follow
+through on this nagging feeling I had that the article I'd just
+found didn't do as much discussing of tradeoffs and relative
+merits as the one I remembered.  Then, when I went to put the
+one I'd just found in the directory where it belonged, sure
+enough, there was another file there (of exactly the same name;
+determinism strikes again) containing <a href="retaggr.940616.html"><em>this</em> article</a> (which
+I have edited lightly for this posting).
+</body>
+</html>

@@ -1,0 +1,244 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file struct.sgml dated Wed Dec 21 16:15:32 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 2.6</title>
+<link href="fcnproto.html" rev=precedes>
+<link href="firstclass.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="fcnproto.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="firstclass.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 2.6
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+I came across some code that declared a structure
+like this:
+<pre>
+struct name {
+	int namelen;
+	char namestr[1];
+};
+</pre>
+and then did some tricky allocation to make
+the
+<TT>namestr</TT>
+array act like it
+had several elements,
+with the number
+recorded by <TT>namelen</TT>.
+How does this work?
+Is
+it
+legal or portable?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+It's not clear if it's legal or portable,
+but it is rather popular.
+An implementation of the technique
+might look
+something like this:
+<pre>
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+struct name *makename(char *newname)
+{
+	struct name *ret =
+		malloc(sizeof(struct name)-1 + strlen(newname)+1);
+				/* -1 for initial [1]; +1 for \0 */
+	if(ret != NULL) {
+		ret-&gt;namelen = strlen(newname);
+		strcpy(ret-&gt;namestr, newname);
+	}
+
+	return ret;
+}
+</pre>
+This function allocates
+an instance of the <TT>name</TT> structure
+with the size adjusted
+so that the <TT>namestr</TT> field can hold the requested name
+(not just one character,
+as the structure declaration would suggest).
+</p><p>Despite its popularity,
+
+the technique is also somewhat notorious:
+Dennis Ritchie has called it
+``unwarranted chumminess with the
+
+
+C implementation,''
+and an
+official interpretation
+
+has deemed that it
+is not
+strictly conforming
+with the C Standard,
+although
+it does seem to work under
+all known implementations.
+(Compilers which check array bounds carefully
+might issue warnings.)
+</p><p>Another possibility is
+to declare the variable-size element very
+large, rather than very small.
+The
+above example
+could be rewritten like this:
+<pre>
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+#define MAXSIZE 100
+
+struct name {
+	int namelen;
+	char namestr[MAXSIZE];
+};
+
+struct name *makename(char *newname)
+{
+	struct name *ret =
+		malloc(sizeof(struct name)-MAXSIZE+strlen(newname)+1);
+								/* +1 for \0 */
+	if(ret != NULL) {
+		ret-&gt;namelen = strlen(newname);
+		strcpy(ret-&gt;namestr, newname);
+	}
+
+	return ret;
+}
+</pre>
+where <TT>MAXSIZE</TT> is larger than any name which will be stored.
+However,
+it looks like this technique is disallowed by
+a strict interpretation of the Standard
+as well.
+Furthermore,
+either of these ``chummy'' structures must be used with care,
+since the programmer knows more about their size than the compiler does.
+</p><p>Of course, to be truly safe,
+the right thing to do is use a character pointer instead of an array:
+<pre>
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+struct name {
+	int namelen;
+	char *namep;
+};
+
+struct name *makename(char *newname)
+{
+	struct name *ret = malloc(sizeof(struct name));
+	if(ret != NULL) {
+		ret-&gt;namelen = strlen(newname);
+		ret-&gt;namep = malloc(ret-&gt;namelen + 1);
+		if(ret-&gt;namep == NULL) {
+			free(ret);
+			return NULL;
+		}
+		strcpy(ret-&gt;namep, newname);
+	}
+
+	return ret;
+}
+</pre>
+(Obviously, the ``convenience'' of having
+the length and the string stored in the same block of memory
+has now been lost,
+and freeing instances of this structure will require two calls to <TT>free</TT>;
+see question <a href="../malloc/freeforall.html">7.23</a>.)
+</p><p>When the data type being stored is characters,
+as in the above examples,
+it is straightforward to coalesce the two calls to 
+<TT>malloc</TT> into one,
+to preserve contiguity
+(and therefore rescue the ability to use a single call to <TT>free</TT>):
+<pre>
+struct name *makename(char *newname)
+{
+	char *buf = malloc(sizeof(struct name) +
+				strlen(newname) + 1);
+	struct name *ret = (struct name *)buf;
+	ret-&gt;namelen = strlen(newname);
+	ret-&gt;namep = buf + sizeof(struct name);
+	strcpy(ret-&gt;namep, newname);
+
+	return ret;
+}
+</pre>
+</p><p>However,
+piggybacking a second region
+onto a single <TT>malloc</TT> call
+like this
+is only portable
+if the second region is to be treated as an array of <TT>char</TT>.
+For any larger type,
+alignment
+(see questions <a href="padding.html">2.12</a> and <a href="../strangeprob/ptralign.html">16.7</a>)
+becomes significant and would have to be preserved.
+</p><p>C99 introduces
+the concept of a <a href="../sx1/index.html#flexible array member"><dfn>flexible array member</dfn></a>,
+which allows
+the size of an array to be omitted if it 
+is the last member in a structure,
+thus
+providing a well-defined solution.
+</p>
+
+<p>References:
+
+Rationale Sec. 3.5.4.2
+<br>
+C9X Sec. 6.5.2.1
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="fcnproto.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="firstclass.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

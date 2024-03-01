@@ -1,0 +1,178 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file lib1.sgml dated Sat Feb  7 18:46:53 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 13.7</title>
+<link href="strtok.html" rev=precedes>
+<link href="qsort1.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="strtok.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="qsort1.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 13.7
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+I need some code to do
+regular expression
+and
+wildcard matching.
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+Make sure you
+recognize
+the
+difference between:
+</p><UL><li>Classic
+regular expressions,
+variants of which are used in such Unix utilities as
+<TT>ed</TT> and <TT>grep</TT>.
+In regular expressions,
+a dot <TT>.</TT> usually matches any single character,
+and the sequence <TT>.*</TT> usually matches any string of characters.
+(Of course,
+full-blown
+regular expressions have several more features
+than
+these two.)
+<li>Filename
+wildcards,
+variants of which are used by most operating systems.
+There is considerably more variation
+here
+(in particular,
+MS-DOS wildcards are
+somewhat stunted),
+but it is often the case that
+<TT>?</TT> matches any single character,
+and <TT>*</TT> matches any string of characters.
+</UL><p>There are a number of packages available for matching regular expressions.
+Most packages use a pair of functions,
+one for ``compiling'' the regular expression,
+and one for ``executing'' it
+(i.e. matching strings against it).
+Look for header files named <TT>&lt;regex.h&gt;</TT>
+or <TT>&lt;regexp.h&gt;</TT>,
+and functions called
+<TT>regcmp</TT>/<TT>regex</TT>,
+<TT>regcomp</TT>/<TT>regexec</TT>,
+or
+<TT>re_comp</TT>/<TT>re_exec</TT>.
+
+(These functions may
+exist
+in a separate regexp library.)
+A popular,
+freely-redistributable
+regexp package
+by Henry Spencer is available from
+ftp.cs.toronto.edu in pub/regexp.shar.Z
+or in several other archives.
+The GNU project has a
+package
+called rx.
+<a href="offload.html" rel=subdocument>[footnote]</a>
+See also question <a href="../resources/sources.html">18.16</a>.
+</p><p>Filename wildcard matching
+(sometimes called
+``globbing'')
+is
+done
+in a variety of ways on
+different
+systems.
+On Unix,
+wildcards are automatically expanded by the shell
+before a process is invoked,
+so programs rarely have to worry about them explicitly.
+Under MS-DOS compilers,
+there is often a special object file
+which can be linked in
+to a program
+to
+expand wildcards
+while <TT>argv</TT> is being built.
+
+Several systems
+(including MS-DOS and VMS)
+provide
+system services for
+listing or opening files specified by wildcards.
+Check your compiler/library documentation.
+See also questions
+<a href="../osdep/readdir.html">19.20</a>
+and
+<a href="../misc/argv.html">20.3</a>.
+</p><p>Here is a quick little wildcard matcher by Arjan Kenter:
+<pre>
+int match(char *pat, char *str)
+{
+	switch(*pat) {
+	case '\0':  return !*str;
+	case '*':   return match(pat+1, str) ||
+				*str &amp;&amp; match(pat, str+1);
+	case '?':   return *str &amp;&amp; match(pat+1, str+1);
+	default:    return *pat == *str &amp;&amp; match(pat+1, str+1);
+	}
+}
+</pre>
+(Copyright
+1995,
+Arjan Kenter)
+</p><p>With this definition,
+the call <TT>match("a*b.c",&nbsp;"aplomb.c")</TT>
+would return 1.
+</p>
+
+
+
+<p>References:
+
+Schumacher, ed., <I>Software Solutions in C</I> Sec. 3 pp. 35-71
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="strtok.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="qsort1.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

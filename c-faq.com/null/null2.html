@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file null.sgml dated Wed Dec 21 13:03:25 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 5.2</title>
+<link href="null1.html" rev=precedes>
+<link href="ptrtest.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="null1.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="ptrtest.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 5.2
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+
+How do I get a null pointer in my programs?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+With a <a href="../sx1/index.html#null pointer constant"><dfn>null pointer constant</dfn></a>.
+</p><p>According to the language definition,
+an
+``integral constant expression with the value 0''
+in a pointer context
+is converted into a null pointer at compile
+time.
+That is, in an
+initialization,
+assignment, or comparison
+
+
+when one side is a
+variable or expression
+of pointer type, the compiler can tell that a constant <TT>0</TT>
+on the other side requests a null pointer,
+and generate the correctly-typed null pointer value.
+Therefore, the following fragments are perfectly legal:
+<pre>
+	char *p = 0;
+	if(p != 0)
+</pre>
+(See also question <a href="ptrtest.html">5.3</a>.)
+</p><p>However, an argument being passed to a function is not
+necessarily
+
+recognizable as
+a pointer context,
+and the compiler
+may not be able to tell that an unadorned <TT>0</TT> ``means''
+
+a null
+pointer.
+To generate a null pointer in a function call context, an
+explicit cast
+may be
+required,
+to force the <TT>0</TT> to be
+recognized as a pointer.
+For example, the
+Unix
+system call
+<TT>execl</TT>
+takes a
+variable-length, null-pointer-terminated list of character pointer arguments,
+and is correctly called like this:
+<pre>
+	execl("/bin/sh", "sh", "-c", "date", (char *)0);
+</pre>
+
+If the <TT>(char&nbsp;*)</TT> cast
+on the last argument
+were omitted,
+the compiler would not know to pass a null pointer,
+and would pass an integer <TT>0</TT> instead.
+(Note that many
+Unix
+manuals
+
+get this example wrong;
+see also question <a href="nullreq.html">5.11</a>.)
+</p><p>When function prototypes are in scope, argument passing becomes
+an ``assignment context,''
+and most casts may safely be omitted,
+since the prototype tells the
+compiler that a pointer is required,
+and of which type,
+enabling it
+
+to correctly
+convert an unadorned <TT>0</TT>.
+Function prototypes cannot provide the types for variable
+arguments in variable-length argument lists
+however,
+so explicit casts are still required for those arguments.
+(See also
+question <a href="../varargs/proto2.html">15.3</a>.)
+It
+is
+probably
+safest to
+properly
+cast
+all null pointer
+constants in function calls,
+to
+guard against varargs functions or those without prototypes.
+</p><p>Here is a summary of the rules
+for when
+
+null pointer constants may be used by themselves,
+and when they require explicit casts:
+<blockquote>[TABLE GOES HERE]
+</blockquote></p>
+
+
+
+
+
+
+
+<p>References:
+
+K&amp;R1 Sec. A7.7 p. 190, Sec. A7.14 p. 192
+<br>
+K&amp;R2 Sec. A7.10 p. 207, Sec. A7.17 p. 209
+<br>
+ISO Sec. 6.2.2.3
+<br>
+H&amp;S Sec. 4.6.3 p. 95, Sec. 6.2.7 p. 171
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="null1.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="ptrtest.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

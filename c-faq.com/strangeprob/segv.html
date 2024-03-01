@@ -1,0 +1,152 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file strangeprob.sgml dated Tue Jun 29 21:44:40 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 16.8</title>
+<link href="ptralign.html" rev=precedes>
+<link href="../style/layout.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="ptralign.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="../style/layout.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 16.8
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+What
+do
+``Segmentation violation'',
+``Bus error'',
+and
+``General protection fault''
+mean?
+What's a ``core dump''?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+
+These
+symptoms
+(and
+any similar messages
+having to do with
+memory access violations or protection faults)
+generally
+mean
+that your program tried to access memory it shouldn't
+have,
+
+invariably
+as a result of
+stack corruption
+or
+improper pointer use.
+Likely causes are:
+<UL><li>overflow of local
+(``automatic,'' stack-allocated)
+arrays
+<li>inadvertent use of null pointers
+(see also questions <a href="../null/null2.html">5.2</a> and <a href="../null/nullpassign.html">5.20</a>)
+<li>uninitialized,
+misaligned,
+or otherwise
+improperly allocated
+
+pointers
+(see
+questions <a href="../malloc/malloc1.html">7.1</a>, <a href="../malloc/malloc2.html">7.2</a>, and <a href="ptralign.html">16.7</a>)
+<li>stale aliases to memory that has been relocated
+(see question <a href="../malloc/realloc.html">7.29</a>)
+<li>corruption of the
+<TT>malloc</TT> arena
+(see question
+<a href="../malloc/crash.html">7.19</a>)
+<li>attempts to modify read-only values
+(those declared <TT>const</TT>,
+and string literals--see question <a href="../decl/strlitinit.html">1.32</a>)
+<li>mismatched function arguments,
+especially involving pointers;
+two
+possibilities are
+<TT>scanf</TT>
+(see question
+<a href="../stdio/scanf1.html">12.12</a>)
+and
+
+
+
+<TT>fprintf</TT>
+(make sure it receives its first
+<TT>FILE&nbsp;*</TT> argument)
+</UL></p><p>Under Unix,
+any of these problems almost invariably leads to
+a ``core dump'':
+a file
+named <TT>core</TT>,
+<a href="ferrite.html" rel=subdocument>[footnote]</a>
+created in the current directory,
+containing a memory image of the crashed process,
+for debugging.
+</p><p>The distinction between
+``Bus error'' and ``Segmentation Violation''
+may or may not be significant;
+different versions of Unix generate these
+signals
+under different sets of circumstances.
+Roughly speaking,
+a segmentation violation
+indicates an attempt to access memory which doesn't even exist,
+and a bus error
+indicates an attempt to access memory in an illegal way
+(perhaps due to an unaligned pointer;
+see question <a href="ptralign.html">16.7</a>).
+
+</p><p>See also questions <a href="biglocal.html">16.3</a>
+and
+<a href="crashatexit.html">16.4</a>.
+</p><!-- aend -->
+<p>
+<hr>
+<a href="ptralign.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="../style/layout.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

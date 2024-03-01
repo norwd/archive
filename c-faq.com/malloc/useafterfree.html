@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file malloc.sgml dated Wed Dec 21 13:50:44 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 7.20</title>
+<link href="noscale.html" rev=precedes>
+<link href="ptrafterfree.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="noscale.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="ptrafterfree.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 7.20
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+You can't use dynamically-allocated memory after you free it, can you?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+No.
+Some early
+documentation
+for <TT>malloc</TT> stated that the contents of freed
+memory
+were
+``left undisturbed,''
+but
+this ill-advised guarantee
+was never
+universal and is not required
+by the C Standard.
+</p><p>Few programmers would use the contents of freed memory
+deliberately, but it is easy to do so accidentally.
+Consider the following (correct) code for freeing a singly-linked
+list:
+<pre>
+	struct list *listp, *nextp;
+	for(listp = base; listp != NULL; listp = nextp) {
+		nextp = listp-&gt;next;
+		free(listp);
+	}
+</pre>
+and notice what would happen
+
+if the more-obvious loop iteration
+expression <TT>listp&nbsp;=&nbsp;listp-&gt;next</TT>
+
+were used,
+without the temporary <TT>nextp</TT> pointer.
+</p>
+
+
+
+
+<p>References:
+
+K&amp;R2 Sec. 7.8.5 p. 167
+<br>
+ISO Sec. 7.10.3
+<br>
+Rationale Sec. 4.10.3.2
+<br>
+H&amp;S Sec. 16.2 p. 387
+<br>
+CT&amp;P Sec. 7.10 p. 95
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="noscale.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="ptrafterfree.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

@@ -1,0 +1,287 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file expr.sgml dated Sat Jul  3 17:10:33 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 3.8</title>
+<link href="comma.html" rev=precedes>
+<link href="evalorder4.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="comma.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="evalorder4.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 3.8
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+How can I understand
+complex expressions like the ones in this section,
+and avoid writing undefined ones?
+What's a ``sequence point''?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+A sequence point
+
+is
+a
+point
+in time
+at which
+the dust
+has settled
+and
+all side effects
+which have been seen so far
+are guaranteed to be complete.
+
+The sequence points listed in the C standard are:
+<UL><li>at the end of
+the evaluation of
+a <a href="../sx1/index.html#full expression"><dfn>full expression</dfn></a>
+(a full expression is an expression statement,
+or any other expression which is not
+a subexpression within
+any larger expression);
+<li>at the <TT>||</TT>, <TT>&amp;&amp;</TT>, <TT>?:</TT>, and comma operators;
+and
+<li>at a function call
+(after the evaluation of all the arguments,
+and
+just before the actual call).
+</UL></p><p>The
+Standard states that
+
+<blockquote>Between the previous and next sequence point
+an object shall have its stored value modified
+at most once by the evaluation of an expression.
+Furthermore,
+the prior value shall be accessed only
+to determine the value to be stored.
+</blockquote></p><p>
+These two rather opaque sentences
+say several things.
+First,
+they talk about operations bounded by
+the
+``previous and next sequence points'';
+such operations
+usually correspond to
+
+full expressions.
+
+(In an expression statement,
+the ``next sequence point''
+is
+usually
+
+at the terminating semicolon,
+and the ``previous sequence point''
+
+is
+at the end of the previous
+statement.
+An expression may also contain intermediate
+sequence points,
+as listed above.)
+</p><p>The first sentence rules out both the examples
+
+<pre>
+	i++ * i++
+</pre>
+and
+<pre>
+	i = i++
+</pre>
+from questions <a href="evalorder2.html">3.2</a>
+and <a href="ieqiplusplus.html">3.3</a>--in both cases,
+<TT>i</TT> has its value modified twice within the expression,
+i.e. between sequence points.
+(If we were to write a similar expression
+which
+did
+
+have an internal sequence point,
+such as
+<pre>
+	i++ &amp;&amp; i++
+</pre>
+it <em>would</em> be well-defined,
+if questionably useful.)
+</p><p>The second sentence
+
+can be
+quite
+difficult to understand.
+It turns out that it disallows code like
+<pre>
+	a[i] = i++
+</pre>
+from question <a href="evalorder1.html">3.1</a>.
+(Actually, the other expressions we've been discussing
+are in violation of the second sentence, as well.)
+To see why,
+let's first look more carefully
+at what the Standard is trying to allow and disallow.
+</p><p>Clearly,
+expressions like
+<pre>
+	a = b
+</pre>
+and
+<pre>
+	c = d + e
+</pre>
+which read
+
+some values and use them to write others,
+are well-defined and
+
+legal.
+Clearly,
+
+<a href="fn16.html" rel=subdocument>[footnote]</a>
+expressions like
+<pre>
+	i = i++
+</pre>
+which modify the same value twice
+are abominations
+which needn't be allowed
+(or in any case,
+needn't be well-defined,
+i.e. we don't have to figure out a way to say what they do,
+
+and compilers don't have to support them).
+
+Expressions
+like these
+are disallowed by the first sentence.
+</p><p>It's also clear
+<a href="fn16.html" rel=subdocument>[footnote]</a>
+that we'd like to disallow expressions like
+<pre>
+	a[i] = i++
+</pre>
+which modify <TT>i</TT> <em>and</em> use it along the way,
+but not disallow expressions like
+<pre>
+	i = i + 1
+</pre>
+which
+use and modify <TT>i</TT>
+
+but only modify it
+later
+
+
+when it's reasonably easy to ensure
+that the final store of the final value
+(into <TT>i</TT>, in this case)
+doesn't interfere with
+
+the
+earlier
+accesses.
+</p><p>And that's
+
+what the second sentence says:
+if an object is written to within a full expression,
+any
+and all
+
+accesses to it within the same expression
+must be
+directly involved in the computation of
+the value to be written.
+This rule effectively constrains legal expressions
+to those in which the accesses demonstrably precede
+the
+modification.
+For example,
+the old standby
+<TT>i&nbsp;=&nbsp;i&nbsp;+&nbsp;1</TT> is
+allowed,
+because the access of <TT>i</TT> is used to determine <TT>i</TT>'s final value.
+The example
+<pre>
+	a[i] = i++
+</pre>
+is disallowed because one of the accesses
+of <TT>i</TT>
+(the one in <TT>a[i]</TT>)
+has nothing to do
+with the value which ends up being stored in <TT>i</TT>
+(which happens over in <TT>i++</TT>),
+and so there's no good way to
+define--either for our understanding
+or the compiler's--whether the access should take place 
+before or after the incremented value is stored.
+Since there's no good way to define it,
+the Standard declares that it is undefined,
+and that portable programs
+simply must not use such constructs.
+</p><p>See also
+questions <a href="evalorder4.html">3.9</a> and <a href="confused.html">3.11</a>.
+</p>
+
+
+
+
+
+
+
+
+
+<p>References:
+
+ISO Sec. 5.1.2.3, Sec. 6.3, Sec. 6.6, Annex C
+<br>
+Rationale Sec. 2.1.2.3
+<br>
+H&amp;S Sec. 7.12.1 pp. 228-9
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="comma.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="evalorder4.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

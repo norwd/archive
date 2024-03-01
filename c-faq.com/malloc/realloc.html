@@ -1,0 +1,185 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file malloc.sgml dated Wed Dec 21 13:50:44 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 7.29</title>
+<link href="sizeof.html" rev=precedes>
+<link href="reallocnull.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="sizeof.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="reallocnull.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 7.29
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+Having dynamically allocated an array
+(as in question <a href="../aryptr/dynarray.html">6.14</a>),
+can I change its size?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+Yes.
+This
+
+is exactly what <TT>realloc</TT> is for.
+Given a region of <TT>malloc</TT>ed memory
+(such as <TT>dynarray</TT> from question <a href="../aryptr/dynarray.html">6.14</a>),
+its size can be changed using code like:
+<pre>
+	dynarray = realloc(dynarray, 20 * sizeof(int));
+</pre>
+
+Note that <TT>realloc</TT> may not always be able to enlarge
+<a href="shrink.html" rel=subdocument>[footnote]</a>
+
+memory regions
+
+in-place.
+When
+it is able to,
+it simply gives you back the same pointer you handed it,
+but
+if it must go to some other part of memory
+to find enough contiguous space,
+it will return a
+
+different pointer
+
+
+
+
+(and the previous pointer value will become unusable).
+</p><p>If
+<TT>realloc</TT>
+cannot find enough
+space at all,
+it returns a null pointer,
+and leaves the previous region allocated.
+<a href="realloctrash.html" rel=subdocument>[footnote]</a>
+Therefore,
+you usually don't want to immediately assign the new pointer
+to the old variable.
+
+Instead,
+use a temporary pointer:
+<pre>
+	#include &lt;stdio.h&gt;
+	#include &lt;stdlib.h&gt;
+
+	int *newarray = (int *)realloc((void *)dynarray, 20 * sizeof(int));
+	if(newarray != NULL)
+		dynarray = newarray;
+	else {
+		fprintf(stderr, "Can't reallocate memory\n");
+		/* dynarray remains allocated */
+	}
+</pre>
+</p><p>When reallocating memory,
+be careful if
+
+there are any other pointers
+lying around
+which point into
+(``alias'')
+that memory:
+if <TT>realloc</TT>
+must locate the new region
+
+somewhere else,
+those other pointers must also be adjusted.
+Here is a (contrived,
+and careless of <TT>malloc</TT>'s return values) example:
+<pre>
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+char *p, *p2, *newp;
+int tmpoffset;
+
+p = malloc(10);
+strcpy(p, "Hello,");		/* p is a string */
+p2 = strchr(p, ',');		/* p2 points into that string */
+
+tmpoffset = p2 - p;
+newp = realloc(p, 20);
+if(newp != NULL) {
+	p = newp;		/* p may have moved */
+	p2 = p + tmpoffset;	/* relocate p2 as well */
+	strcpy(p2, ", world!");
+}
+
+printf("%s\n", p);
+</pre>
+(It is safest to recompute pointers based on offsets,
+as in the code fragment above.
+The alternative--relocating pointers
+
+based on the difference,
+<TT>newp&nbsp;-&nbsp;p</TT>,
+between the base pointer's value
+before and after the <TT>realloc</TT>--is not guaranteed to work,
+because pointer subtraction is only defined
+when performed on pointers into the same object.
+See also question <a href="ptrafterfree.html">7.21</a>.)
+</p><p>See also questions
+<a href="cast.html">7.7</a>
+and
+<a href="reallocnull.html">7.30</a>.
+</p>
+
+
+<p>References:
+
+K&amp;R2 Sec. B5 p. 252
+<br>
+ISO Sec. 7.10.3.4
+<br>
+H&amp;S Sec. 16.3 pp. 387-8
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="sizeof.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="reallocnull.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

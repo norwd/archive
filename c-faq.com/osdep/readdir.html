@@ -1,0 +1,145 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:47 2005 by faqproc version 2.7 -->
+<!-- from source file osdepfile.sgml dated Sat Jun 26 20:52:13 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 19.20</title>
+<link href="diskfree.html" rev=precedes>
+<link href="mkdir.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="diskfree.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="mkdir.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 19.20
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+How can I read a directory in a C program?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+See if you can use
+the
+<TT>opendir</TT> and <TT>readdir</TT>
+functions,
+which are
+part of the POSIX standard
+and are
+available on most
+Unix
+variants.
+Implementations also exist for
+MS-DOS,
+VMS,
+and other systems.
+(MS-DOS also has
+FINDFIRST and FINDNEXT
+
+routines
+which do
+essentially the same thing,
+and
+
+
+
+
+MS Windows has
+<TT>FindFirstFile</TT> and <TT>FindNextFile</TT>.)
+<TT>readdir</TT>
+returns just the
+file names;
+if you need more information about the file,
+try calling <TT>stat</TT>.
+To match filenames to some wildcard pattern,
+see question <a href="../lib/regex.html">13.7</a>.
+</p><p>Here is a tiny example which lists the files in the current directory:
+<pre>
+#include &lt;stdio.h&gt;
+#include &lt;sys/types.h&gt;
+#include &lt;dirent.h&gt;
+
+main()
+{
+	struct dirent *dp;
+	DIR *dfd = opendir(".");
+	if(dfd != NULL) {
+		while((dp = readdir(dfd)) != NULL)
+			printf("%s\n", dp-&gt;d_name);
+		closedir(dfd);
+	}
+	return 0;
+}
+</pre>
+(On older systems, the header file to <TT>#include</TT> may be 
+<TT>&lt;direct.h&gt;</TT> or <TT>&lt;dir.h&gt;</TT>,
+and the pointer returned by <TT>readdir</TT> may be a 
+<TT>struct&nbsp;direct&nbsp;*</TT>.
+This example assumes that <TT>"."</TT> is a synonym for the 
+current directory.)
+</p><p>In a pinch, you could use
+<TT>popen</TT>
+(see question <a href="popen.html">19.30</a>)
+to call an operating system list-directory program,
+and read its output.
+(If you only need the filenames displayed to the user,
+you could conceivably use <TT>system</TT>;
+see question <a href="system.html">19.27</a>.)
+</p>
+
+
+
+
+<p>References:
+
+K&amp;R2 Sec. 8.6 pp. 179-184
+<br>
+PCS Sec. 13 pp. 230-1
+<br>
+POSIX Sec. 5.1
+<br>
+Schumacher, ed., <I>Software Solutions in C</I> Sec. 8
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="diskfree.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="mkdir.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

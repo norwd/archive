@@ -1,0 +1,229 @@
+<!-- as quoted in &lt;34B6E9B3F32B6D75.F4A71C0B5E37E4F9.567D2B9CD4E81C94@library-proxy.airnews.net&gt; -->
+<html>
+<head>
+<title></title>
+</head>
+<body>
+<p>
+[This is the second of a pair of articles I posted in 1997
+on the difference between <TT>#include&nbsp;""</TT>
+and <TT>#include&nbsp;&lt;&gt;</TT>,
+and strategies for using them.
+This article starts out by replying to John Winters,
+who had commented on
+<a href="incl.970507.html">the first one</a>.
+I have altered the text somewhat for this web page.]
+<p>
+From: scs@eskimo.com (Steve Summit)
+<br>
+Subject: Re: Quotes vs. angle brackets in #includes
+<br>
+Date: Thu, 5 Jun 1997 14:54:42 GMT
+<br>
+Message-ID: &lt;EBB5F7.BEG@eskimo.com&gt;
+<br>
+Newsgroups: comp.lang.c,comp.unix.programmer 
+<p>
+Several weeks ago, in &lt;5kve70$t89@polo.demon.co.uk&gt;, John Winters wrote:
+<br>
+&gt; I find it hard to conceive of a justification for using angle
+<br>
+&gt; brackets for your own header files...
+<p>
+Well, there was one described in <a href="incl.970507.html">the earlier article</a> of mine
+(part of which you quote below, and which I'll say more about).
+But that involved a somewhat obscure situation, and I think I
+might even be prepared to justify the use of angle brackets for
+other than standard headers on more prosaic grounds, such as that
+they simply look better or send a different message.  Double
+quotes say ``These are local headers.''  Angle brackets say,
+``These are system headers.''  Where do library and third-party
+headers fall?  Squarely in the middle.  Two kinds of header
+inclusion aren't really enough, but they're all C gives us.
+If you've got a shared or third-party header to <TT>#include</TT>, and you
+don't want to make it look local, it's very tempting to put it in
+angle brackets (perhaps with a blank line separating it from the
+<em>really</em> standard headers up above).  At least, <em>I've</em> been
+tempted to do so; in fact that's the way I tend to do it.
+<p>
+Now, it's true that you can certainly decide to use double quotes
+for all library headers, and it's true that if you focus on the
+Standard, angle brackets don't just say ``These are system
+headers'', they say, ``These are Standard headers.''  So there are
+definitely arguments in favor of leaning strongly towards double
+quotes for all but Standard headers, but there are also (I claim)
+some reasons -- which are at least decent, if not necessarily
+compelling -- to lean towards angle brackets for some of your
+less than purely local headers.
+<p>
+...
+<p>
+&gt;&gt; On the other hand, the problem as I've stated it only comes up if
+<br>
+&gt;&gt; you use double quotes.  If you use angle brackets for the central
+<br>
+&gt;&gt; project header files (in particular, for nested inclusions of
+<br>
+&gt;&gt; central project header files), the preprocessor never starts at
+<br>
+&gt;&gt; the wrong ``current'' directory, but always traverses the search
+<br>
+&gt;&gt; path from the start again, and finds the one in your private
+<br>
+&gt;&gt; include directory, as you wanted, regardless.
+<br>
+&gt;
+<br>
+&gt; Presumably you had some particular implementation in mind, but in
+<br>
+&gt; general there is no reason to expect the behaviour which you describe.
+<p>
+The ``particular implementation'' I had in mind is none other than
+Unix, along with at least half of the non-Unix compilers out
+there which have followed the old Unix preprocessor's lead in
+handling double quotes.  The question is, if double quotes in
+an <TT>#include</TT> directive mean ``use the current directory'', which
+current directory is it?  If the directory we were in when we
+invoked the compiler and the directory containing the <TT>.c</TT> file are
+the same, then there's little question.  But what if the <TT>.c</TT> file
+is not in what we would otherwise think of as ``the current
+directory''?  Worse, what if a <TT>.c</TT> file (in the current directory)
+includes a header file, which for whatever reason is not in the
+current directory, and that header file contains an <TT>#include</TT>
+directive using double quotes?  Many preprocessors, including
+the traditional Unix ones, take the position that ``the current
+directory'' which is first searched by <TT>#include&nbsp;""</TT> in that case
+is <em>the directory containing the file containing the</em> <TT>#include</TT>
+<em>directive</em>.  (I know you know about this possibility, John, but
+evidently you haven't had to deal with some of its even more
+surprising consequences.)
+<p>
+Why would you want this rule at all?  Why not make ``the current
+directory'' be unilaterally <em>the</em> current directory?  The answer
+is that, at least some of the time, the Unix behavior is exactly
+what you want.  Suppose I'm trying to share some code, but in an
+informal way, neither as a library nor even as a precompiled
+object file; suppose that I call (in my Makefile, project
+definition, or other build procedure) for some <TT>.c</TT> file in some
+other directory to be compiled and the resulting object linked
+into my program.  (Why am I compiling it myself, instead of
+using a precompiled object or library?  Perhaps I need to compile
+it with my own set of macro definitions to pick a certain set
+of <TT>#ifdef</TT> groupings.)  Suppose further that this source file
+I'm trying to compile has, off in its own directory where I'm
+compiling it from, its own header file which I don't otherwise
+need.  The Unix behavior will then ``do the right thing'': the
+file's header, which it includes using double quotes, will be
+found over in its directory.
+<p>
+Now, to be sure, there would have been other ways to skin this
+cat.  If the rule were that the current directory is always <em>the</em>
+current directory, such that the preprocessor was unable to find
+the remote source file's header in this case, I could have added
+the remote file's directory to the list of directories to be
+searched for header files.  But I assume that this is the sort of
+case that prompted the adoption of what I'm calling the ``Unix''
+preprocessor behavior, and programmers on large projects need to
+understand it, because many compilers have followed Unix's lead,
+but the rule does have, as I've said, some even more surprising
+consequences.
+<p>
+Suppose I'm working with several other people on a large project.
+Suppose we've got a central directory, <TT>/usr/project</TT>, containing
+the project source code, and a subdirectory of central directory,
+<TT>/usr/project/include</TT>, containing all the shared project source
+files.  (Perhaps we chose to place the header files in their own
+directory because they are shared between many of the libraries
+or modules which make up the project and which are distributed
+among several other subdirectories of <TT>/usr/project</TT>.)  Suppose
+further that I have my own directory, <TT>/usr/scs/project</TT>, in which
+I'm working on my own parts of the project prior to releasing
+them to the central directory, and suppose that I've got a
+subdirectory <TT>/usr/scs/project/include</TT> containing any project
+header files which I'm modifying.  Naturally, whenever I compile
+part of the project, I'll arrange (using <TT>-I</TT> switches, if under
+Unix) that the directories <TT>/usr/scs/project/include</TT> and
+<TT>/usr/project/include</TT> be additionally searched for header files,
+and in that order.
+<p>
+Finally, suppose that there are two files <TT>project.h</TT> and
+<TT>types.h</TT> in <TT>/usr/project/include</TT>, and that <TT>project.h</TT> contains
+the line
+<p>
+<pre>
+	#include "types.h"
+</pre>
+<p>
+One day, I have occasion to make a change to <TT>types.h</TT>.  I make a
+copy in <TT>/usr/scs/project/include</TT>, edit it, and then arrange to
+recompile (in my own directory) those parts of the project which
+will be affected by the change, which will probably be nearly all
+of them.  When I come back from lunch, to try the recompiled
+project out, I find that my changes to <TT>types.h</TT> have <em>not</em> taken
+effect!  Why not?  Because whenever any of the project's <TT>.c</TT> files
+included <TT>"project.h"</TT>, they found it in <TT>/usr/project/include</TT>,
+because I don't have my own local copy of <TT>project.h</TT>.  But by the
+rules of ``the current directory is the includer's directory,''
+when <TT>/usr/project/include/project.h</TT> asks for <TT>"types.h"</TT>, the
+first place to look is in <TT>/usr/project/include</TT>, so it finds
+<TT>/usr/project/include/types.h</TT>, <em>not</em> <TT>/usr/scs/project/include/types.h</TT>.
+To fix the problem (assuming I can even figure out what the heck
+is going on), I need to make a copy of <TT>project.h</TT> in
+<TT>/usr/scs/project/include</TT>, even though I have no intention of
+modifying it, just so that all compiles will find <em>it</em> first and
+so that <em>its</em> <TT>#include</TT> of <TT>"types.h"</TT> will find <em>my</em> modified copy
+of <TT>types.h</TT>.  (Then, I go off for a long afternoon snack break
+while I recompile the entire project, again.)
+<p>
+Now, this may sound like such a complicated, contrived, and
+obscure situation that it's not worth making implementation
+strategy decisions on.  I'd even be inclined to agree with you,
+except that Larry Weiss knew immediately and exactly what I was
+talking about, so he's obviously run into this problem, too.
+(And I suspect that he and I are not alone.)  When you find
+yourself in this situation, you have exactly 4 choices that
+I can think of:
+<ol>
+<p><li>
+Use a different compiler with a different set of rules
+for resolving <TT>#include&nbsp;""</TT> lines.
+<p><li>
+Disallow ``nested #include files''; don't have <TT>project.h</TT>
+do an <TT>#include</TT> on <TT>types.h</TT> at all.
+<p><li>
+Always check out <TT>project.h</TT> (into your own, private work
+directory, that is) whenever you want to work on <TT>types.h</TT>,
+and accept some wasted compilation time when you forget.
+<p><li>
+Have <TT>project.h</TT> use
+<pre>
+	#include &lt;types.h&gt;
+</pre>
+instead, so that it always unambiguously finds the first
+one in the header file search path, without tripping up
+on the question of what ``the current directory'' is.
+</ol>
+<p>
+The last time this happened to me (for yes, as you may have
+guessed, not all of these ``suppose'''s have been hypothetical)
+it occurred to me that <em>this</em> is a much stronger argument for a
+ban on nested header files (i.e. choice #2) than the more usual
+but much weaker argument of ``it makes it harder to find where
+things are defined,'' an argument which is truly convincing only
+to those who are still unclear on the concept of ``grep''.  But if
+you're not willing to ban nested <TT>#include</TT> files, and if you're
+not in a position to switch compilers, and if you're tired of
+massive recompilations (or, worse, of searching in vain for some
+other cause of a bug after your fix to a central header file
+didn't seem to work), then #4 may be your best or only option,
+implementation-defined though it may be.
+<p>
+Heretical advice?  Perhaps...
+<p>
+<address>
+<a href="http://www.eskimo.com/~scs/">Steve Summit</a>
+<br>
+<a href="mailto:scs@eskimo.com">scs@eskimo.com</a>
+</address>
+</body>
+</html>

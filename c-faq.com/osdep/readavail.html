@@ -1,0 +1,102 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:47 2005 by faqproc version 2.7 -->
+<!-- from source file osdepio.sgml dated Sat Jul  3 17:23:16 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 19.2</title>
+<link href="cbreak.html" rev=precedes>
+<link href="baton.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="cbreak.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="baton.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 19.2
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+How can I find out
+if there are characters
+available for reading
+(and if so, how many)?
+Alternatively, how can I do a read that will not block if there
+are no characters available?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+These, too, are entirely operating-system-specific.
+Some versions of curses have a <TT>nodelay</TT> function.
+Depending on your system, you may also be able to use
+``nonblocking I/O'', or a system call named
+<TT>select</TT>
+or <TT>poll</TT>,
+or the
+FIONREAD
+ioctl,
+or
+<TT>c_cc[VTIME]</TT>,
+or <TT>kbhit</TT>,
+or <TT>rdchk</TT>,
+or the
+O_NDELAY
+option to <TT>open</TT> or <TT>fcntl</TT>.
+You can also try setting an alarm
+to cause a blocking read to time out after a certain interval
+(under Unix,
+look at <TT>alarm</TT>,
+<TT>signal</TT>,
+and maybe <TT>setitimer</TT>).
+
+</p><p>If what you're trying to do is read input from several sources 
+without blocking,
+you will definitely want to use some kind of a ``select'' call,
+because a busy-wait, polling loop is
+terribly inefficient
+
+on a 
+multitasking system.
+</p><p>See also question <a href="cbreak.html">19.1</a>.
+</p><!-- aend -->
+<p>
+<hr>
+<a href="cbreak.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="baton.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

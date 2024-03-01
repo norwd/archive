@@ -1,0 +1,230 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file aryptr.sgml dated Wed Dec 21 12:50:38 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+
+<title>Question 6.16</title>
+<link href="dynlocarys.html" rev=precedes>
+<link href="non0based.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="dynlocarys.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="non0based.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 6.16
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+How can I dynamically allocate a multidimensional array?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+The traditional solution is
+to allocate
+an array
+<a href="arraysim.html" rel=subdocument>[footnote]</a>
+of
+pointers to
+pointers,
+
+and then
+initialize
+
+
+each pointer
+to
+
+a dynamically-allocated
+``row.''
+Here is a two-dimensional example:
+<pre>
+	#include &lt;stdlib.h&gt;
+
+	int **array1 = malloc(nrows * sizeof(int *));
+	for(i = 0; i &lt; nrows; i++)
+		array1[i] = malloc(ncolumns * sizeof(int));
+</pre>
+(In real code, of course,
+all of <TT>malloc</TT>'s return values would be checked.
+
+You can also use
+<TT>sizeof(*array1)</TT> and <TT>sizeof(**array1)</TT>
+instead of
+<TT>sizeof(int&nbsp;*)</TT> and <TT>sizeof(int)</TT>;
+see <a href="fn33.html" rel=subdocument>[footnote]</a>
+.)
+</p><p>You can keep the array's contents contiguous,
+
+
+
+at the cost of
+making later reallocation of individual rows more difficult,
+with a bit of explicit pointer arithmetic:
+<pre>
+	int **array2 = malloc(nrows * sizeof(int *));
+	array2[0] = malloc(nrows * ncolumns * sizeof(int));
+	for(i = 1; i &lt; nrows; i++)
+		array2[i] = array2[0] + i * ncolumns;
+</pre>
+In either case
+(i.e for <TT>array1</TT> or <TT>array2</TT>),
+the elements of the dynamic array can be accessed
+with normal-looking array subscripts:
+<TT>arrayx[i][j]</TT>
+(for 0&nbsp;&lt;=&nbsp;<TT>i</TT>&nbsp;&lt;&nbsp;<TT>nrows</TT> and
+0&nbsp;&lt;=&nbsp;<TT>j</TT>&nbsp;&lt;&nbsp;<TT>ncolumns</TT>).
+
+Here is
+a schematic illustration
+of the layout of 
+<TT>array1</TT> and <TT>array2</TT>:
+<br>
+<br>
+<img src="array1.gif">
+<br>
+<br>
+<img src="array2.gif">
+
+<p>If the double indirection implied by the above schemes is for
+some reason unacceptable,<a href="doubleindir.html" rel=subdocument>[footnote]</a>
+you can simulate a two-dimensional
+array with a single, dynamically-allocated one-dimensional array:
+<pre>
+	int *array3 = malloc(nrows * ncolumns * sizeof(int));
+</pre>
+However, you must now perform subscript calculations manually,
+accessing the <TT>i</TT>,<TT>j</TT>th element with
+the expression
+<pre>
+<TT>array3[i&nbsp;*&nbsp;ncolumns&nbsp;+&nbsp;j]</TT>
+</pre>
+and this array cannot
+necessarily
+
+be
+passed to functions
+which expect
+multidimensional arrays.
+(A macro
+such as
+<pre>
+	#define Arrayaccess(a, i, j) ((a)[(i) * ncolumns + (j)])
+</pre>
+could
+hide the explicit calculation,
+but invoking it
+would require
+parentheses and commas
+which wouldn't look exactly like
+conventional C
+multidimensional array syntax,
+and
+
+the macro
+would need
+access to at least one of the dimensions,
+as well.
+See also question <a href="ary2dfunc2.html">6.19</a>.)
+</p><p>Yet another option
+is to
+use pointers to arrays:
+<pre>
+	int (*array4)[NCOLUMNS] = malloc(nrows * sizeof(*array4));
+</pre>
+or even
+
+
+<pre>
+	int (*array5)[NROWS][NCOLUMNS] = malloc(sizeof(*array5));
+</pre>
+but the syntax starts getting horrific
+(accesses to <TT>array5</TT> look like <TT>(*array5)[i][j]</TT>),
+and
+at most one dimension may be specified at run time.
+</p><p>
+With all of these techniques,
+you may of course need to remember to free the arrays
+when they are no longer needed;
+in the case of <TT>array1</TT> and <TT>array2</TT>
+this takes several steps
+(see also question <a href="../malloc/freeforall.html">7.23</a>):
+<pre>
+	for(i = 0; i &lt; nrows; i++)
+		free((void *)array1[i]);
+	free((void *)array1);
+
+	free((void *)array2[0]);
+	free((void *)array2);
+</pre>
+Also,
+you cannot necessarily intermix dynamically-allocated
+arrays with conventional, statically-allocated ones
+(see question
+<a href="ary2dfunc3.html">6.20</a>,
+and also question
+<a href="pass2dary.html">6.18</a>).
+</p><p>Finally, in C99 you can use a variable-length array.
+</p><p>All of
+these techniques can also be extended to three or more
+dimensions.
+Here is a three-dimensional version of the first technique
+(which, like the rest of the fragments presented here,
+requires error-checking before being used in a real program):
+<pre>
+	int ***a3d = (int ***)malloc(xdim * sizeof(int **));
+	for(i = 0; i &lt; xdim; i++) {
+		a3d[i] = (int **)malloc(ydim * sizeof(int *));
+		for(j = 0; j &lt; ydim; j++)
+			a3d[i][j] = (int *)malloc(zdim * sizeof(int));
+	}
+</pre>
+</p><p>See also question <a href="../misc/ragged.html">20.2</a>.
+</p>
+<p>References:
+
+C9X Sec. 6.5.5.2
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="dynlocarys.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="non0based.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

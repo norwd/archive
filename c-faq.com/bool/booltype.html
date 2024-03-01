@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file bool.sgml dated Thu Jul 15 19:41:07 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 9.1</title>
+<link href="../charstring/wchar.html" rev=precedes>
+<link href="bool2.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="../charstring/wchar.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="bool2.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 9.1
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+What is the right type to use for Boolean values in C?
+Is there a standard type?
+Should
+I use
+<TT>#define</TT>s or enums
+for the true and false values?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+
+Traditionally,
+C did not provide a standard Boolean type,
+partly
+and partly to allow the programmer to make the appropriate
+space/time tradeoff.
+(Using an <TT>int</TT>
+may be faster,
+while using <TT>char</TT>
+may
+save data space.
+<a href="bitfield.html" rel=subdocument>[footnote]</a>
+Smaller types may make the
+generated
+code bigger or slower,
+though,
+if they require lots of conversions to and from <TT>int</TT>.)
+</p><p>
+
+
+However, C99 <em>does</em> define a standard Boolean type,
+as long as you include <TT>&lt;stdbool.h&gt;</TT>.
+</p><p>If you decide to define them yourself,
+the choice between <TT>#define</TT>s
+and enumeration constants
+for the true/false values
+is arbitrary and not
+terribly interesting
+(see also questions
+<a href="../struct/enumvsdefine.html">2.22</a>
+and
+<a href="../style/stylewars.html">17.10</a>).
+
+Use any of
+<br>
+<br>
+<TT><pre>
+	#define TRUE  1	#define YES 1
+	#define FALSE 0	#define NO  0
+
+	enum bool {false, true};	enum bool {no, yes};
+</pre>
+</TT><br>
+<br>
+or use raw 1 and 0,
+as long as you are consistent within one program or project.
+(An enumeration may be preferable if your debugger
+
+
+
+shows the names of enumeration constants
+when examining variables.)
+</p><p>You may also want to use a <TT>typedef</TT>:
+<pre>
+	typedef int bool;
+or
+	typedef char bool;
+or
+	typedef enum {false, true} bool;
+</pre>
+</p><p>
+Some people prefer variants like
+<pre>
+	#define TRUE (1==1)
+	#define FALSE (!TRUE)
+</pre>
+or define ``helper'' macros such as
+<pre>
+	#define Istrue(e) ((e) != 0)
+</pre>
+These don't buy anything (see question
+<a href="bool2.html">9.2</a>;
+see also questions
+<a href="../null/nullptrmacro.html">5.12</a>
+and
+<a href="../cpp/slm.html">10.2</a>).
+</p><!-- aend -->
+<p>
+<hr>
+<a href="../charstring/wchar.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="bool2.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

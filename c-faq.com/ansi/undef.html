@@ -1,0 +1,190 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file ansi.sgml dated Wed Aug 11 00:43:45 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 11.33</title>
+<link href="extensions.html" rev=precedes>
+<link href="compliance.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="extensions.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="compliance.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 11.33
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+People seem to make a point of distinguishing
+between
+implementation-defined,
+unspecified,
+and
+undefined
+behavior.
+What do these mean?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+First of all,
+all
+
+three of these represent areas
+in which the C Standard
+does <em>not</em> specify exactly what a particular construct,
+or a program which uses it,
+must do.
+This looseness in C's definition is traditional and deliberate:
+it permits compiler writers to
+(a)
+make
+
+choices
+which allow efficient code to be generated
+by arranging that various constructs
+are implemented as ``however the hardware does them''
+(see also question <a href="../fp/strangefp.html">14.4a</a>),
+and
+(b)
+ignore
+(that is,
+avoid worrying about
+generating correct code for)
+certain marginal constructs
+which are
+too difficult to define precisely
+and which probably aren't useful to well-written programs anyway
+(see for example
+the code fragments in
+questions
+<a href="../expr/evalorder1.html">3.1</a>,
+<a href="../expr/evalorder2.html">3.2</a>,
+and
+<a href="../expr/ieqiplusplus.html">3.3</a>).
+</p><p>These three variations on
+``not precisely defined by the standard''
+are defined as:
+</p><p><b>implementation-defined:</b>
+The implementation must pick some behavior;
+it may not fail to compile the program.
+(The program using the construct is not incorrect.)
+The choice must be documented.
+The Standard may specify
+a set of allowable behaviors
+from which to choose,
+or it may impose no particular requirements.
+</p><p><b>unspecified:</b>
+Like implementation-defined,
+except that the choice need not be documented.
+</p><p><b>undefined:</b>
+Anything at all can happen;
+the Standard imposes no requirements.
+The program may fail to compile,
+or it may execute incorrectly
+(either crashing or silently generating incorrect results),
+or it may fortuitously do exactly what the programmer intended.
+</p><p>Note, too,
+that since the Standard imposes
+absolutely no
+requirements
+on the behavior of a compiler faced with an instance of undefined behavior,
+the compiler
+(more importantly, any generated code)
+can do absolutely anything.
+In particular,
+there is no guarantee
+that
+at most
+the undefined bit of the program will behave badly,
+and
+that the rest of the program will perform normally.
+It's perilous
+to think that you can tolerate undefined behavior
+in a
+program,
+imagining that its undefinedness can't hurt;
+the undefined behavior can be more undefined than you think it can.
+(See
+question <a href="../expr/evalorder2.html">3.2</a>
+for a relatively simple
+
+example.)
+</p><p>Since many people seem to have trouble
+comprehending the depths to which undefined behavor can descend,
+
+it is traditional to come up with eye-catching, outrageous examples.
+Undefined means that,
+notwithstanding question <a href="../bool/bool2.html">9.2</a>,
+<TT>printf("%d",&nbsp;j++&nbsp;&lt;=&nbsp;j);</TT>
+can print 42, or ``forty-two.''
+
+
+</p><p>If you're
+interested in
+writing portable code,
+you can
+ignore the distinctions,
+as you'll
+usually
+want to avoid code that depends on any of the three behaviors.
+</p><p>See also questions
+<a href="../expr/evalorder4.html">3.9</a>,
+and
+<a href="appalled.html">11.34</a>.
+</p><p>(A fourth defined class of not-quite-precisely-defined behavior,
+without the same stigma attached to it,
+is <a href="../sx1/index.html#locale-specific"><dfn>locale-specific</dfn></a>.)
+</p>
+
+
+
+
+<p>References:
+
+ISO Sec. 3.10, Sec. 3.16, Sec. 3.17
+<br>
+Rationale Sec. 1.6
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="extensions.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="compliance.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

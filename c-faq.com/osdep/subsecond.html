@@ -1,0 +1,189 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:47 2005 by faqproc version 2.7 -->
+<!-- from source file osdepmisc.sgml dated Wed Dec 21 13:04:19 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 19.37</title>
+<link href="dynlink.html" rev=precedes>
+<link href="sigint.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="dynlink.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="sigint.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 19.37
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+How can I implement a delay,
+or time a user's response,
+with sub-second resolution?
+
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+Unfortunately, there is no portable way.
+Routines
+you might look for on your system include
+<TT>clock</TT>,
+
+
+
+<TT>delay</TT>,
+<TT>ftime</TT>,
+<TT>gettimeofday</TT>,
+<TT>msleep</TT>,
+<TT>nap</TT>,
+
+
+
+<TT>napms</TT>,
+
+
+
+
+<TT>nanosleep</TT>,
+<TT>setitimer</TT>,
+<TT>sleep</TT>,
+
+
+
+
+<TT>Sleep</TT>,
+<TT>times</TT>,
+and
+<TT>usleep</TT>.
+(A function called <TT>wait</TT>,
+however,
+is at least under Unix <em>not</em> what you want.)
+The <TT>select</TT> and <TT>poll</TT> calls
+(if available)
+can be pressed into
+service to implement simple delays.
+On MS-DOS machines, it is possible to reprogram the system timer
+and timer interrupts.
+
+</p><p>Of these,
+only
+<TT>clock</TT> is part of the ANSI Standard.
+The difference between two calls to <TT>clock</TT>
+
+gives elapsed
+
+
+
+execution
+time,
+and
+may even
+have subsecond resolution,
+if CLOCKS_PER_SEC
+is greater than 1.
+However, <TT>clock</TT> gives
+elapsed
+processor time
+used by the current program,
+which
+on a multitasking system
+(or in a non-CPU-intensive program)
+may
+differ considerably from
+real time.
+</p><p>If you're trying to implement a delay
+and all you have available
+is a time-reporting function,
+you can implement a
+CPU-intensive
+busy-wait,
+but this is only
+an
+option on a single-user, single-tasking machine,
+as it is terribly antisocial
+to any other processes.
+Under a multitasking operating system,
+be sure to use
+a
+call
+which puts your process to sleep for the duration,
+such as <TT>sleep</TT> or <TT>select</TT>,
+or <TT>pause</TT>
+in conjunction with <TT>alarm</TT> or <TT>setitimer</TT>.
+</p><p>For really brief delays,
+it's tempting to use a do-nothing loop like
+<pre>
+	long int i;
+	for(i = 0; i &lt; 1000000; i++)
+		;
+</pre>
+but resist this temptation if at all possible!
+For one thing,
+your carefully-calculated delay loops
+will
+stop working
+properly
+next month when a faster processor comes out.
+Perhaps
+worse,
+
+a
+clever
+compiler may notice that the loop does nothing
+and optimize it away completely.
+</p><p>Additional links:
+A
+<a href="sd25.html" rel=subdocument>technique involving I/O instructions</a>
+described by Pedro Zorzenon Neto
+</p>
+
+
+<p>References:
+
+H&amp;S Sec. 18.1 pp. 398-9
+<br>
+PCS Sec. 12 pp. 197-8,215-6
+<br>
+POSIX Sec. 4.5.2
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="dynlink.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="sigint.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

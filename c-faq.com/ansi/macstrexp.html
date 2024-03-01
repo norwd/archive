@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file ansi.sgml dated Wed Aug 11 00:43:45 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+
+
+<title>Question 11.18</title>
+<link href="stringize.html" rev=precedes>
+<link href="ifdefsyntax.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="stringize.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="ifdefsyntax.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 11.18
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+What does the message
+``warning: macro replacement within a string literal''
+mean?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+Some
+pre-ANSI compilers/preprocessors
+
+interpreted macro definitions like
+<pre>
+	#define TRACE(var, fmt) printf("TRACE: var = fmt\n", var)
+</pre>
+such that invocations like
+<pre>
+	TRACE(i, %d);
+</pre>
+were expanded as
+<pre>
+	printf("TRACE: i = %d\n", i);
+</pre>
+In other words, macro parameters were
+expanded
+even inside
+
+
+
+string literals and character constants.
+(This interpretation may even have been an accident of early implementations,
+but it can prove useful for macros like this.)
+</p><p>Macro expansion is <em>not</em> defined in this way
+by K&amp;R or by Standard C.
+(It can be dangerous and confusing:
+see question <a href="../cpp/macstrexp2.html">10.22</a>.)
+When you do want
+to turn macro arguments into strings,
+you can use the new <TT>#</TT> preprocessing operator,
+along with string literal concatenation
+(another new ANSI feature):
+<pre>
+	#define TRACE(var, fmt) \
+		printf("TRACE: " #var " = " #fmt "\n", var)
+</pre>
+See also question <a href="stringize.html">11.17</a>.
+</p>
+<p>References:
+
+H&amp;S Sec. 3.3.8 p. 51
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="stringize.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="ifdefsyntax.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file aryptr.sgml dated Wed Dec 21 12:50:38 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 6.4</title>
+<link href="aryptrequiv.html" rev=precedes>
+<link href="arypbref.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="aryptrequiv.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="arypbref.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 6.4
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+If they're so different,
+then
+
+why
+are array and pointer declarations interchangeable as
+function formal parameters?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+It's
+supposed to be
+a convenience.
+</p><p>Since arrays decay immediately into pointers,
+an array is never actually passed to a function.
+You can
+pretend that
+a function receives an array as
+a
+parameter,
+and
+illustrate it
+by declaring the
+corresponding
+parameter as an array:
+<pre>
+	void f(char a[])
+	{ ... }
+</pre>
+Interpreted literally,
+this declaration would have no use,
+so
+the compiler turns
+around and pretends
+
+that you'd written a pointer declaration,
+since that's what the function will in fact receive:
+<pre>
+	void f(char *a)
+	{ ... }
+</pre>
+There's nothing
+particularly
+
+wrong with talking about a function
+as if it
+``receives'' an array,
+if
+
+the function is traditionally used to operate on 
+arrays,
+or if
+the parameter is naturally treated within the function as an array.
+</p><p>This conversion
+of array-like declarators into pointers
+holds only within function
+formal parameter declarations,
+
+nowhere else.
+
+If the conversion bothers you,
+you're under no compulsion
+
+to make use of
+
+it;
+many programmers
+have concluded that the confusion it causes outweighs
+the small advantage of having the declaration ``look like'' the call
+or the uses within the function.
+(Note that the conversion happens only once;
+something like <TT>char&nbsp;a2[][]</TT> won't work.
+See questions <a href="pass2dary.html">6.18</a>
+and
+<a href="ary2dfunc2.html">6.19</a>.)
+</p><p>See also question
+<a href="aryparmsize.html">6.21</a>.
+</p>
+
+
+
+
+
+
+
+
+
+
+<p>References:
+
+K&amp;R1 Sec. 5.3 p. 95, Sec. A10.1 p. 205
+<br>
+K&amp;R2 Sec. 5.3 p. 100, Sec. A8.6.3 p. 218, Sec. A10.1 p. 226
+<br>
+ISO Sec. 6.5.4.3, Sec. 6.7.1, Sec. 6.9.6
+<br>
+H&amp;S Sec. 9.3 p. 271
+<br>
+CT&amp;P Sec. 3.3 pp. 33-4
+<br>
+Dennis Ritchie, ``The Development of the C Language''
+
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="aryptrequiv.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="arypbref.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

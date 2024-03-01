@@ -1,0 +1,152 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file struct.sgml dated Wed Dec 21 16:15:32 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+
+<title>Question 2.11</title>
+<link href="anonstruct.html" rev=precedes>
+<link href="padding.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="anonstruct.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="padding.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 2.11
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+How can I read/write structures from/to
+
+data files?
+
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+It is relatively straightforward
+to write a structure
+out
+using <TT>fwrite</TT>:
+<pre>
+	fwrite(&amp;somestruct, sizeof somestruct, 1, fp);
+</pre>
+
+and a corresponding
+<TT>fread</TT> invocation can read it back in.
+What happens here is that
+<TT>fwrite</TT> receives a pointer to the structure,
+and writes
+(or <TT>fread</TT> correspondingly reads)
+the memory image of the structure
+as a stream of bytes.
+The <TT>sizeof</TT> operator determines
+how many bytes the structure occupies.
+</p><p>(The
+call to <TT>fwrite</TT> above is correct
+under an ANSI compiler
+as long as a prototype for <TT>fwrite</TT> is in scope,
+usually because <TT>&lt;stdio.h&gt;</TT> is <TT>#include</TT>d.
+</p><p>However,
+data files
+written
+as memory images
+in this way
+will
+<em>not</em>
+be
+portable,
+particularly
+if they contain floating-point fields or pointers.
+The memory layout of structures is
+machine and
+compiler dependent.
+Different compilers may use different amounts of padding
+(see question <a href="padding.html">2.12</a>),
+and
+the sizes and byte orders of fundamental types
+vary across machines.
+Therefore,
+structures written as memory images
+cannot necessarily be read back in
+by programs running on other machines
+(or even compiled by other compilers),
+and this is an
+important concern if
+the data files you're writing
+will ever be interchanged between machines.
+See also
+
+questions
+<a href="padding.html">2.12</a>
+and
+<a href="../misc/binaryfiles.html">20.5</a>.
+</p><p>Also,
+if the structure contains any pointers
+(<TT>char&nbsp;*</TT> strings,
+or pointers to other data structures),
+only the pointer values will be written,
+and they are most unlikely to be valid when read back in.
+Finally,
+note
+that
+for widespread portability
+you must use the <TT>"b"</TT> flag
+when opening the files;
+see question <a href="../stdio/fopenbinary.html">12.38</a>.
+</p><p>A more portable solution,
+though it's a bit more work initially,
+is to write a pair of functions
+for writing and reading a structure,
+field-by-field,
+in a portable
+(perhaps even human-readable)
+way.
+
+</p>
+<p>References:
+
+H&amp;S Sec. 15.13 p. 381
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="anonstruct.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="padding.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file stdio.sgml dated Wed Dec 21 13:07:57 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 12.1b</title>
+<link href="getcharc.html" rev=precedes>
+<link href="feof.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="getcharc.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="feof.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 12.1b
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+I have a simple little program that reads characters until EOF,
+but how do I actually <em>enter</em> that ``EOF'' value
+from the keyboard?
+I see that <TT>EOF</TT> is defined by <TT>&lt;stdio.h&gt;</TT> to be -1;
+am I supposed to enter -1?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+
+
+
+If you think about it,
+what you enter <em>can't</em> be -1,
+because ``-1'' is two characters,
+and <TT>getchar</TT> is reading one character at a time.
+It turns out that the value of EOF as seen within your C program
+has essentially nothing to do with the keystroke combination you
+might
+use to signal end-of-file from the keyboard.
+EOF is essentially a signal to your program
+that no more characters
+will be available
+from that input,
+for <em>whatever</em> reason
+(end of a disk file,
+user is done typing,
+network stream has closed,
+I/O error, etc.).
+</p><p>Depending on your operating system,
+you indicate end-of-file
+from the keyboard
+using various keystroke combinations,
+usually either control-D or control-Z.
+The operating system and stdio library then arrange
+that your C program receive the EOF value.
+(Note, however, that there are various translations involved along the way.
+Under normal circumstances,
+you should <em>not</em> explicitly check for
+the control-D or control-Z value yourself,
+nor will you find that
+the <TT>&lt;stdio.h&gt;</TT> macro
+<TT>EOF</TT> is defined to be either of these values.)
+
+</p><!-- aend -->
+<p>
+<hr>
+<a href="getcharc.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="feof.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

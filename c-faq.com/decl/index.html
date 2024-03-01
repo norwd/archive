@@ -1,0 +1,329 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file decl.sgml dated Wed Dec 21 12:56:18 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Declarations and Initializations</title>
+</head>
+<body bgcolor="#ffffff">
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<H1>1. Declarations and Initializations</H1>
+
+<p><a href="inttypes.html" rel=subdocument>1.1</a>
+
+How should I decide which integer type to use?
+</p><p><a href="exactsizes.html" rel=subdocument>1.2</a>
+Why aren't the sizes of the standard types precisely defined?
+</p><p><a href="int16.html" rel=subdocument>1.3</a>
+Since C doesn't define sizes exactly,
+I've been using
+typedefs
+like <TT>int16</TT> and
+<TT>int32</TT>.
+I can then define these typedefs
+to be <TT>int</TT>, <TT>short</TT>, <TT>long</TT>,
+etc. depending on what machine I'm using.
+
+That should solve everything, right?
+</p><p><a href="octabyte.html" rel=subdocument>1.4</a>
+What should the 64-bit type be
+on a
+machine that can support it?
+</p><p><a href="charstarws.html" rel=subdocument>1.5</a>
+What's wrong with
+this
+declaration?
+<pre>
+char* p1, p2;</pre>
+
+
+
+
+I get errors when I try to
+use
+<TT>p2</TT>.
+</p><p><a href="mimic.html" rel=subdocument>1.6</a>
+I'm trying to declare a pointer and allocate some space for it,
+but it's
+not working.
+What's wrong with
+this code?
+<pre>
+char *p;
+*p = malloc(10);</pre>
+
+
+</p><p><a href="decldef.html" rel=subdocument>1.7</a>
+What's the best way to declare and define
+global variables
+and functions?
+</p><p><a href="opaque.html" rel=subdocument>1.8</a>
+How can I implement
+opaque (abstract) data types in C?
+
+</p><p><a href="semiglobal.html" rel=subdocument>1.9</a>
+How can I make a sort of ``semi-global'' variable,
+that is,
+one that's
+private to a few functions spread across a few source files?
+</p><p><a href="static.html" rel=subdocument>1.10</a>
+Do
+all
+declarations for
+the same
+<TT>static</TT> function
+or variable
+have to include the storage class <TT>static</TT>?
+</p><p><a href="extern.html" rel=subdocument>1.11</a>
+What does <TT>extern</TT> mean in a function declaration?
+</p><p><a href="auto.html" rel=subdocument>1.12</a>
+What's the <TT>auto</TT> keyword good for?
+</p><p><a href="typedefvsdefine.html" rel=subdocument>1.13</a>
+What's the difference between using a <TT>typedef</TT>
+or
+
+a <TT>#define</TT>
+for a user-defined type?
+</p><p><a href="selfrefstruct.html" rel=subdocument>1.14</a>
+
+I can't seem to define a linked list
+successfully.
+I tried
+<pre>
+	typedef struct {
+		char *item;
+		NODEPTR next;
+	} *NODEPTR;
+</pre>
+but the compiler gave me error messages.
+Can't a structure in C contain a pointer to itself?
+
+</p><p><a href="mutrefstructs.html" rel=subdocument>1.15</a>
+How can I define a pair of mutually referential structures?
+I tried
+<pre>
+	typedef struct {
+		int afield;
+		BPTR bpointer;
+	} *APTR;
+
+	typedef struct {
+		int bfield;
+		APTR apointer;
+	} *BPTR;
+</pre>
+but the compiler doesn't know about
+<TT>BPTR</TT>
+when it is used in
+the first structure declaration.
+</p><p><a href="structtypdf.html" rel=subdocument>1.16</a>
+What's the difference between
+these two declarations?
+<pre>
+	struct x1 { ... };
+	typedef struct { ... } x2;
+</pre>
+
+</p><p><a href="pfitypedef.html" rel=subdocument>1.17</a>
+What does
+<pre>
+typedef int (*funcptr)();</pre>
+
+mean?
+</p><p><a href="typdfcnst.html" rel=subdocument>1.18</a>
+I've got
+the declarations
+<pre>
+	typedef char *charp;
+	const charp p;
+</pre>
+Why is <TT>p</TT> turning out <TT>const</TT>,
+instead of the characters pointed to?
+
+</p><p><a href="constasconst.html" rel=subdocument>1.19</a>
+I don't understand why I can't
+use <TT>const</TT> values in initializers and array
+dimensions,
+as in
+<pre>
+	const int n = 5;
+	int a[n];
+</pre>
+
+</p><p><a href="constptrconst.html" rel=subdocument>1.20</a>
+What's the difference between
+<TT>const&nbsp;char&nbsp;*p</TT>,
+<TT>char&nbsp;const&nbsp;*p</TT>,
+and <TT>char&nbsp;*&nbsp;const&nbsp;p</TT>?
+
+</p><p><a href="constparm.html" rel=subdocument>1.20b</a>
+
+
+
+
+
+</p><p>What does it mean for a function parameter to be <TT>const</TT>?
+What do the two <TT>const</TT>'s in
+<pre>
+	int f(const * const p)
+</pre>
+mean?
+</p><p><a href="cdecl1.html" rel=subdocument>1.21</a>
+How do I
+construct
+declarations of complicated types such as
+``array of N pointers to functions returning
+pointers to functions returning pointers
+to <TT>char</TT>'',
+or figure out what similarly complicated declarations mean?
+</p><p><a href="recurfuncp.html" rel=subdocument>1.22</a>
+
+
+
+How can I declare a function
+
+that can return
+a pointer to a function
+of the same type?
+I'm building a state machine with one function
+for each state, each of which returns a pointer to the function for
+the next state.
+But I can't find a way to declare the
+functions--I seem
+to need a function
+returning a pointer to a function
+returning a pointer to a function
+returning a pointer to a function...,
+ad infinitum.
+</p><p><a href="dynarray.html" rel=subdocument>1.23</a>
+Can I declare a local array
+(or parameter array)
+of a size matching a passed-in array,
+or set by another parameter?
+</p><p><a href="extarraysize.html" rel=subdocument>1.24</a>
+I have an <TT>extern</TT> array
+which is defined
+in
+one file,
+and used in another:
+<pre>
+<I>file1.c:</I>			<I>file2.c:</I>
+
+int array[] = {1, 2, 3};	extern int array[];
+</pre>
+Why doesn't <TT>sizeof</TT> work on
+<TT>array</TT> in <TT>file2.c</TT>?
+</p><p><a href="implfdecl.html" rel=subdocument>1.25</a>
+My compiler is complaining
+about an invalid redeclaration of a function,
+but I only define it once
+and call it once.
+
+</p><p><a href="main.html" rel=subdocument>1.25b</a>
+What's the right declaration for <TT>main</TT>?
+<br>Is <TT>void&nbsp;main()</TT> correct?
+</p><p><a href="argpromo.html" rel=subdocument>1.26</a>
+My compiler is complaining about mismatched function prototypes
+which look fine to me.
+</p><p><a href="headerglom.html" rel=subdocument>1.27</a>
+I'm getting strange
+syntax errors
+on the very first
+declaration in
+a file,
+but it looks fine.
+
+
+</p><p><a href="bigdatastr.html" rel=subdocument>1.28</a>
+My compiler isn't letting me declare a big array
+
+like
+<pre>
+double array[256][256];</pre>
+
+</p><p><a href="namespace.html" rel=subdocument>1.29</a>
+How can I determine
+which identifiers are safe for me to use
+and which are reserved?
+</p><p><a href="initval.html" rel=subdocument>1.30</a>
+What
+am I allowed to
+assume about the initial values of variables
+and arrays
+which are not explicitly initialized?
+<br>If global variables start out as ``zero'',
+is that good enough
+for null pointers and floating-point zeroes?
+</p><p><a href="autoaggrinit.html" rel=subdocument>1.31</a>
+This code, straight out of a book, isn't compiling:
+<pre>
+int f()
+{
+	char a[] = "Hello, world!";
+}
+</pre>
+</p><p><a href="fcninit.html" rel=subdocument>1.31b</a>
+What's wrong with
+this initialization?
+<pre>
+char *p = malloc(10);</pre>
+
+My compiler is complaining about
+an ``invalid initializer'',
+or something.
+</p><p><a href="strlitinit.html" rel=subdocument>1.32</a>
+What is the difference between
+these initializations?
+<pre>
+char a[] = "string literal";
+char *p  = "string literal";
+</pre>
+My program
+crashes if
+I try to
+assign a new value to <TT>p[i]</TT>.
+</p><p><a href="nonstring.html" rel=subdocument>1.33</a>
+Is <TT>char&nbsp;a[3]&nbsp;=&nbsp;"abc";</TT> legal?
+</p><p><a href="ptrfuncinit.html" rel=subdocument>1.34</a>
+I finally figured out the syntax for declaring pointers to
+functions, but now how do I initialize one?
+</p><p><a href="initunion.html" rel=subdocument>1.35</a>
+Can I initialize unions?
+
+</p><hr>
+<p>
+<a href="../index.html">top</a>
+</p>
+<p>
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br>
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</p>
+</body>
+</html>

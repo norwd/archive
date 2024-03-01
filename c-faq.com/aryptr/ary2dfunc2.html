@@ -1,0 +1,134 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file aryptr.sgml dated Wed Dec 21 12:50:38 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 6.19</title>
+<link href="pass2dary.html" rev=precedes>
+<link href="ary2dfunc3.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="pass2dary.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="ary2dfunc3.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 6.19
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+How do I write functions which accept two-dimensional arrays
+when the width is not known at compile time?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+It's not
+always
+easy.
+One way is to pass in a pointer to the <TT>[0][0]</TT> element, along
+with the two dimensions, and simulate array subscripting ``by hand'':
+<pre>
+	void f2(int *aryp, int nrows, int ncolumns)
+	{ ... array[i][j] is accessed as aryp[i * ncolumns + j] ... }
+</pre>
+
+Note that the correct expression
+for manual subscripting
+involves <TT>ncolumns</TT>
+
+
+
+(the ``width'' of each row),
+not <TT>nrows</TT>
+(the <em>number</em> of rows);
+it's easy to get this
+backwards.
+
+</p><p>This function could be called with the <TT>array</TT> from
+question
+<a href="pass2dary.html">6.18</a> 
+as
+<pre>
+	f2(&amp;array[0][0], NROWS, NCOLUMNS);
+</pre>
+</p><p>It must be noted,
+however,
+that a program which performs
+multidimensional array subscripting ``by hand''
+in this way
+is not in strict conformance
+with the ANSI C Standard;
+
+
+
+according to
+
+an official interpretation,
+the behavior of accessing
+<TT>(&amp;array[0][0])[x]</TT>
+is not defined
+for <TT>x&nbsp;&gt;=&nbsp;NCOLUMNS</TT>.
+</p><p>C99 allows variable-length arrays,
+and once compilers which accept C99's extensions become widespread,
+VLA's
+will probably become the preferred solution.
+(<TT>gcc</TT> has supported variable-sized arrays for some time.)
+</p><p>When you want to be able to use a function
+on multidimensional arrays of various sizes,
+one solution is to simulate all the arrays dynamically,
+as in question <a href="dynmuldimary.html">6.16</a>.
+
+</p><p>See also questions
+<a href="pass2dary.html">6.18</a>,
+<a href="ary2dfunc3.html">6.20</a>,
+and
+<a href="dynlocarys.html">6.15</a>.
+</p>
+
+<p>References:
+
+ISO Sec. 6.3.6
+<br>
+C9X Sec. 6.5.5.2
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="pass2dary.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="ary2dfunc3.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

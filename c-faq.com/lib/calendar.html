@@ -1,0 +1,262 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file libdatetime.sgml dated Wed Dec 21 12:57:15 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 13.14</title>
+<link href="mktime.html" rev=precedes>
+<link href="y2k.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="mktime.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="y2k.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 13.14
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+How can I add
+N
+days to a date?
+
+
+How can I find the difference between two dates?
+
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+The ANSI/ISO Standard C <TT>mktime</TT> and
+<TT>difftime</TT> functions
+provide
+some
+(limited)
+support for
+both problems.
+<TT>mktime</TT> accepts non-normalized dates,
+so it is straightforward to
+take a filled-in <TT>struct&nbsp;tm</TT>,
+add or subtract from the <TT>tm_mday</TT> field,
+and call <TT>mktime</TT> to normalize the year, month, and day fields
+(and
+incidentally
+convert to a <TT>time_t</TT> value).
+<TT>difftime</TT> computes the difference,
+in seconds,
+between two <TT>time_t</TT> values;
+<TT>mktime</TT> can be used to compute <TT>time_t</TT> values for two dates to
+be subtracted.
+</p><p>However,
+these solutions
+are guaranteed to work correctly
+only
+for dates
+
+
+
+in the range
+which can be represented as <TT>time_t</TT>'s
+<a href="fn73.html" rel=subdocument>[footnote]</a>
+.
+The <TT>tm_mday</TT> field is an <TT>int</TT>,
+so day offsets of more than 32,736
+
+or so
+may cause overflow.
+
+(See below for an alternative solution without these limitations.)
+Note also
+
+
+
+that
+
+
+at
+daylight saving time
+changeovers,
+local days
+are not
+24 hours long,
+so be careful
+
+if you try to divide
+by 86,400 seconds/day.
+</p><p>Here is a code fragment to
+compute the date 90 days past October 24, 1994:
+<pre>
+#include &lt;stdio.h&gt;
+#include &lt;time.h&gt;
+
+tm1.tm_mon = 10 - 1;
+tm1.tm_mday = 24;
+tm1.tm_year = 1994 - 1900;
+tm1.tm_hour = tm1.tm_min = tm1.tm_sec = 0;
+tm1.tm_isdst = -1;
+
+tm1.tm_mday += 90;
+
+if(mktime(&amp;tm1) == -1)
+	fprintf(stderr, "mktime failed\n");
+else	printf("%d/%d/%d\n",
+		tm1.tm_mon+1, tm1.tm_mday, tm1.tm_year+1900);
+</pre>
+(Setting <TT>tm_isdst</TT> to -1
+helps to guard against daylight saving time anomalies;
+setting <TT>tm_hour</TT> to 12 would, too.)
+</p><p>Here is
+a piece of
+code to
+compute the difference
+in days
+between
+February 28 and March 1 in the year 2000:
+<pre>
+	struct tm tm1, tm2;
+	time_t t1, t2;
+
+	tm1.tm_mon = 2 - 1;
+	tm1.tm_mday = 28;
+	tm1.tm_year = 2000 - 1900;
+	tm1.tm_hour = tm1.tm_min = tm1.tm_sec = 0;
+	tm1.tm_isdst = -1;
+
+	tm2.tm_mon = 3 - 1;
+	tm2.tm_mday = 1;
+	tm2.tm_year = 2000 - 1900;
+	tm2.tm_hour = tm2.tm_min = tm2.tm_sec = 0;
+	tm2.tm_isdst = -1;
+
+	t1 = mktime(&amp;tm1);
+	t2 = mktime(&amp;tm2);
+	
+	if(t1 == -1 || t2 == -1)
+		fprintf(stderr, "mktime failed\n");
+	else {
+		long d = (difftime(t2, t1) + 86400L/2) / 86400L;
+		printf("%ld\n", d);
+	}
+</pre>
+(The addition of <TT>86400L/2</TT> rounds the difference to the 
+nearest day;
+see also question <a href="../fp/round.html">14.6</a>.)
+</p><p>Another approach to both problems,
+which will work over a much wider range of dates,
+is to use
+``Julian day numbers''.
+A
+Julian day number is the
+
+
+
+number of days since January 1, 4013 BC.
+
+<a href="julepoch.html" rel=subdocument>[footnote]</a>
+Given <TT>ToJul</TT> and <TT>FromJul</TT> routines
+declared as
+<pre>
+/* returns Julian for month, day, year */
+long ToJul(int month, int day, int year);
+
+/* returns month, day, year for jul */
+void FromJul(long jul, int *monthp, int *dayp, int *yearp);
+</pre>
+adding <TT>n</TT> days to a date can be implemented as
+<pre>
+	int n = 90;
+	int month, day, year;
+	FromJul(ToJul(10, 24, 1994) + n, &amp;month, &amp;day, &amp;year);
+</pre>
+and the number of days between two dates is
+<pre>
+	ToJul(3, 1, 2000) - ToJul(2, 28, 2000)
+</pre>
+Code for handling
+Julian day numbers
+can be found in
+the Snippets collection
+(see question <a href="../resources/miscsrcs.html">18.15c</a>),
+the Simtel/Oakland archives
+(file JULCAL10.ZIP,
+see question <a href="../resources/sources.html">18.16</a>),
+and
+the ``Date conversions'' article mentioned in the References.
+</p><p>See also questions
+<a href="mktime.html">13.13</a>,
+<a href="../misc/zeller.html">20.31</a>,
+and
+<a href="../misc/leapyear.html">20.32</a>.
+</p><p>Additional links:
+<br>
+<br>
+
+
+
+
+<a href="yesterday.msb.html">further explanation</a> by Mark Brader
+<br>
+<br>
+
+
+
+
+<a href="calendar.br.html">more code</a>
+for date-difference and day-of-week calculation
+by Branko Radovanovic
+</p>
+
+
+
+
+<p>References:
+
+K&amp;R2 Sec. B10 p. 256
+<br>
+ISO Secs. 7.12.2.2,7.12.2.3
+<br>
+H&amp;S Secs. 18.4,18.5 pp. 401-2
+<br>
+David Burki, ``Date Conversions''
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="mktime.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="y2k.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

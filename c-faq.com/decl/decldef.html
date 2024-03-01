@@ -1,0 +1,208 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file decl.sgml dated Wed Dec 21 12:56:18 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 1.7</title>
+<link href="mimic.html" rev=precedes>
+<link href="opaque.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="mimic.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="opaque.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 1.7
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+What's the best way to declare and define
+global variables
+and functions?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+First, though there can be many
+<a href="../sx1/index.html#declarations"><dfn>declarations</dfn></a>
+(and in many translation units)
+of a single
+global
+variable
+or function,
+there must be exactly one
+<a href="../sx1/index.html#definition"><dfn>definition</dfn></a>.
+<a href="unused.html" rel=subdocument>[footnote]</a>
+For global variables,
+the
+definition is the declaration that actually allocates space,
+and provides an initialization value, if any.
+For functions,
+the definition is
+the ``declaration''
+
+that provides the function body.
+For example,
+
+these are declarations:
+<pre>
+	extern int i;
+
+	extern int f();
+</pre>
+and these are definitions:
+<pre>
+	int i = 0;
+
+	int f()
+	{
+		return 1;
+	}
+</pre>
+(Actually, the keyword <TT>extern</TT> is optional in function 
+declarations;
+see question <a href="extern.html">1.11</a>.)
+</p><p>When you need to share variables or functions
+across several
+source files,
+you will of course want to ensure
+that all definitions and declarations are consistent.
+The best arrangement
+is to
+place each
+definition in some relevant
+.c file.
+Then,
+put
+an external declaration in a
+header
+(``<TT>.h</TT>'')
+file,
+and <TT>#include</TT> it
+wherever the declaration is needed.
+The <TT>.c</TT> file containing the definition should also <TT>#include</TT> the
+same header file,
+so the compiler can check
+that the definition matches the declarations.
+</p><p>This rule promotes a high degree of portability:
+
+it
+is consistent with the requirements of the ANSI C Standard,
+and is also consistent with most pre-ANSI compilers and linkers.
+(Unix
+compilers and linkers typically use a ``common model''
+which allows multiple definitions,
+as long as at most one is initialized;
+this
+behavior is mentioned as a ``common extension'' by
+the ANSI Standard,
+no
+<a href="common.html">pun</a>
+intended.
+A few
+very old
+systems
+might once have required
+an explicit initializer to
+distinguish a definition from an external declaration.)
+</p><p>It is possible to use preprocessor tricks
+to arrange that
+a line like
+<pre>
+	DEFINE(int, i);
+</pre>
+need only be entered once in one header file,
+
+and turned into a definition or a declaration
+depending on the setting of some macro,
+but it's not clear if
+this is
+worth the trouble,
+especially since it's usually a
+better
+idea
+to keep global variables to a minimum.
+</p><p>It's
+not just a good idea
+to put global declarations in header files:
+if you want the compiler
+to
+be able to
+catch inconsistent declarations for you,
+you <em>must</em> place them in header files.
+In particular,
+never place a prototype for an external function
+in a .c file--if
+the definition of the function ever changes,
+it would be too easy to forget to change the prototype,
+and an incompatible
+prototype is worse than useless.
+</p><p>See also
+questions <a href="extarraysize.html">1.24</a>, <a href="../cpp/hfiles.html">10.6</a>, <a href="../style/srcfiles.html">17.2</a>, and <a href="../resources/lintvsansi.html">18.8</a>.
+
+</p>
+
+
+
+
+
+
+
+
+
+
+<p>References:
+
+K&amp;R1 Sec. 4.5 pp. 76-7
+<br>
+K&amp;R2 Sec. 4.4 pp. 80-1
+<br>
+ISO Sec. 6.1.2.2, Sec. 6.7, Sec. 6.7.2, Sec. G.5.11
+<br>
+Rationale Sec. 3.1.2.2
+<br>
+H&amp;S Sec. 4.8 pp. 101-104, Sec. 9.2.3 p. 267
+<br>
+CT&amp;P Sec. 4.2 pp. 54-56
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="mimic.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="opaque.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

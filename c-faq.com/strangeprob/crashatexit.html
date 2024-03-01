@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file strangeprob.sgml dated Tue Jun 29 21:44:40 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 16.4</title>
+<link href="biglocal.html" rev=precedes>
+<link href="funnybugs.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="biglocal.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="funnybugs.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 16.4
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+I have a program that seems to run correctly,
+but
+it
+crashes as it's exiting,
+<em>after</em>
+the last statement in <TT>main()</TT>.
+What could be causing this?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+There are at least three things to look for:
+<OL><li>If a semicolon in a previous declaration is missing,
+<TT>main</TT>
+might be inadvertently declared as returning a structure,
+conflicting with the run-time startup code's
+expectations.
+See
+questions <a href="../struct/retcrash.html">2.18</a>,
+<a href="../cpp/headerglom.html">10.9</a>,
+<a href="../ansi/voidmain.html">11.12b</a>,
+and <a href="../ansi/voidmain3.html">11.14a</a>.
+<li>If
+<TT>setbuf</TT> or <TT>setvbuf</TT>
+is called,
+and if the supplied buffer
+is an automatic, local variable of <TT>main</TT>
+(or any function),
+the buffer may not exist any more
+by the time the stdio
+library tries to perform
+its final
+cleanup.
+<li>A
+cleanup function
+registered by <TT>atexit</TT>
+may have an error.
+Perhaps <em>it</em> is
+trying to reference data
+local to <TT>main</TT>
+or to some other function
+which no longer exists.
+</OL>(The second and third problems
+
+are actually closely related to 
+question <a href="../malloc/retaggr.html">7.5a</a>;
+see
+also question
+<a href="../ansi/exitvsreturn.html">11.16</a>.)
+</p>
+<p>References:
+
+CT&amp;P Sec. 5.3 pp. 72-3
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="biglocal.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="funnybugs.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

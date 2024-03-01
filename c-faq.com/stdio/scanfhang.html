@@ -1,0 +1,172 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file stdio.sgml dated Wed Dec 21 13:07:57 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+
+<title>Question 12.17</title>
+<link href="datafmts.html" rev=precedes>
+<link href="scanfinterlace.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="datafmts.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="scanfinterlace.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 12.17
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+When I read
+numbers
+from the keyboard with
+
+<TT>scanf</TT>
+and a
+<TT>"%d\n"</TT>
+format,
+like this:
+<pre>
+	int n;
+	scanf("%d\n", &amp;n);
+	printf("you typed %d\n", n);
+</pre>
+
+it seems to hang until I type one extra line of input.
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+Perhaps surprisingly,
+
+<TT>\n</TT>
+in a
+<TT>scanf</TT>
+format string
+
+does
+<em>not</em>
+mean
+to expect a newline,
+but rather
+to read and discard characters
+as long as each is a whitespace character.
+(In fact,
+any whitespace character in a <TT>scanf</TT> format string
+means to read and discard whitespace characters.
+<a href="krerr.html" rel=subdocument>[footnote]</a>
+Furthermore, formats like <TT>%d</TT> also discard leading 
+whitespace,
+so you usually don't need
+explicit
+whitespace in <TT>scanf</TT> format strings
+at all.)
+</p><p>The <TT>\n</TT> in <TT>"%d\n"</TT>
+therefore
+causes <TT>scanf</TT> to read characters
+until it finds a non-whitespace character,
+and it may need to read another line
+before it can find that non-whitespace character.
+In this case, the fix is just to use <TT>"%d"</TT>,
+without the <TT>\n</TT>
+
+
+
+(athough
+your program may
+then
+need to skip over the unread newline;
+see question <a href="scanfinterlace.html">12.18a</a>).
+</p><p><TT>scanf</TT> was designed for free-format input,
+which is seldom what you want when reading from the keyboard.
+By ``free format''
+we mean that <TT>scanf</TT> does not treat newlines differently
+from
+other whitespace.
+The format <TT>"%d&nbsp;%d&nbsp;%d"</TT>
+would be equally happy
+reading the input
+<pre>
+	1 2 3
+</pre>
+or
+<pre>
+	1
+	2
+	3
+</pre>
+</p><p>(By way of comparison,
+source code in
+languages like C, Pascal, and LISP is free-format,
+while
+traditional
+BASIC and FORTRAN are
+
+not.)
+</p><p>If you're insistent,
+
+
+
+<TT>scanf</TT> <em>can</em> be told to match a newline,
+using the ``scanset'' directive:
+
+<pre>
+	scanf("%d%*[\n]", &amp;n);
+</pre>
+Scansets,
+though powerful,
+won't solve all <TT>scanf</TT> problems,
+however.
+See also question <a href="scanfprobs.html">12.20</a>.
+</p>
+
+
+<p>References:
+
+K&amp;R2 Sec. B1.3 pp. 245-6
+<br>
+ISO Sec. 7.9.6.2
+<br>
+H&amp;S Sec. 15.8 pp. 357-64
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="datafmts.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="scanfinterlace.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

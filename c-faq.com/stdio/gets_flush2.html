@@ -1,0 +1,227 @@
+<html>
+<head>
+<title>fflush vs gets</title>
+</head>
+<body>
+From: Steve Summit
+<br>
+Subject: Re: <TT>fflush</TT> vs <TT>gets</TT>
+<br>
+Date: 2000/02/12
+<br>
+Message-ID: &lt;clcm-20000211-0019@plethora.net&gt;
+<br>
+Newsgroups: comp.lang.c,comp.lang.c.moderated
+<p>
+Peter S. Shenkin wrote:
+<br>
+&gt; Why would you possibly want to discard the user's input,
+<br>
+&gt; and how in the world would you know what part to discard?
+<p>
+It's likely that you've never tried to call <TT>scanf</TT> and <TT>gets</TT> in the
+same program.  If you haven't, you're blissfully unaware of this
+messy little problem.
+<p>
+Suppose you write this trivial program:
+<p>
+<pre>
+	#include &lt;stdio.h&gt;
+	int main()
+	{
+		int i;
+		char string[80];
+		printf("enter an integer:\n");
+		scanf("%d", &amp;i);
+		printf("enter a string:\n");
+		gets(string);
+		printf("You typed %d and \"%s\"\n", i, string);
+		return 0;
+	}
+</pre>
+<p>
+Looks perfectly straightforward, right?  But if you compile and
+run it (which I encourage you to do, if you're still unfamiliar
+with this problem), you'll see something weird, and you will
+find yourself (I guarantee it) asking <a href="scanfinterlace.html">question 12.18</a> in the
+comp.lang.c FAQ list: &ldquo;I'm reading a number with <TT>scanf&nbsp;%d</TT> and
+then a string with <TT>gets()</TT>, but the compiler seems to be skipping
+the call to <TT>gets()</TT>!&rdquo;  (We'll have more to say later about using
+<TT>gets</TT> at all, but hold that thought.)
+<p>
+Let's look very carefully at what happens.  The first <TT>printf</TT> call
+prints the first prompt, and we type &ldquo;<TT>123</TT>&rdquo; and hit the return
+key.  The input stream now contains
+<pre>
+	1 2 3 \n
+</pre>
+Now we hit the <TT>scanf</TT> call, and <TT>scanf</TT> sees the format string <TT>%d</TT>
+indicating that we've asked it to read an int.  It reads the
+character '<TT>1</TT>' from the input stream and says to itself &ldquo;okay,
+that's a digit, so it can be part of an int.&rdquo;  It reads the
+characters '<TT>2</TT>' and '<TT>3</TT>', and they're digits, too.  The next
+character is '<TT>\n</TT>', which is not a digit.  So <TT>scanf</TT> does two
+things:
+<ol>
+<p>
+<li>
+It terminates processing of the <TT>%d</TT> directive; it now
+knows that the complete integer it has read is 123;
+it stores this value as requested into the location
+of the variable <TT>i</TT>.
+<p>
+<li>
+(This is the key point.)  It pushes the <TT>\n</TT> character,
+which terminated the digit string but which it didn't
+otherwise use, back onto the input stream.
+</ol>
+<p>
+So after the first <TT>scanf</TT> call, the input stream contains
+<pre>
+	\n
+</pre>
+Now the second <TT>printf</TT> call prints the second prompt.  Suppose we
+type &ldquo;<TT>test</TT>&rdquo; and hit the enter key.  The input stream now contains
+<pre>
+	\n t e s t \n
+</pre>
+So now we come to the <TT>gets</TT> call.  <TT>gets</TT>'s job, of course, is to
+read one line of input, up to the next newline.  But the very
+first character gets sees is a <TT>\n</TT>, so as far as it's concerned
+it's just read a blank line.  It returns that blank line (an
+empty string, since <TT>gets</TT> always deletes the newline from the
+line before returning it to you), and the input stream is left
+containing
+<pre>
+	t e s t \n
+</pre>
+The third <TT>printf</TT> call prints the (somewhat surprising) results
+of the two inputs, and the program terminates, with the string
+&ldquo;test&rdquo; and the final newline unconsumed.
+<p>
+If this still isn't quite making sense, try running the program
+again, and typing something more than a number in response to the
+first prompt.  That is, try typing &ldquo;<TT>123 abc</TT>&rdquo; or &ldquo;<TT>123abc</TT>&rdquo;, and
+then hitting the return key, when asked to &ldquo;enter an integer&rdquo;.
+<p>
+(Actually, the above description isn't quite right.  No matter
+what you type on the first line, the input stream after the first
+scanf call still contains a \n, so the <TT>gets</TT> call reads it right
+away, without pausing for you to enter anything more.  So you
+don't really get a chance to type &ldquo;test&rdquo; at all.  To answer the
+FAQ list's question another way, the problem is not that the
+compiler somehow &ldquo;skips&rdquo; the <TT>gets</TT> call, the problem is that the
+<TT>gets</TT> call satisfies its need for input in an unexpected way, and
+skips the part about pausing the program to wait for you to type
+anything more.)
+<p>
+With the scenario above as background, we can now answer your
+question, &ldquo;Why would you possibly want to discard the user's
+input?&rdquo;  For better or worse, many beginning programmers use
+<TT>scanf</TT> to read numbers and <TT>gets</TT> to read strings.  This is in large
+part, of course, because these functions are taught early in many
+books and programming classes.  And this, in turn, is because
+these functions are superficially and seductively attractive;
+they seem very easy and convenient to use.  But they don't play
+at all well together (plus they have some other problems, which
+we'll get to).
+<p>
+When the beginning programmer writes a program like the above
+and discovers that it doesn't work quite right, he is likely to
+receive the handwaving explanation (from the instructor or the
+textbook author) that there is some &ldquo;garbage left behind on the
+input stream by <TT>scanf</TT>&rdquo;.  (We, who understand the situation more
+accurately, now know that the &ldquo;garbage&rdquo; is, in the example we
+walked through, simply the <TT>\n</TT> that resulted from our hitting the
+return key after entering the requested number.)  To allow
+further input to proceed as expected, these instructors and
+authors go on to explain, the &ldquo;garbage&rdquo; must be &ldquo;discarded&rdquo;.
+One all-too-popular (and, again, superficially attractive) way of
+doing this is to call <TT>fflush(stdin)</TT>, despite the fact that this
+is a misguided application of the standard <TT>fflush</TT> function, an
+application that is not guaranteed to (and in fact most certainly
+does not) work everywhere.  But it &ldquo;works&rdquo; under a large number
+of popular PC C compilers, so the &ldquo;idiom&rdquo; is, unfortunately,
+widespread.
+<p>
+What's the right solution?  It's extremely easy to get stuck
+on the fact that <TT>fflush(stdin)</TT>, for some presumably stupid
+and pedantic reason, is not guaranteed to work everywhere.
+One then starts casting about looking for a &ldquo;portable&rdquo;
+replacement.  The problem is that, depending on precisely what
+one is trying to do, there are quite a few different tacks one
+might take in attempting to write some well-defined or portable
+code to &ldquo;discard garbage from stdin&rdquo;.  (In the general case, as
+you correctly ask, &ldquo;How in the world would [one] know what part
+to discard?&rdquo;)
+<p>
+If the definition of the &ldquo;garbage from stdin&rdquo; that we're trying
+to discard is &ldquo;input from the previous line which wasn't consumed
+by <TT>scanf</TT>&rdquo;, it turns out that there are a couple of not entirely
+unreasonable approaches.  We could write the loop
+<p>
+<pre>
+	while((c = getchar()) != '\n' &amp;&amp; c != EOF)
+		/* discard the character */;
+</pre>
+<p>
+to read and discard characters up to the next newline.  (Notice
+that the comment &ldquo;<TT>/*&nbsp;discard the character&nbsp;*/</TT>&rdquo; in this fragment
+does not stand in for some code I didn't write yet -- it stands
+in for some code I deliberately didn't write at all.  The body of
+the loop is empty; we do nothing with the characters we're
+reading, thus discarding them.  The <TT>\n</TT> which terminates the
+loop is discarded, too.)
+<p>
+Since that loop would clutter our code pretty badly if we had
+to interpose it after every <TT>scanf</TT> call, we might encapsulate it
+into a function we could call, perhaps called &ldquo;flushline&rdquo; or
+something.  Or, recognizing that &ldquo;read characters up to a
+newline&rdquo; is precisely what the Standard functions <TT>gets</TT> and <TT>fgets</TT>
+already do, we might simply interpose calls to <TT>gets</TT> or <TT>fgets</TT>,
+reading into a dummy buffer which we ignore (and hence discard),
+perhaps accompanied by comments explaining that these dummy calls
+are to &ldquo;get rid of the garbage left behind by scanf&rdquo;.  But these
+are still ugly, unclean, unsatisfying solutions.  It won't be
+long before one of our scanf calls, for some reason, <em>does</em>
+consume a newline character after all, such that our compensating
+&ldquo;read and discard characters up to the next newline&rdquo; code will
+read and discard the next line of input, a real line of input,
+which will then be lost to the input-reading code which expected
+it.  We could try to predict which <TT>scanf</TT> calls will and which
+<TT>scanf</TT> calls won't leave &ldquo;garbage behind&rdquo;, and sprinkle &ldquo;flushline&rdquo;
+calls after only those <TT>scanf</TT> calls which need them, but this is a
+hit-or-miss proposition, and a later reader will never be able to
+understand precisely what we're up to.  There's got to be a
+better way.
+<p>
+The &ldquo;better way&rdquo;, as indicated in the FAQ list, is either to
+abandon <TT>scanf</TT> entirely, or to use it exclusively.  If your
+input is intended to be line-based, you can read <em>all</em> lines
+of input as strings, using <TT>fgets</TT> or the like, and for those
+that were supposed to be numeric, convert the strings to numbers
+using functions like <TT>atoi</TT>, <TT>strtol</TT>, <TT>atof</TT>, or maybe even <TT>sscanf</TT>.
+(This is the general approach I recommend.)  Or, since the
+problem is that it's <TT>scanf</TT> that does Not Play Well With Others,
+you can switch to a scheme where you use <TT>scanf</TT> for everything,
+using it to read your strings, too (with <TT>%s</TT> or the like).
+<p>
+Finally, I should add a couple of postscripts.  It turns out
+that <TT>scanf</TT> has other problems besides the fact that it tends to
+leave little undigested &ldquo;surprises&rdquo; on the input stream, so there
+are other reasons to consider abandoning it.  And, of course,
+as discussed at length in comp.lang.c of late, <TT>gets</TT> has a fatal
+problem which counterindicates its use for much of anything.
+<p>
+-- 
+<address>
+<a href="http://www.eskimo.com/~scs/">Steve Summit</a>
+<br>
+<a href="mailto:scs@eskimo.com">scs@eskimo.com</a>
+</address>
+<br>
+Programming Challenge #5: Love your abstractions.
+<br>
+See <a href="http://www.eskimo.com/~scs/challenge/">http://www.eskimo.com/~scs/challenge/</a>.
+</body>
+</html>

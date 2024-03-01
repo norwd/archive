@@ -1,0 +1,171 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sun Jun  4 12:01:53 2006 by faqproc version 2.7 -->
+<!-- from source file aryptr.sgml dated Sun Jun  4 12:01:44 2006 -->
+<!-- corresponding to FAQ list version 4.1 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 6.2</title>
+<link href="aryptr1.html" rev=precedes>
+<link href="aryptrequiv.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="aryptr1.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="aryptrequiv.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 6.2
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+But I heard that <TT>char a[]</TT> was identical to <TT>char&nbsp;*a</TT>.
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+Not at all.
+(What you heard has to do with formal parameters to functions;
+see question
+<a href="aryptrparam.html">6.4</a>.)
+Arrays are not pointers,
+though they are closely related
+(see question
+<a href="aryptrequiv.html">6.3</a>)
+and can be used similarly
+(see questions
+<a href="../ptrs/goodfor.html">4.1</a>,
+<a href="practdiff.html">6.8</a>,
+<a href="ptrkindofary.html">6.10</a>,
+and
+<a href="dynarray.html">6.14</a>).
+</p><p>The array declaration
+<TT>char&nbsp;a[6]</TT>
+requests that space for six characters be set aside,
+to be known by the name ``<TT>a</TT>''.
+
+That is,
+there is a location named ``<TT>a</TT>''
+at which six characters can sit.
+The pointer declaration
+<TT>char&nbsp;*p</TT>,
+on the other hand,
+requests a place which holds a pointer,
+to be known by the name ``<TT>p</TT>''.
+This
+pointer can point almost anywhere:
+to any <TT>char</TT>,
+or to any contiguous array of <TT>char</TT>s,
+or nowhere
+
+<a href="anywhere.html" rel=subdocument>[footnote]</a>
+(see also questions <a href="../null/null1.html">5.1</a>
+
+and
+<a href="../decl/initval.html">1.30</a>).
+</p><p>As usual, a picture is worth a thousand words.
+
+The declarations
+<pre>
+	char a[] = "hello";
+	char *p = "world";
+</pre>
+would initialize data structures which could be represented like this:
+<p>
+<img src="aryptrstring.gif">
+<br>
+</p><p>It is useful to realize
+
+
+that a
+reference like <I fallback=no>x</I><TT>[3]</TT>
+
+generates different
+code depending on whether <I fallback=no>x</I> is an array or a pointer.
+Given the declarations above,
+when the compiler sees the expression <TT>a[3]</TT>,
+it emits code to start
+
+at the location ``<TT>a</TT>'',
+move three past it,
+and fetch the character there.
+When it
+sees the expression <TT>p[3]</TT>,
+it emits code to start at the location ``<TT>p</TT>'',
+
+fetch the pointer value there,
+add three to the pointer,
+and finally fetch the character pointed to.
+In other words,
+
+
+
+<TT>a[3]</TT> is three places past
+(the start of)
+the object <em>named</em> <TT>a</TT>,
+while <TT>p[3]</TT> is three places past the object
+<em>pointed to</em> by
+<TT>p</TT>.
+In the example above,
+both <TT>a[3]</TT> and <TT>p[3]</TT>
+happen to be the character 'l',
+
+but the compiler gets there differently.
+
+(The essential difference is that
+the values of
+an array like <TT>a</TT>
+and a pointer like <TT>p</TT>
+are computed differently <em>whenever</em> they appear in expressions,
+whether or not they are being subscripted,
+as explained further in
+question <a href="aryptrequiv.html">6.3</a>.)
+See also question
+<a href="../decl/strlitinit.html">1.32</a>.
+</p>
+
+
+<p>References:
+
+K&amp;R2 Sec. 5.5 p. 104
+<br>
+CT&amp;P Sec. 4.5 pp. 64-5
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="aryptr1.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="aryptrequiv.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

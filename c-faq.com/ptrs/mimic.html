@@ -1,0 +1,120 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file pointers.sgml dated Wed Dec 21 13:07:10 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+
+<title>Question 4.2</title>
+<link href="goodfor.html" rev=precedes>
+<link href="unopprec2.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="goodfor.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="unopprec2.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 4.2
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+I'm trying to declare a pointer and allocate some space for it,
+but it's
+not working.
+What's wrong with
+this code?
+<pre>
+char *p;
+*p = malloc(10);</pre>
+
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+The pointer you declared is <TT>p</TT>,
+not <TT>*p</TT>.
+When you're manipulating the pointer itself
+(for example when you're setting it
+
+to make it point somewhere),
+you just use the name of the pointer:
+<pre>
+	p = malloc(10);
+</pre>
+It's when you're manipulating the pointed-to memory
+that you use <TT>*</TT> as an indirection operator:
+<pre>
+	*p = 'H';
+</pre>
+</p><p>(It's easy to make the mistake shown in the question,
+though,
+because if you had used the <TT>malloc</TT> call as an 
+initializer in the declaration
+of a
+local
+
+variable,
+it would have looked like this:
+<pre>
+	char *p = malloc(10);
+</pre>
+When you break an initialized pointer declaration up
+into a declaration and a later assignment,
+you have to remember to
+remove the <TT>*</TT>.)
+</p><p>In summary,
+in an expression,
+<TT>p</TT> is the pointer
+and
+<TT>*p</TT> is what it points to
+(a <TT>char</TT>, in this example).
+</p><p>See also questions <a href="../decl/cdecl1.html">1.21</a>,
+<a href="../malloc/malloc1.html">7.1</a>,
+<a href="../malloc/ptrvaralloc.html">7.3c</a>,
+and
+<a href="../charstring/assign.html">8.3</a>.
+</p>
+<p>References:
+
+CT&amp;P Sec. 3.1 p. 28
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="goodfor.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="unopprec2.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

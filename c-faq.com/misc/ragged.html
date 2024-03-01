@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:47 2005 by faqproc version 2.7 -->
+<!-- from source file misctechn.sgml dated Sat Sep 28 22:23:36 2002 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 20.2</title>
+<link href="multretval.html" rev=precedes>
+<link href="argv.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="multretval.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="argv.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 20.2
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+What's a good data structure to use
+for storing lines of text?
+I started to use
+fixed-size
+arrays of arrays of <TT>char</TT>,
+but they're just too restrictive.
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+One good way of doing this is with a
+pointer
+(simulating an array)
+to a set of pointers
+(each simulating an array)
+of <TT>char</TT>.
+This
+data structure
+is sometimes called a
+``ragged array,''
+and looks something like this:
+<blockquote>[FIGURE GOES HERE]
+</blockquote></p><p>You could set up the tiny array in the figure above with these 
+simple declarations:
+<pre>
+char *a[4] = {"this", "is", "a", "test"};
+char **p = a;
+</pre>
+(where <TT>p</TT> is the pointer-to-pointer-to-<TT>char</TT>
+and <TT>a</TT> is an intermediate array used to allocate the four 
+pointers-to-<TT>char</TT>).
+</p><p>To really do dynamic allocation,
+you'd of course have to call <TT>malloc</TT>:
+<pre>
+#include &lt;stdlib.h&gt;
+char **p = malloc(4 * sizeof(char *));
+if(p != NULL) {
+	p[0] = malloc(5);
+	p[1] = malloc(3);
+	p[2] = malloc(2);
+	p[3] = malloc(5);
+
+	if(p[0] &amp;&amp; p[1] &amp;&amp; p[2] &amp;&amp; p[3]) {
+		strcpy(p[0], "this");
+		strcpy(p[1], "is");
+		strcpy(p[2], "a");
+		strcpy(p[3], "test");
+	}
+}
+</pre>
+(Some libraries have a <TT>strdup</TT> function
+which would streamline the inner
+<TT>malloc</TT> and <TT>strcpy</TT> calls.
+It's not Standard,
+but it's obviously trivial to implement something like it.)
+</p><p>Here is a code fragment
+which reads an entire file into memory,
+using the same kind of ragged array.
+This code is written in terms of the
+<TT>agetline</TT> function
+from question <a href="../malloc/reallocnull.html">7.30</a>.
+<pre>
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+extern char *agetline(FILE *);
+FILE *ifp;
+
+/* assume ifp is open on input file */
+
+char **lines = NULL;
+size_t nalloc = 0;
+size_t nlines = 0;
+char *p;
+
+while((p = agetline(ifp)) != NULL) {
+	if(nlines &gt;= nalloc) {
+		nalloc += 50;
+#ifdef SAFEREALLOC
+		lines = realloc(lines, nalloc * sizeof(char *));
+#else
+		if(lines == NULL)		/* in case pre-ANSI realloc */
+			lines = malloc(nalloc * sizeof(char *));
+		else	lines = realloc(lines, nalloc * sizeof(char *));
+#endif
+		if(lines == NULL) {
+			fprintf(stderr, "out of memory");
+			exit(1);
+		}
+	}
+
+	lines[nlines++] = p;
+}
+</pre>
+
+(See the comments on reallocation strategy
+in question <a href="../malloc/reallocnull.html">7.30</a>.)
+</p><p>See also question <a href="../aryptr/dynmuldimary.html">6.16</a>.
+</p><!-- aend -->
+<p>
+<hr>
+<a href="multretval.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="argv.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

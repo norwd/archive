@@ -1,0 +1,138 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file stdio.sgml dated Wed Dec 21 13:07:57 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+
+
+
+<title>Question 12.11</title>
+<link href="printfvwid.html" rev=precedes>
+<link href="scanf1.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="printfvwid.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="scanf1.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 12.11
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+How can I print numbers with commas separating the thousands?
+<br>What about currency formatted numbers?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+The functions in <TT>&lt;locale.h&gt;</TT>
+begin to provide some support
+for these operations,
+but
+there
+is no standard C function
+for doing either
+task.
+(In Standard C, the only thing <TT>printf</TT> does
+in response to a custom locale setting
+is to change its
+
+decimal-point character.)
+</p><p>
+POSIX specifies a <TT>strfmon</TT> function for formatting monetary quantities
+in a locale-appropriate way,
+and that the apostrophe flag in a numeric <TT>printf</TT> format specifier
+(e.g. <TT>%'d</TT>, <TT>%'f</TT>)
+requests comma-separated digits.
+</p><p>Here is a little routine for formatting comma-separated numbers,
+using the locale's thousands separator, if available:
+<pre>
+#include &lt;locale.h&gt;
+
+char *commaprint(unsigned long n)
+{
+	static int comma = '\0';
+	static char retbuf[30];
+	char *p = &amp;retbuf[sizeof(retbuf)-1];
+	int i = 0;
+
+	if(comma == '\0') {
+		struct lconv *lcp = localeconv();
+		if(lcp != NULL) {
+			if(lcp-&gt;thousands_sep != NULL &amp;&amp;
+				*lcp-&gt;thousands_sep != '\0')
+				comma = *lcp-&gt;thousands_sep;
+			else	comma = ',';
+		}
+	}
+
+	*p = '\0';
+
+	do {
+		if(i%3 == 0 &amp;&amp; i != 0)
+			*--p = comma;
+		*--p = '0' + n % 10;
+		n /= 10;
+		i++;
+	} while(n != 0);
+
+	return p;
+}
+</pre>
+
+(A better implementation would use
+the <TT>grouping</TT> field of
+the <TT>lconv</TT> structure,
+rather than assuming groups of three digits.
+A safer size for <TT>retbuf</TT> might be
+<TT>4*(sizeof(long)*CHAR_BIT+2)/3/3+1</TT>;
+see question <a href="sprintfsize.html">12.21</a>.)
+</p>
+
+<p>References:
+
+ISO Sec. 7.4
+<br>
+H&amp;S Sec. 11.6 pp. 301-4
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="printfvwid.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="scanf1.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

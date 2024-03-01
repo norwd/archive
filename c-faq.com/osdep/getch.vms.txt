@@ -1,0 +1,159 @@
+Newsgroups: comp.lang.c
+From: andreas@didymus.rmi.de (Andreas Fassl)
+Subject: Re: How to write PRESS ANY KEY routine
+Message-ID: <CKp3Gy.Lrp@didymus.rmi.de>
+References: <94030.210238AXMPL@ASUACAD.BITNET> <1994Feb2.184549.1728@dxcern.cern.ch>
+Date: Fri, 4 Feb 1994 10:22:09 GMT
+
+In <1994Feb2.184549.1728@dxcern.cern.ch> danpop@cernapo.cern.ch (Dan Pop) writes:
+>In <94030.210238AXMPL@ASUACAD.BITNET> <AXMPL@ASUACAD.BITNET> writes:
+>> I need help in writing a routine which will detect a press of a key on the
+>>keyboard without the need to press enter afterwards. I know that there exist
+>>functions to do that but as far as I know, they are not portable to other
+>>systems such as UNIX or VMS. Are there any standard functions that would do
+>>
+>Forget about writing your own portable routine to do that. It cannot be
+>done. You have to resort to system specific calls, which are beyond the
+>scope of comp.lang.c.
+
+Hm,
+
+don't hit me, I found this in my archive, maybe something for the FAQ, too.
+
+-andreas
+
+
+From comp.os.vms Tue May 19 14:44:09 1992
+
+In a previous article, CUU1@VAXA.NEWCASTLE-POLY.AC.UK (David Hardy) wrote:
+>In message <6525AD7D2042D449@ecl.psu.edu>, Yang (Y1Z@Edu.PSU.ECLX) writes:
+> 
+>> Hi,
+>>
+>> One simple question I cannot make it out:  Is there any command in VAX C
+>> act as getch() in the Micro-soft C?  That is, without hit the <RETURN> the
+>> program can directly pass the value of key strok to the viarble.
+>>
+>> Any respond will be appreciated.  Thanks.
+> 
+>It is possible by using the Screen Management Routines (SMG). A sample program
+>is included below by 'signature' and the function you'll be interested in is
+>GETKEY. You'll need to ensure that smgdef and ssdef are #include'd for the
+
+                [*** stuff deleted ***]
+
+
+   A simpler method would be to just include the following header file which
+redefines putchar() and defines getkey().
+
+/*
+    TERMIO.H fixes a few anomolies of the VAX C runtime library.
+
+    Version 1.6 10-APR-92      Anthony C. McCracken
+
+    getkey() returns the next keystroke without echo or a carriage
+             return.
+
+    putchar(char) works like the UNIX putchar, buffering the characters
+                  until the buffer fills up (512 chars) or a newline
+                  character is putchared.
+
+    To use these routines, just include this header file after all the
+    other #include statements.
+
+*/
+
+#include <ssdef.h>
+#include <iodef.h>
+
+typedef struct {
+           short int status;              /* I/O completion status */
+           short int bcount;              /* byte transfer count   */
+           int dev_dep_data;              /* device dependant data */
+        } iosb;                  /* This is a QIO I/O Status Block */
+
+typedef struct {
+           short int length;              /* Length of string      */
+           char      dtype;               /* Type 14 is a string   */
+           char      class;               /* Class 1 is fixed length */
+           char      *ptr;                /* Pointer to the string */
+        } descr;                 /* once initialized, this is a fixed */
+                                 /* length string descriptor */
+
+short int __tty_chan = 0;
+
+void build_descr(descr *p,char *s)    /* Builds a fixed length string */
+                                      /* descriptor                   */
+{
+
+   p->length = strlen(s);
+   p->dtype = 14;
+   p->class = 1;
+   p->ptr = s;
+}
+
+char getkey()
+{
+   descr __tty_name;
+   char __tty_buff;
+   iosb __tty_iosb;
+   int __i;
+
+   if (__tty_chan == 0) {
+      build_descr(&__tty_name,"TT:");
+      if (sys$assign(&__tty_name,&__tty_chan,0,0) != SS$_NORMAL) return(0);
+   }
+   __i = sys$qiow(0,__tty_chan,IO$_READVBLK+IO$M_NOECHO,&__tty_iosb,0,0,
+                &__tty_buff,1,0,0,0,0);
+   if (__i != SS$_NORMAL) return(0);
+   else return(__tty_buff);
+}
+
+#define __putcharbufsize 512
+char __putcbuff[__putcharbufsize];
+int __pcp = 0;
+
+#define putchar(c) {if(c=='\n') __barfout(__putcbuff,&__pcp); \
+                   else __putcbuff[__pcp++]=c; \
+                   if (__pcp>__putcharbufsize-2) __barfout(__putcbuff,&__pcp);}
+
+void __barfout(char *s, int *__i)
+{
+   s[(*__i)++] = '\n';
+   s[*__i] = 0;
+   fputs(s,stdout);
+   *__i = 0;
+}
+
+
+
+Example:
+
+#include <stdio.h>
+#include "TERMIO.H"
+main()
+{
+   char c;
+
+   printf("Press ANY key to continue\n");
+   c = getkey();
+   printf("You pressed the %c key\n",c);
+}
+
+
++----------------------------------------+-----------------------------------+
+| Anthony C. McCracken                   |                                   |
+| Northern Arizona University            | Boom boom boom,,, Still going !   |
+| Flagstaff, Arizona                     |                                   |
+|                                        | VMS just keeps going and going and|
+| acm@nauvax                   BitNet    | going.  Nothing outlasts VAX/VMS. |
+| acm@nauvax.ucc.nau.edu       Internet  |                                   |
+| 602.523.9422.us.west         Noise net |                                   |
++----------------------------------------+-----------------------------------+
+
+
+-- 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++ proGIS Softwareentwicklung, Simulationssysteme, Beratung   + 
++        Germany - 52064 Aachen, Jakobstrasse 181            + 
++ E-Mail: andreas@didymus.rmi.de VOICE: (49) 241 403 446     +

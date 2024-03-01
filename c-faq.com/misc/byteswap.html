@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:47 2005 by faqproc version 2.7 -->
+<!-- from source file miscbits.sgml dated Wed Dec 21 13:02:12 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 20.9b</title>
+<link href="endiantest.html" rev=precedes>
+<link href="hexio.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="endiantest.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="hexio.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 20.9b
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+How do I swap bytes?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+V7 Unix had a <TT>swab</TT> function,
+but it seems to have been forgotten.
+</p><p>A problem with
+explicit byte-swapping code
+is that you have
+to decide whether to call it or not,
+based on the byte order of the data
+and the byte order of the machine in use.
+Question
+<a href="endiantest.html">20.9</a>
+shows how, but it's a nuisance.
+</p><p>A better solution is to
+define functions
+which convert between the known byte order of the data
+and the (unknown) byte order of the machine
+in use,
+and to arrange for these functions to be no-ops
+on those machines which already match the desired byte order.
+A set of such functions,
+introduced with the BSD networking code but now in wide use,
+is <TT>ntohs</TT>, <TT>htons</TT>, <TT>ntohl</TT>, and <TT>htonl</TT>.
+These are intended to convert between
+``network'' and ``host'' byte orders,
+for ``short'' or ``long'' integers,
+where ``network'' order is always big-endian,
+and where ``short'' integers are always 16 bits
+and ``long'' integers are 32 bits.
+(This is not the C definition, of course,
+but it's compatible with the C definition;
+see question <a href="../decl/inttypes.html">1.1</a>.)
+So if you know that the data you want to convert from or to is big-endian,
+you can use these functions.
+(The point is that you <em>always</em> call the functions,
+making your code much cleaner.
+Each function either swaps bytes if it has to, or does nothing.
+The decision to swap or not to swap gets made once,
+when the functions are implemented for a particular machine,
+rather than being made many times in many different calling programs.)
+</p><p>If you do have to write your own byte-swapping code,
+the two obvious approaches are again to use pointers or unions,
+as in question <a href="endiantest.html">20.9</a>.
+Here is an example using pointers:
+<pre>
+void byteswap(char *ptr, int nwords)
+{
+	char *p = ptr;
+	while(nwords-- &gt; 0) {
+		char tmp = *p;
+		*p = *(p + 1);
+		*(p + 1) = tmp;
+		p += 2;
+	}
+}
+</pre>
+</p><p>And here is one using unions:
+<pre>
+union word
+	{
+	short int word;
+	char halves[2];
+	};
+
+void byteswap(char *ptr, int nwords)
+{
+	register union word *wp = (union word *)ptr;
+	while(nwords-- &gt; 0) {
+		char tmp = wp-&gt;halves[0];
+		wp-&gt;halves[0] = wp-&gt;halves[1];
+		wp-&gt;halves[1] = tmp;
+		wp++;
+	}
+}
+</pre>
+</p><p>These functions swap two-byte quantities;
+the extension to four
+or more
+bytes should be obvious.
+The union-using code is imperfect
+in that it assumes that the passed-in pointer is word-aligned.
+It would also be possible to write functions
+accepting separate source and destination pointers,
+or accepting single words and returning the swapped values.
+</p>
+<p>References:
+
+PCS Sec. 11 p. 179
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="endiantest.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="hexio.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

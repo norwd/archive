@@ -1,0 +1,78 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:47 2005 by faqproc version 2.7 -->
+<!-- from source file miscbits.sgml dated Wed Dec 21 13:02:12 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<link href="misc/base2.html" rev=subdocument>
+<title></title>
+</head>
+<body bgcolor="#ffffff">
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+[This was posted by Alan Watson back in 1996,
+passing on a suggestion by Mark Brader.
+Dik Winter believes that the original idea was due to Karl Heuer.]
+<br>
+<br>
+For this purpose, probably the best thing is some creative use of macros.
+(I wish I could remember who invented this little trick.)  You can write
+the 16-bit binary number 1100110011110000 as
+<pre>
+	B16( X X O O X X O O X X X X O O O O )
+</pre>
+if you first define
+<pre>
+ 	#define X &lt;&lt;1)+1
+ 	#define O &lt;&lt;1)
+ 	/* the argument of B16 must be a total of 16 occurrences of
+ 	   one or the other of the above two macros, effectively
+ 	   expressing a number in binary */
+ 	#define B16(arg) (((((((((((((((((0 arg)
+</pre>
+ 
+For visual purposes it may be even better to use _ as the name for the
+zero-bit, rather than O; but there's a loss of portability then, since
+the identifier _ is in the C implementation's name space and therefore
+may be used for some purpose in some implementations.  Another good
+choice would be o, which suggests 0 without looking quite so much like it.
+<br>
+<br>
+If you're using an unsigned type for the bitmap, as one normally should,
+then cast the 0 to that type inside the definition of the macro B16.
+<hr>
+<p>
+<a href="base2.html" rev=subdocument>back</a>
+</p>
+<hr>
+<p>
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br>
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</p>
+</body>
+</html>

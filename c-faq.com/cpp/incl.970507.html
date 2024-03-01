@@ -1,0 +1,97 @@
+<html>
+<head>
+<title></title>
+</head>
+<body>
+[This is the first of a pair of articles I posted in 1997
+on the difference between <TT>#include&nbsp;""</TT>
+and <TT>#include&nbsp;&lt;&gt;</TT>,
+and strategies for using them;
+the second is
+<a href="incl.970605.html">here</a>.
+I have altered the text slightly for this web page.]
+<p>
+Newsgroups: comp.lang.c
+<br>
+From: scs@eskimo.com (Steve Summit)
+<br>
+Subject: Re: Quotes vs. angle brackets in #includes
+<br>
+Message-ID: &lt;E9tIv9.EJo@eskimo.com&gt;
+<br>
+Date: Wed, 7 May 1997 15:54:44 GMT
+<p>
+In article &lt;1997May5.182655.28400@relay.nswc.navy.mil&gt;,
+Donna Oliver writes:
+<br>
+&gt; Which is more maintainable, using angle brackets with the <TT>#include</TT>
+<br>
+&gt; preprocessor directive or using the quotes?
+<p>
+They each have their uses.  For Standard headers, you always
+want to use angle brackets.  For your own headers pertaining
+to a single, self-contained program, you almost always want
+to use double quotes.  For third-party headers, or your own
+headers describing libraries which you use in multiple or
+large projects, there are viable (and acceptable) strategies
+involving either angle brackets or double quotes (along with
+whatever mechanisms your compiler provides for augmenting the
+header file search path(s)).
+<p>
+&gt; Also, is the interpretation of the quotes system dependent?  That is,
+<br>
+&gt; can the preprocessor interpretation of ``current directory'' differ from 
+<br>
+&gt; system to system?
+<p>
+Yes, very much so.  In particular, for some compilers/preprocessors,
+the ``current directory'' is always the directory
+from which you invoked the compiler, but for others, it's the
+directory in which the file doing the <TT>#include</TT> resides (in other
+words, the directory containing the file containing the <TT>#include</TT>
+directive).  This latter strategy, though less obvious, is often
+exactly what you want (except, of course, when it isn't; it can
+be a real nuisance under certain circumstances [<a href="incl.970507.html#footnote">footnote</a>]).
+<p>
+&gt; I can not get any insight to this from the FAQ.
+<br>
+<p>
+Question 10.8 mentions some of what I've discussed here.
+<p>
+<address>
+<a href="http://www.eskimo.com/~scs/">Steve Summit</a>
+<br>
+<a href="mailto:scs@eskimo.com">scs@eskimo.com</a>
+</address>
+<p>
+<a name="footnote">[*]</a> For example, if you're working on a large, multi-person
+project, and if there are central directories where the official
+or at least main-line development versions of source and header
+files reside, and individual ``playpen'' directories where each
+team member works with files prior to checking them back in to
+the main source tree, and if header files can <TT>#include</TT> other
+header files, and if you've just checked out a header file into
+your own ``playpen'' include directory, modified it, and then
+recompiled, only to have your changes <em>not</em> take effect, it's
+likely that the header file you modified is included, using
+double quotes, by another header file, and that other header file
+exists only in the central include directory, so that when any
+other source file included that other header, the preprocessor
+retrieved the mainstream, unmodified version of that header, from
+the same ``current'' mainstream include directory, rather than the
+one you just modified.  In this case, you may have to check out a
+copy of that other header file, too, even though you have no need
+to modify it, just so it will be sitting in your private include
+directory, for other inclusions to find first and so that the
+secondary header file it includes will be your modified copy.
+<p>
+I suppose this is another argument against nested include files.
+On the other hand, the problem as I've stated it only comes up if
+you use double quotes.  If you use angle brackets for the central
+project header files (in particular, for nested inclusions of
+central project header files), the preprocessor never starts at
+the wrong ``current'' directory, but always traverses the search
+path from the start again, and finds the one in your private
+include directory, as you wanted, regardless.
+</body>
+</html>

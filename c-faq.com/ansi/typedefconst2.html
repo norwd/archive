@@ -1,0 +1,54 @@
+<html>
+<!-- &lt;2004May05.2345.scs.009@scs.ndip.eskimo.net&gt; -->
+<head>
+<title></title>
+</head>
+<body>
+<p>
+[This is]
+another of the differences between <TT>typedef</TT> and <TT>#define</TT>.
+<p>
+Type qualifiers like <TT>const</TT> can affect a pointer variable in two
+(or more) different ways: either the pointer can be qualified, or
+the value pointed to.  As <a href="constptrconst.html">question 11.9</a> in the C FAQ list explains,
+when you write
+<pre>
+	int * const p;
+</pre>
+the pointer <TT>p</TT> is qualified, but when you write
+<pre>
+	const int * p;
+</pre>
+the value pointed to is qualified.
+<p>
+Now, if you say
+<pre>
+	#define x int*
+</pre>
+and then
+<pre>
+	const x y;
+</pre>
+the result is exactly as if you had written
+<pre>
+	const int* y;
+</pre>
+so it is the pointed-to value that is qualified.  The
+preprocessor always does simple textual substitutions, and these
+take place before the compiler performs its parsing phase.
+<p>
+When you say
+<pre>
+	typedef int * x;
+</pre>
+on the other hand, <TT>x</TT> is a new type, encapsulating the notion
+&ldquo;pointer to <TT>int</TT>&rdquo;.  Now, when you say
+<pre>
+	const x y;
+</pre>
+it is the variable <TT>y</TT> that is qualified, just as if you'd said
+<pre>
+	const int y;
+</pre>
+</body>
+</html>

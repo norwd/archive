@@ -1,0 +1,514 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:47 2005 by faqproc version 2.7 -->
+<!-- from source file osdepio.sgml dated Sat Jul  3 17:23:16 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 19.1</title>
+<link href="../resources/faqavail.html" rev=precedes>
+<link href="readavail.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="../resources/faqavail.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="readavail.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 19.1
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+How can I read a single character from the keyboard without
+waiting for
+the RETURN key?
+How can I stop characters from being
+echoed
+
+on the screen as they're typed?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+
+Alas,
+
+
+
+there is no standard or portable way to do
+these things
+in C.
+Concepts such as screens
+and keyboards are not even mentioned
+in the Standard,
+which deals only with simple I/O ``streams''
+of characters.
+</p><p>Input to a computer program
+typically
+passes through several stages.
+At the lowest level,
+device-dependent routines
+within the operating system
+handle the details of interfacing with particular devices
+such as keyboards, serial lines, disk drives, etc.
+Above that,
+modern operating systems tend to have
+a device-independent I/O layer,
+unifying access
+to any file or device.
+Finally,
+a C program is usually insulated
+from the operating system's I/O facilities
+by the portable functions of the stdio library.
+</p><p>At some level,
+interactive keyboard input is usually
+collected 
+and presented to the requesting program
+a line at a time.
+This gives the operating system a chance
+to support input line editing
+(backspace/delete/rubout, etc.)
+in a consistent way,
+without requiring that it
+be built into every program.
+Only when the user is satisfied and presses the RETURN key
+(or equivalent)
+is the line made available to the calling program.
+
+Even if the calling program appears to be reading input
+a character at a time
+(with <TT>getchar</TT> or the like),
+the first call
+
+blocks until the user has typed an entire line,
+at which point potentially many
+characters become available
+and many character requests
+(e.g. <TT>getchar</TT> calls)
+are satisfied in quick succession.
+</p><p>When a program wants to
+read each character immediately as it arrives,
+its
+course of action
+will depend on
+where in the input stream the line collection
+is happening
+and how it can be disabled.
+Under some systems
+(e.g. MS-DOS, VMS in some modes),
+a program can use
+a different
+or modified
+set of OS-level input calls
+to bypass line-at-a-time input processing.
+Under other systems
+(e.g. Unix, VMS in other modes),
+the part of the operating system responsible for serial input
+(often called the ``terminal driver'')
+must be placed in a mode which
+turns off
+line-at-a-time 
+processing,
+after which
+all calls to
+the usual input routines
+
+(e.g. <TT>read</TT>,
+<TT>getchar</TT>, etc.)
+will return characters immediately.
+Finally,
+a few
+systems
+(particularly older, batch-oriented mainframes)
+perform input processing
+in
+
+peripheral processors which cannot be told
+to do anything other than line-at-a-time input.
+</p><p>Therefore,
+when you need to do character-at-a-time input
+(or disable keyboard echo,
+which
+is an analogous problem),
+you will
+have to use a technique
+specific to the system you're using,
+assuming
+it provides one.
+Since comp.lang.c is oriented towards those topics
+that the C language has
+defined support for,
+you will usually get better answers to other questions by 
+referring to a system-specific newsgroup
+such as
+comp.unix.questions
+
+
+or
+comp.os.msdos.programmer,
+
+and to the FAQ lists for these groups.
+Note that the answers
+
+
+may differ even across variants
+of otherwise similar systems
+(e.g. across different variants of Unix);
+bear in mind when answering system-specific questions that the
+answer that applies to your system may not apply to everyone else's.
+</p><p>
+
+
+However, since these questions are
+frequently asked here,
+here
+are
+brief answers
+for some
+common
+situations.
+</p><p>
+Depending on
+which operating system you're using
+and
+
+what libraries you have available,
+you may be able to use one
+(or more!)
+of the following techniques:
+</p><UL><li>If you can use the ``curses'' library,
+you can call <TT>cbreak</TT>
+<a href="crmode.html" rel=subdocument>[footnote]</a>
+(and perhaps <TT>noecho</TT>),
+after which calls to <TT>getch</TT>
+will return characters immediately.
+<li>If all you're trying to do is
+read a short password without echo,
+you
+may be able to
+use a function called <TT>getpass</TT>,
+if it's available.
+(Another possibility for hiding typed passwords
+is to select black characters on a black background.)
+<li>Under
+``classic''
+versions of
+Unix,
+use <TT>ioctl</TT>
+and the TIOCGETP and TIOCSETP
+(or TIOCSETN) requests
+on file descriptor 0
+to manipulate
+the
+sgttyb structure,
+defined in <TT>&lt;sgtty.h&gt;</TT>
+and documented in tty(4).
+In the <TT>sg_flags</TT> field,
+set the CBREAK
+(or RAW) bit,
+and perhaps clear the ECHO bit.
+<li>Under System V Unix,
+
+use <TT>ioctl</TT>
+and the TCGETAW and TCSETAW requests
+on file descriptor 0
+to manipulate
+the
+termio structure,
+defined in <TT>&lt;termio.h&gt;</TT>.
+In the <TT>c_lflag</TT> field,
+clear the ICANON
+(and perhaps ECHO)
+bits.
+Also,
+set
+<TT>c_cc[VMIN]</TT> to 1 and <TT>c_cc[VTIME]</TT> to 0.
+<li>Under any operating system
+(Unix or otherwise)
+offering POSIX compatibility,
+use the <TT>tcgetattr</TT> and <TT>tcsetattr</TT> calls
+on file descriptor 0
+to manipulate
+the
+termios structure,
+defined in <TT>&lt;termios.h&gt;</TT>.
+In the
+<TT>c_lflag</TT> field,
+clear the ICANON
+(and perhaps ECHO)
+bits.
+Also,
+set
+<TT>c_cc[VMIN]</TT> to 1 and <TT>c_cc[VTIME]</TT> to 0.
+<li>In a pinch,
+under Unix,
+use <TT>system</TT>
+(see question <a href="system.html">19.27</a>)
+to invoke the <TT>stty</TT> command
+to set terminal driver
+modes
+(as in the preceding three items).
+<li>Under
+MS-DOS,
+use <TT>getch</TT>
+or <TT>getche</TT>,
+or the corresponding
+BIOS interrupts.
+<li>Under VMS,
+try the
+Screen Management (SMG$) routines,
+or curses,
+or issue low-level $QIO's
+
+
+with the IO$_READVBLK
+function code
+(and perhaps IO$M_NOECHO, and others)
+to ask for one character at a time.
+(It's also possible to set character-at-a-time
+or ``pass through'' modes in the VMS terminal driver.)
+<li>Under other operating systems, you're on your own.
+</UL><p></p><p>(As an aside,
+note that
+simply
+using <TT>setbuf</TT> or <TT>setvbuf</TT>
+to set <TT>stdin</TT> to unbuffered
+
+will <em>not</em> generally serve to allow character-at-a-time input.)
+</p><p>
+
+
+If you change terminal modes,
+save
+a copy
+the initial state
+and be sure to restore it no matter how your program terminates.
+</p><p>If you're trying to write a portable program,
+a good approach is to define your own suite of three functions to
+(1)
+set the
+terminal driver
+or
+input system
+into character-at-a-time mode
+(if necessary),
+(2)
+get characters,
+and
+(3)
+return the terminal driver
+to its initial state
+when the program is finished.
+(Ideally, such a set of functions
+might
+be part of the C Standard, some day.)
+</p><p>As an example,
+here is a tiny test program
+which prints the decimal values
+of the next ten characters
+as they are typed,
+without waiting for RETURN.
+It is
+written in terms of three functions,
+as described,
+and is
+followed by implementations of the three functions
+for curses,
+classic Unix,
+System V Unix,
+and MS-DOS.
+
+(The on-line archives associated with this list
+contain a
+more complete set of functions.)
+<pre>
+#include &lt;stdio.h&gt;
+
+main()
+{
+	int i;
+	if(tty_break() != 0)
+		return 1;
+	for(i = 0; i &lt; 10; i++)
+		printf(" = %d\n", tty_getchar());
+	tty_fix();
+	return 0;
+}
+</pre>
+</p><p>This implementation
+of the three functions
+is for curses:
+<pre>
+#include &lt;curses.h&gt;
+
+int tty_break()
+{
+	initscr();
+	cbreak();
+	return 0;
+}
+
+int tty_getchar()
+{
+	return getch();
+}
+
+int tty_fix()
+{
+	endwin();
+	return 0;
+}
+</pre>
+</p><p>Here is the code
+for ``classic'' (V7, BSD) Unix:
+<pre>
+#include &lt;stdio.h&gt;
+#include &lt;sgtty.h&gt;
+
+static struct sgttyb savemodes;
+static int havemodes = 0;
+
+int tty_break()
+{
+	struct sgttyb modmodes;
+	if(ioctl(fileno(stdin), TIOCGETP, &amp;savemodes) &lt; 0)
+		return -1;
+	havemodes = 1;
+	modmodes = savemodes;
+	modmodes.sg_flags |= CBREAK;
+	return ioctl(fileno(stdin), TIOCSETN, &amp;modmodes);
+}
+
+int tty_getchar()
+{
+	return getchar();
+}
+
+int tty_fix()
+{
+	if(!havemodes)
+		return 0;
+	return ioctl(fileno(stdin), TIOCSETN, &amp;savemodes);
+}
+</pre>
+</p><p>The code for System V Unix
+
+is similar:
+<pre>
+#include &lt;stdio.h&gt;
+#include &lt;termio.h&gt;
+
+static struct termio savemodes;
+static int havemodes = 0;
+
+int tty_break()
+{
+	struct termio modmodes;
+	if(ioctl(fileno(stdin), TCGETA, &amp;savemodes) &lt; 0)
+		return -1;
+	havemodes = 1;
+	modmodes = savemodes;
+	modmodes.c_lflag &amp;= ~ICANON;
+	modmodes.c_cc[VMIN] = 1;
+	modmodes.c_cc[VTIME] = 0;
+	return ioctl(fileno(stdin), TCSETAW, &amp;modmodes);
+}
+
+int tty_getchar()
+{
+	return getchar();
+}
+
+int tty_fix()
+{
+	if(!havemodes)
+		return 0;
+	return ioctl(fileno(stdin), TCSETAW, &amp;savemodes);
+}
+</pre>
+</p><p>Finally,
+here is an
+implementation for MS-DOS:
+
+<pre>
+int tty_break() { return 0; }
+
+int tty_getchar()
+{
+	return getche();
+}
+
+int tty_fix() { return 0; }
+</pre>
+</p><p>Turning off echo
+is left as an exercise for the reader.
+</p><p>For detailed information on
+terminal
+(keyboard and screen)
+I/O
+programming,
+see an FAQ list, book,
+or documentation set specific to your operating system.
+(Note that
+
+
+
+
+there can be many more details to take care of,
+e.g. special characters to disable
+as well as
+more mode bits to toggle,
+than
+were mentioned
+above.)
+</p><p>See also question <a href="readavail.html">19.2</a>.
+</p><p>Additional links:
+<a href="sd20.html" rel=subdocument>more solutions</a>
+</p>
+
+
+
+<p>References:
+
+PCS Sec. 10 pp. 128-9, Sec. 10.1 pp. 130-1
+<br>
+POSIX Sec. 7
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="../resources/faqavail.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="readavail.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

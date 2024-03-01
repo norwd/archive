@@ -1,0 +1,95 @@
+<html>
+<head>
+<title></title>
+</head>
+<body>
+[Someone found it confusing that
+``one should not have to free all memory before exiting'',
+but that
+it can be considered
+``good programming practice to explicitly free memory''.
+This was my reply.]
+<p>
+From: Steve Summit
+<br>
+Date: Sat, 24 Mar 2001 14:27:06 -0800
+<br>
+Subject: Re: C-FAQ book errata
+<!-- Message-Id: &lt;2001Mar24.1427.scs.005@aeroroot.scs.ndip.eskimo.net&gt; -->
+<p>
+Well, the situation is (unfortunately) fundamentally a bit
+complicated.  I'd say you ``shouldn't have to'' free memory,
+and plenty of people would agree with me, but there are probably
+some who would disagree, and would say that remembering to free
+memory is, in fact, the programmer's responsibility.  Most ``real''
+operating systems do take seriously their responsibility to
+reclaim all resources upon program exit; under these operating
+systems, everyone would agree that if a program were to neglect
+to free all memory before exiting and for that memory to then
+become irretrievably lost would be a serious bug, a bug in the
+operating system itself, not a bug in the application program.
+<p>
+But on the other hand, supposedly there are systems which, for
+whatever reason, do not definitively reclaim memory, and under
+these systems, a programmer must either explicitly free all
+memory or else suffer its loss forever (or until the next
+reboot, presumably).
+<p>
+Finally, quite aside from what the operating system is or isn't
+guaranteed to do, there are questions of what a responsible
+programmer ought to do.  Under some circumstances, it is a very
+good idea to take the trouble to free all (or most) memory.
+Under some other circumstances, it is clearly more trouble
+than it's worth to free memory -- if a program has lots of
+complicated, interconnected, dynamically-allocated memory
+structures, and if the program is about to exit, going to great
+lengths to free all the memory might add nothing more to the
+program beyond a bigger code-space footprint, a slightly longer
+running time, and a higher probability of bugs.  (How would
+you
+like to have a program crash when it was trying to exit, and
+to discover that it crashed while trying to free some memory
+which the operating system would have reclaimed anyway?)
+<p>
+&gt; Perhaps, this last paragraph should say more emphatically that in
+<br>
+&gt; certain situations it is important to explicitly free memory (give
+<br>
+&gt; example with little code segment ?), but in other situations, it may not
+<br>
+&gt; be a good idea (give example).
+<br>
+<p>
+If you're using a deficient operating system which doesn't reclaim
+memory at program exit, you must free your memory yourself.
+If your program is a long-running server which never exits,
+you must free memory as you're finished with it, otherwise all
+available memory will eventually ``leak away''.  If you're writing
+a program which does one job and exits, but which might be
+rewritten later to run for a long time and to perform multiple
+repetitions of its task, it might be easier to write the
+necessary free-memory-on-task-completion code today, while the
+data structures and their memory allocation strategies are all
+fresh in your mind.  Finally, if you're using an automated
+``leak tracing'' tool, which warns you about any block of memory
+which you allocate but neglect to free, and which you're using in
+an attempt to track down a memory leak in a portion of your code
+which is constantly allocating and freeing memory, you may find
+it useful to ``fix'' all of the allocations, that is, to explicitly
+free every scrap of memory you ever allocate, even those one-time
+allocations which you would have been content to have the
+operating system implicitly clean up for you, so that the automatic
+tool's extra complaints abut those one-time allocations won't
+make it harder to see its complaints about the real leaks which
+you do care about tracking down and fixing.
+<p>
+In a program, on the other hand, which does one task (though
+perhaps a long, complicated task) and then exits, which allocates
+a lot of dynamic memory in the process of performing that task,
+and which needs the majority of the memory for the duration of
+the processing of the task, trying to explicitly free it all
+would be a waste of time, and in fact it could be advisable
+(from the standpoints of programming time, code size, run time,
+and reliability) not to make the attempt.
+</body>
+</html>

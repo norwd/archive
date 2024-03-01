@@ -1,0 +1,353 @@
+<html>
+<!-- &lt;2003Sep15.0012.scs.003@box16.scs.ndip.eskimo.net&gt; -->
+<head>
+<title></title>
+</head>
+<body>
+<p>
+[Someone asked for some more explanation on Duff's Device,
+which at first glance looks like it couldn't even be parsed correctly.
+This was my reply.]
+<p>
+It's a poser, isn't it?
+<p>
+There are a several different issues to understand.
+<p>
+One is that, as far as the compiler is concerned, the formal
+syntax of a switch statement is <em>not</em>
+<p>
+<pre>
+	switch ( expression )
+		{
+		case constant-expression :
+			statement-list
+			break ;
+
+		case constant-expression :
+			statement-list
+			break ;
+
+		...
+
+		default :
+			statement-list
+			break ;
+		}
+</pre>
+<p>
+Rather, the syntax is simply
+<p>
+<pre>
+	switch ( expression )
+	       statement
+</pre>
+<p>
+where the statement can either be a single statement or a
+brace-enclosed list of statements.  As you can imagine,
+this is the same sort of syntax specification as is used for
+<TT>if</TT>, <TT>for</TT>, and <TT>while</TT> statements.
+<p>
+Furthermore, the syntax rules for statements say, in effect,
+that any statement (anywhere) can be &ldquo;labeled&rdquo;, either with a
+goto label (that is, a label that can be the target of a <TT>goto</TT>)
+or a case label.
+<p>
+What this means so far is that the case labels in a switch
+statement do not, strictly speaking, have to be immediately
+within the outer set of braces that enclose the body of the
+switch statement; they can instead be hiding inside inner,
+nested blocks.
+<p>
+The next question is, if the case labels do not have to be
+immediately within the outer braces of the switch statement,
+how does the compiler find them and match them up?  There are
+various ways to answer this, but perhaps the simplest and most
+convincing is to say that the compiler implements case labels
+in a similar way as it implements goto labels, and that a
+switch statement is really a sort of &ldquo;computed goto&rdquo;.
+<p>
+This is a bit of an oversimplification, because a <TT>goto</TT> can jump
+around to anywhere within a function, whereas case labels must
+always be somewhere within (if not immediately within) an
+enclosing <TT>switch</TT> statement.  But the essential point is that
+the compiler simply does not notice that a case label might be
+&ldquo;hiding&rdquo; in a nested block within the body of the switch
+statement.
+<p>
+If you really want to understand this, it's worth discussing
+a few more points.  You may not have realized it, but in many
+languages, including C, it is legal (though ill-advisable)
+to use a goto to jump into the body of a loop.  For example,
+this code:
+<p>
+<pre>
+	int i = 7;
+	goto inside;
+	for(i = 0; i &lt; 10; i++)
+		{
+	inside:	printf("%d ", i);
+		}
+</pre>
+<p>
+prints &ldquo;7 8 9 &rdquo;.  The related code
+<p>
+<pre>
+	i = 42;
+	goto in2;
+	for(i = 0; i &lt; 10; i++)
+		{
+	in2:	printf("%d ", i);
+		}
+</pre>
+<p>
+prints &ldquo;42 &rdquo;, and the related code
+<p>
+<pre>
+	i = 42;
+	goto in3;
+	for(i = 0; i != 10; i++)
+		{
+	in3:	printf("%d ", i);
+		}
+</pre>
+<p>
+runs practically forever, printing thousands or billions of numbers.
+<p>
+I must emphasize that there are vanishingly few, and perhaps no,
+reasons why you would ever want to jump into a loop like this.
+It's sort of an accident that it's possible at all, and anyone
+who cares about programming style will assert that this
+questionable freedom is one you would never want to make use of.
+(They're right, too: this questionable freedom <em>is</em> one you would
+never want to make use of.)  However, thinking about how a <TT>goto</TT>
+can jump into a loop may make it easier to imagine what's going
+on when a switch statement causes a jump to a case label buried
+in a nested inner block.
+<p>
+Another point worth mentioning concerns the question of why
+compilers are written like this in the first place.  Why <em>is</em>
+the official syntax for the switch statement simply
+<p>
+<pre>
+	switch ( expression )
+	       statement
+</pre>
+<p>
+rather than the more obvious, explicit syntax which I started
+this discussion by saying was not the official one?  If the
+explicit syntax were the official syntax, it simply wouldn't be
+possible to write questionably-valid, impossible-to-understand
+code like Duff's Device.
+<p>
+The answer -- which may sound somewhat lame, but anyway -- has to
+do with making the compiler easier and cleaner to write.  There's
+a whole bunch of machinery having to do with brace-enclosed lists
+of statements, and it's nice to be able to reuse that machinery
+in any context where a control flow statement might use a
+brace-enclosed list as its body.  In fact, it's so nice to re-use
+that machinery that it's worth doing so even though that means
+the machinery has to be augmented with some additional complexity
+to handle interspersed case labels, complexity that ought to be
+needed only when the block being parsed is in fact the body of a
+switch statement.
+<p>
+In fact, whenever people say that a surprising feature was
+accidental, not intended, that it simply &ldquo;fell out of&rdquo; the chosen
+implementation of some system, this is exactly the sort of case
+they are talking about.  It was never intended, I don't think,
+for case labels to be accepted (let alone properly handled)
+within nested inner blocks.  But when the decision was made to
+re-use the block statement handling machinery for the body of
+switch statements, meaning that that machinery had to learn
+about case labels, it meant that case labels just happened to be
+accepted in front of statements in the bodies of loops, as long
+as there was a switch statement somewhere out there for them
+to hook up to.  And, furthermore, though I won't try to argue
+whether this was accidental or deliberate or an accidental
+result of deliberately careful coding practices, it did turn
+out that the case labels were not only accepted, but worked
+&ldquo;properly&rdquo;, even when they were deeply nested.
+<p>
+<center>
+*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*
+</center>
+<p>
+I'm not sure whether you were more puzzled by the syntactic and
+semantic implications of an interleaved loop and switch statement,
+or by the particular way Duff's code made use of that combination
+to implement a practical algorithm.  But if you had questions
+about the latter, let's now take a look at Duff's Device itself.
+Actually, for clarity, I'm going to present a variation on Duff's
+Device, a reimplementation of the standard <TT>memcpy</TT> function.
+(I presume you know what <TT>memcpy</TT> does.)  A straightforward,
+bare-bones implementation of <TT>memcpy</TT> might look like this:
+<p>
+<pre>
+	void *memcpy(void *dest, const void *src, size_t n)
+	{
+		char *destp = dest;
+		const char *srcp = src;
+
+		for(; n &gt; 0; n--)
+			*destp++ = *srcp++;
+
+		return dest;
+	}
+</pre>
+<p>
+This code works pretty well.  But it's not perfect, and there are
+some things we could worry about, and one of those is efficiency.
+<p>
+A problem with the code as written is that it checks <TT>n</TT> each time
+through the loop to see if it's gotten down to 0.  That is, if
+we copy, say, 1000 bytes, the running of the code will involve
+1000 byte-copying operations and 1000 increment operations on
+<TT>srcp</TT> and 1000 more increment operations on <TT>destp</TT> and 1000
+decrement operations on <TT>n</TT> and 1000 comparison operations on <TT>n</TT>.
+It might seem as if there's no way around this, but there is.
+The technique is called &ldquo;loop unrolling&rdquo;, and we can illustrate
+it with a set of alterations to the sample memcpy code above.
+Suppose we rewrite the loop like this:
+<p>
+<pre>
+		for(; n &gt; 0; n -= 2)
+			{
+			*destp++ = *srcp++;
+			*destp++ = *srcp++;
+			}
+</pre>
+<p>
+The intent is to achieve exactly the same result, with a little
+less work (albeit with a little more code, which is a frequent
+tradeoff).  Using the revised code, if <TT>n</TT> starts out as 1000,
+there will still be 1000 assignments and 1000+1000 increments on
+<TT>srcp</TT> and <TT>destp</TT>, <em>but</em> there will only be 500 comparisons of <TT>n</TT>
+against 0, not 1000.  Also, there will be 500 subtractions where
+before we had 1000 decrements.
+<p>
+As you may have noticed, however, the revised code has a bug: it
+works properly only if <TT>n</TT> is even.  If <TT>n</TT> is odd, it will copy too
+much.  (In fact, since <TT>n</TT> has type <TT>size_t</TT> which is unsigned, the
+loop is likely to run out of control, running essentially forever
+instead of simply copying one byte too many.  The situation is
+similar to our third jump-into-the-loop example, which set <TT>i</TT> to
+42 but tested <TT>i&nbsp;!=&nbsp;10</TT>.  But this is a side issue, so I won't
+digress further.)
+<p>
+To fix the code, we need to test for <TT>n</TT> being odd and handle the
+case of copying a single byte, since always copying by pairs
+obviously won't handle odd numbers correctly:
+<p>
+<pre>
+		if(n % 2 == 1)
+			{
+			*destp++ = *srcp++;
+			n--;
+			}
+
+		for(; n &gt; 0; n -= 2)
+			{
+			*destp++ = *srcp++;
+			*destp++ = *srcp++;
+			}
+</pre>
+<p>
+Suppose we wanted to unroll the loop further.  If we put four
+assignment statements inside the loop, we'll perform only <TT>n/4</TT>
+subtractions and <TT>n/4</TT> comparisons on <TT>n</TT> during the main loop.
+But now we have to worry not only about <TT>n</TT> being odd, but about
+it having a remainder of 1, 2, or 3 when divided by 4.  So the
+code might look like
+<p>
+<pre>
+		switch(n % 4)
+			{
+			case 3: *destp++ = *srcp++; n--;
+			case 2: *destp++ = *srcp++; n--;
+			case 1: *destp++ = *srcp++; n--;
+			}
+
+    		for(; n &gt; 0; n -= 4)
+			{
+			*destp++ = *srcp++;
+			*destp++ = *srcp++;
+			*destp++ = *srcp++;
+			*destp++ = *srcp++;
+			}
+</pre>
+<p>
+Now you're probably starting to see where this is going.
+It's bad enough that when we unroll the loop by a factor of 4,
+to reduce the overhead of decrementing and testing <TT>n</TT> by a factor
+of 4, we also increase the code size by a factor of 4.  But it's
+worse than that, because the initial handle-the-remainder cases
+mean that the code bloat is more like a factor of 8.  Wouldn't it
+be nice if we could eliminate a few of those <TT>*destp++&nbsp;=&nbsp;*srcp++</TT>
+lines?
+<p>
+As the FAQ list notes, the essence of Duff's device is that
+it &ldquo;solves the problem of handling the leftover bytes by
+interleaving a switch statement with the loop which copies bytes
+[N] at a time.&rdquo;  The idea is to jump into the middle of the
+unrolled loop, so that the first trip through the loop isn't a
+full trip, but one which handles the not-a-multiple-of-four
+leftover bytes, if necessary.  This is obviously a screwy thing
+to do, at best -- after all, I was claiming up above that you
+would never want to make use of the questionable freedom C gives
+you to jump into the middle of a loop.  We're about to do just
+that, and the fact that we're going to use a switch instead of a
+goto doesn't really make the exercise much (if any) less
+questionable.
+<p>
+Anyway, here is the interleaving trick -- that is, the essential
+idea of Duff's device -- applied to the memcpy example we've been
+working with:
+<p>
+<pre>
+		int nn = n;	 /* need signed n to handle underflow */
+				 /* also assumes initial n &gt; 0 */
+
+		switch(nn % 4)
+			{
+	    		for(; nn &gt; 0; nn -= 4)
+				{
+			case 0:	*destp++ = *srcp++;
+			case 3:	*destp++ = *srcp++;
+			case 2:	*destp++ = *srcp++;
+			case 1:	*destp++ = *srcp++;
+				}
+			}
+</pre>
+<p>
+This code works, although there are two additional complications.
+One is that since it always uses &ldquo;<TT>-= 4</TT>&rdquo; in the for loop, the
+count will go negative in the case where the initial <TT>n</TT> was not a
+multiple of 4. So we must do the subtraction on a signed variable --
+if we kept subtracting 4 from <TT>n</TT>, which was passed in as a <TT>size_t</TT>,
+it would never go negative, but would wrap around to a very large
+positive number, that is, a number &gt; 0, meaning that the loop
+would run far too long.  (This is the explanation that I was
+trying to avoid digressing into up above.)
+<p>
+The second complication is that the code as written can no longer
+handle an initial <TT>n</TT> value of 0.  (The &ldquo;official&rdquo; version of
+Duff's device has the same limitation.)
+<p>
+The code I've presented here captures, I think, the essential
+ideas of Duff's device.  For the record, I'll explain the
+differences between this code and the &ldquo;official&rdquo; version.
+Duff's unrolls the loop by a factor of 8, it precomputes an <TT>n</TT>
+which is the byte count divided by 8 (and then adjusted) so that
+it can use &ldquo;<TT>--n</TT>&rdquo; instead of &ldquo;<TT>n&nbsp;-=&nbsp;8</TT>&rdquo;, and it uses a <TT>do</TT>/<TT>while</TT> loop
+rather than a <TT>for</TT> loop.
+Those three differences
+are all mainly cosmetic; the one big difference is of course
+that the &ldquo;official&rdquo; version of Duff's device does not increment
+the <TT>to</TT> pointer at all.  This is because <TT>to</TT> was pointing,
+not at a regular memory location into which the data was being
+copied, but rather, to a memory-mapped device register; the bytes
+being copied were actually being transmitted to a display device
+of some kind.  (The application was some kind of animation,
+presumably real-time, which is why efficiency mattered so much.)
+</body>
+</html>

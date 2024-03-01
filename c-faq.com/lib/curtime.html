@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file libdatetime.sgml dated Wed Dec 21 12:57:15 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 13.12</title>
+<link href="extsort.html" rev=precedes>
+<link href="mktime.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="extsort.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="mktime.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 13.12
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+How can I get the
+current date
+or
+time of day in a C program?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+Just use the <TT>time</TT>,
+<TT>ctime</TT>,
+<TT>localtime</TT>
+and/or <TT>strftime</TT>
+functions.
+Here is a simple example:
+<a href="timefail.html" rel=subdocument>[footnote]</a>
+<pre>
+#include &lt;stdio.h&gt;
+#include &lt;time.h&gt;
+
+int main()
+{
+	time_t now;
+	time(&amp;now);
+	printf("It's %s", ctime(&amp;now));
+	return 0;
+}
+</pre>
+
+</p><p>Calls to <TT>localtime</TT> and <TT>strftime</TT>
+look like this:
+<pre>
+	struct tm *tmp = localtime(&amp;now);
+	char fmtbuf[30];
+	printf("It's %d:%02d:%02d\n",
+		tmp-&gt;tm_hour, tmp-&gt;tm_min, tmp-&gt;tm_sec);
+	strftime(fmtbuf, sizeof fmtbuf, "%A, %B %d, %Y", tmp);
+	printf("on %s\n", fmtbuf);
+</pre>
+
+
+
+(Note that these functions take a <em>pointer</em>
+to the <TT>time_t</TT> variable,
+even when they will not be modifying it.<a href="prelong.html" rel=subdocument>[footnote]</a>
+)
+</p><p>If you need sub-second resolution,
+see question <a href="../osdep/subsecond.html">19.37</a>.
+</p>
+
+
+<p>References:
+
+K&amp;R2 Sec. B10 pp. 255-7
+<br>
+ISO Sec. 7.12
+<br>
+H&amp;S Sec. 18
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="extsort.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="mktime.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

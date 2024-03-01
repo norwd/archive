@@ -1,0 +1,192 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file cpp.sgml dated Wed Dec 21 13:52:14 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+
+<title>Question 10.1</title>
+<link href="../bool/thirdparty.html" rev=precedes>
+<link href="slm.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="../bool/thirdparty.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="slm.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 10.1
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+I'm trying to define
+a few simple little function-like macros
+such as
+<pre>
+	#define square(x) x * x
+</pre>
+but they're not always working.
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+There are three important rules to remember when defining
+function-like macros:
+<OL><li>The macro expansion must always be parenthesized
+to protect
+any lower-precedence operators
+from the surrounding expression.
+Given the
+(incorrect)
+<TT>square()</TT> macro above,
+the invocation
+<pre>
+	1 / square(n)
+</pre>
+would expand to
+<pre>
+	1 / n * n
+</pre>
+(which evaluates as <TT>(1 / n) * n</TT>),
+while
+what you want is
+<pre>
+	1 / (n * n)
+</pre>
+(In this case, the problem is one of associativity rather than 
+precedence, but the effect is the same.)
+
+<li>Within the macro definition,
+all
+occurrences
+of the parameters
+must be parenthesized
+to protect
+any low-precedence operators
+in the actual arguments
+from the
+rest of the macro expansion.
+Again
+given the <TT>square()</TT> macro above,
+the invocation
+<pre>
+	square(n + 1)
+</pre>
+would expand to
+<pre>
+	n + 1 * n + 1
+</pre>
+But what you want is
+<pre>
+	(n + 1) * (n + 1)
+</pre>
+<li>If a parameter appears several times
+in the expansion,
+the macro may not work properly
+if the actual argument
+is an expression with
+side effects.
+Yet again
+given the <TT>square()</TT> macro above,
+the invocation
+<pre>
+	square(i++)
+</pre>
+would expand to
+<pre>
+	i++ * i++
+</pre>
+which is undefined
+(see question <a href="../expr/evalorder2.html">3.2</a>).
+</OL></p><p>The proper definition of a <TT>square</TT> macro,
+to comply with rules 1 and 2 above,
+is
+<pre>
+	#define square(x) ((x) * (x))
+</pre>
+Complying 
+with rule 3 is harder.
+Sometimes,
+careful exploitation of the short-circuiting behavior of
+the
+<TT>&amp;&amp;</TT>, <TT>||</TT>, or <TT>?:</TT>
+operators
+(see question <a href="../expr/shortcircuit.html">3.6</a>)
+can arrange that a parameter which appears several times
+is guaranteed to be evaluated exactly once.
+Sometimes, the macro is
+
+just
+documented as being unsafe,
+and callers must remember
+not to use it on arguments with side effects.
+Other times,
+it may be advisable <em>not</em> to
+compose a function-like macro
+if it can't be made safe.
+</p><p>(As a stylistic convention,
+macros are often defined with capitalized or all-upper-case names,
+to make it obvious that they are macros.
+It may be acceptable to define a function-like macro
+with an all-lower-case name,
+if it truly simulates a function,
+but only if it complies with all three rules above.
+Since the squaring macro we've been discussing does not,
+it should be defined as something like
+<pre>
+	#define Square(x) ((x) * (x))	/* UNSAFE */
+</pre>
+if it is to be used at all.)
+</p>
+
+
+
+<p>References:
+
+K&amp;R1 Sec. 4.11 p. 87
+<br>
+K&amp;R2 Sec. 4.11.2 p. 90
+<br>
+H&amp;S Secs. 3.3.6,3.3.7 pp. 49-50
+<br>
+CT&amp;P Sec. 6.2 pp. 78-80
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="../bool/thirdparty.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="slm.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:47 2005 by faqproc version 2.7 -->
+<!-- from source file algorithms.sgml dated Sat Feb 14 14:35:07 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 20.32</title>
+<link href="zeller.html" rev=precedes>
+<link href="leapsec.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="zeller.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="leapsec.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 20.32
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+Is <TT>(year&nbsp;%&nbsp;4&nbsp;==&nbsp;0)</TT> an accurate test for leap years?
+(Was 2000 a leap year?)
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+No, it's not accurate
+(and yes, 2000 was a leap year).
+The
+actual rules
+for the
+present
+Gregorian calendar
+are that leap years occur every four years,
+but not every 100 years,
+<em>except</em>
+that they do occur every 400 years, after all.
+In C,
+these rules can be expressed as:
+<pre>
+	year % 4 == 0 &amp;&amp; (year % 100 != 0 || year % 400 == 0)
+</pre>
+See a good
+astronomical almanac or other reference
+<a href="refs.html" rel=subdocument>[footnote]</a>
+for details.
+
+
+</p><p>Actually,
+if the
+domain of interest is limited
+(perhaps by the
+range of a signed 32-bit <TT>time_t</TT>)
+such that
+the only century year it encompasses is 2000,
+the expression
+<pre>
+	year&nbsp;%&nbsp;4&nbsp;==&nbsp;0		/* 1901-2099 only */
+</pre>
+is accurate,
+if less than robust.
+</p><p>If you trust the implementor of the C library,
+you can use <TT>mktime</TT> to determine whether a given year 
+is a leap year;
+see the code fragments
+in questions <a href="../lib/calendar.html">13.14</a> or <a href="zeller.html">20.31</a>
+for hints.
+</p><p>Note also that the transition from the
+Julian to the
+Gregorian calendar involved
+deleting several days
+to make up for accumulated errors.
+(The transition was first made
+in Catholic countries under Pope Gregory XIII
+in October, 1582,
+and involved deleting 10 days.
+In the British Empire,
+eleven
+
+days were deleted
+when the Gregorian calendar was adopted
+in September 1752.
+A few countries didn't switch until the
+20th
+century.)
+Calendar code which has to work for
+historical dates
+must
+therefore
+be especially careful.
+</p><p>See also question <a href="../lib/y2k.html">13.14b</a>.
+</p><!-- aend -->
+<p>
+<hr>
+<a href="zeller.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="leapsec.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

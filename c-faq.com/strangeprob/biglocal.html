@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file strangeprob.sgml dated Tue Jun 29 21:44:40 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 16.3</title>
+<link href="headerglom.html" rev=precedes>
+<link href="crashatexit.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="headerglom.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="crashatexit.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 16.3
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+This program crashes before it even runs!
+(When single-stepping with a debugger, it dies before the first
+statement in <TT>main</TT>.)
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+You probably have one or more very large
+(kilobyte or more)
+local arrays.
+Many
+systems have fixed-size stacks,
+and even those which perform dynamic stack allocation automatically
+(e.g.&nbsp;Unix)
+can be confused when the stack tries to grow by a huge chunk
+all at once.
+It is often better to declare large arrays with <TT>static</TT> duration
+(unless of course you need a fresh set with each recursive call,
+
+
+
+in which case you could dynamically allocate them with <TT>malloc</TT>;
+see also question <a href="../decl/autoaggrinit.html">1.31</a>).
+</p><p>Other possibilities
+are
+that your program has been linked incorrectly
+(combining object modules compiled with different
+compilation
+options,
+or using improper dynamic libraries),
+or
+that run-time dynamic library linking
+is failing for some reason,
+
+
+
+or that you have somehow
+misdeclared <TT>main</TT>.
+</p><p>See also questions
+<a href="../ansi/voidmain.html">11.12b</a>,
+<a href="crashatexit.html">16.4</a>,
+<a href="funnybugs.html">16.5</a>,
+and
+<a href="../resources/lint1.html">18.4</a>.
+</p><!-- aend -->
+<p>
+<hr>
+<a href="headerglom.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="crashatexit.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

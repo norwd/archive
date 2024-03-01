@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file struct.sgml dated Wed Dec 21 16:15:32 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<link href="struct/opaquetypes.html" rev=subdocument>
+<title>Opaque type example</title>
+</head>
+<body bgcolor="#ffffff">
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+For example, you might create this header file,
+<TT>"mumbletyfrog.h"</TT>,
+for an abstract type <TT>mumbletyfrog</TT>:
+
+<pre>
+struct mumbletyfrog;
+extern struct mumbletyfrog *makefrog(void);
+extern void setcroaks(struct mumbletyfrog *, int);
+</pre>
+The caller would include the header file,
+and manipulate pointers to <TT>struct mumbletyfrog</TT>:
+<pre>
+#include "mumbletyfrog.h"
+...
+struct mumbletyfrog *frogp;
+frogp = makefrog();
+setcroaks(frogp, 3);
+croaker(frogp);
+</pre>
+The code that defines the <TT>mumbletyfrog</TT> type,
+presumably in <TT>mumbletyfrog.c</TT>,
+actually defines the structure:
+<pre>
+#include "mumbletyfrog.h"
+
+struct mumbletyfrog
+	{
+	char *name;
+	int ncroaks;
+	};
+
+struct mumbletyfrog *makefrog(void)
+{
+	struct mumbletyfrog *frogp = malloc(sizeof(struct mumbletyfrog));
+	if(frogp == NULL)
+		return NULL;
+
+	frogp-&gt;name = NULL;
+	frogp-&gt;ncroaks = 0;
+
+	return frogp;
+}
+
+void setcroaks(struct mumbletyfrog *frogp, int n)
+{
+	frogp-&gt;ncroaks = n;
+}
+
+void croaker(struct mumbletyfrog *frogp)
+{
+	int i;
+	for(i = 0; i &lt; frogp-&gt;ncroaks; i++)
+		printf("ribbet\n");
+}
+</pre>
+Another popular strategy is to use a typedef,
+so that the keyword <TT>struct</TT> can be omitted;
+see questions
+<a href="typedef.html">2.1</a>
+and
+<a href="impltypedef.html">2.2</a>.
+<hr>
+<p>
+<a href="opaquetypes.html" rev=subdocument>back</a>
+</p>
+<hr>
+<p>
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br>
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</p>
+</body>
+</html>

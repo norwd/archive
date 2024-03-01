@@ -1,0 +1,163 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file stdio.sgml dated Wed Dec 21 13:07:57 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 12.34</title>
+<link href="freopen.html" rev=precedes>
+<link href="redirp.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="freopen.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="redirp.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 12.34
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+Once I've used <TT>freopen</TT>, how can I get the original
+<TT>stdout</TT>
+(or <TT>stdin</TT>)
+back?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+There isn't a good way.
+If you need to switch back,
+the
+best solution
+is not to
+have used
+<TT>freopen</TT> in the
+first place.
+Try using your own explicit output (or input) stream variable,
+which you can reassign at will, while leaving the original
+<TT>stdout</TT> (or <TT>stdin</TT>) undisturbed.
+For example, declare a global
+<pre>
+	FILE *ofp;
+</pre>
+and replace all calls to <TT>printf( </TT>...<TT> )</TT> with
+<TT>fprintf(ofp, </TT>...<TT> )</TT>.
+(Obviously, you'll have to check for calls to
+<TT>putchar</TT> and <TT>puts</TT>, too.)
+Then you can set <TT>ofp</TT> to <TT>stdout</TT>
+or
+to anything else.
+</p><p>You might wonder if you could skip <TT>freopen</TT> entirely,
+and do something like
+<pre>
+	FILE *savestdout = stdout;
+	stdout = fopen(file, "w");	/* WRONG */
+</pre>
+leaving yourself able to restore <TT>stdout</TT> later by doing
+<pre>
+	stdout = savestdout;		/* WRONG */
+</pre>
+but code like this is not likely to work,
+
+
+because <TT>stdout</TT>
+(and <TT>stdin</TT> and <TT>stderr</TT>)
+are
+
+typically constants which cannot be reassigned
+
+(which
+is why <TT>freopen</TT> exists in the first place).
+</p><p>It may be possible,
+in a nonportable way,
+to save away
+information about a stream
+before
+calling <TT>freopen</TT>
+to open some file in its place,
+such that the original stream can later be restored.
+The most straightforward and reliable way is to manipulate the
+underlying file descriptors using 
+a system-specific call such as
+<TT>dup</TT>
+or
+<TT>dup2</TT>,
+if available (<a href="rd.kirby.c">example</a>).
+Another is to
+copy or inspect the contents of the
+<TT>FILE</TT>
+structure,
+but this is exceedingly
+nonportable
+and unreliable.
+</p><p>Under some systems,
+you might be able to reopen a special device file
+(such as <TT>/dev/fd/1</TT> under modern versions of Unix)
+which is still attached to (for example) the original standard output.
+You can,
+under some systems,
+explicitly re-open the controlling terminal
+(see question <a href="devtty.html">12.36</a>),
+but this isn't necessarily what you want,
+since the
+original
+input or output
+(i.e. what <TT>stdin</TT> or <TT>stdout</TT> had been
+before you called <TT>freopen</TT>)
+could have been redirected
+from the command line.
+</p><p>All of this pertains to stdio redirection
+initially performed by <TT>freopen</TT>,
+affecting the I/O calls
+within the same program that called <TT>freopen</TT>.
+If what you're trying to do is capture the result of a 
+subprogram
+
+
+execution,
+<TT>freopen</TT> probably won't work
+anyway;
+see question <a href="../osdep/popen.html">19.30</a> instead.
+</p><p>Additional links:
+<a href="sd13.html" rel=subdocument>examples</a>
+</p><!-- aend -->
+<p>
+<hr>
+<a href="freopen.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="redirp.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

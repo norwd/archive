@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file pointers.sgml dated Wed Dec 21 13:07:10 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+
+
+<title>Question 4.5</title>
+<link href="explscale.html" rev=precedes>
+<link href="voidparith.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="explscale.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="voidparith.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 4.5
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+I
+have
+a <TT>char&nbsp;*</TT> pointer
+that happens to point to
+some <TT>int</TT>s,
+and I want to step it over them.
+Why doesn't
+<pre>
+((int *)p)++;</pre>
+
+work?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+In C, a cast operator
+does not mean
+``pretend these bits have a different type,
+and treat them accordingly'';
+it
+is a conversion operator,
+
+and by definition it yields an rvalue,
+
+which cannot be assigned to,
+
+or incremented with <TT>++</TT>.
+(It is
+either an accident
+or a deliberate but nonstandard extension
+if a particular compiler accepts
+expressions such as the above.)
+Say what you mean:
+use
+<pre>
+	p = (char *)((int *)p + 1);
+</pre>
+
+
+or
+(since <TT>p</TT> is a <TT>char *</TT>)
+simply
+<pre>
+	p += sizeof(int);
+</pre>
+or
+(to be really explicit)
+
+
+<pre>
+	int *ip = (int *)p;
+	p = (char *)(ip + 1);
+</pre>
+</p><p>When
+
+
+
+possible,
+however,
+you should choose appropriate
+pointer
+types
+in the first place,
+rather than
+trying to treat one type as another.
+</p><p>See also question <a href="../strangeprob/ptralign.html">16.7</a>.
+</p>
+
+
+
+
+<p>References:
+
+K&amp;R2 Sec. A7.5 p. 205
+<br>
+ISO Sec. 6.3.4
+<br>
+Rationale Sec. 3.3.2.4
+<br>
+H&amp;S Sec. 7.1 pp. 179-80
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="explscale.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="voidparith.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

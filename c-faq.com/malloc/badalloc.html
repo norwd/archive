@@ -1,0 +1,115 @@
+<html>
+<!-- &lt;2001Dec06.2308.scs.005@aeroroot.scs.ndip.eskimo.net&gt; -->
+<head>
+<title></title>
+</head>
+<body>
+<p>
+[Someone once asked me if after calling
+<pre>
+	p = malloc(strlen(string));
+</pre>
+the call
+<pre>
+	strcpy(p, string);
+</pre>
+should succeed or fail.
+They suspected that the <TT>strcpy</TT> call should fail,
+because space for the terminating <TT>\0</TT> was not allocated.
+They suspected that the pointer <TT>p</TT>
+would <em>not</em> end up pointing to a proper copy of the string,
+and they were surprised when it did,
+or seemed to.
+They specifically wanted to know whether
+(a) a later <TT>free()</TT> of <TT>p</TT> would fail,
+(b) the <TT>strcpy()</TT> call would fail,
+(c) an attempt to print the string <TT>p</TT> would succeed, or
+(d) there would be an error.
+This is a revised version of my reply.]
+<p>
+Asking exactly what will happen here is a tough question.
+Logically, the question is roughly equivalent to:
+<blockquote>
+<p>
+You come to an intersection of two busy streets.
+The light is red, and the sign says ``Don't Walk''.
+You cross the street.  What happens?
+<p>
+(a) a policeman gives you a ticket
+<br>
+(b) a car hits you and you wind up in the hospital
+<br>
+(c) a car slams on its brakes and narrowly avoids hitting
+you, and its driver makes various rude remarks concerning
+your intelligence and your ancestry
+<br>
+(d) you reach the other side safely
+</blockquote>
+<p>
+You are correct in observing that the code fails to allocate
+enough room for the '\0'.
+The reason it seemed to work when you tried it is that
+sometimes,
+answer (d) in my crossing-the-busy-street-against-the-light
+analogy applies.
+<p>
+C is a relatively low-level language.  It is designed to work
+efficiently with individual bytes and words in memory; it only
+<em>seems</em> to give you access to higher-level concepts like strings.
+<p>
+The code fragment you presented above asks <TT>malloc</TT> for <i>n</i> bytes
+of memory.
+<TT>malloc</TT> returns a pointer to some memory, which
+the code proceeds to copy <i>n</i>+1 bytes of data to.  Obviously this
+is wrong -- well, it's obvious to you and me, but it is <em>not</em>
+obvious to <TT>malloc</TT> or <TT>strcpy</TT>.  <TT>strcpy</TT> has no way of knowing how
+many bytes' worth of memory it's allowed to copy to; all it
+receives is a pointer to the source string and a pointer to
+the destination.  In general, pointers are implemented as
+straightforward memory addresses; they don't carry around
+any extra information concerning the size of the memory regions
+they point to.  In general, it's up to <em>you</em>, the programmer,
+to ensure that pointers point to enough memory to support the
+operations you perform on them.  If the programmer fails, bad
+things will probably happen, but we usually can't predict
+precisely what the bad things are, or precisely when they'll
+happen.  All we can do is try to avoid writing incorrect code
+in the first place, and to remember that when we have a program
+that's behaving strangely, or seeming to overwrite memory it
+shouldn't, or crashing with ``Segmentation Violation'' or ``Bus
+Error'' or ``General Protection Fault'', one of the things to go
+back and double-check during debugging is whether our pointer
+usage is correct.
+<p>
+When you copy more data to a <TT>malloc</TT>'ed block of data than you
+asked for, several things can happen, depending on how far past
+the end of the block you accidentally write, and how <TT>malloc</TT> is
+implemented, and what your program tries to do next.  Often, if
+you write only a little bit too much (e.g. by forgetting to
+allocate space for the terminating <TT>'\0'</TT> of a string, which is of
+course a rather common mistake), what you overwrite is some of
+<TT>malloc</TT>'s internal bookkeeping information.  Often, if this
+happens, the <TT>malloc</TT> code won't notice until the <em>next</em> call to
+<TT>malloc</TT> or <TT>free</TT> (which might be some distance from the actual
+bug, which is one of the things that makes these bugs stubborn
+and hard to track down).  And sometimes, <TT>malloc</TT> allocates a bit
+more space than you asked for (for its own reasons, e.g. to make
+the blocks of allocated memory line up better), meaning you can
+(seem to) get away with overflowing the block with no penalty
+at all.
+<p>
+But I hasten to add that everything in the previous paragraph is
+``maybe''.  You're not, of course, supposed to copy more data to a
+<TT>malloc</TT>'ed block than the block was <TT>malloc</TT>'ed to hold, and if you
+do, all bets are off.  The program can do just about anything,
+including crash in various ways, or deliver obviously bogus
+results, or deliver subtly wrong results that you might not even
+notice.  But -- and this is actually rather unfortunate -- the
+``just about anything'' that the incorrect program might do also
+includes ``doing just what you expected'' (that is, not seeming to
+behave incorrectly at all), thus lulling you into a false sense
+of security that the code is ``correct'' -- because it ``works'' --
+even though it is not correct, works today only by accident, and
+might very well stop working tomorrow.
+</body>
+</html>

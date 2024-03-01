@@ -1,0 +1,131 @@
+<html>
+<head>
+<title>declaring pointers to arrays, etc.</title>
+</head>
+<body>
+<p>
+[Someone questioned the statement,
+``If you really need to declare a pointer to an entire array,
+use something like int (*ap)[N];''.
+This was my response.]
+<p>
+From: scs@eskimo.com (Steve Summit)
+<br>
+Subject: Re: question about answer to 6.13
+<br>
+Date: Mon, 25 Mar 2002 23:17:44 -0500
+<br>
+Message-Id: &lt;2002Mar25.2317.scs.001@aeroroot.scs.ndip.eskimo.net&gt;
+<p>
+You wrote:
+<br>
+&gt; i was wondering about something stated in the answer
+<br>
+&gt; to question 6.13 of the c-faq:
+<br>
+&gt;
+<br>
+&gt; ``If you really need to declare a pointer to an entire
+<br>
+&gt; array, use something like <TT>int (*ap)[N];</TT> where <TT>N</TT> is
+<br>
+&gt; the size of the array.''
+<br>
+&gt;
+<br>
+&gt; doesn't <TT>(int (*ap)[n])</TT> mean ``array of pointers to <TT>int</TT>''?
+<br>
+<p>
+Nope!
+<p>
+&gt; if not, how why and how would you declare an
+<br>
+&gt; array of pointers to int, then.
+<br>
+<p>
+That'd be simply
+<p>
+<pre>
+	int *ap[N];
+</pre>
+The difference is in the parentheses.
+In C, there are precedence relationships in declarations, too,
+and when the default precedence isn't what you want, you use
+explicit parentheses to override it.
+<p>
+To see very clearly how this works, let's first look at two
+examples from the world of expressions, one simple, one a bit
+more complicated.
+<p>
+When you write
+<p>
+<pre>
+	x = 1 + 2 * 3;
+</pre>
+how is that interpreted?  Multiplication has higher precedence
+than addition, so 2 is multiplied by 3 and the result added to 1.
+If you wanted 1 to be added to 2 and then multiplied by 3,
+you'd use parentheses:
+<p>
+<pre>
+	x = (1 + 2) * 3;
+</pre>
+When you write
+<p>
+<pre>
+	int a[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+	int *ip = &amp;a[5];
+
+	x = *ip++;
+</pre>
+<p>
+how is that interpreted?  Does <TT>*ip++</TT> mean to follow the pointer
+(that is, take the pointed-to contents of) <TT>ip</TT> and increment what
+it points to, or increment the pointer <TT>ip</TT> and (because this is
+the postincrement form) take the contents of what it used to
+point to?  Postfix <TT>++</TT> has higher precedence than unary prefix <TT>*</TT>,
+so the interpretation is that the pointer is incremented -- <TT>x</TT>
+gets set to 5, and <TT>ip</TT> ends up pointing to <TT>a[6]</TT>.  If you wanted
+to increment the pointed-to location, you'd again use explicit
+parentheses to override the default precedence: saying
+<p>
+<pre>
+	x = (*ip)++;
+</pre>
+sets <TT>x</TT> to 5, and leaves <TT>ip</TT> pointing at <TT>a[5]</TT>, and increments <TT>a[5]</TT>
+to contain 6.
+<p>
+(This is probably not the best example, because you may have a
+hard time seeing that <TT>x</TT> gets set to 5 in both cases, not 6.
+Trust me, it does.  Postfix <TT>++</TT> means that the ``old'' value of the
+thing being incremented always gets used, whether the thing being
+incremented is the pointer <TT>ip</TT> or the pointed-to array element <TT>a[5]</TT>.)
+<p>
+Finally, let's look at declarations.  If you write
+<p>
+<pre>
+	 int *ap[10];
+</pre>
+are you declaring an array of pointers, or a pointer to an array?
+In declarations, the brackets <TT>[]</TT> which describe arrays have
+higher precedence than the <TT>*</TT> which describes pointers.  It looks
+like the <TT>*</TT> and the <TT>[]</TT> are both next to the identifier <TT>ap</TT>, but
+since <TT>[]</TT> has higher precedence it means that the brackets are
+``closer'' -- <TT>ap</TT> is an array first, and what it's an array of is
+pointers.  If you really wanted a pointer to an array (though
+usually you do not) you once again override the default
+precedence using explicit parentheses:
+<p>
+<pre>
+	 int (*pa)[10];
+</pre>
+says that <TT>pa</TT> is a pointer first, and what it's a pointer to is an
+array.
+<p>
+Fortunately (and this is no accident) pointers to arrays are
+much, much rarer than arrays of pointers, so the natural syntax
+(without the parentheses) is almost always what you want.
+(Outside of examples for the FAQ list, I'm not sure I've used
+a pointer to an array in all my years of C programming.)
+</body>
+</html>

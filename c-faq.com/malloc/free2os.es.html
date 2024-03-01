@@ -1,0 +1,72 @@
+<html>
+<head>
+<title></title>
+</head>
+<body>
+From: Eric Sosman
+<br>
+Newsgroups: comp.lang.c,comp.lang.c++
+<br>
+Subject: Re: freed memory back to OS?
+<br>
+Date: Thu, 15 Apr 1999 08:24:08 +0100
+<br>
+Message-ID: &lt;37159418.D53AD8DE@acm.org&gt;
+<p>
+Dan &lt;dgadda@asu.edu&gt; wrote:
+<br>
+&gt; Is there a command to give back freed memory to the operating system?
+<br>
+&gt; Any suggestions would be very helpful.
+<p>
+I have written memory managers which released unused memory to the
+O/S (Unix, Windows, OpenVMS), and hindsight tells me it probably wasn't
+worth the trouble.  Here's the crucial question: What benefit do you
+expect to obtain by releasing the memory?
+<p>
+Observe that the amount of memory released must be sizable if it's
+to make a noticeable difference in the overall performance of the
+computer: the O/S will not fall all over itself with gratitude if you
+give up 8KB or so.  The O/S will also not benefit much if it gets its
+megabytes back a mere few moments before the program terminates; ten
+megabyte-seconds is not a lot in the grand scheme of things.
+<p>
+So what does this imply about the nature of a program which can
+usefully release memory to the O/S?  It has to be a program which runs
+in ``phases'' of some sort, where a phase which needs a lot of memory is
+followed by a phase which needs substantially less memory but runs for
+a significant amount of time.  Such programs exist -- we can imagine,
+say, a program which manipulates a few 1000x1000 matrices to compute
+a single value needed by later phases, but doesn't need to keep the
+multi-megabyte matrices around after the initial computation finishes.
+In my experience (admittedly non-exhaustive), such programs are pretty
+rare -- not non-existent (I'm not trying to start a war of anecdotes
+here), but definitely the exception rather than the rule.
+<p>
+Keep in mind that allocated but unused memory is relatively cheap
+in a virtual memory O/S: if it's not referenced for a while it will
+migrate to backing store and just chew up some space on a disk
+somewhere, but it won't prevent the O/S and other programs from getting
+access to physical RAM.  Unless you're starved for backing store this
+won't make much difference -- and if backing store is really scarce,
+you probably have other problems, too.
+<p>
+There is one noticeable advantage to releasing memory rather than
+retaining it in idleness: When you need it again, the O/S may be able
+to just supply you a bunch of freshly-zeroed pages rather than carefully
+retrieving megabytes of junk from the paging disk just so you can write
+all over them.  Programs which can benefit from the ability to tell the
+O/S ``I no longer care about the data in this chunk of memory'' seem to be
+fairly common, but the benefit is seldom enormous -- if it is enormous,
+many systems have (non-portable, but useful) ways to help out, but not
+usually in the framework of a general-purpose allocator.
+<p>
+The bottom line: Releasing memory is usually not all that helpful,
+and in situations where it might be there are usually other concerns
+which would urge system-specific solutions anyhow.  IMHO, YMMV, etc.
+<p>
+-- 
+<br>
+Eric Sosman
+</body>
+</html>

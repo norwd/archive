@@ -1,0 +1,110 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file struct.sgml dated Wed Dec 21 16:15:32 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+
+<title>Question 2.18</title>
+<link href="decay.html" rev=precedes>
+<link href="union.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="decay.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="union.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 2.18
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+This program
+works correctly, but
+it
+dumps core
+after it
+finishes.
+Why?
+<pre>
+	struct list {
+		char *item;
+		struct list *next;
+	}
+
+	/* Here is the main program. */
+
+	main(argc, argv)
+	{ ... }
+</pre>
+
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+A missing semicolon
+at the end of the structure declaration
+causes
+<TT>main</TT> to be declared as returning
+a structure.
+(The connection is hard to see because of the intervening comment.)
+Since
+structure-valued functions are
+usually
+implemented by adding a hidden
+return pointer
+(see question
+<a href="passret.html">2.9</a>),
+the generated code
+for <TT>main()</TT> tries to accept three arguments,
+although only two are passed
+(in this case, by the C
+start-up code).
+See also questions
+<a href="../cpp/headerglom.html">10.9</a>
+and
+<a href="../strangeprob/crashatexit.html">16.4</a>.
+</p>
+<p>References:
+
+CT&amp;P Sec. 2.3 pp. 21-2
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="decay.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="union.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

@@ -1,0 +1,244 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file libsort.sgml dated Sun Feb  3 13:14:17 2002 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 13.9</title>
+<link href="qsort1.html" rev=precedes>
+<link href="listsort.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="qsort1.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="listsort.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 13.9
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+Now I'm trying to sort an array of structures
+with <TT>qsort</TT>.
+My comparison function takes pointers to structures,
+but the compiler
+complains
+that the function is
+of the wrong type for <TT>qsort</TT>.
+How can I cast the function pointer to shut off the warning?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+The
+conversions
+must be in the
+comparison function,
+which
+must be declared as accepting ``generic pointers''
+(<TT>const&nbsp;void&nbsp;*</TT>)
+as discussed
+in question
+<a href="qsort1.html">13.8</a> 
+above.
+For a hypothetical
+little
+date structure
+<pre>
+struct mystruct {
+	int year, month, day;
+};
+</pre>
+the
+comparison function
+might look like
+<a href="compare.html" rel=subdocument>[footnote]</a>
+
+<pre>
+int mystructcmp(const void *p1, const void *p2)
+{
+	const struct mystruct *sp1 = p1;
+	const struct mystruct *sp2 = p2;
+	if(sp1-&gt;year &lt; sp2-&gt;year) return -1;
+	else if(sp1-&gt;year &gt; sp2-&gt;year) return 1;
+	else if(sp1-&gt;month &lt; sp2-&gt;month) return -1;
+	else if(sp1-&gt;month &gt; sp2-&gt;month) return 1;
+	else if(sp1-&gt;day &lt; sp2-&gt;day) return -1;
+	else if(sp1-&gt;day &gt; sp2-&gt;day) return 1;
+	else return 0;
+}
+</pre>
+(The conversions
+from generic pointers
+to <TT>struct mystruct</TT> pointers
+happen in the initializations
+<TT>sp1&nbsp;=&nbsp;p1</TT> and <TT>sp2&nbsp;=&nbsp;p2</TT>;
+the compiler performs the
+conversions implicitly
+since
+<TT>p1</TT> and <TT>p2</TT> are
+<TT>void</TT> pointers.)
+
+</p><p>For this version of <TT>mystructcmp</TT>,
+the call to <TT>qsort</TT> might look like
+<pre>
+#include &lt;stdlib.h&gt;
+struct mystruct dates[NDATES];
+int ndates;
+/* ndates cells of dates[] are to be sorted */
+qsort(dates, ndates, sizeof(struct mystruct), mystructcmp);
+</pre>
+</p><p>If,
+on the other hand,
+you're sorting pointers to structures,
+you'll need indirection,
+as in question
+<a href="qsort1.html">13.8</a>;
+the
+head of
+the
+comparison function would
+look
+like
+<pre>
+int myptrstructcmp(const void *p1, const void *p2)
+{
+	struct mystruct *sp1 = *(struct mystruct * const *)p1;
+	struct mystruct *sp2 = *(struct mystruct * const *)p2;
+</pre>
+and the call would look like
+<pre>
+struct mystruct *dateptrs[NDATES];
+qsort(dateptrs, ndates, sizeof(struct mystruct *), myptrstructcmp);
+</pre>
+</p><p>To understand why the curious
+pointer conversions
+in a <TT>qsort</TT> comparison function are necessary
+(and why a cast of the function pointer when calling
+<TT>qsort</TT>
+can't help),
+it's useful to think about how <TT>qsort</TT> works.
+<TT>qsort</TT> doesn't know anything about the type or
+representation of the data being sorted:
+it just shuffles around little chunks of memory.
+(All it knows about the chunks is their size,
+which you specify
+in <TT>qsort</TT>'s third argument.)
+To determine whether two chunks need swapping,
+<TT>qsort</TT> calls your comparison function.
+(To swap them,
+it
+uses the equivalent of <TT>memcpy</TT>.)
+</p><p>Since <TT>qsort</TT> deals in a generic way
+with chunks of memory of unknown
+type,
+it uses generic pointers
+(<TT>void&nbsp;*</TT>)
+
+to refer to them.
+When <TT>qsort</TT> calls your comparison function,
+it passes as arguments
+two generic pointers to the chunks to be compared.
+Since it passes generic pointers,
+your comparison function must
+<em>accept</em> generic pointers,
+and
+convert
+the pointers back to their appropriate type
+before manipulating them
+(i.e. before performing the comparison).
+A <TT>void</TT> pointer is not the same type as a structure pointer,
+and on some machines it may have a different size or representation
+(which is why these casts are required for correctness).
+</p><p>If you were sorting an array of structures,
+and had a comparison function accepting structure pointers:
+<pre>
+	int mywrongstructcmp(struct mystruct *, struct mystruct *);
+</pre>
+and if you called <TT>qsort</TT> as
+<pre>
+	qsort(dates, ndates, sizeof(struct mystruct),
+		(int (*)(const void *, const void *))mywrongstructcmp);
+							/* WRONG */
+</pre>
+the
+cast
+<TT>(int&nbsp;(*)(const&nbsp;void&nbsp;*, const&nbsp;void&nbsp;*))</TT>
+would do nothing
+except perhaps
+silence the message from the compiler telling you that this
+comparison function
+may
+<em>not</em> work with <TT>qsort</TT>.
+The
+implications
+of any cast you use
+when calling qsort
+will have been forgotten
+by the time <TT>qsort</TT>
+gets around to calling your comparison function:
+it will call them with <TT>const&nbsp;void&nbsp;*</TT> arguments,
+so that is what your function must accept.
+No prototype mechanism exists
+which could operate down inside <TT>qsort</TT>
+to convert the <TT>void</TT> pointers to <TT>struct&nbsp;mystruct</TT> 
+pointers just before calling <TT>mywrongstructcmp</TT>.
+</p><p>
+In general,
+it is a bad idea to insert casts just to
+``shut the compiler up.''
+Compiler warnings are usually trying to tell you something,
+and unless you really know what you're doing,
+you ignore or
+muzzle
+them at your peril.
+See also question <a href="../ptrs/genericpp.html">4.9</a>.
+
+</p><p><a href="sd14.html" rel=subdocument>Additional links</a>
+</p>
+
+<p>References:
+
+ISO Sec. 7.10.5.2
+<br>
+H&amp;S Sec. 20.5 p. 419
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="qsort1.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="listsort.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

@@ -1,0 +1,109 @@
+<html>
+<head>
+<title></title>
+</head>
+<body>
+From: Noone Really &lt;nooneatnowhere@earthlink.net&gt;
+<br>
+Newsgroups: comp.lang.c
+<br>
+Subject: Re: FAQ 20.27:  Is C++ a superset of C? Can I use a C++ compiler to compile C code?
+<br>
+Date: Sun, 31 Jan 1999 17:47:25 -0700
+<br>
+Message-ID: &lt;36B4F99D.97D84E5D@earthlink.net&gt;
+<p>
+Larry Weiss wrote:
+<br>
+&gt; FAQ 20.27 promises that there are "some legal C constructs which
+<br>
+&gt; are not legal C++".  I would like to see some examples of this.
+<br>
+<p>
+By C, the FAQ meant, and I guess we still mean, the current language,
+not proposals for C9x. 
+<p>
+There are a number of these.  I once worked out a pretty big list, but
+do not remember it now.  However, you just asked for examples:
+<p>
+1) auto conversion from <TT>void&nbsp;*</TT> to any object/incomplete type:
+<pre>
+    void *one; char *two =one;
+</pre>
+<p>
+2) new keywords (a number of these)
+<pre>
+    int new;
+</pre>
+<p>
+3) due to structs becoming scoped
+<pre>
+      struct x {
+        struct y { int z; } w;
+      };
+      struct y v;
+</pre>
+<p>
+4) due to struct tags becoming typedefs:
+<pre>
+    struct y {int z;};
+    int f(int(y)); f(3);
+</pre>
+<p>
+5) due to prototypes being required
+<pre>
+     int f(); f(3);
+</pre>
+<p>
+6) implicit int rules
+<pre>
+     main(){}
+</pre>
+<p>
+7) Recursive call to main
+<p>
+8) Due to // comments
+<pre>
+   int x = 2//*why???*/2;
+   int y;
+</pre>
+<p>
+&gt; FAQ 20.27 also promised that "the two also define the meaning
+<br>
+&gt; of some common constructs differently".  I would like to see
+<br>
+&gt; some examples of that.
+<p>
+A few examples which come to mind immediately:
+<p>
+1) Due to // comments:
+<pre>
+   int x = 2//*why???*/2
+   ;
+</pre>
+<p>
+2) due to character literals being type <TT>char</TT> and not <TT>int</TT> etc.
+<br>
+So, if sizeof(int) != 1, 
+<pre>
+   sizeof('a')
+</pre>
+differs in the two languages
+<p>
+3) Due to struct scopes
+<pre>
+   struct y {int z;};
+   {
+    struct x {
+        struct y { char z; } w;
+    };
+    struct y v;
+    return sizeof v.z;
+   }
+</pre>
+<p>
+In addition, there are many cases where C compilers need to issue a
+diagnostic, but which do not require diagnostic because they are valid
+C++ code.  That is kind of obvious, and hence I do not provide examples.
+</body>
+</html>

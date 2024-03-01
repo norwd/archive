@@ -1,0 +1,273 @@
+<html>
+<head>
+<title></title>
+</head>
+<body>
+<p>
+[This test has been edited lightly since its original posting.]
+<p>
+Newsgroups: comp.lang.c
+<br>
+From: scs@eskimo.com (Steve Summit)
+<br>
+Subject: Re: Newbie: Should a function malloc or used fixed strings?
+<br>
+Message-ID: &lt;CrHu2G.D3B@eskimo.com&gt; [revised]
+<br>
+References: &lt;2tmtoi$1q4@hk.super.net&gt;
+<br>
+Date: Thu, 16 Jun 1994 14:11:01 GMT
+<p>
+In article &lt;2tmtoi$1q4@hk.super.net&gt;, Rodney Haywood
+writes:
+<br>
+&gt; I am writting a function that converts a number to a worded string, 
+<br>
+&gt; normally used in a cheque print program. The length of the string
+<br>
+&gt; returned is not know until it is parsed by the function and could be
+<br>
+&gt; quite long 123 chars. I am not sure if it is best to pass a predefined
+<br>
+&gt; string to the function and have it place the result in it or to have
+<br>
+&gt; the function return a pointer to a sting that it allocated with <TT>malloc()</TT>.
+<br>
+&gt; 
+<br>
+&gt; I can see pros and cons for the two. Using <TT>malloc</TT> gives more work to the
+<br>
+&gt; caller as they will need to <TT>free()</TT> the memory every time they are finished
+<br>
+&gt; with the current value of the string, otherwise if they called it 1000 
+<br>
+&gt; time it would continue to use memory that was no longer required. The 
+<br>
+&gt; other way round the user could create a buffer to receive the string and
+<br>
+&gt; do the memory allocation themselves if they needed to keep it around. 
+<br>
+&gt; If every thing is fixed lenght strings then there could be lots of wasted
+<br>
+&gt; space.
+<p>
+This is an excellent question, and you've already identified two
+of the major tradeoffs.  Others have already mentioned others;
+I'll mention a few more that are important to me.
+<p>
+What I worry about most when designing a routine which must
+return a string is the caller's convenience, especially if the
+routine will be used a lot.  The questions to ask are:
+<ol>
+<p><li>
+How much of a nuisance would it be for the caller to
+pass in a buffer?
+<p><li>
+How much of a nuisance would it be for the caller to
+<TT>free()</TT> the returned pointers?
+<p><li>
+In what sorts of contexts will the call likely appear?
+<p><li>
+How likely is it that the caller will need to manipulate
+several returned strings simultaneously?
+</ol>
+<p>
+Since the problem statement mentions a check printing program, we
+have an example which nicely illustrates these tradeoffs.  If the
+routine accepts a number like 1234.56 and returns a string like
+``One Thousand, Two Hundred and Thirty Four Dollars and Fifty Six
+cents'', it is likely that the call to it will appear in a context
+like
+<p>
+<pre>
+	extern char dollarformat();
+	printf("Pay to: %-40s  $%.2f\n", payee, amount);
+	printf("%-50s\n", dollarformat(amount));
+</pre>
+<p>
+The above fragment sets the stage, and ignores <TT>dollarformat()</TT>'s
+return buffer allocation.  (It's also dollarocentric; apologies.)
+Let's look at how the call would appear using various allocation
+strategies:
+<p>
+If the caller must pass in the buffer, we have (call this ``method A''):
+<p>
+<pre>
+	char amountbuf[51];
+	printf("%-50s\n", dollarformat(amount, amountbuf, 51));
+</pre>
+<p>
+If the routine returns a <TT>malloc</TT>'ed pointer, we have (``method B''):
+<p>
+<pre>
+	char *amountret;
+	amountret = dollarformat(amount);
+	printf("%-50s\n", amountret);
+	free(amountret);
+</pre>
+<p>
+or, if we don't mind some condensation,
+<p>
+<pre>
+	printf("%-50s\n", amountret = dollarformat(amount));
+	free(amountret);
+</pre>
+<p>
+Finally, if the routine returns the infamous ``pointer to a static
+buffer which is overwritten with each call,'' we can simply use
+(``method C''):
+<p>
+<pre>
+	printf("%-50s\n", dollarformat(amount));
+</pre>
+(For this third technique, if you're not familiar with it,
+dollarformat's implementation looks something like
+<p>
+<pre>
+	char *
+	dollarformat(double amount)
+	{
+	static char retbuf[RETBUFSIZE];
+
+	/* ... format amount into retbuf ... */
+
+	return retbuf;
+	}
+</pre>
+<p>
+, where the static declaration of retbuf is vital, though
+somewhat frequently overlooked.)
+<p>
+Functions which return pointers to static buffers (i.e. which use
+method C) have the annoying property that you can't call them
+twice and keep using both return values, and this can be the
+source of stubborn bugs.  For example, given the third
+implementation, you can't do
+<p>
+<pre>
+	char *p1 = dollarformat(amount1);
+	char *p2 = dollarformat(amount2);
+	printf("%s %s\n", p1, p2);
+</pre>
+or
+<pre>
+	printf("%s %s\n", dollarformat(amount1), dollarformat(amount2));
+</pre>
+However, if it is unlikely that the caller will want to
+manipulate several values simultaneously, and if the caller won't
+mind making explicit copies in those few instances when it does,
+static return values (method C) can be very convenient, because
+the caller never (well, hardly ever) has to worry about buffer
+allocation.  That's why the technique is popular in the
+traditional C and Unix run-time libraries (e.g. <TT>ctime()</TT>,
+<TT>getpwuid()</TT>), although I'm sure this is one of the things that
+drives people who are less than fond of C and Unix up a tree.
+<p>
+Note that although static return buffers (method C) are usually
+used when the size of (or an upper bound on) the return buffer is
+known, the function can also keep a single static pointer to an
+area of dynamically-allocated memory which it grows (with
+<TT>realloc</TT>) as big as it needs to be for any single call.
+(It might use a second static variable to keep track of the
+buffer's current size.)
+<p>
+If the caller wishes to manipulate several return values
+simultaneously and the function requires the caller to pass in
+a buffer (method A), the caller merely has to remember to pass
+distinct buffers:
+<p>
+<pre>
+	char amountbuf1[51], amountbuf2[51];
+	printf("%s %s", dollarformat(amount1, amountbuf1, 51),
+			dollarformat(amount2, amountbuf2, 51));
+</pre>
+or
+<pre>
+	(void)dollarformat(amount1, amountbuf1, 51);
+	(void)dollarformat(amount2, amountbuf2, 51);
+	printf("%s %s", amountbuf1, amountbuf2);
+</pre>
+<p>
+Note that when the caller passes in a buffer, it can either be
+statically or dynamically allocated; the function doesn't care.
+<p>
+Note also that routines which accept caller-supplied buffers must
+always allow the size of that buffer to be specified, so that the
+routine can guarantee not to overflow it.  Remember <TT>gets()</TT>
+vs. <TT>fgets()</TT>!
+<p>
+Finally, note that routines which return strings, in buffers
+provided by their callers, are often described with words like
+``the routine returns its first argument'' (or, in this example,
+its second argument), which sounds silly at first glance (if the
+caller knows it, why return it?), but which makes handing the
+string to some other routine (in these examples, printf) very
+easy.
+<p>
+Finally, when the function returns a pointer to dynamically
+allocated memory (method B), it can be maximally easy for the
+caller to manipulate multiple values simultaneously.  However, it
+can be a real nuisance to keep a handle on the return value, in
+order to free it.  Obvious invocations like
+<p>
+<pre>
+	printf("%s\n", dollarprint(amount));
+</pre>
+are blatant (though not necessarily obvious) memory leaks.
+<p>
+Other people have mentioned efficiency, both of buffer space and
+allocation overhead.  In situations where strings are of
+arbitrary length, fixed-length arrays are decidedly inferior:
+they're either too small and they overflow, or they're much too
+large and they waste space.
+<p>
+If an upper bound on the string's size can be determined and it's
+a few hundred characters or less, though, using fixed-sized
+arrays won't waste much (unless hundreds of arrays are allocated
+simultaneously), and their convenience is a distinct advantage.
+<p>
+To avoid the perils of fixed-size arrays, people who've been
+around for a while usually recommend dynamic allocation, although
+it must be admitted that the explicit management of allocation
+which this forces upon you, and the problems of memory leaks and
+dangling pointers (which were recently pointed out to be
+opposites -- nice observation, whoever it was!), can be quite
+daunting; they probably represent the single biggest hurdle when
+learning C, and they account for a constant background level of
+bugs, some of them so subtle they're never found, even in the
+most sophisticated programs written by the most sophisticated
+programmers.
+<p>
+In most cases, though, <TT>malloc</TT>/<TT>free</TT> overhead is not a problem.
+(There are certainly exceptions, but that fact hardly implies
+that every program must eschew <TT>malloc</TT>, or write its own, or use
+fancy storage management wrappers.)
+<p>
+In the end, if the preceding discussion hasn't made it clear,
+there is no one best method of returning a string (or other
+aggregate) from a function in C, nor is there a single ironclad
+reason always to prefer fixed-size or dynamically-allocated
+arrays.  Usually you can find a good solution for any particular
+case that comes up, but it's a good idea to think about it a bit
+to make sure you make a good choice.
+<p>
+The three return value methods above (A, B, and C) do not exhaust
+the possibilities.  Some routines (<TT>getcwd</TT>, many GNU routines) use
+a combination of methods A and B, returning a pointer to
+<TT>malloc'ed</TT> memory if the caller passes a null pointer instead of a
+buffer.  People unclear on the concept occasionally try to return
+strings from functions to their callers via temporary files, but
+we don't need to say much more about that approach.  Finally,
+there's a cunning extension on method C, which has evidently been
+independently discovered by a number of people, which returns
+pointers to static buffers and allows the caller to use up to N
+(but not N+1) return values simultaneously, but that's an article
+for another day.
+<p>
+<address>
+<a href="http://www.eskimo.com/~scs/">Steve Summit</a>
+<br>
+<a href="mailto:scs@eskimo.com">scs@eskimo.com</a>
+</address>
+</body>
+</html>

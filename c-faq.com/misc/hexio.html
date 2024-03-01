@@ -1,0 +1,160 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:47 2005 by faqproc version 2.7 -->
+<!-- from source file miscbits.sgml dated Wed Dec 21 13:02:12 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+
+<title>Question 20.10</title>
+<link href="byteswap.html" rev=precedes>
+<link href="base2.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="byteswap.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="base2.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 20.10
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+How can I convert integers to
+binary or
+hexadecimal?
+
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+Make sure you really know what you're asking.
+Integers are stored internally in binary,
+although for most purposes it is not incorrect
+to think of them as being in
+octal, decimal, or hexadecimal,
+whichever is convenient.
+The base in which a number is expressed matters only when that
+number is read in from or written out to the outside world,
+either in the form of
+a source code constant
+or in the form of I/O
+performed by a program.
+</p><p>In source code,
+a non-decimal base is indicated
+by
+a leading <TT>0</TT> or <TT>0x</TT>
+(for octal or hexadecimal, respectively).
+During I/O, the base of a formatted number is controlled
+in the
+<TT>printf</TT>
+and <TT>scanf</TT>
+family
+of functions
+by the choice of format specifier
+(<TT>%d</TT>, <TT>%o</TT>, <TT>%x</TT>, etc.)
+and in the <TT>strtol</TT>
+and <TT>strtoul</TT>
+functions
+by the third argument.
+During
+<em>binary</em> I/O,
+however, the base again becomes immaterial:
+
+if numbers are being read or written as individual bytes
+(typically with <TT>getc</TT> or <TT>putc</TT>),
+or as multi-byte words
+(typically with <TT>fread</TT> or <TT>fwrite</TT>),
+it is meaningless to ask what ``base'' they are in.
+</p><p>If what you need is formatted binary conversion,
+it's easy enough to do.
+Here is a little function
+for formatting
+a number in a requested base:
+
+
+<pre>
+char *
+baseconv(unsigned int num, int base)
+{
+	static char retbuf[33];
+	char *p;
+
+	if(base &lt; 2 || base &gt; 16)
+		return NULL;
+
+	p = &amp;retbuf[sizeof(retbuf)-1];
+	*p = '\0';
+
+	do {
+		*--p = "0123456789abcdef"[num % base];
+		num /= base;
+	} while(num != 0);
+
+	return p;
+}
+</pre>
+
+(Note that this function, as written,
+returns a pointer to static data,
+such that only one of its return values can be used at a time;
+see question <a href="../malloc/retaggr.html">7.5a</a>.
+A better size for the <TT>retbuf</TT> array
+would be <TT>sizeof(int)*CHAR_BIT+1</TT>;
+see question <a href="../stdio/sprintfsize.html">12.21</a>.)
+</p><p>For more information about ``binary'' I/O,
+see
+questions <a href="../struct/io.html">2.11</a>, <a href="../stdio/binaryio.html">12.37</a>, and <a href="../stdio/extconform.html">12.42</a>.
+See also questions
+<a href="../charstring/asciivals.html">8.6</a>
+and
+<a href="../lib/itoa.html">13.1</a>.
+</p><p>Additional links:
+A
+<a href="btod.html">long reply</a>
+I sent to someone who was asking how to write a
+``binary to decimal'' conversion function
+</p>
+
+<p>References:
+
+ISO Secs. 7.10.1.5,7.10.1.6
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="byteswap.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="base2.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

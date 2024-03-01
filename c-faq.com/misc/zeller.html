@@ -1,0 +1,164 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:47 2005 by faqproc version 2.7 -->
+<!-- from source file algorithms.sgml dated Sat Feb 14 14:35:07 2004 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 20.31</title>
+<link href="gaussian.html" rev=precedes>
+<link href="leapyear.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="gaussian.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="leapyear.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 20.31
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+How can I find the day of the week given the date?
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+Here are three methods:
+<OL><li>Use
+<TT>mktime</TT>
+or <TT>localtime</TT>
+(see question
+<a href="../lib/mktime.html">13.13</a>).
+Here is
+
+a code fragment which computes the day of the week for
+February 29, 2000:
+<pre>
+#include &lt;stdio.h&gt;
+#include &lt;time.h&gt;
+
+char *wday[] = {"Sunday", "Monday", "Tuesday", "Wednesday",
+		"Thursday", "Friday", "Saturday"};
+
+struct tm tm;
+
+tm.tm_mon = 2 - 1;
+tm.tm_mday = 29;
+tm.tm_year = 2000 - 1900;
+tm.tm_hour = tm.tm_min = tm.tm_sec = 0;
+tm.tm_isdst = -1;
+
+if(mktime(&amp;tm) != -1)
+	printf("%s\n", wday[tm.tm_wday]);
+</pre>
+When using <TT>mktime</TT> like this,
+it's usually important to set <TT>tm_isdst</TT> to -1,
+as shown
+(especially if <TT>tm_hour</TT> is 0),
+otherwise a daylight saving time
+correction could push the time past midnight into another day.
+
+<li>Use
+Zeller's congruence,
+which says that if
+<br>
+<br>
+<pre>
+	<I>J</I> is the number of the century [i.e. the year <TT>/</TT> 100],
+	<I>K</I> the year within the century [i.e. the year <TT>%</TT> 100],
+	<I>m</I> the month,
+	<I>q</I> the day of the month,
+	<I>h</I> the day of the week [where 1 is Sunday];
+</pre>
+<br>
+<br>
+and if January and February are taken as months 13 and 14 of 
+the previous year
+[affecting both <I>J</I> and <I>K</I>];
+then <I>h</I>
+for the Gregorian calendar
+is the remainder when the sum
+<br>
+<br>
+<pre>
+	<I>q</I> + 26(<I>m</I> + 1) / 10 + <I>K</I> + <I>K</I>/4 + <I>J</I>/4 - 2<I>J</I>
+</pre>
+<br>
+<br>
+is divided by 7,
+and where all intermediate remainders are discarded.
+<a href="zeller2.html" rel=subdocument>[footnote]</a>
+The translation into C is straightforward:
+<pre>
+	h = (q + 26 * (m + 1) / 10 + K + K/4 + J/4 + 5*J) % 7;
+</pre>
+(where
+we use <TT>+5*J</TT> instead of <TT>-2*J</TT>
+to make sure that
+both operands of the modulus operator <TT>%</TT> are
+positive;
+this bias totalling <TT>7*J</TT>
+will obviously not change the final value of <TT>h</TT>, modulo 7).
+<li>Use
+this elegant code
+by
+Tomohiko Sakamoto:
+
+
+<pre>
+int dayofweek(int y, int m, int d)	/* 0 = Sunday */
+{
+	static int t[] = {0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
+	y -= m &lt; 3;
+	return (y + y/4 - y/100 + y/400 + t[m-1] + d) % 7;
+}
+</pre>
+</OL></p><p>See also questions <a href="../lib/calendar.html">13.14</a>
+and <a href="leapyear.html">20.32</a>.
+</p>
+<p>References:
+
+ISO Sec. 7.12.2.3
+<br>
+Chr. Zeller, ``Kalender-Formeln''
+
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="gaussian.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="leapyear.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

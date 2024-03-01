@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file pointers.sgml dated Wed Dec 21 13:07:10 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 4.13</title>
+<link href="funccall.html" rev=precedes>
+<link href="int2ptr.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="funccall.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="int2ptr.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 4.13
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+What's the total generic pointer type?
+My compiler complained
+when I tried to stuff function pointers into a <TT>void&nbsp;*</TT>.
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+There
+is no
+``total generic pointer type.''
+</p><p><TT>void&nbsp;*</TT>'s are only guaranteed to hold object
+(i.e. data)
+pointers;
+it is not portable to convert a function pointer to
+type
+<TT>void&nbsp;*</TT>.
+(On some machines, function addresses
+can be very large,
+bigger
+
+than any
+
+data pointers.)
+</p><p>It is guaranteed,
+however,
+that all function pointers
+can be interconverted,
+as long as they are converted back
+to an appropriate type 
+before calling.
+Therefore,
+you can pick any function type
+(usually <TT>int&nbsp;(*)()</TT>
+or <TT>void&nbsp;(*)()</TT>,
+that is,
+pointer to function
+of unspecified arguments
+returning <TT>int</TT> or <TT>void</TT>)
+as a generic function pointer.
+When you need
+a place
+to hold object and function pointers 
+interchangeably,
+the portable solution is to use a union of a
+<TT>void&nbsp;*</TT>
+and a
+generic function pointer
+(of whichever type you choose).
+</p><p>See also questions <a href="../decl/recurfuncp.html">1.22</a>
+and <a href="../null/fcnptr.html">5.8</a>.
+</p>
+
+
+
+
+<p>References:
+
+ISO Sec. 6.1.2.5, Sec. 6.2.2.3, Sec. 6.3.4
+<br>
+Rationale Sec. 3.2.2.3
+<br>
+H&amp;S Sec. 5.3.3 p. 123
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="funccall.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="int2ptr.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:45 2005 by faqproc version 2.7 -->
+<!-- from source file malloc.sgml dated Wed Dec 21 13:50:44 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+
+
+<title>Question 7.15</title>
+<link href="lazyalloc.html" rev=precedes>
+<link href="sizewrap.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="lazyalloc.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="sizewrap.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 7.15
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+<TT>malloc</TT>
+is
+returning crazy pointer values,
+but I <em>did</em> read question <a href="decl.html">7.6</a>
+and I have included the line
+<pre>
+	extern void *malloc();
+</pre>
+before I call it.
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+<TT>malloc</TT> accepts an argument of type <TT>size_t</TT>,
+and <TT>size_t</TT> may be
+defined
+
+as
+<TT>unsigned&nbsp;long</TT>.
+If you are passing <TT>int</TT>s
+(or even <TT>unsigned&nbsp;int</TT>s),
+<TT>malloc</TT> may be receiving garbage
+(or
+similarly
+if you are passing a <TT>long</TT> but <TT>size_t</TT> is
+<TT>int</TT>).
+
+</p><p>In general,
+it is much, much safer
+to declare standard library functions
+by #including the appropriate header files,
+rather than typing <TT>extern</TT> declarations yourself.
+See also question <a href="sizewrap.html">7.16</a>.
+
+</p><p>
+
+(A related problem is that it is not safe to print <TT>size_t</TT> values,
+including the result of <TT>sizeof</TT>,
+using <TT>printf</TT>'s <TT>%d</TT> format.
+The portable approach
+is to use an explicit <TT>(unsigned&nbsp;long)</TT> cast,
+and <TT>%lu</TT> format:
+<TT>printf("%lu\n", (unsigned&nbsp;long)sizeof(int))</TT>.
+See also question <a href="../varargs/proto2.html">15.3</a>.)
+</p>
+
+<p>References:
+
+ISO Sec. 7.1.6, Sec. 7.1.7
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="lazyalloc.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="sizewrap.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>

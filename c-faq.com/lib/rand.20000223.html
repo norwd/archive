@@ -1,0 +1,94 @@
+<html>
+<head>
+<title></title>
+</head>
+<body>
+[This is a reply from me
+to a correspondent of mine
+who had asked about some of the expressions
+in the answer to <a href="randrange.html">question 13.16</a> in the FAQ list.
+I have edited the text slightly for this web page.]
+<p>
+Date: Wed, 23 Feb 2000 07:08:14 -0800 (PST)
+<br>
+Message-Id: &lt;200002231508.HAA07282@mail.eskimo.com&gt;
+<br>
+Subject: Re: C FAQ error?
+<p>
+The water is surprisingly deep here.  I was initially rather
+alarmed by your note, because after rummaging around for some of
+my old random number testbeds and dusting them off, I found that
+the expression
+<pre>
+	rand() / (RAND_MAX/N + 1)
+</pre>
+from the FAQ list doesn't behave as well as I expected it to.
+When I then attempted to rederive the appropriate expression,
+my first attempt led to
+<pre>
+	rand() / ((RAND_MAX + 1) / N)
+</pre>
+which is exactly what you suggested.  But it turns out that the
+latter expression doesn't work in the general case.  Suppose
+that <TT>RAND_MAX</TT> is 21 and <TT>N</TT> is 10.  (As it happens, this was the
+first example I tried.)  So <TT>((RAND_MAX&nbsp;+&nbsp;1)&nbsp;/&nbsp;N)</TT> is then 2, and
+when <TT>rand()</TT> returns 20 or 21, the value of the expression is 10,
+which is not in [0,&nbsp;<TT>N</TT>).
+<p>
+I want to study your... derivation some more,
+because I think it's basically sound, for the ``|<TT>RAND_MAX</TT>+1| is a
+precise multiple of |<TT>N</TT>|'' case.  I suspect that the flaw, however,
+is in your assumption that if <TT>RAND_MAX</TT>+1 is not a multiple of <TT>N</TT>,
+the same logic applies.  You have to make sure that the result
+falls the right way when the intermediate quotient discards a
+nonzero remainder, and for this expression, it doesn't.
+<p>
+Unfortunately, I don't immediately remember how I originally
+derived the expression
+<pre>
+	rand() / (RAND_MAX/N + 1)
+</pre>
+I share your unease about its dissimilarity to the (much cleaner)
+floating-point version
+<pre>
+	rand() / (RAND_MAX + 1.0) * N
+</pre>
+I do remember testing the expressions in the FAQ list quite
+thoroughly, and I've found <a href="rand.931117.html">an article</a> I posted long ago which
+discusses them in some detail, and which suggests that I put
+quite a bit of time into that initial derivation.  (It also
+suggests that I wasn't perfectly happy with the expression then,
+either.)  That article, as I read it now, is nowhere as clear
+as I'd like, and I was about to be at a loss to explain how
+<pre>
+	rand() / (RAND_MAX/N + 1)
+</pre>
+works at all, until I discovered that the expression is
+essentially the same one I explain in the answer to exercise 8
+at <a href="http://www.eskimo.com/~scs/cclass/asgn.beg/PS3a.html">http://www.eskimo.com/~scs/cclass/asgn.beg/PS3a.html</a>, which
+is worth reading.  (I must confess, though, that I can't imagine
+what I was thinking when I started throwing that much detail
+around in the third week of an allegedly beginning programming
+class.)  But going back to the <TT>RAND_MAX</TT>=21, <TT>N</TT>=10 case, it turns
+out that dividing <TT>rand()</TT> by 3, such that we never emit 8 or 9 at
+all, is about the best we can do; what we're seeing is one of the
+ways that any of these expressions begins to fail when <TT>RAND_MAX</TT>+1
+is neither a multiple of nor much greater than <TT>N</TT>.
+<p>
+For my own reference, here's another way of deriving the
+expression <TT>rand()&nbsp;/&nbsp;((RAND_MAX&nbsp;+&nbsp;1)&nbsp;/&nbsp;N)</TT>, even though that
+expression doesn't work.  We want to divide <TT>rand</TT>'s output by
+some integer y such that the answer is always in the range
+0 &lt;= <TT>rand()</TT>/y &lt; <TT>N</TT>.  Now when rand returns <TT>RAND_MAX</TT>, the result
+<TT>RAND_MAX</TT>/y should be just barely less than <TT>N</TT>; one way of
+achieving this would be if it were the case that (<TT>RAND_MAX</TT>+1)/y
+did equal <TT>N</TT>.  So if we set (<TT>RAND_MAX</TT>+1)/y = <TT>N</TT>, we can easily
+solve for y = (<TT>RAND_MAX</TT>+1)/<TT>N</TT>.
+<p>
+But wait!  If we want <TT>RAND_MAX</TT>/y to be just barely less than <TT>N</TT>,
+the other way to achieve it is to subtract 1 in the denominator.
+So if <TT>RAND_MAX</TT>/(y-1) = <TT>N</TT>, we have y = <TT>RAND_MAX</TT>/<TT>N</TT> + 1, and this
+must be where the expression in the FAQ list comes from, after
+all.
+</body>
+</html>

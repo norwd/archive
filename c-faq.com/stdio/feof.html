@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-2005 by Steve Summit. -->
+<!-- Content from the book "C Programming FAQs: Frequently Asked Questions" -->
+<!-- (Addison-Wesley, 1995, ISBN 0-201-84519-9) is made available here by -->
+<!-- permission of the author and the publisher as a service to the community. -->
+<!-- It is intended to complement the use of the published text -->
+<!-- and is protected by international copyright laws. -->
+<!-- The on-line content may be accessed freely for personal use -->
+<!-- but may not be published or retransmitted without explicit permission. -->
+<!-- -->
+<!-- this page built Sat Dec 24 21:47:46 2005 by faqproc version 2.7 -->
+<!-- from source file stdio.sgml dated Wed Dec 21 13:07:57 2005 -->
+<!-- corresponding to FAQ list version 4.0 -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>Question 12.2</title>
+<link href="eofval.html" rev=precedes>
+<link href="linebfdur.html" rel=precedes>
+<link href="index.html" rev=subdocument>
+</head>
+<body bgcolor="#ffffff">
+<a href="eofval.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="linebfdur.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../index.html"><img src="../images/buttontop.gif" alt="top/contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<hr>
+<p><!-- qbegin -->
+<h1>
+comp.lang.c FAQ list
+<font color=blue>&middot;</font>
+<!-- qtag -->Question 12.2
+</h1>
+<p>
+<font face=Helvetica size=8 color=blue><b>Q:</b></font>
+Why
+does
+the
+simple line-copying loop
+<TT>while(!feof(infp)) {
+fgets(buf,&nbsp;MAXLINE,&nbsp;infp);
+fputs(buf,&nbsp;outfp);
+}
+</TT>copy
+the last line twice?
+
+</p><p><hr>
+<p>
+<font face=Helvetica size=8 color=blue><b>A:</b></font>
+In C,
+end-of-file
+is only indicated
+<em>after</em>
+an input routine
+has tried to read, and
+failed.
+(In other words,
+C's I/O is not like Pascal's.)
+Usually, you should just check the return value
+of the input routine:
+<pre>
+	while(fgets(buf, MAXLINE, infp) != NULL)
+		fputs(buf, outfp);
+</pre>
+In virtually all cases,
+there's no
+need to use <TT>feof</TT> at all.
+(<TT>feof</TT>,
+or more likely <TT>ferror</TT>,
+may be useful <em>after</em>
+a stdio call has returned <TT>EOF</TT> or <TT>NULL</TT>,
+to distinguish between an end-of-file
+condition
+and a read error.)
+</p>
+
+
+
+
+<p>References:
+
+K&amp;R2 Sec. 7.6 p. 164
+<br>
+ISO Sec. 7.9.3, Sec. 7.9.7.1, Sec. 7.9.10.2
+<br>
+H&amp;S Sec. 15.14 p. 382
+<br></p><!-- aend -->
+<p>
+<hr>
+<a href="eofval.html" rev=precedes><img src="../images/buttonleft.gif" alt="prev"></a>
+<a href="index.html" rev=subdocument><img src="../images/buttonup.gif" alt="up"></a>
+<a href="linebfdur.html" rel=precedes><img src="../images/buttonright.gif" alt="next"></a>
+&nbsp;
+<a href="../questions.html"><img src="../images/buttontop.gif" alt="contents"></a>
+<a href="../search.html"><img src="../images/buttonsrch.gif" alt="search"></a>
+<br><!-- lastfooter -->
+<a href="../about.html">about this FAQ list</a>
+&nbsp;
+<a href="../eskimo.html">about eskimo</a>
+&nbsp;
+<a href="../search.html">search</a>
+&nbsp;
+<a href="../feedback.html">feedback</a>
+&nbsp;
+<a href="copyright.html">copyright</a>
+<p>
+Hosted by
+<a href="http://www.eskimo.com/"><img src="http://www.eskimo.com/img/link/eskitiny.gif" alt="Eskimo North"></a>
+</body>
+</html>
