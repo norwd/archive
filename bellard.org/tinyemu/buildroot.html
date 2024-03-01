@@ -1,0 +1,106 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <title>TinyEMU RISC-V Buildroot</title>
+</head>
+<body>
+<h1>TinyEMU RISC-V Buildroot</h1>
+
+<h2>News</h2>
+  
+<ul>
+  <li>2018-10-20: added <a href="https://www.musl-libc.org/">musl</a> support for RISC-V 32 and 64 bits (from <a href="https://github.com/michaelforney/musl/tree/riscv">here</a>)</li>
+</ul>
+
+<h2>Introduction</h2>
+  
+This page provides <a href="https://buildroot.org/">Buildroot</a> patches to do the following:
+
+<ul>
+  <li>RISC-V 32 bit and 64 bit support.</li>
+  <li>Built-in RISC-V toolchain:
+    <ul>
+      <li>gcc 7.3.0</li>
+      <li>glibc 2.27 (riscv64), glibc 2.26 (riscv32) or musl</li>
+      <li>Linux 4.15 kernel headers</li>
+    </ul>
+  </li>
+  <li>Support to compile the toolchain for the target (RISC-V or
+  x86). This feature was removed from the mainstream buildroot.</li>
+  <li>Configuration examples with X Window and Mesa 3D support.</li>
+  <li>Used to build the <a href="../jslinux/index.html">JSLinux</a> RISC-V and x86 images.</li>
+  <li>Originally based
+  on the <a href="https://github.com/sifive/buildroot">Sifive buildroot
+  fork</a>, branch sifive, 2016-07-09 00:12:09, commit 0fd471394450a4dfde0f21a7f7abe51be5800a3f.</li>
+</ul>
+<p>
+Note: The development version of Buildroot now supports RISC-V 64, but
+it lacks 32 bit support and several other features from this
+buildroot port.
+
+<h2>Download</h2>
+
+Buildroot archive:
+<a href="buildroot-riscv-2018-10-20.tar.gz">buildroot-riscv-2018-10-20.tar.gz</a>
+
+<h2>Installation</h2>
+
+We assume the installation is done on a Linux host. It was tested with a
+Fedora 21 x86_64 distribution.
+<p>
+<ol>
+  <li>Untar the buildroot-riscv-xxxx-yy-zz.tar.gz archive.</li>
+
+  <li>Copy the default RISC-V 64 or RISC-V 32 configuration:
+    <pre>
+      cp configs/riscv64_defconfig .config
+    </pre>
+    or 
+    <pre>
+      cp configs/riscv32_defconfig .config
+    </pre>
+
+    (The X Window configurations used for JSLinux are available in <tt>riscv64_xwin_defconfig</tt> and <tt>riscv32_xwin_defconfig</tt>. More packages are enabled so the compilation is longer)
+  </li>
+  <li>Edit the configuration and save it (you can change nothing as a
+  first try):
+    <pre>
+      make menuconfig
+    </pre>
+  </li>
+
+  <li>Generate the image (it takes a few minutes with the default
+  configuration):
+    <pre>
+      make
+    </pre>
+  </li>
+
+  <li>If you want to run the generated image with TinyEMU:
+    <ul>
+      <li>Download and compile <a href="index.html">TinyEMU</a>.</li>
+      <li>Download and untar the
+        <a href="index.html">diskimage-linux-riscv archive</a> to get
+        the BIOS, Linux kernels and TinyEMU example
+        configurations.</li>
+      <li>In diskimage-linux-riscv, edit buildroot-riscv64.cfg (resp.
+        buildroot-riscv32.cfg) to ensure that the generated Buildroot image
+        path (rootfs.ext2) is correct.
+      <li>Run TinyEMU:
+        <pre>
+          temu buildroot-riscv64.cfg
+        </pre>
+        or
+        <pre>
+          temu buildroot-riscv32.cfg
+        </pre>
+      </li>
+      <li>Log in as root with an empty password.</li>
+    </ul>
+  </li>
+
+</ol>
+    
+</body>
+</html>

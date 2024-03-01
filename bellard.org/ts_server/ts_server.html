@@ -1,0 +1,922 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>TextSynth Server</title>
+
+<meta name="description" content="TextSynth Server">
+<meta name="keywords" content="TextSynth Server">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="ts_server.html#SEC_Contents" rel="contents" title="Table of Contents">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+</head>
+
+<body lang="en">
+<h1 class="settitle" align="center">TextSynth Server</h1>
+
+<a name="SEC_Contents"></a>
+<h2 class="contents-heading">Table of Contents</h2>
+
+<div class="contents">
+<ul class="no-bullet">
+<li><a name="toc-Introduction" href="ts_server.html#Introduction">1 Introduction</a></li>
+<li><a name="toc-Quick-Start" href="ts_server.html#Quick-Start">2 Quick Start</a>
+<ul class="no-bullet">
+  <li><a name="toc-Linux" href="ts_server.html#Linux">2.1 Linux</a>
+  <ul class="no-bullet">
+    <li><a name="toc-First-steps-1" href="ts_server.html#First-steps-1">2.1.1 First steps</a></li>
+    <li><a name="toc-GPU-usage" href="ts_server.html#GPU-usage">2.1.2 GPU usage</a></li>
+  </ul></li>
+  <li><a name="toc-Windows" href="ts_server.html#Windows">2.2 Windows</a>
+  <ul class="no-bullet">
+    <li><a name="toc-First-steps-2" href="ts_server.html#First-steps-2">2.2.1 First steps</a></li>
+    <li><a name="toc-GPU-usage-1" href="ts_server.html#GPU-usage-1">2.2.2 GPU usage</a></li>
+  </ul></li>
+</ul></li>
+<li><a name="toc-Utilities" href="ts_server.html#Utilities">3 Utilities</a>
+<ul class="no-bullet">
+  <li><a name="toc-Text-processing-_0028ts_005ftest_0029" href="ts_server.html#Text-processing-_0028ts_005ftest_0029">3.1 Text processing (<code>ts_test</code>)</a>
+  <ul class="no-bullet">
+    <li><a name="toc-Text-generation" href="ts_server.html#Text-generation">3.1.1 Text generation</a></li>
+    <li><a name="toc-Translation" href="ts_server.html#Translation">3.1.2 Translation</a></li>
+    <li><a name="toc-Short-text-compression-and-decompression" href="ts_server.html#Short-text-compression-and-decompression">3.1.3 Short text compression and decompression</a></li>
+    <li><a name="toc-Perplexity-computation" href="ts_server.html#Perplexity-computation">3.1.4 Perplexity computation</a></li>
+  </ul></li>
+  <li><a name="toc-Text-to-image-_0028ts_005fsd_0029" href="ts_server.html#Text-to-image-_0028ts_005fsd_0029">3.2 Text to image (<code>ts_sd</code>)</a></li>
+  <li><a name="toc-Chat-_0028ts_005fchat_0029" href="ts_server.html#Chat-_0028ts_005fchat_0029">3.3 Chat (<code>ts_chat</code>)</a></li>
+  <li><a name="toc-Speech-to-text-transcription-_0028ts_005faudiototext_0029" href="ts_server.html#Speech-to-text-transcription-_0028ts_005faudiototext_0029">3.4 Speech to text transcription (<code>ts_audiototext</code>)</a></li>
+  <li><a name="toc-Text-compression-_0028ts_005fzip_0029" href="ts_server.html#Text-compression-_0028ts_005fzip_0029">3.5 Text compression (<code>ts_zip</code>)</a></li>
+  <li><a name="toc-Model-Weight-Conversion" href="ts_server.html#Model-Weight-Conversion">3.6 Model Weight Conversion</a></li>
+  <li><a name="toc-Model-Weight-Quantization" href="ts_server.html#Model-Weight-Quantization">3.7 Model Weight Quantization</a></li>
+</ul></li>
+<li><a name="toc-TS-Server-Configuration" href="ts_server.html#TS-Server-Configuration">4 TS Server Configuration</a>
+<ul class="no-bullet">
+  <li><a name="toc-Syntax" href="ts_server.html#Syntax">4.1 Syntax</a></li>
+  <li><a name="toc-Configuration-parameters" href="ts_server.html#Configuration-parameters">4.2 Configuration parameters</a></li>
+  <li><a name="toc-JSON-endpoints" href="ts_server.html#JSON-endpoints">4.3 JSON endpoints</a></li>
+</ul></li>
+
+</ul>
+</div>
+
+
+<a name="Introduction"></a>
+<h2 class="chapter">1 Introduction</h2>
+
+<p>TextSynth Server is a web server proposing a REST API to large
+language models. They can be used for example for text completion,
+question answering, classification, chat, translation, image
+generation, ...
+</p>
+<p>It has the following characteristics:
+</p>
+<ul>
+<li> All is included in a single binary. Very few external dependencies (Python is not needed) so installation is easy on Linux and Windows.
+
+</li><li> Supports many Transformer variants (GPT-J, GPT-NeoX, OPT, Fairseq GPT, M2M100, CodeGen, GPT2, T5, RWKV, Llama 2, Falcon, MPT, Mistral, Whisper) and Stable Diffusion.
+
+</li><li> Integrated REST JSON API for text completion, translation, image generation and audio transcription.
+
+</li><li> Integrated HTML GUI for testing.
+
+</li><li> Very high performance for small and large batches on CPU and GPU. Support of dynamic batching to handle a large number of simultaneous requests.
+
+</li><li> Efficient custom 8, 4 and 3 bit quantization.
+
+</li><li> Larger models work optimally on lower cost GPUs (e.g. RTX 3090, RTX A6000) thanks to efficient quantization.
+
+</li><li> Support of speculative sampling for even faster inference.
+
+</li><li> Support of grammar based sampling to constraint the model output according to a BNF grammar or a JSON schema.
+
+</li><li> Uses the LibNC library for simple tensor manipulation using the C language.
+</li><li> Simple command line tools (<code>ts_test</code>, <code>ts_sd</code>, <code>ts_chat</code>, <code>ts_audiototext</code> and <code>ts_zip</code>) are provided to test the various models.
+
+</li></ul>
+
+<p>The free version is available only for non commercial use. Commercial
+organizations must buy the commercial version. The commercial version
+adds the following features:
+</p>
+<ul>
+<li> High performance handling of simultaneous requests.
+</li><li> Memory usage limitation.
+</li><li> Multiple models can be served at the same time.
+</li><li> SSL/TLS requests.
+</li></ul>
+
+<a name="Quick-Start"></a>
+<h2 class="chapter">2 Quick Start</h2>
+
+<a name="Linux"></a>
+<h3 class="section">2.1 Linux</h3>
+
+<a name="First-steps"></a><a name="First-steps-1"></a>
+<h4 class="subsection">2.1.1 First steps</h4>
+
+<p>The TextSynth Server works only on x86 CPUs supporting AVX2 (all Intel
+CPUs since 2013 support it). The installation was tested on Fedora and
+CentOS/RockyLinux 8 distributions. Other distributions should work
+provided the <code>libjpeg</code> and <code>libmicrohttpd</code> libraries are
+installed.
+</p>
+<ol>
+<li> Install the <code>libjpeg</code> and <code>libmicrohttpd</code> libraries. If you use Fedora, RHEL, CentOS or RockyLinux, you can type as root:
+
+<div class="example">
+<pre class="example">  dnf install libjpeg libmicrohttpd
+</pre></div>
+
+<p><code>ts_test</code> can be used without these libraries. <code>ts_sd</code> needs
+<code>libjpeg</code>. <code>ts_server</code> needs <code>libjpeg</code> and
+<code>libmicrohttpd</code>. Audio transcription requires the FFmpeg
+executable in order to convert the input audio file.
+</p>
+</li><li> Extract the archive and go into its directory:
+
+<div class="example">
+<pre class="example">  tar xtf ts_server-##version##.tar.gz
+
+  cd ts_server-##version##
+</pre></div>
+
+<p>when <code>##version##</code> is the version of the program.
+</p>
+</li><li> Download one small example model such as <code>gpt2_117M.bin</code> from the
+<code>ts_server</code> web page.
+
+</li><li> Use it to generate text with the &quot;ts_test&quot; utility:
+
+<div class="example">
+<pre class="example">  ./ts_test -m gpt2-117M.bin g &quot;The Linux kernel is&quot;
+</pre></div>
+
+<p>The <code>-T</code> option can be used to use more or less CPU cores (the
+default is the number of physical cores).
+</p>
+</li><li> Start the server:
+
+<div class="example">
+<pre class="example">  ./ts_server ts_server.cfg
+</pre></div>
+
+<p>You can edit the <samp>ts_server.cfg</samp> JSON configuration file if you
+want to use another model.
+</p>
+</li><li> Try one request:
+<div class="example">
+<pre class="example">  curl http://localhost:8080/v1/engines/gpt2_117M/completions \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;prompt&quot;: &quot;The Linux kernel is&quot;, &quot;max_tokens&quot;: 100}'
+</pre></div>
+
+<p>The full request syntax is documented at <a href="https://textsynth.com/documentation.html">https://textsynth.com/documentation.html</a>.
+</p>
+</li><li> You can use the integrated GUI by exploring with your browser:
+<div class="example">
+<pre class="example">http://localhost:8080
+</pre></div>
+
+</li></ol>
+
+<p>Now you are ready to load a larger model and to use it from your application.
+</p>
+<a name="GPU-usage"></a>
+<h4 class="subsection">2.1.2 GPU usage</h4>
+
+<p>You need an Nvidia Ampere, ADA or Hopper GPU (e.g. RTX 3090, RTX 4090, RTX A6000,
+A100 or H100) in order to use the server with cuda 11.x or 12.x
+installed. Enough memory must be available to load the model.
+</p>
+<ol>
+<li> First ensure that it is working on CPU (See <a href="ts_server.html#First-steps">First steps</a>).
+
+</li><li> Ensure that you have a compatible cuda installation with cuda 11.x or 12.x. The software is preconfigured with cuda 11.x. If you want to use cuda 12.x, then change the link to the <samp>libnc_cuda.so</samp> library:
+
+<div class="example">
+<pre class="example">  ln -sf libnc_cuda-12.so libnc_cuda.so
+</pre></div>
+
+</li><li> Then try to use the GPU with the <code>ts_test</code> utility:
+
+<div class="example">
+<pre class="example">  ./ts_test --cuda -m gpt2-117M.bin g  &quot;The Linux kernel is&quot;
+</pre></div>
+
+<p>If you get an error such as:
+</p><div class="example">
+<pre class="example">  Could not load: ./libnc_cuda.so
+</pre></div>
+<p>it means that cuda is not properly installed or that there is a
+mismatch between the installed cuda version and the one
+<code>ts_server</code> was compiled with. You can use:
+</p>
+<div class="example">
+<pre class="example">  ldd ./libnc_cuda.so
+</pre></div>
+
+<p>to check that all the required cuda libraries are present on your system.
+</p>
+</li><li> Then edit the <code>ts_server.cfg</code> configuration to enable GPU support by uncommenting 
+<div class="example">
+<pre class="example">  cuda: true
+</pre></div>
+<p>and run the server:
+</p>
+<div class="example">
+<pre class="example">  ./ts_server ts_server.cfg
+</pre></div>
+
+</li><li> Assuming you have curl, Try one request:
+<div class="example">
+<pre class="example">  curl http://localhost:8080/v1/engines/gpt2_117M/completions \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;prompt&quot;: &quot;The Linux kernel is&quot;, &quot;max_tokens&quot;: 100}'
+</pre></div>
+
+</li><li> You can use the integrated GUI by exploring with your browser:
+<div class="example">
+<pre class="example">http://localhost:8080
+</pre></div>
+
+</li><li> Depending on the amount of memory available on your GPU, you can set the <code>memory</code> parameter in <code>ts_server.cfg</code> to limit the amount of memory used by the server. It is usually necessary to use a few gigabytes less that maximum available amount of GPU memory.
+
+</li></ol>
+
+<a name="Windows"></a>
+<h3 class="section">2.2 Windows</h3>
+
+<a name="First-steps-2"></a>
+<h4 class="subsection">2.2.1 First steps</h4>
+
+<p>The TextSynth Server works only on x86 CPUs supporting AVX2 (all Intel
+CPUs since 2013 support it).
+</p>
+<ol>
+<li> Extract the ZIP archive, launch the shell and go into its directory:
+
+<div class="example">
+<pre class="example">  cd ts_server-##version##
+</pre></div>
+
+<p>when <code>##version##</code> is the version of the program.
+</p>
+</li><li> Download one small example model such as <code>gpt2_117M.bin</code> from the
+<code>ts_server</code> web page.
+
+</li><li> Use it to generate text with the &quot;ts_test&quot; utility:
+
+<div class="example">
+<pre class="example">  ts_test -m gpt2-117M.bin g &quot;The Linux kernel is&quot;
+</pre></div>
+
+<p>The <code>-T</code> option can be used to use more or less CPU cores (the
+default is the number of physical cores).
+</p>
+</li><li> Start the server:
+
+<div class="example">
+<pre class="example">  ts_server ts_server.cfg
+</pre></div>
+
+<p>You can edit the <samp>ts_server.cfg</samp> JSON configuration file if you
+want to use another model.
+</p>
+</li><li> Assuming you installed curl (you can download it from <a href="https://curl.se/windows/">https://curl.se/windows/</a>), try one request:
+<div class="example">
+<pre class="example">  curl http://localhost:8080/v1/engines/gpt2_117M/completions \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;prompt&quot;: &quot;The Linux kernel is&quot;, &quot;max_tokens&quot;: 100}'
+</pre></div>
+
+<p>The full request syntax is documented at <a href="https://textsynth.com/documentation.html">https://textsynth.com/documentation.html</a>.
+</p>
+</li><li> You can use the integrated GUI by exploring with your browser:
+<div class="example">
+<pre class="example">http://localhost:8080
+</pre></div>
+
+</li></ol>
+
+<p>Now you are ready to load a larger model and to use it from your application.
+</p>
+<a name="GPU-usage-1"></a>
+<h4 class="subsection">2.2.2 GPU usage</h4>
+
+<p>You need an Nvidia Ampere, ADA or Hopper GPU (e.g. RTX 3090, RTX 4090, RTX A6000,
+A100 or H100) in order to use the server with cuda 11.x or 12.x
+installed. Enough memory must be available to load the model.
+</p>
+<ol>
+<li> First ensure that it is working on CPU (see the previous section).
+
+</li><li> Ensure that you have a compatible cuda installation with cuda 11.x or 12.x. The software automatically detects the cuda version.
+
+</li><li> Then try to use the GPU with the <code>ts_test</code> utility:
+
+<div class="example">
+<pre class="example">  ./ts_test --cuda -m gpt2-117M.bin g &quot;The Linux kernel is&quot;
+</pre></div>
+
+<p>If you get an error such as:
+</p><div class="example">
+<pre class="example">  Could not load: libnc_cuda-12.dll (error=126)
+</pre></div>
+<p>it means that cuda is not properly installed.
+</p>
+</li><li> Then edit the <code>ts_server.cfg</code> configuration to enable GPU support by uncommenting 
+<div class="example">
+<pre class="example">  cuda: true
+</pre></div>
+<p>and run the server:
+</p>
+<div class="example">
+<pre class="example">  ./ts_server ts_server.cfg
+</pre></div>
+
+</li><li> Assuming you have curl, Try one request:
+<div class="example">
+<pre class="example">  curl http://localhost:8080/v1/engines/gpt2_117M/completions \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;prompt&quot;: &quot;The Linux kernel is&quot;, &quot;max_tokens&quot;: 100}'
+</pre></div>
+
+</li><li> You can use the integrated GUI by exploring with your browser:
+<div class="example">
+<pre class="example">http://localhost:8080
+</pre></div>
+
+</li><li> Depending on the amount of memory available on your GPU, you can set the <code>memory</code> parameter in <code>ts_server.cfg</code> to limit the amount of memory used by the server. It is usually necessary to use a few gigabytes less that maximum available amount of GPU memory.
+
+</li></ol>
+
+<a name="Utilities"></a>
+<h2 class="chapter">3 Utilities</h2>
+
+<a name="Text-processing-_0028ts_005ftest_0029"></a>
+<h3 class="section">3.1 Text processing (<code>ts_test</code>)</h3>
+
+<a name="Text-generation"></a>
+<h4 class="subsection">3.1.1 Text generation</h4>
+
+<div class="example">
+<pre class="example">./ts_test --cuda -m gpt2_117M.bin g &quot;Hello, my name is&quot;
+</pre></div>
+
+<p>When using a CPU, remove the <code>--cuda</code> option.
+</p>
+<a name="Translation"></a>
+<h4 class="subsection">3.1.2 Translation</h4>
+
+<div class="example">
+<pre class="example">./ts_test --cuda -m m2m100_1_2B_q8.bin translate en fr &quot;The dispute \
+focuses on the width of seats provided on long-haul flights for \
+economy passengers.&quot;
+</pre></div>
+<p>assuming you downloaded the <samp>m2m100_1_2B_q8.bin</samp> model.
+</p>
+<a name="Short-text-compression-and-decompression"></a>
+<h4 class="subsection">3.1.3 Short text compression and decompression</h4>
+
+<div class="example">
+<pre class="example">./ts_test --cuda -m gpt2_117M.bin cs &quot;Hello, how are you ?&quot;
+
+./ts_test --cuda ds &quot;##msg##&quot;
+</pre></div>
+<p>where <code>##msg##</code> is the compressed message.
+</p>
+<a name="Perplexity-computation"></a>
+<h4 class="subsection">3.1.4 Perplexity computation</h4>
+
+<p>The perplexity over a text file can be used to evaluate models. The
+text file is first tokenized, then cut in sequences of tokens. The
+default sequence length is the maximum context length of the model,
+use the <code>-l</code> option to change it. Then the log probabilities are
+averaged over a range of context positions and displayed as
+perplexity.
+</p>
+<div class="example">
+<pre class="example">./ts_test --cuda -m mistral_7B.bin perplexity wiki.test.raw
+ctx_len=8192, n_seq=40
+START   END PERPLEXITY
+    0   256      9.746
+  256   512      5.758
+  512  1024      5.072
+ 1024  2048      4.984
+ 2048  4096      4.934
+ 4096  8192      4.689
+    0  8192      4.952
+</pre></div>
+
+<p>The <code>llama_perplexity</code> command evaluates the perplexity using the
+same algorithm as the <code>perplexity</code> utility in <code>llama.cpp</code> so
+that comparisons can be made. The default context length is 512.
+</p>
+<div class="example">
+<pre class="example">./ts_test --cuda -m mistral_7B.bin llama_perplexity wiki.test.raw
+ctx_len=512, start=256, n_seq=642
+ #SEQ PERPLEXITY
+  641     5.6946
+</pre></div>
+
+<a name="Text-to-image-_0028ts_005fsd_0029"></a>
+<h3 class="section">3.2 Text to image (<code>ts_sd</code>)</h3>
+
+<div class="example">
+<pre class="example">./ts_sd --cuda -m sd_v1.4.bin -o out.jpg &quot;an astronaut riding a horse&quot;
+</pre></div>
+
+<p>assuming you downloaded <samp>sd_v1.4.bin</samp>.
+</p>
+<p>When using a CPU, remove the <code>--cuda</code> option.
+</p>
+<a name="Chat-_0028ts_005fchat_0029"></a>
+<h3 class="section">3.3 Chat (<code>ts_chat</code>)</h3>
+
+<div class="example">
+<pre class="example">./ts_chat --cuda -m llama2_7B_chat_q4.bin
+</pre></div>
+
+<p>assuming you downloaded <samp>llama2_7B_chat_q4.bin</samp>.
+</p>
+<p>When using a CPU, remove the <code>--cuda</code> option.
+</p>
+<p>During the chat, some commands are available. Use <code>/h</code> during the
+chat to have some help. Type <code>Ctrl-C</code> once to stop the output and
+twice to quit.
+</p>
+<a name="Speech-to-text-transcription-_0028ts_005faudiototext_0029"></a>
+<h3 class="section">3.4 Speech to text transcription (<code>ts_audiototext</code>)</h3>
+
+<div class="example">
+<pre class="example">./ts_audiototext --cuda -m whisper_large_v3_q8.bin -o out.json audiofile.mp3
+</pre></div>
+
+<p>assuming you downloaded <samp>whisper_large_v3_q8.bin</samp> and that
+<samp>audiofile.mp3</samp> is the audio file to be
+transcripted. <code>out.json</code> contains the transcripted text.
+</p>
+<p>When using a CPU, remove the <code>--cuda</code> option.
+</p>
+<a name="Text-compression-_0028ts_005fzip_0029"></a>
+<h3 class="section">3.5 Text compression (<code>ts_zip</code>)</h3>
+
+<p>To compress a text file (here <samp>alice29.txt</samp>), assuming you
+downloaded the <samp>rwkv_169M.bin</samp> model, use:
+</p>
+<div class="example">
+<pre class="example">./ts_zip --cuda -m rwkv_169M.bin c alice29.txt /tmp/out.bin
+</pre></div>
+
+<p>To decompress it:
+</p>
+<div class="example">
+<pre class="example">./ts_zip --cuda -m rwkv_169M.bin d /tmp/out.bin /tmp/out.txt
+</pre></div>
+
+<p>A checksum is included in the compressed file and it is automatically
+checked. It is essential to use the same software version, language
+model and GPU model when compressing and decompressing a file.
+</p>
+<p>Large compression gains occur only if the input file is in a language
+that the language model has already seen.
+</p>
+<p>The compression ratio, speed and memory usage depend on the language
+model but also on the selected context length (<code>-l</code> option) and
+batch size (<code>-b</code> option). They are both chosen automatically but
+can be overridden:
+</p><ul>
+<li> The memory usage is proportional to the context
+length and batch size.
+</li><li> The speed increases when the batch size increases.
+</li><li> The compression ratio increases with larger context lengths and smaller batch sizes.
+</li></ul>
+
+<p>More information is available at
+<a href="ts_zip.html">https://bellard.org/ts_server/ts_zip.html</a>.
+</p>
+<a name="Model-Weight-Conversion"></a>
+<h3 class="section">3.6 Model Weight Conversion</h3>
+
+<p>TextSynth Server uses a specific file format to store the weights of
+the models. Python scripts are provided in <samp>scripts/</samp> to convert
+model checkpoints to the TextSynth format. The tokenizer is now
+included in the model file. For backward compatibility, tokenizer
+files are provided in the <samp>tokenizer/</samp> directory.
+</p>
+<p>The script <samp>hf_model_convert.py</samp> should be used when converting from a
+Hugging Face model.
+</p>
+<p>Example to convert Llama2 weights from Hugging Face to TextSynth:
+</p>
+<div class="example">
+<pre class="example">python hf_model_convert.py --tokenizer llama_vocab.txt model_dir llama2.bin
+</pre></div>
+
+<p>where:
+</p><ul>
+<li> <code>model_dir</code> is the directory containing the
+<samp>config.json</samp> and <samp>pytorch_model*.bin</samp> files.
+
+</li><li> <code>llama_vocab.txt</code> is a ts_server tokenizer file from the <samp>tokenizer/</samp> directory.
+
+</li></ul>
+
+<a name="Model-Weight-Quantization"></a>
+<h3 class="section">3.7 Model Weight Quantization</h3>
+
+<p>With the <code>ncconvert</code> utility, it is possible to quantize the
+model weights to 8, 4 or 3 bits. Quantization reduces the GPU memory
+usage and increases the inference speed. 8 bit quantization yields a
+negligible loss. 4 bit quantization yields a very small loss. 3 bit
+quantization currently only works on a GPU.
+</p>
+<p>Examples:
+</p>
+<p>8 bit quantization:
+</p>
+<div class="example">
+<pre class="example">./ncconvert -q bf8 pythia_deduped_160M.bin pythia_deduped_160M_q8.bin
+</pre></div>
+
+<p>4 bit quantization:
+</p>
+<div class="example">
+<pre class="example">./ncconvert -q bf4 pythia_deduped_160M.bin pythia_deduped_160M_q4.bin
+</pre></div>
+
+<a name="TS-Server-Configuration"></a>
+<h2 class="chapter">4 TS Server Configuration</h2>
+
+<p>The file <samp>ts_server.cfg</samp> provides an example of
+configuration.
+</p>
+<a name="Syntax"></a>
+<h3 class="section">4.1 Syntax</h3>
+
+<p>The syntax is similar to JSON with a few modifications:
+</p><ul>
+<li> property names can be unquoted 
+
+<div class="example">
+<pre class="example">{ property: 1 }
+</pre></div>
+
+</li><li> Multi-line and single line C style comments are accepted
+</li></ul>
+
+<a name="Configuration-parameters"></a>
+<h3 class="section">4.2 Configuration parameters</h3>
+
+<dl compact="compact">
+<dt><code>cuda</code></dt>
+<dd><p>Optional boolean (default = false). If true, CUDA (Nvidia GPU support) is enabled.
+</p>
+</dd>
+<dt><code>device_index</code></dt>
+<dd><p>Optional integer (default = 0). Select the GPU device when using
+several GPUs. Use the <code>nvidia-smi</code> utility to list the available
+devices.
+</p>
+</dd>
+<dt><code>n_threads</code></dt>
+<dd><p>Optional integer. When using a CPU, select the number of threads. It is set by default to the number of physical cores.
+</p>
+</dd>
+<dt><code>full_memory</code></dt>
+<dd><p>Optional boolean (default = true). When using a GPU, <code>ts_server</code>
+reserves by default all the GPU memory for better efficiency. This
+parameter disables this behavior so that the GPU memory is allocated on
+demand.
+</p>
+</dd>
+<dt><code>max_memory</code></dt>
+<dd><p>Optional integer (default = 0). If non zero, limit the consumed GPU
+memory to this value by pausing the HTTP requests until there is
+enough memory.
+</p>
+<p>Since there is some overhead when handling the requests, it is better
+to set a value a few GB lower than the amount of total GPU memory.
+</p>
+</dd>
+<dt><code>kv_cache_max_count</code></dt>
+<dd><p>Optional integer (default = 0). See the <code>kv_cache_size</code> parameter.
+</p></dd>
+<dt><code>kv_cache_size</code></dt>
+<dd><p>Optional integer (default = 0). The KV cache is stored in CPU memory
+and is only used by the <code>chat</code> endpoint to store the context of
+the conversation to accelerate the inference. It is disabled by
+default. <code>kv_cache_size</code> sets the maximum KV cache memory in
+bytes. <code>kv_cache_max_count</code> sets the maximum number of cached
+conversations.
+</p>
+</dd>
+<dt><code>models</code></dt>
+<dd><p>Array of objects. Each element defines a model that is served. The
+following parameters are defined:
+  </p><dl compact="compact">
+<dt><code>name</code></dt>
+<dd><p>String. Name (ID) of the model in the HTTP requests.
+</p>  
+</dd>
+<dt><code>filename</code></dt>
+<dd><p>String. Filename of the model. You can use the conversion scripts to
+  create one from Pytorch checkpoints if necessary.
+</p>
+</dd>
+<dt><code>draft_model</code></dt>
+<dd><p>Optional string. Filename of a smaller model used to accelerate inference
+  (speculative sampling). The draft model must use the same tokenizer
+  as the large model.
+</p>
+</dd>
+<dt><code>sps_k_max</code></dt>
+<dd><p>Optional integer. When using speculative sampling, specify the
+  maximum number of tokens that is predicted by the draft model. The
+  optimal value needs to be determined by experimentation. It is
+  usually 3 or 4.
+</p>  
+</dd>
+</dl>
+
+<p>Note: the free version only accepts one model definition.
+</p>
+</dd>
+<dt><code>local_port</code></dt>
+<dd><p>Integer. TCP port on which the HTTP server listens to.
+</p>
+</dd>
+<dt><code>bind_addr</code></dt>
+<dd><p>Optional string (default = &quot;0.0.0.0&quot;). Set the IP address on which the
+server listens to. Use &quot;127.0.0.1&quot; if you want to accept local
+connections only.
+</p>
+</dd>
+<dt><code>tls</code></dt>
+<dd><p>Optional boolean (default = false). If true, HTTPS (TLS) connections are
+accepted instead of HTTP ones.
+</p>
+</dd>
+<dt><code>tls_cert_file</code></dt>
+<dd><p>Optional string. If TLS is enabled, the certificate (PEM format) must
+be provided with this parameter.
+</p>
+</dd>
+<dt><code>tls_cert_file</code></dt>
+<dd><p>Optional string. If TLS is enabled, the private key of the certificate
+(PEM format) must be provided with this parameter.
+</p>
+</dd>
+<dt><code>log_start</code></dt>
+<dd><p>Optional boolean (default = false). Print &quot;Started.&quot; on the console
+when the server has loaded all the models and is ready to accept connections.
+</p>
+</dd>
+<dt><code>gui</code></dt>
+<dd><p>Optional boolean (default = false). If true, enable a Graphical User
+Interface in addition to the remote API. It is available at the root
+URL, e.g. <code>http://127.0.0.1:8080</code>. The server just serves the files
+present in the <samp>gui/</samp> directory. You can modify or add new files
+if needed.
+</p>
+</dd>
+<dt><code>log_filename</code></dt>
+<dd>
+<p>String. Set the filename where the logs are written. There is one line per
+connection. The fields are:
+</p>
+<ul>
+<li> date and time (ISO format)
+
+</li><li> source IP address
+
+</li><li> HTTP method
+
+</li><li> URI
+
+</li><li> posted JSON
+
+</li></ul>
+
+</dd>
+<dt><code>from_proxy</code></dt>
+<dd><p>Optional boolean (default = true). If true, use the
+<code>X-Forwarded-For</code> header if available to determine the source IP
+address in the logs. It is useful to have the real IP address of a
+client when a proxy is used.
+</p>
+</dd>
+</dl>
+
+<a name="JSON-endpoints"></a>
+<h3 class="section">4.3 JSON endpoints</h3>
+
+<p>The server provides the following endpoints.
+</p>
+<dl compact="compact">
+<dt><code>v1/engines/{model_id}/completions</code></dt>
+<dd>
+<p>Text completion.
+</p>
+<p>Complete documentation at
+<a href="https://textsynth.com/documentation.html">https://textsynth.com/documentation.html</a>.
+</p>
+<p>See <samp>api_examples/completion.py</samp> to have an example in Python.
+</p>
+</dd>
+<dt><code>v1/engines/{model_id}/chat</code></dt>
+<dd>
+<p>Chat based completion. Complete documentation at
+<a href="https://textsynth.com/documentation.html">https://textsynth.com/documentation.html</a>.
+</p>
+</dd>
+<dt><code>v1/engines/{model_id}/translate</code></dt>
+<dd>
+<p>Translation.
+</p>
+<p>Complete documentation at
+<a href="https://textsynth.com/documentation.html">https://textsynth.com/documentation.html</a>.
+</p>
+<p>See <samp>api_examples/translate.py</samp> to have an example in Python.
+</p>
+</dd>
+<dt><code>v1/engines/{model_id}/logprob</code></dt>
+<dd>
+<p>Log probability computation.
+</p>
+<p>Complete documentation at
+<a href="https://textsynth.com/documentation.html">https://textsynth.com/documentation.html</a>.
+</p>
+</dd>
+<dt><code>v1/engines/{model_id}/tokenize</code></dt>
+<dd>
+<p>Tokenization.
+</p>
+<p>Complete documentation at
+<a href="https://textsynth.com/documentation.html">https://textsynth.com/documentation.html</a>.
+</p>
+</dd>
+<dt><code>v1/engines/{model_id}/text_to_image</code></dt>
+<dd>
+<p>Text to image.
+</p>
+<p>Complete documentation at
+<a href="https://textsynth.com/documentation.html">https://textsynth.com/documentation.html</a>.
+</p>
+<p>See <samp>api_examples/sd.py</samp> to have an example in Python.
+</p>
+</dd>
+<dt><code>v1/engines/{model_id}/transcript</code></dt>
+<dd>
+<p>Speech to text transcription. See <samp>api_examples/transcript.py</samp> to
+have an example in Python.
+</p>
+<p>The content type of the posted data should be
+<code>multipart/form-data</code> and should contain two files with the
+following names:
+</p><dl compact="compact">
+<dt><code>json</code></dt>
+<dd><p>contains the JSON request.
+</p></dd>
+<dt><code>file</code></dt>
+<dd><p>contains the audio file to transcript. FFmpeg is invoked by
+<code>ts_server</code> to convert the audio file to raw samples.
+</p></dd>
+</dl>
+
+<p>The JSON request contains the following properties:
+</p><dl compact="compact">
+<dt><code>language</code></dt>
+<dd><p>String. The input ISO language code. The following languages are available: af, am, ar, as, az, ba, be, bg, bn, bo, br, bs, ca, cs, cy, da, de, el, en, es, et, eu, fa, fi, fo, fr, gl, gu, ha, haw, he, hi, hr, ht, hu, hy, id, is, it, ja, jw, ka, kk, km, kn, ko, la, lb, ln, lo, lt, lv, mg, mi, mk, ml, mn, mr, ms, mt, my, ne, nl, nn, no, oc, pa, pl, ps, pt, ro, ru, sa, sd, si, sk, sl, sn, so, sq, sr, su, sv, sw, ta, te, tg, th, tk, tl, tr, tt, uk, ur, uz, vi, yi, yo, yue, zh.
+</p></dd>
+</dl>
+
+<p>Additional parameters are available for testing or tuning:
+</p><dl compact="compact">
+<dt><code>num_beams</code></dt>
+<dd><p>Optional integer, range: 2 to 5 (default = 5).
+Number of beams used for decoding.
+</p>
+</dd>
+<dt><code>condition_on_previous_text</code></dt>
+<dd><p>Optional boolean (default = false).
+Condition the current frame on the previous text.
+</p>
+</dd>
+<dt><code>logprob_threshold</code></dt>
+<dd><p>Option float (default = -1.0).
+</p>
+</dd>
+<dt><code>no_speech_threshold</code></dt>
+<dd><p>Optional float (default = 0.6). Probability threshold of the
+<code>no_speech</code> token for no speech detection. The average
+log-probability of the generated tokens must also be below
+<code>logprob_threshold</code>.
+</p>
+</dd>
+</dl>
+
+<p>A JSON object is returned containing the transcription. It contains
+the following properties:
+</p>
+<dl compact="compact">
+<dt><code>text</code></dt>
+<dd><p>String. Transcripted text.
+</p>
+</dd>
+<dt><code>segments</code></dt>
+<dd><p>Array of objects containing the transcripted text segments with
+timestamps. Each segment has the following properties:
+  </p><dl compact="compact">
+<dt><code>id</code></dt>
+<dd><p>Integer. Segment ID.
+  </p></dd>
+<dt><code>start</code></dt>
+<dd><p>Float. Start time in seconds.
+  </p></dd>
+<dt><code>end</code></dt>
+<dd><p>Float. End time in seconds.
+  </p></dd>
+<dt><code>text</code></dt>
+<dd><p>String. Transcripted text for this segment.
+  </p></dd>
+</dl>
+
+</dd>
+<dt><code>language</code></dt>
+<dd><p>String. ISO language code.
+</p>
+</dd>
+<dt><code>duration</code></dt>
+<dd><p>Float. Transcription duration in seconds.
+</p>
+</dd>
+</dl>
+
+</dd>
+<dt><code>v1/memory_stats</code></dt>
+<dd>
+<p>Return a JSON object with the memory usage statistics. The following
+properties are available:
+</p>
+<dl compact="compact">
+<dt><code>cur_memory</code></dt>
+<dd><p>Integer. Current used memory in bytes (CPU or GPU memory).
+</p></dd>
+<dt><code>max_memory</code></dt>
+<dd><p>Integer. Maximum used memory in bytes since the last call (CPU or GPU memory).
+</p></dd>
+<dt><code>kv_cache_count</code></dt>
+<dd><p>Integer. Number of entries in the KV cache count.
+</p></dd>
+<dt><code>kv_cache_size</code></dt>
+<dd><p>Integer. CPU Memory in bytes used by the KV cache.
+</p></dd>
+</dl>
+
+</dd>
+<dt><code>v1/models</code></dt>
+<dd>
+<p>Return the list of available models and their capabilities. It is used by the GUI.
+</p>
+</dd>
+</dl>
+
+<hr>
+
+
+
+</body>
+</html>

@@ -1,0 +1,473 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>ffasn1c ASN.1 Compiler</title>
+
+<meta name="description" content="ffasn1c ASN.1 Compiler">
+<meta name="keywords" content="ffasn1c ASN.1 Compiler">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="ffasn1c.html#SEC_Contents" rel="contents" title="Table of Contents">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<h1 class="settitle" align="center">ffasn1c ASN.1 Compiler</h1>
+
+
+
+<a name="SEC_Contents"></a>
+<h2 class="contents-heading">Table of Contents</h2>
+
+<div class="contents">
+<ul class="no-bullet">
+<li><a name="toc-Introduction" href="ffasn1c.html#Introduction">1 Introduction</a></li>
+<li><a name="toc-Installation" href="ffasn1c.html#Installation">2 Installation</a></li>
+<li><a name="toc-Quick-Start" href="ffasn1c.html#Quick-Start">3 Quick Start</a></li>
+<li><a name="toc-Invocation" href="ffasn1c.html#Invocation">4 Invocation</a></li>
+<li><a name="toc-Compliance" href="ffasn1c.html#Compliance">5 Compliance</a></li>
+<li><a name="toc-Useful-types" href="ffasn1c.html#Useful-types">6 Useful types</a></li>
+<li><a name="toc-Runtime-C_002fC_002b_002b-API" href="ffasn1c.html#Runtime-C_002fC_002b_002b-API">7 Runtime C/C++ API</a>
+<ul class="no-bullet">
+  <li><a name="toc-Memory-allocation" href="ffasn1c.html#Memory-allocation">7.1 Memory allocation</a></li>
+  <li><a name="toc-Managing-ASN_002e1-types-and-values" href="ffasn1c.html#Managing-ASN_002e1-types-and-values">7.2 Managing ASN.1 types and values</a></li>
+  <li><a name="toc-Encoding-of-ASN_002e1-values" href="ffasn1c.html#Encoding-of-ASN_002e1-values">7.3 Encoding of ASN.1 values</a></li>
+  <li><a name="toc-Decoding-of-ASN_002e1-values" href="ffasn1c.html#Decoding-of-ASN_002e1-values">7.4 Decoding of ASN.1 values</a></li>
+  <li><a name="toc-Constraint-check" href="ffasn1c.html#Constraint-check">7.5 Constraint check</a></li>
+</ul></li>
+<li><a name="toc-License" href="ffasn1c.html#License">8 License</a></li>
+
+</ul>
+</div>
+
+
+<a name="Introduction"></a>
+<h2 class="chapter">1 Introduction</h2>
+
+<p>ffasn1c compiles ASN.1 source and generate C code to manipulate,
+encode and decode the corresponding ASN.1 messages.
+</p>
+<p>The generated C code is made of a header defining the ASN.1 types and a
+source defining an internal binary representation of the ASN.1 types.
+</p>
+<p>The library libffasn1 (source code in <samp>libffasn1/</samp>) contains the
+functions to allocate, encode, decode and free ASN.1 messages.
+</p>
+<a name="Installation"></a>
+<h2 class="chapter">2 Installation</h2>
+
+<p>The compiler ffasn1c does not need a specific installation. The
+<samp>ffasn1c</samp> executable does not need any other file so you can copy it
+anywhere (for example in <samp>/usr/local/bin</samp> on a Linux system).
+</p>
+<a name="Quick-Start"></a>
+<h2 class="chapter">3 Quick Start</h2>
+
+<p>In the <samp>examples</samp> directory you can build the <code>asn1convert</code>
+example.
+</p>
+<ul>
+<li> For Linux, type <code>make</code> to build the example.
+</li><li> For Windows using MinGW, type <code>make CONFIG_WIN32=y</code> to build the example.
+</li><li> For Windows using MSVC, type <code>nmake -f Makefile.msvc</code> to build the example.
+</li></ul>
+
+
+<p><code>ffasn1c</code> is invoked to generate
+<samp>simpletest.h</samp> and <samp>simpletest.c</samp> from the ASN.1 source
+<samp>simpletest.asn</samp>.
+</p>
+<p><code>asn1convert</code> is a simple tool to convert messages of type
+<code>ObjectList</code> from any ASN.1 encoding to any encoding. You can try:
+</p>
+<div class="example">
+<pre class="example">./asn1convert ber gser simpletest.der a.gser
+</pre></div>
+
+<p><samp>a.gser</samp> contains the GSER (i.e. text) representation of the DER
+encoded message stored in <samp>simpletest.der</samp>.
+</p>
+<a name="Invocation"></a>
+<h2 class="chapter">4 Invocation</h2>
+
+<p>Usage: 
+</p><div class="example">
+<pre class="example">ffasn1c [options] inputfile...
+</pre></div>
+
+<p>There can be several input files. Each input file defines one or more
+ASN.1 modules.
+</p>
+<p>Options:
+</p><dl compact="compact">
+<dt><samp>-h</samp></dt>
+<dd><p>show the help
+</p>
+</dd>
+<dt><samp>-o <var>outfile</var></samp></dt>
+<dd><p>set the output filename (extension replaced by .c or .h)
+</p>
+</dd>
+<dt><samp>-fforce-int32</samp></dt>
+<dd>
+<p>force 32 bit integers for INTEGER type. By default the compiler stores
+the integers on the C <code>int</code> or <code>uint32_t</code> type only if the
+PER-visible contraints tells that it can fit. Otherwise, large
+integers are used (<code>ASN1Integer</code> C type).
+</p>
+</dd>
+<dt><samp>-fno-type-names</samp></dt>
+<dd><p>do not generate type name information. It saves space if XER encoding
+is not needed. Type name information is only necessary for XER
+encoding or for debugging.
+</p>
+</dd>
+<dt><samp>-fallow-dup-int-ident</samp></dt>
+<dd><p>Allow duplicate integer value identifiers (not standard, useful to
+compile some invalid ASN.1 sources)
+</p>
+</dd>
+<dt><samp>-fprefix=<var>name</var></samp></dt>
+<dd><p>Add the prefix <var>name</var> to all public C identifiers.
+</p>
+</dd>
+<dt><samp>-fdefine-int-values</samp></dt>
+<dd><p>Export as C defines all ASN.1 integer values (useful for example for
+LTE S1AP/X2AP identifiers).
+</p>
+</dd>
+<dt><samp>-fshort-enums</samp></dt>
+<dd><p>The ffasn1c runtime requires that the <code>enum</code> type in the
+generated headers has a size of 32 bits. It is the case with most
+toolchains. If it is not the case (for example if the GCC option
+<code>-fshort-enums</code> is used), then this option should be used. It
+forces ffasn1c to generate an additional dummy definition in each
+<code>enum</code> to force its size to 32 bits.
+</p>
+</dd>
+</dl>
+
+<p>Debug options: these options are useful if you want to know if the
+compiler really understood what you meant.
+</p>
+<dl compact="compact">
+<dt><samp>-fdump-parse-tree</samp></dt>
+<dd><p>dump the modules just after they are parsed.
+</p>
+</dd>
+<dt><samp>-fdump-expanded-tree</samp></dt>
+<dd><p>dump the modules after the parametrized types and values are expanded.
+</p>
+</dd>
+<dt><samp>-E</samp></dt>
+<dd><p>dump the modules after the values are evaluated.
+</p>
+</dd>
+<dt><samp>-fdump-per</samp></dt>
+<dd><p>same as <samp>-E</samp> but with the PER-visible constraints as comments.
+</p></dd>
+</dl>
+
+<a name="Compliance"></a>
+<h2 class="chapter">5 Compliance</h2>
+
+<p>The compiler implements the following standards:
+</p><ul class="no-bullet">
+<li>- X.680 2008 (Specification of basic notation)
+</li><li>- X.681 2008 (Information object specification)
+</li><li>- X.682 2008 (Constraint specification)
+</li><li>- X.683 2008 (Parameterization of ASN.1 specifications)
+</li></ul>
+<p>The <code>ANY</code> type is supported to be able to compile older ASN.1
+sources (X.208 specification).
+</p>
+<p>The runtime library implements the following standards:
+</p><ul class="no-bullet">
+<li>- X.690 2008 (Specification of BER, CER and DER)
+</li><li>- X.691 2008 (Specification of Packed Encoding Rules (PER))
+</li><li>- X.693 2008 (Specification of XML Encoding Rules (XER))
+</li><li>- X.696 2014 (Specification of Octet Encoding Rules (OER))
+</li><li>- X.697 2017 (Specification of Javascript Object Notation Encoding Rules (JER))
+</li><li>- RFC 3641   (Generic String Encoding Rules for ASN.1 Types)
+</li></ul>
+
+<p>Known limitations and rationale:
+</p><ul class="no-bullet">
+<li>- Only PER-visible constraints are checked at runtime. But all
+constraints are correctly evaluated. Table constraints are only
+evaluated to decode open types.
+
+</li><li>- In the PER encoding, the encoding <code>SET OF</code> is not
+canonical. [<code>SET OF</code> is almost never used in PER notation and
+making it canonical has a large runtime cost].
+
+</li><li>- <code>SEQUENCE</code> or <code>SET</code> components with DEFAULT values of a type
+different from BOOLEAN, ENUMERATED, INTEGER, BIT STRING, OCTET STRING
+and string are converted to <code>OPTIONAL</code> components in the
+generated C code. [The runtime cost of handling these cases would be
+high while being almost never used in practice.]
+
+</li><li>- The <code>EMBEDDED PDV</code>, <code>EXTERNAL</code> and <code>CHARACTER STRING</code>
+types are supported but are always encoded as the <code>SEQUENCE</code>
+value indicated in X.680.
+
+</li><li>- The content of object of type <code>GeneralString</code>,
+<code>GraphicString</code>, <code>TeletexString</code>, <code>GeneralizedTime</code>,
+<code>UTCTime</code> and <code>ObjectDescriptor</code> are handled as <code>OCTET
+STRING</code>. No consistency check are done. However we fully support the
+restricted multiplier strings (<code>NumericString</code>,
+<code>PrintableString</code>, <code>VisibleString</code>, <code>IA5String</code>,
+<code>BMPString</code> and <code>UniversalString</code>) and <code>UTF8String</code>.
+
+</li><li>- The <code>REAL</code> type is stored as the <code>double</code> C type. [In our
+current use case, arbitrary precision floating point values were not
+needed.]
+
+</li><li>- The JER encoding instructions of X.697 are not supported. Hence all
+types are encoded using their default JER encodings.
+
+</li></ul>
+
+<a name="Useful-types"></a>
+<h2 class="chapter">6 Useful types</h2>
+
+<p>A few useful types are predefined by the compiler in a built-in
+<code>UsefulDefinitions</code> module. The types are:
+</p>
+<ul class="no-bullet">
+<li>- <code>TYPE-IDENTIFIER</code> (X 681 Annex A)
+
+</li><li>- <code>ABSTRACT-SYNTAX</code> (X 681 Annex B)
+
+</li><li>- <code>InstanceOfType</code> (used to implement the <code>INSTANCE OF</code> type of X 681 Annex C)
+
+</li><li>- <code>EXTERNAL-Internal</code> (used to implement the <code>EXTERNAL</code> type)
+
+</li><li>- <code>EMBEDDED-PDV-Internal</code> (used to implement the <code>EMBEDDED PDV</code> type)
+
+</li><li>- <code>CHARACTER-STRING-Internal</code> (used to implement the <code>CHARACTER STRING</code> type)
+</li></ul>
+
+<a name="Runtime-C_002fC_002b_002b-API"></a>
+<h2 class="chapter">7 Runtime C/C++ API</h2>
+
+<a name="Memory-allocation"></a>
+<h3 class="section">7.1 Memory allocation</h3>
+
+<p>The user must provide the 3 following functions so that the library can
+allocate, reallocate and free memory:
+</p>
+<div class="example">
+<pre class="example">void *asn1_malloc(size_t size);
+void *asn1_realloc(void *ptr, size_t size);
+void asn1_free(void *ptr);
+</pre></div>
+
+<p>Note: asn1_malloc() must return a non NULL pointer when size = 0.
+</p>
+<a name="Managing-ASN_002e1-types-and-values"></a>
+<h3 class="section">7.2 Managing ASN.1 types and values</h3>
+
+<p>The ASN.1 types are compiled into an opaque C type: <code>ASN1CType
+*</code>. All the API uses this type to manipulate ASN.1 types.
+</p>
+<p>The ASN.1 values of the corresponding types are represented in memory
+using the structures, unions and other types defined in the C header
+generated by the compiler. A flat representation is used for
+<code>SEQUENCE/SET</code> and <code>CHOICE</code> to minimize the cost of memory
+allocations. Pointer indirections are used for <code>SEQUENCE/SET OF</code>
+and for recursive types.
+</p>
+<p>The following functions are defined to manage ASN.1 types and
+values:
+</p>
+<dl compact="compact">
+<dt><code>asn1_ssize_t asn1_get_size(const ASN1CType *p);</code></dt>
+<dd><p>Return the size (in bytes) of an ASN1 type.
+</p>
+</dd>
+<dt><code>void *asn1_mallocz_value(const ASN1CType *p);</code></dt>
+<dd><p>Allocate a value of the ASN1 type <var>p</var>. All fields are set to zero.
+</p>
+</dd>
+<dt><code>void asn1_free_value(const ASN1CType *p, void *data);</code></dt>
+<dd><p>Free the value <var>data</var> of the ASN1 type <var>p</var>.
+</p>
+</dd>
+<dt><code>int asn1_cmp_value(const ASN1CType *p, const void *data1, const void *data2);</code></dt>
+<dd><p>Compare the two ASN1 values <var>data1</var> and <var>data2</var> of type
+<var>p</var>. Return &lt; 0 for less than, == 0 for equal, or &gt; 0 for larger
+than. For composite values, a lexicographical ordering is assumed.
+</p>
+</dd>
+<dt><code>int asn1_copy_value(const ASN1CType *p, void *data1, const void *data2);</code></dt>
+<dd><p>Copy <var>data2</var> to <var>data1</var> assuming <var>data1</var> is allocated. All
+referenced data inside <var>data1</var> is allocated. Return 0 if OK, &lt; 0
+if error.
+</p>
+</dd>
+<dt><code>void *asn1_clone_value(const ASN1CType *p, const void *data);</code></dt>
+<dd>
+<p>Clone the value <var>data</var> of type <var>p</var> (equivalent to
+<code>asn1_mallocz_value()</code> followed by
+<code>asn1_copy_value()</code>). Return NULL if error.
+</p>
+</dd>
+<dt><code>void *asn1_random(const ASN1CType *p, int seed);</code></dt>
+<dd><p>Generate a random ASN1 value of type <var>p</var> (useful for
+testing). <var>seed</var> is used to initialize the random generator.
+</p>
+</dd>
+</dl>
+
+<a name="Encoding-of-ASN_002e1-values"></a>
+<h3 class="section">7.3 Encoding of ASN.1 values</h3>
+
+<dl compact="compact">
+<dt><code>asn1_ssize_t asn1_uper_encode(uint8_t **pbuf, const ASN1CType *p, const void *data);</code></dt>
+<dd><p>Encode the value <var>data</var> of ASN.1 type <var>p</var> using unaligned
+PER encoding. Return the allocated value bytes at <var>*pbuf</var> and
+its length in bytes. The value can be freed with <code>asn1_free()</code>.
+</p>
+</dd>
+<dt><code>asn1_ssize_t asn1_aper_encode(uint8_t **pbuf, const ASN1CType *p, const void *data);</code></dt>
+<dd><p>Same for aligned PER encoding.
+</p>
+</dd>
+<dt><code>asn1_ssize_t asn1_der_encode(uint8_t **pbuf, const ASN1CType *p, const void *data);</code></dt>
+<dd><p>Same for DER encoding.
+</p>
+</dd>
+<dt><code>asn1_ssize_t asn1_ber_encode(uint8_t **pbuf, const ASN1CType *p, const void *data, const ASN1BERParams *params);</code></dt>
+<dd><p>Same for generic BER encoding with options specified in
+<var>params</var>. This function is normally only used to generate specific
+BER constructs to test BER decoders.
+</p>
+</dd>
+<dt><code>asn1_ssize_t asn1_gser_encode(uint8_t **pbuf, const ASN1CType *p, const void *data);</code></dt>
+<dd><p>Same for GSER encoding.
+</p>
+</dd>
+<dt><code>asn1_ssize_t asn1_gser_encode2(uint8_t **pbuf, const ASN1CType *p, const void *data, const ASN1GSERParams *params);</code></dt>
+<dd><p>Same for GSER encoding with formatting parameters.
+</p>
+</dd>
+<dt><code>asn1_ssize_t asn1_xer_encode(uint8_t **pbuf, const ASN1CType *p, const void *data);</code></dt>
+<dd><p>Same for XER encoding.
+</p>
+</dd>
+<dt><code>asn1_ssize_t asn1_xer_encode2(uint8_t **pbuf, const ASN1CType *p, const void *data, const ASN1XERParams *params);</code></dt>
+<dd><p>Same for XER encoding with formatting parameters.
+</p>
+</dd>
+<dt><code>asn1_ssize_t asn1_oer_encode(uint8_t **pbuf, const ASN1CType *p, const void *data);</code></dt>
+<dd><p>Same for OER encoding. The encoding corresponds to canonical OER.
+</p>
+</dd>
+<dt><code>asn1_ssize_t asn1_jer_encode(uint8_t **pbuf, const ASN1CType *p, const void *data);</code></dt>
+<dd><p>Same for JER encoding.
+</p>
+</dd>
+<dt><code>asn1_ssize_t asn1_jer_encode2(uint8_t **pbuf, const ASN1CType *p, const void *data, const ASN1JERParams *params);</code></dt>
+<dd><p>Same for JER encoding with formatting parameters.
+</p>
+</dd>
+</dl>
+
+<a name="Decoding-of-ASN_002e1-values"></a>
+<h3 class="section">7.4 Decoding of ASN.1 values</h3>
+
+<dl compact="compact">
+<dt><code>asn1_ssize_t asn1_uper_decode(void **pdata, const ASN1CType *p, const uint8_t *buf, size_t buf_len, ASN1Error *err);</code></dt>
+<dd><p>Decode the value of <var>buf_len</var> bytes contained in <var>buf</var> using
+the unaligned PER encoding. Return the number of consumed bytes or &lt; 0
+if error. <code>*pdata</code> contains the decoded value or <code>NULL</code> if
+there was an error. The decoded value can be freed with
+<code>asn1_free_value()</code>. In case of error, more information about the
+error is returned in <var>err</var>.
+</p>
+</dd>
+<dt><code>asn1_ssize_t asn1_aper_decode(void **pdata, const ASN1CType *p, const uint8_t *buf, size_t buf_len, ASN1Error *err);</code></dt>
+<dd><p>Same for aligned PER decoding.
+</p>
+</dd>
+<dt><code>asn1_ssize_t asn1_ber_decode(void **pdata, const ASN1CType *p, const uint8_t *buf, size_t buf_len, ASN1Error *err);</code></dt>
+<dd><p>Same for BER decoding.
+</p>
+</dd>
+<dt><code>asn1_ssize_t asn1_gser_decode(void **pdata, const ASN1CType *p, const uint8_t *buf, size_t buf_len, ASN1Error *err);</code></dt>
+<dd><p>Same for GSER decoding.
+</p>
+</dd>
+<dt><code>asn1_ssize_t asn1_xer_decode(void **pdata, const ASN1CType *p, const uint8_t *buf, size_t buf_len, ASN1Error *err);</code></dt>
+<dd><p>Same for XER decoding.
+</p>
+</dd>
+<dt><code>asn1_ssize_t asn1_oer_decode(void **pdata, const ASN1CType *p, const uint8_t *buf, size_t buf_len, ASN1Error *err);</code></dt>
+<dd><p>Same for OER decoding.
+</p>
+</dd>
+<dt><code>asn1_ssize_t asn1_jer_decode(void **pdata, const ASN1CType *p, const uint8_t *buf, size_t buf_len, ASN1Error *err);</code></dt>
+<dd><p>Same for JER decoding.
+</p></dd>
+</dl>
+
+<a name="Constraint-check"></a>
+<h3 class="section">7.5 Constraint check</h3>
+<dl compact="compact">
+<dt><code>BOOL asn1_check_constraints(const ASN1CType *p, const void *data, char *msg_buf, size_t msg_buf_size);</code></dt>
+<dd>
+<p>Return TRUE if the constraints are satisfied. Otherwise return FALSE
+and put an informative message string in <code>msg_buf</code> of maximum size
+<code>msg_buf_size</code>.
+</p>
+</dd>
+</dl>
+
+<a name="License"></a>
+<h2 class="chapter">8 License</h2>
+
+<p>ffasn1c and its runtime library is copyright 2011-2023 Fabrice
+Bellard.
+</p>
+<p>ffasn1c and its associated runtime library is available without any
+express or implied warranty. In no event will the author be held
+liable for any damages arising from the use of this software.
+</p>
+<hr>
+
+
+
+</body>
+</html>

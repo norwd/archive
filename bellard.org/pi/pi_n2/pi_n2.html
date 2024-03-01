@@ -1,0 +1,179 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!Converted with LaTeX2HTML 95.1 (Fri Jan 20 1995) by Nikos Drakos (nikos@cbl.leeds.ac.uk), CBLU, University of Leeds >
+<HEAD>
+<TITLE>Computation of the n'th digit of  in any base in O(n^2) </TITLE>
+</HEAD>
+<BODY>
+<meta name="description" value="Computation of the n'th digit of  in any base in  ">
+<meta name="keywords" value="pi_n2">
+<meta name="resource-type" value="document">
+<meta name="distribution" value="global">
+<P>
+  <H1>Computation of the n'th digit of pi in any base in O(n^2) </H1>
+<P><STRONG>Fabrice Bellard</STRONG><P>
+<P>
+<b> This article is an <em> alpha</em> version. Please send any comments to <tt> Fabrice.Bellard@enst.fr</tt> </b>
+<P>
+Simon Plouffe explained in [<A HREF="pi_n2.html#plo96">1</A>] a new algorithm to compute the
+n'th digit of <IMG  ALIGN=BOTTOM ALT="" SRC="img3.gif"> and some other mathematical constants in any base with
+very little memory. Its running time is <IMG  ALIGN=MIDDLE ALT="" SRC="img4.gif">. We
+present here an improvement of this algorithm whose running time is
+<IMG  ALIGN=MIDDLE ALT="" SRC="img5.gif"> while its memory requirements stay <IMG  ALIGN=MIDDLE ALT="" SRC="img6.gif">, which makes it
+practical to compute the millionth digit of <IMG  ALIGN=BOTTOM ALT="" SRC="img7.gif"> for example.
+<P>
+<H1><A NAME=SECTION00010000000000000000>1 First result</A></H1>
+<P>
+We want to compute the <b>n</b>'th digit in base <b>B</b> of <b>s</b>, where
+<P>
+<P><IMG  ALIGN=BOTTOM ALT="" SRC="img8.gif"><P>
+<P>
+Let <IMG  ALIGN=MIDDLE ALT="" SRC="img9.gif"> , <IMG  ALIGN=MIDDLE ALT="" SRC="img10.gif"> and
+<IMG  ALIGN=MIDDLE ALT="" SRC="img11.gif">. We have
+<P>
+<P><IMG  ALIGN=BOTTOM ALT="" SRC="img12.gif"><P>
+<P>
+with the Chinese remainder theorem. Hence
+<P><IMG  ALIGN=BOTTOM ALT="" SRC="img13.gif"><P>
+<P>
+The <IMG  ALIGN=MIDDLE ALT="" SRC="img14.gif">'th digits of <b>s</b>, where <IMG  ALIGN=MIDDLE ALT="" SRC="img15.gif">, are the digits in base <b>B</b> of
+<P>
+<P><IMG  ALIGN=BOTTOM ALT="" SRC="img16.gif"><P>
+<P>
+With the last formula we have
+<P>
+<P><IMG  ALIGN=BOTTOM ALT="" SRC="img17.gif"><P>
+<P>
+As shown in [<A HREF="pi_n2.html#plo96">1</A>], this equality is interesting because each term
+can be computed separatly, with a total memory of <IMG  ALIGN=MIDDLE ALT="" SRC="img18.gif"> if we already
+know <b>b</b> and <IMG  ALIGN=MIDDLE ALT="" SRC="img19.gif">.
+<P>
+<H1><A NAME=SECTION00020000000000000000>2 Second result</A></H1>
+<P>
+<A NAME=res2>&#160;</A>
+<P>
+We want now to compute the <b>n</b>'th digit in base <b>B</b> of <IMG  ALIGN=MIDDLE ALT="" SRC="img20.gif">, where
+<P>
+<P><IMG  ALIGN=BOTTOM ALT="" SRC="img21.gif"><P>
+<P>
+with
+<P>
+<P><IMG  ALIGN=BOTTOM ALT="" SRC="img22.gif"><P>
+<P>
+With the first result we have
+<P>
+<P><IMG  ALIGN=BOTTOM ALT="" SRC="img23.gif"><P>
+<P>
+where
+<P>
+<P><IMG  ALIGN=BOTTOM ALT="" SRC="img24.gif"><P>
+<P>
+with
+<P>
+<P><IMG  ALIGN=BOTTOM ALT="" SRC="img25.gif"><P>
+and
+<P><IMG  ALIGN=BOTTOM ALT="" SRC="img26.gif"><P>
+<P>
+The key observation is that we can use for all <IMG  ALIGN=MIDDLE ALT="" SRC="img27.gif"> the same
+modulo, hence
+<P>
+<P><IMG  ALIGN=BOTTOM ALT="" SRC="img28.gif"><P>
+<P>
+This can be rewritten
+<P>
+<P><IMG  ALIGN=BOTTOM ALT="" SRC="img29.gif"><P>
+<P>
+To have the digits after the n'th one, in base B, we compute
+<P>
+<P><IMG  ALIGN=BOTTOM ALT="" SRC="img30.gif"><P>
+<P>
+The running time is <IMG  ALIGN=MIDDLE ALT="" SRC="img31.gif"> and the memory requirements stay
+<IMG  ALIGN=MIDDLE ALT="" SRC="img32.gif"> if we suppose that:
+<P>
+<UL><LI> <IMG  ALIGN=MIDDLE ALT="" SRC="img33.gif">, <IMG  ALIGN=MIDDLE ALT="" SRC="img34.gif">, <IMG  ALIGN=MIDDLE ALT="" SRC="img35.gif">, <IMG  ALIGN=MIDDLE ALT="" SRC="img36.gif"> and <IMG  ALIGN=MIDDLE ALT="" SRC="img37.gif"> are given.
+<P>
+<LI> <IMG  ALIGN=MIDDLE ALT="" SRC="img38.gif"> for every <b>i</b>. We suppose that M fits in
+a computer word so that each operation takes a time of <IMG  ALIGN=MIDDLE ALT="" SRC="img39.gif"> except the
+modulo inversion which takes a time of <IMG  ALIGN=MIDDLE ALT="" SRC="img40.gif">.
+<P>
+<LI> <IMG  ALIGN=MIDDLE ALT="" SRC="img41.gif"> is small so an exponentiation by it takes a time of <IMG  ALIGN=MIDDLE ALT="" SRC="img42.gif">.
+<P>
+</UL><H1><A NAME=SECTION00030000000000000000>3 Application</A></H1>
+<P>
+Given
+<P><IMG  ALIGN=BOTTOM ALT="" SRC="img43.gif"><P> we can use the result of section <A HREF="pi_n2.html#res2">2</A> because if <b>p</b> is a
+prime number, we notice that <P><IMG  ALIGN=BOTTOM ALT="" SRC="img44.gif"><P> where <IMG  ALIGN=MIDDLE ALT="" SRC="img45.gif"> is the multiplicity of
+<b>p</b> in <b>n</b>. It comes from the relation
+<P><IMG  ALIGN=BOTTOM ALT="" SRC="img46.gif"><P>
+<P>
+Hence, if we want the n'th digit of <IMG  ALIGN=BOTTOM ALT="" SRC="img47.gif"> in base B, we may use the
+following algorithm:
+<P>
+<UL><LI> <IMG  ALIGN=MIDDLE ALT="" SRC="img48.gif"> where
+  <IMG  ALIGN=BOTTOM ALT="" SRC="img49.gif"> is a small integer to ensure we have the precision needed
+  ; <IMG  ALIGN=BOTTOM ALT="" SRC="img50.gif">.
+<P>
+<LI> For each prime number <b>a</b> with <b>2 &lt; a &lt; 2N</b>, do:
+<P>
+  <UL><LI>
+    <IMG  ALIGN=MIDDLE ALT="" SRC="img51.gif"> ;
+    <IMG  ALIGN=BOTTOM ALT="" SRC="img52.gif">.
+<P>
+  <LI>
+    <IMG  ALIGN=BOTTOM ALT="" SRC="img53.gif"> ; 
+    <IMG  ALIGN=BOTTOM ALT="" SRC="img54.gif"> ;
+    <IMG  ALIGN=BOTTOM ALT="" SRC="img55.gif"> ;
+    <IMG  ALIGN=BOTTOM ALT="" SRC="img56.gif">.
+<P>
+  <LI> for <b>k</b> in <IMG  ALIGN=BOTTOM ALT="" SRC="img57.gif"> do:
+<P>
+<UL><LI> 
+<IMG  ALIGN=MIDDLE ALT="" SRC="img58.gif"> ;
+<IMG  ALIGN=MIDDLE ALT="" SRC="img59.gif"> ;
+<IMG  ALIGN=MIDDLE ALT="" SRC="img60.gif">.
+<P>
+<LI> if <IMG  ALIGN=MIDDLE ALT="" SRC="img61.gif"> do: <IMG  ALIGN=MIDDLE ALT="" SRC="img62.gif">.
+<P>
+</UL>
+<P>
+<LI> <IMG  ALIGN=BOTTOM ALT="" SRC="img63.gif"> ; 
+<IMG  ALIGN=MIDDLE ALT="" SRC="img64.gif">.
+<P>
+</UL>
+<P>
+<LI> If we suppose that <IMG  ALIGN=MIDDLE ALT="" SRC="img65.gif">, then, if we
+  neglect rounding errors,
+  <IMG  ALIGN=MIDDLE ALT="" SRC="img66.gif">. The number <b>q</b> of
+  correct digits depends on <IMG  ALIGN=BOTTOM ALT="" SRC="img67.gif">.
+<P>
+</UL>
+<P>
+The running time is <IMG  ALIGN=MIDDLE ALT="" SRC="img68.gif"> because there are <IMG  ALIGN=MIDDLE ALT="" SRC="img69.gif">
+prime numbers between <b>2</b> and <b>2n</b> . The memory requirements are, as
+expected, in <IMG  ALIGN=MIDDLE ALT="" SRC="img70.gif">.
+<P>
+<H1><A NAME=SECTION00040000000000000000>4 Conclusion</A></H1>
+<P>
+We have presented an algorithm to compute the n'th digit in any base B of
+<IMG  ALIGN=BOTTOM ALT="" SRC="img71.gif"> whose running time is <IMG  ALIGN=MIDDLE ALT="" SRC="img72.gif">. It has the same running time as other
+classical methods for computing <IMG  ALIGN=BOTTOM ALT="" SRC="img73.gif"> (e.g. arctangent formulas), but it
+uses little memory, it is very simple and does not need high precision
+computations. It is still slower than the BBP algorithm [<A HREF="pi_n2.html#bbp95">2</A>], but it
+works in any base. As described in [<A HREF="pi_n2.html#plo96">1</A>], the same algorithm may
+be used to compute other numbers such as <IMG  ALIGN=MIDDLE ALT="" SRC="img74.gif">, <IMG  ALIGN=BOTTOM ALT="" SRC="img75.gif">, <IMG  ALIGN=BOTTOM ALT="" SRC="img76.gif">,
+<IMG  ALIGN=BOTTOM ALT="" SRC="img77.gif"> and <IMG  ALIGN=MIDDLE ALT="" SRC="img78.gif">.
+<P>
+ <P><A NAME=SECTIONREF><H2>References</H2></A><P>
+<DL COMPACT>
+<DT><A NAME=plo96><STRONG>1</STRONG></A><DD> Simon Plouffe, <i> On the computation of the n'th 
+decimal digit of various transcendental numbers</i>, November 1996.
+<P>
+<DT><A NAME=bbp95><STRONG>2</STRONG></A><DD> David H. Bailey, Peter B. Borwein and 
+Simon Plouffe, <i> On the Rapid Computation of Various Polylogarithmic
+Constants</i>, April 1997 in Mathematics of Computation.
+</DL><BR> <HR>
+<P><ADDRESS>
+Sun Jan 12 22:34:36 MET 1997 <BR>Fabrice Bellard  (<A
+HREF="../../index.html">
+http://bellard.org/ </A>)
+</ADDRESS>
+</BODY>

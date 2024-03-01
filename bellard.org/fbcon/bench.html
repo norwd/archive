@@ -1,0 +1,92 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <META NAME="GENERATOR" CONTENT="Mozilla/4.07 [en] (X11; I; Linux 2.1.114 i586) [Netscape]">
+</HEAD>
+<BODY>
+
+<CENTER>
+<H1>
+Benchmarks</H1></CENTER>
+We draw 2.10^6 pixels on a region of 512x256 pixels in 640x480x16. We used
+the vesafb driver with a PCI Matrox Mystic card on a Pentium 166 computer.&nbsp;
+The time reported was measured with the <TT>gettimeofday </TT>system call.
+Hence, the total running time is taken into account.
+<P>The test program is available <A HREF="index.html#test">here</A>.
+<P>This test is intended to measure the overhead of the kernel space acceleration
+against a user space one. The primitive choosen (to draw a single pixel)
+is very simple so I assume that this is the worst case we could have. I
+tested several different cases (clipping or no clipping in user space,
+changing the size of the requests). The pixels coodinates were generated
+with a very simple function so that the overhead is very small here too
+(see the source code).
+<P>When the clipping was done, about 1/4 of the pixels were drawn outside
+the clipping rectangle. Note that with kernel acceleration, the clipping
+is always performed for security issues.
+<P>Here are the results :
+<BR>&nbsp;
+<TABLE BORDER WIDTH="100%" NOSAVE >
+<TR>
+<TD><B>Benchmark description</B></TD>
+
+<TD><B>Running time (in seconds)</B></TD>
+</TR>
+
+<TR>
+<TD>User space, no clipping</TD>
+
+<TD>0.22</TD>
+</TR>
+
+<TR>
+<TD>Kernel space, no pixel clipped (clipping is always done), REQUEST_SIZE=1000</TD>
+
+<TD>0.86</TD>
+</TR>
+
+<TR>
+<TD>User space, with clipping</TD>
+
+<TD>0.24</TD>
+</TR>
+
+<TR>
+<TD>Kernel space, REQUEST_SIZE=1000 (clipping is always done)</TD>
+
+<TD>0.80</TD>
+</TR>
+
+<TR>
+<TD>Kernel space, REQUEST_SIZE=100</TD>
+
+<TD>1.24</TD>
+</TR>
+
+<TR>
+<TD>Kernel space, REQUEST_SIZE=10000</TD>
+
+<TD>0.95</TD>
+</TR>
+</TABLE>
+
+<P>This tests shows that the kernel mode acceleration introduces a non
+negligible overhead for each command (it is about 3.3 times slower than
+user space acceleration for a DrawPixel test).
+<P>This is a quite positive result because it means that the overhead of
+building the display list, doing the system call and interpreting the display
+list takes the time of about two DrawPixel primitives, which is very small.
+For example, the X11 server should have in every case a much bigger overhead
+in its protocol interpretation.
+<P>The optimal request size seem to be about 1000 words on this computer.
+It is not very big so the display list handling may not consume a lot of
+memory in user space.
+<P><B>This test shows that even for small primitives (even up to lines
+of a few pixels), the kernel space acceleration can be interesting</B>.
+<P>By using inlining in the kernel code, we estimate that the penalty can
+come at about one DrawPixel lost per accelerated primitive.
+<P>
+<HR WIDTH="100%">
+<BR>Fabrice Bellard, Jan 12, 1999.
+</BODY>
+</HTML>

@@ -1,0 +1,459 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <title>TextSynth Server</title>
+   <style>
+    
+table.sortable, th {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+
+table.sortable tbody tr:nth-child(odd) {
+    background-color: #ddd;
+}
+
+table.sortable td {
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+}
+
+td, th {
+    padding: 3px;
+}
+
+th {
+    font-size: 85%;
+    font-weight: bold;
+    text-align: left;
+    padding: 4px;
+    margin: 1px;
+}
+
+.num {
+    text-align: right;
+}
+
+/* sorting */
+
+table.sortable th button {
+  font-size: 100%;
+  font-weight: bold;
+  background: transparent;
+  border: none;
+  display: inline;
+  right: 0;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  text-align: left;
+  outline: none;
+  cursor: pointer;
+}
+
+table.sortable th[aria-sort="descending"] span::after {
+  content: "▼";
+  color: currentcolor;
+  font-size: 100%;
+  top: 0;
+}
+
+table.sortable th[aria-sort="ascending"] span::after {
+  content: "▲";
+  color: currentcolor;
+  font-size: 100%;
+  top: 0;
+}
+
+table.sortable th:not([aria-sort]) button:focus span::after,
+table.sortable th:not([aria-sort]) button:hover span::after {
+  content: "▼";
+  color: currentcolor;
+  font-size: 100%;
+  top: 0;
+}
+   </style>
+   <script src="sortable-table.js"></script>
+</head>
+<body>
+<h1>TextSynth Server</h1>
+
+<h2>News</h2>
+
+<ul>
+  <li>2024-01-20: Added Mixtral model support. Added fast Whisper
+  based speech to text transcription.</li>
+  <li>2023-10-21: CUDA support in the Windows version, mistral model
+  support. Speculative sampling is supported. BNF grammar and JSON
+  schema sampling.</li>
+  <li>2023-08-07: The GPU version and model conversion utilities are
+  now freely available. New <a href="ts_zip.html">ts_zip</a> utility
+  to efficiently compress text files with large language models.</li>
+  <li>2023-07-21: The MPT and Llama 2 models are supported.</li>
+  <li>2023-06-10: New <b>ts_chat</b> utility to chat with language models. The Falcon and RedPajama-INCITE models are supported.</li>
+  <li>2023-03-26: The <a href="https://github.com/facebookresearch/fairseq/tree/nllb">NLLB200</a> and <a href="https://arxiv.org/abs/2205.05131">flan UL2</a> models have been added. An HTML GUI is now available in <b>ts_server</b>.</li>
+</ul>
+
+<h2>Introduction</h2>
+
+<b>ts_server</b> is a web server proposing a REST API to large
+language models. They can be used for example for text completion,
+question answering, classification, chat, translation, image
+generation, ...
+<p>It has the following characteristics:
+<ul>
+  <li>All is included in a single binary. Very few external dependencies (Python is not needed) so installation is easy.</li>
+  <li>Supports many Transformer variants (<a href="https://github.com/kingoflolz/mesh-transformer-jax">GPT-J</a>, <a href="https://github.com/EleutherAI/gpt-neox">GPT-NeoX</a>, <a href="https://github.com/EleutherAI/gpt-neo">GPT-Neo</a>, <a href="https://github.com/facebookresearch/metaseq">OPT</a>, <a href="https://github.com/pytorch/fairseq/tree/main/examples/moe_lm">Fairseq GPT</a>, <a href="https://arxiv.org/abs/2010.11125">M2M100</a>, <a href="https://github.com/salesforce/CodeGen">CodeGen</a>, <a href="https://github.com/openai/gpt-2">GPT2</a>, <a href="https://arxiv.org/abs/2210.11416">T5</a>, <a href="https://github.com/BlinkDL/RWKV-LM">RWKV</a>, <a href="https://github.com/facebookresearch/llama">LLAMA</a>, <a href="https://falconllm.tii.ae/">Falcon</a>, <a href="https://github.com/mosaicml/llm-foundry">MPT</a>, <a href="https://arxiv.org/abs/2307.09288">Llama 2</a>, Mistral, Mixtral, Whisper) and <a href="https://github.com/CompVis/stable-diffusion">Stable Diffusion</a>.</li>
+  <li>Integrated REST JSON API for text completion, translation, image generation and audio transcription. It is used by <a href="https://textsynth.com/documentation.html">textsynth.com</a>.</li>
+  <li>Integrated HTML GUI for testing.</li>
+  <li>Very high performance for small and large batches on CPU and GPU. Support of dynamic batching to handle a large number of simultaneous requests.</li>
+  <li>Efficient custom 8, 4 and 3 bit quantization. Our quantized models are thoroughly evaluated on several <a href="index.html#models">standard tasks</a> to ensure good performance.</li>
+  <li>Larger models work optimally on lower cost GPUs (e.g. RTX 3090, RTX A6000) thanks to efficient quantization.</li>
+  <li>Support of speculative sampling for even faster inference.</li>
+  <li>Support of grammar based sampling to constraint the model output according to a BNF grammar or a JSON schema.</li>
+  <li>Uses the <a href="../libnc/index.html">LibNC</a> library for simple tensor manipulation using the
+  C language.</li>
+  <li>Simple command line tools (<b>ts_test</b>, <b>ts_sd</b>, <b>ts_chat</b>, <a href="ts_zip.html"><b>ts_zip</b></a>) are provided to test the various models.</li>
+</ul>
+</p>
+The free version is released as binary code for non-commercial use
+only. It has some <a href="ts_server.html">limitations</a> compared to
+the commercial version. Please contact <a href="../index.html">
+<script>
+function f(s)
+{
+    var a, i;
+    a = "";
+    for(i = 0; i < s.length; i++)
+        a += String.fromCharCode(s.charCodeAt(i) - 1);
+    return a;
+}
+document.write(f("gbcsjdf!bu!cfmmbse!epu!psh"));
+</script></a> for the exact terms.
+
+<h2>Download</h2>
+               
+<ul>
+  <li>Linux version <a href="ts_server_free-2024-01-20.tar.gz">ts_server_free-2024-01-20.tar.gz</a> (<a href="Changelog">Changelog</a>).</li>
+  <li>Windows version <a href="ts_server_free-2024-01-20-win64.zip">ts_server_free-2024-01-20-win64.zip</a> (<a href="Changelog">Changelog</a>).</li>
+</ul>
+
+<h2><a href="ts_server.html">Documentation</a></h2>
+
+<h2>Benchmarks</h2>
+
+<h4>Text generation</h4>
+<p>
+  100 tokens are generated with a batch size of 1 and 50 input tokens:
+</p>
+    <table class="sortable">
+      <thead>
+        <tr>
+          <th aria-sort="ascending" style="width:15em;">Model<sup>(3)</sup>
+          <th class="num" style="width:8em;">Epyc 7313 (6)<br>(tokens/s)
+          <th class="num" style="width:8em;">RTX A6000<br>(tokens/s)
+          <th class="num" style="width:8em;">RTX 4090<br>(tokens/s)
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>gptj_6B_q4<td class="num">21.5<td class="num">132<td class="num">164</tr>
+        <tr><td>flan_t5_xxl_q4<td class="num">25<td class="num">130<td class="num">158</tr>
+        <tr><td>llama2_7B_q4<td class="num">23<td class="num">115<td class="num">144</tr>
+        <tr><td>llama2_13B_q4<td class="num">12.0<td class="num">69.3<td class="num">88</tr>
+        <tr><td>gptneox_20B_q4<td class="num">8.1<td class="num">45.5<td class="num">59</tr>
+        <tr><td>llama2_70B_q4<td class="num">2.5<td class="num">15.2<td class="num">-</tr>
+      </tbody>
+    </table>
+
+<p>
+  8 simultaneous requests generating 100 tokens with 50 input tokens
+  (equivalent to a batch size of 8):
+</p>
+    <table class="sortable">
+      <thead>
+        <tr>
+          <th aria-sort="ascending" style="width:15em;">Model<sup>(3)</sup>
+          <th class="num" style="width:8em;">RTX A6000<br>(tokens/s)
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>llama2_7B_q4<td class="num">783</tr>
+        <tr><td>llama2_13B_q4<td class="num">492</tr>
+        <tr><td>llama2_70B_q4<td class="num">118</tr>
+      </tbody>
+    </table>
+    
+<h4>Text to image</h4>
+<p>
+  A single 512x512 image is generated using 50 time steps.
+</p>
+
+    <table class="sortable">
+      <thead>
+        <tr>
+          <th aria-sort="ascending" style="width:15em;">Model<sup>(3)</sup>
+          <th class="num" style="width:7em;">RTX A6000<br>(seconds)
+          <th class="num" style="width:7em;">RTX 4090<br>(seconds)
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>stable diffusion 1.4<td class="num">1.82<td class="num">1.21</tr>
+        <tr><td>stable diffusion 2.1<td class="num">1.67<td class="num">1.19</tr>
+      </tbody>
+    </table>
+    
+<h2><a name="models">Available Models</a></h2>
+
+We provide here model files that can be used with the TextSynth
+Server. Each model was evaluated with
+the <a href="https://github.com/EleutherAI/lm-evaluation-harness">lm-evaluation-harness</a>
+with the TextSynth server on a RTX A6000 GPU.
+<p>Language Models:
+
+<table class="sortable">
+  <thead>
+    <tr>
+      <th aria-sort="ascending" style="width:16em;"><button>Model<sup>(1)(2)(3)</sup><span aria-hidden="true"></span><br></button>
+      <th class="num" style="width:7em;"><button>Size<sup>(4)</sup><span aria-hidden="true"></span><br>(GB)</button>
+      <th class="num" style="width:8em;"><button>lambada<sup>(5)</sup><span aria-hidden="true"></span><br>(ppl)</button>
+      <th class="num" style="width:8em;"><button>lambada<span aria-hidden="true"></span><br>(acc)</button>
+      <th class="num" style="width:8em;"><button>hellaswag<span aria-hidden="true"></span><br>(acc_norm)</button>
+      <th class="num" style="width:8.5em;"><button>winogrande<span aria-hidden="true"></span><br>(acc)</button>
+      <th class="num" style="width:8em;"><button>piqa<span aria-hidden="true"></span><br>(acc)</button>
+      <th class="num" style="width:8em;"><button>coqa<span aria-hidden="true"></span><br>(f1)</button>
+      <th class="num" style="width:8em;"><button>average<span aria-hidden="true"></span><br></button>
+    </tr>
+  </thead>
+  <tbody>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/bloom_560M.bin">bloom_560M</a>
+<td class="num">    1.1<td class="num">     29.176<td class="num">      36.8%<td class="num">      35.8%<td class="num">      51.4%<td class="num">      63.7%<td class="num">      36.0%<td class="num">      44.7%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/codegen_6B_mono_q4.bin">codegen_6B_mono_q4</a>
+<td class="num">    4.4<td class="num">     69.409<td class="num">      28.0%<td class="num">      35.7%<td class="num">      51.1%<td class="num">      60.2%<td class="num">      38.0%<td class="num">      42.6%</tr>
+<tr><td>codegen_6B_mono_q8
+<td class="num">    7.7<td class="num">     67.262<td class="num">      28.1%<td class="num">      35.8%<td class="num">      50.8%<td class="num">      60.1%<td class="num">      39.1%<td class="num">      42.8%</tr>
+<td>fairseq_gpt_13B       <td class="num">   26.2<td class="num">      3.567<td class="num">      71.9%<td class="num">      72.7%<td class="num">      67.5%<td class="num">      77.6%<td class="num">      70.1%<td class="num">      71.9%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/fairseq_gpt_13B_q4.bin">fairseq_gpt_13B_q4</a>
+<td class="num">    7.9<td class="num">      3.646<td class="num">      71.2%<td class="num">      72.5%<td class="num">      67.6%<td class="num">      77.4%<td class="num">      70.6%<td class="num">      71.9%</tr>
+<tr><td>fairseq_gpt_13B_q8
+<td class="num">   14.2<td class="num">      3.565<td class="num">      71.8%<td class="num">      72.7%<td class="num">      67.2%<td class="num">      77.7%<td class="num">      70.0%<td class="num">      71.9%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/flan_t5_base.bin">flan_t5_base</a>
+<td class="num">    0.5<td class="num">     12.891<td class="num">      54.2%<td class="num">      36.5%<td class="num">      54.7%<td class="num">      65.8%<td class="num">      62.1%<td class="num">      54.7%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/flan_t5_base_q8.bin">flan_t5_base_q8</a>
+<td class="num">    0.3<td class="num">     13.098<td class="num">      54.2%<td class="num">      36.4%<td class="num">      54.2%<td class="num">      65.7%<td class="num">      61.8%<td class="num">      54.5%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/flan_t5_small.bin">flan_t5_small</a>
+<td class="num">    0.2<td class="num">     23.343<td class="num">      46.7%<td class="num">      29.2%<td class="num">      50.0%<td class="num">      62.4%<td class="num">      47.9%<td class="num">      47.2%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/flan_t5_small_q8.bin">flan_t5_small_q8</a>
+<td class="num">    0.1<td class="num">     23.449<td class="num">      46.7%<td class="num">      29.2%<td class="num">      49.7%<td class="num">      62.4%<td class="num">      48.2%<td class="num">      47.2%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/flan_t5_xxl_q4.bin">flan_t5_xxl_q4</a>
+<td class="num">    6.5<td class="num">      3.010<td class="num">      77.7%<td class="num">      71.5%<td class="num">      73.4%<td class="num">      77.6%<td class="num">      71.8%<td class="num">      74.4%</tr>
+<tr><td>flan_t5_xxl_q8
+<td class="num">   12.0<td class="num">      3.049<td class="num">      77.8%<td class="num">      72.1%<td class="num">      75.1%<td class="num">      77.8%<td class="num">      73.1%<td class="num">      75.2%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/flan_ul2_20B_q4.bin">flan_ul2_20B_q4</a>
+<td class="num">   11.3<td class="num">          -<td class="num">      74.1%<td class="num">      24.3%<td class="num">      51.1%<td class="num">      49.9%<td class="num">      78.8%<td class="num">      55.6%</tr>
+<tr><td>flan_ul2_20B_q8
+<td class="num">   20.9<td class="num">          -<td class="num">      74.4%<td class="num">      24.4%<td class="num">      52.0%<td class="num">      50.6%<td class="num">      77.3%<td class="num">      55.7%</tr>
+
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/gpt2_117M.bin">gpt2_117M</a>
+<td class="num">    0.3<td class="num">     40.110<td class="num">      32.9%<td class="num">      31.1%<td class="num">      52.1%<td class="num">      62.9%<td class="num">      27.3%<td class="num">      41.3%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/gpt2_345M.bin">gpt2_345M</a>
+<td class="num">    0.7<td class="num">     18.272<td class="num">      43.5%<td class="num">      39.4%<td class="num">      53.3%<td class="num">      67.7%<td class="num">      43.1%<td class="num">      49.4%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/gpt2_345M_q8.bin">gpt2_345M_q8</a>
+<td class="num">    0.5<td class="num">     18.452<td class="num">      43.1%<td class="num">      39.4%<td class="num">      53.1%<td class="num">      67.5%<td class="num">      41.9%<td class="num">      49.0%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/gpt2_774M.bin">gpt2_774M</a>
+<td class="num">    1.6<td class="num">     12.966<td class="num">      47.8%<td class="num">      45.4%<td class="num">      55.6%<td class="num">      70.4%<td class="num">      48.5%<td class="num">      53.5%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/gpt2_774M_q8.bin">gpt2_774M_q8</a>
+<td class="num">    1.0<td class="num">     12.928<td class="num">      47.9%<td class="num">      45.4%<td class="num">      55.3%<td class="num">      70.3%<td class="num">      48.2%<td class="num">      53.4%</tr>
+<tr><td>gpt2_1558M            <td class="num">    3.1<td class="num">     10.637<td class="num">      51.3%<td class="num">      50.8%<td class="num">      58.4%<td class="num">      70.8%<td class="num">      53.2%<td class="num">      56.9%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/gpt2_1558M_q8.bin">gpt2_1558M_q8</a>
+<td class="num">    1.8<td class="num">     10.655<td class="num">      51.2%<td class="num">      50.8%<td class="num">      58.6%<td class="num">      70.8%<td class="num">      53.2%<td class="num">      56.9%</tr>
+
+<td>gptj_6B               <td class="num">   12.1<td class="num">      4.124<td class="num">      69.0%<td class="num">      66.2%<td class="num">      64.8%<td class="num">      75.5%<td class="num">      66.9%<td class="num">      68.5%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/gptj_6B_q4.bin">gptj_6B_q4</a>
+<td class="num">    3.8<td class="num">      4.153<td class="num">      68.9%<td class="num">      65.7%<td class="num">      63.9%<td class="num">      74.4%<td class="num">      67.0%<td class="num">      68.0%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/gptj_6B_q8.bin">gptj_6B_q8</a>
+<td class="num">    6.6<td class="num">      4.122<td class="num">      69.1%<td class="num">      66.2%<td class="num">      64.4%<td class="num">      75.4%<td class="num">      66.4%<td class="num">      68.3%</tr>
+<td>gptneox_20B           <td class="num">   41.1<td class="num">      3.657<td class="num">      72.6%<td class="num">      71.4%<td class="num">      65.5%<td class="num">      77.5%<td class="num">      73.3%<td class="num">      72.0%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/gptneox_20B_q4.bin">gptneox_20B_q4</a>
+<td class="num">   12.2<td class="num">      3.711<td class="num">      72.0%<td class="num">      69.3%<td class="num">      64.8%<td class="num">      76.7%<td class="num">      70.8%<td class="num">      70.7%</tr>
+<tr><td>gptneox_20B_q8
+<td class="num">   22.1<td class="num">      3.659<td class="num">      72.6%<td class="num">      71.3%<td class="num">      65.8%<td class="num">      77.3%<td class="num">      72.9%<td class="num">      72.0%</tr>
+
+<tr><td>llama_7B              <td class="num">   13.5<td class="num">      3.463<td class="num">      73.6%<td class="num">      76.2%<td class="num">      70.4%<td class="num">      78.1%<td class="num">      75.4%<td class="num">      74.7%</tr>
+<tr><td>llama_7B_q4           <td class="num">    4.0<td class="num">      3.549<td class="num">      73.2%<td class="num">      75.5%<td class="num">      70.4%<td class="num">      78.0%<td class="num">      74.7%<td class="num">      74.4%</tr>
+<tr><td>llama_7B_q8           <td class="num">    7.3<td class="num">      3.453<td class="num">      73.7%<td class="num">      76.1%<td class="num">      70.2%<td class="num">      78.0%<td class="num">      75.5%<td class="num">      74.7%</tr>
+<tr><td>llama_13B_q4          <td class="num">    7.6<td class="num">      3.130<td class="num">      77.1%<td class="num">      78.6%<td class="num">      72.2%<td class="num">      78.3%<td class="num">      77.8%<td class="num">      76.8%</tr>
+<tr><td>llama_13B_q8          <td class="num">   14.0<td class="num">      3.178<td class="num">      76.5%<td class="num">      79.1%<td class="num">      73.2%<td class="num">      79.1%<td class="num">      77.1%<td class="num">      77.0%</tr>
+<tr><td>llama_30B_q4          <td class="num">   18.7<td class="num">      2.877<td class="num">      77.5%<td class="num">      82.4%<td class="num">      75.7%<td class="num">      80.2%<td class="num">      80.2%<td class="num">      79.2%</tr>
+<tr><td>llama_30B_q8          <td class="num">   34.8<td class="num">      2.853<td class="num">      77.7%<td class="num">      82.7%<td class="num">      76.3%<td class="num">      80.3%<td class="num">      80.4%<td class="num">      79.5%</tr>
+<tr><td>llama_65B_q4          <td class="num">   37.2<td class="num">      2.760<td class="num">      78.5%<td class="num">      83.9%<td class="num">      76.6%<td class="num">      81.4%<td class="num">      83.2%<td class="num">      80.7%</tr>
+
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/opt_125M.bin">opt_125M</a>
+<td class="num">    0.3<td class="num">     26.028<td class="num">      37.9%<td class="num">      31.3%<td class="num">      50.2%<td class="num">      63.2%<td class="num">      23.4%<td class="num">      41.2%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/opt_30B_q4.bin">opt_30B_q4</a>
+<td class="num">   17.8<td class="num">      3.656<td class="num">      71.5%<td class="num">      72.1%<td class="num">      68.0%<td class="num">      77.4%<td class="num">      69.9%<td class="num">      71.8%</tr>
+<tr><td>opt_30B_q8
+<td class="num">   32.6<td class="num">      3.628<td class="num">      71.6%<td class="num">      72.3%<td class="num">      68.2%<td class="num">      77.7%<td class="num">      71.4%<td class="num">      72.3%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/opt_66B_q4.bin">opt_66B_q4</a>
+<td class="num">   38.2<td class="num">      3.308<td class="num">      73.4%<td class="num">      74.4%<td class="num">      68.4%<td class="num">      78.5%<td class="num">      75.0%<td class="num">      73.9%</tr>
+
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/pythia_deduped_70M.bin">pythia_deduped_70M</a>
+<td class="num">    0.1<td class="num">     96.126<td class="num">      25.6%<td class="num">      28.3%<td class="num">      54.4%<td class="num">      60.4%<td class="num">      13.1%<td class="num">      36.3%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/pythia_deduped_160M.bin">pythia_deduped_160M</a>
+<td class="num">    0.3<td class="num">     26.380<td class="num">      36.9%<td class="num">      32.3%<td class="num">      51.4%<td class="num">      63.8%<td class="num">      23.2%<td class="num">      41.5%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/pythia_deduped_410M.bin">pythia_deduped_410M</a>
+<td class="num">    0.8<td class="num">     10.827<td class="num">      51.7%<td class="num">      40.8%<td class="num">      54.0%<td class="num">      67.2%<td class="num">      43.0%<td class="num">      51.4%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/pythia_deduped_410M_q8.bin">pythia_deduped_410M_q8</a>
+<td class="num">    0.5<td class="num">     10.729<td class="num">      51.8%<td class="num">      40.7%<td class="num">      53.8%<td class="num">      67.1%<td class="num">      42.7%<td class="num">      51.2%</tr>
+<tr><td>pythia_deduped_1B     <td class="num">    2.0<td class="num">      7.273<td class="num">      58.5%<td class="num">      49.0%<td class="num">      54.5%<td class="num">      71.0%<td class="num">      49.9%<td class="num">      56.6%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/pythia_deduped_1B_q8.bin">pythia_deduped_1B_q8</a>
+<td class="num">    1.2<td class="num">      7.286<td class="num">      58.4%<td class="num">      49.0%<td class="num">      54.9%<td class="num">      70.9%<td class="num">      49.0%<td class="num">      56.5%</tr>
+<tr><td>pythia_deduped_1.4B   <td class="num">    2.8<td class="num">      6.546<td class="num">      63.1%<td class="num">      52.2%<td class="num">      57.1%<td class="num">      72.7%<td class="num">      52.6%<td class="num">      59.5%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/pythia_deduped_1.4B_q8.bin">pythia_deduped_1.4B_q8</a>
+<td class="num">    1.6<td class="num">      6.577<td class="num">      63.3%<td class="num">      52.1%<td class="num">      55.7%<td class="num">      73.1%<td class="num">      53.0%<td class="num">      59.4%</tr>
+<tr><td>pythia_deduped_2.8B   <td class="num">    5.6<td class="num">      4.787<td class="num">      67.1%<td class="num">      61.6%<td class="num">      60.9%<td class="num">      74.4%<td class="num">      65.5%<td class="num">      65.9%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/pythia_deduped_2.8B_q8.bin">pythia_deduped_2.8B_q8</a>
+<td class="num">    3.1<td class="num">      4.778<td class="num">      66.9%<td class="num">      61.5%<td class="num">      61.2%<td class="num">      74.5%<td class="num">      65.6%<td class="num">      66.0%</tr>
+<td>pythia_deduped_6.9B   <td class="num">   13.7<td class="num">      4.195<td class="num">      69.1%<td class="num">      65.7%<td class="num">      63.9%<td class="num">      75.1%<td class="num">      66.1%<td class="num">      68.0%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/pythia_deduped_6.9B_q4.bin">pythia_deduped_6.9B_q4</a>
+<td class="num">    4.3<td class="num">      4.344<td class="num">      68.3%<td class="num">      65.0%<td class="num">      62.5%<td class="num">      75.3%<td class="num">      66.3%<td class="num">      67.5%</tr>
+<tr><td>pythia_deduped_6.9B_q8
+<td class="num">    7.5<td class="num">      4.187<td class="num">      69.4%<td class="num">      65.7%<td class="num">      63.6%<td class="num">      75.5%<td class="num">      66.8%<td class="num">      68.2%</tr>
+<tr><td>pythia_deduped_12B    <td class="num">   23.7<td class="num">      3.854<td class="num">      70.9%<td class="num">      69.2%<td class="num">      63.9%<td class="num">      76.3%<td class="num">      70.8%<td class="num">      70.2%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/pythia_deduped_12B_q4.bin">pythia_deduped_12B_q4</a>
+<td class="num">    7.2<td class="num">      4.187<td class="num">      69.2%<td class="num">      68.5%<td class="num">      63.1%<td class="num">      76.4%<td class="num">      69.6%<td class="num">      69.4%</tr>
+<tr><td>pythia_deduped_12B_q8
+<td class="num">   12.8<td class="num">      3.857<td class="num">      70.9%<td class="num">      69.2%<td class="num">      64.2%<td class="num">      76.1%<td class="num">      70.9%<td class="num">      70.3%</tr>
+
+<tr><td>rwkv_14B              <td class="num">   28.3<td class="num">      3.819<td class="num">      71.6%<td class="num">      70.2%<td class="num">      63.1%<td class="num">      77.5%<td class="num">      47.2%<td class="num">      65.9%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/rwkv_14B_q4.bin">rwkv_14B_q4</a>
+<td class="num">    8.5<td class="num">      4.076<td class="num">      68.3%<td class="num">      69.8%<td class="num">      63.1%<td class="num">      77.1%<td class="num">      45.0%<td class="num">      64.7%</tr>
+<tr><td>rwkv_14B_q8
+<td class="num">   15.3<td class="num">      3.806<td class="num">      71.9%<td class="num">      70.2%<td class="num">      63.0%<td class="num">      77.5%<td class="num">      47.1%<td class="num">      65.9%</tr>
+<tr><td>rwkv_7B               <td class="num">   16<td class="num">      4.396<td class="num">      67.5%<td class="num">      65.6%<td class="num">      61.9%<td class="num">      75.6%<td class="num">      39.7%<td class="num">      62.1%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/rwkv_7B_q4.bin">rwkv_7B_q4</a>
+<td class="num">    4.6<td class="num">      4.939<td class="num">      64.7%<td class="num">      64.8%<td class="num">      61.2%<td class="num">      75.4%<td class="num">      38.4%<td class="num">      60.9%</tr>
+<tr><td>rwkv_7B_q8
+<td class="num">    8.0<td class="num">      4.395<td class="num">      67.5%<td class="num">      65.6%<td class="num">      61.6%<td class="num">      75.9%<td class="num">      40.2%<td class="num">      62.2%</tr>
+
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/RedPajama-INCITE-7B_q4.bin">RedPajama-INCITE-7B_q4</a>
+<td class="num">    4.3<td class="num">      4.006<td class="num">      71.0%<td class="num">      69.7%<td class="num">      64.6%<td class="num">      76.3%<td class="num">      71.7%<td class="num">      70.7%</tr>
+<tr><td>RedPajama-INCITE-7B_q8
+<td class="num">    7.5<td class="num">      3.910<td class="num">      71.4%<td class="num">      70.4%<td class="num">      64.3%<td class="num">      77.0%<td class="num">      71.9%<td class="num">      71.0%</tr>
+
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/falcon_40B_q4.bin">falcon_40B_q4</a>
+<td class="num">   24.6<td class="num">      2.844<td class="num">      77.6%<td class="num">      82.5%<td class="num">      76.2%<td class="num">      82.2%<td class="num">      78.8%<td class="num">      79.5%</tr>
+<tr><td>falcon_40B_q8
+<td class="num">   45.0<td class="num">      2.799<td class="num">      77.9%<td class="num">      82.7%<td class="num">      76.7%<td class="num">      82.2%<td class="num">      80.4%<td class="num">      80.0%</tr>
+<tr><td>falcon_7B
+<td class="num">   14.4<td class="num">      3.359<td class="num">      75.0%<td class="num">      76.2%<td class="num">      67.3%<td class="num">      79.4%<td class="num">      72.1%<td class="num">      74.0%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/falcon_7B_q4.bin">falcon_7B_q4</a>
+<td class="num">    4.6<td class="num">      3.444<td class="num">      73.9%<td class="num">      75.8%<td class="num">      67.5%<td class="num">      79.7%<td class="num">      71.6%<td class="num">      73.7%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/falcon_7B_q8.bin">falcon_7B_q8</a>
+<td class="num">    7.9<td class="num">      3.368<td class="num">      75.0%<td class="num">      76.2%<td class="num">      66.9%<td class="num">      79.5%<td class="num">      71.9%<td class="num">      73.9%</tr>
+
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/mpt_30B_q4.bin">mpt_30B_q4</a>            <td class="num">   17.8<td class="num">      3.219<td class="num">      78.9%<td class="num">      79.4%<td class="num">      70.1%<td class="num">      79.8%<td class="num">      79.8%<td class="num">      77.6%</tr>
+<tr><td>mpt_30B_q8            <td class="num">   32.6<td class="num">      3.062<td class="num">      80.7%<td class="num">      79.8%<td class="num">      70.7%<td class="num">      80.0%<td class="num">      79.9%<td class="num">      78.2%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/mpt_7B_q4.bin">mpt_7B_q4</a>             <td class="num">    4.3<td class="num">      3.949<td class="num">      73.1%<td class="num">      75.7%<td class="num">      67.4%<td class="num">      79.0%<td class="num">      75.9%<td class="num">      74.2%</tr>
+<tr><td>mpt_7B_q8             <td class="num">    7.5<td class="num">      3.850<td class="num">      73.2%<td class="num">      76.2%<td class="num">      68.5%<td class="num">      79.1%<td class="num">      76.4%<td class="num">      74.7%</tr>
+
+<tr><td>llama2_7B             <td class="num">   13.5<td class="num">      3.428<td class="num">      74.5%<td class="num">      76.2%<td class="num">      69.7%<td class="num">      78.4%<td class="num">      77.2%<td class="num">      75.2%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/llama2_7B_q4.bin">llama2_7B_q4</a>          <td class="num">    4.0<td class="num">      3.535<td class="num">      73.5%<td class="num">      75.4%<td class="num">      69.5%<td class="num">      77.6%<td class="num">      74.5%<td class="num">      74.1%</tr>
+<tr><td>llama2_13B            <td class="num">   26.0<td class="num">      3.051<td class="num">      77.2%<td class="num">      79.6%<td class="num">      72.1%<td class="num">      78.9%<td class="num">      79.3%<td class="num">      77.4%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/llama2_13B_q4.bin">llama2_13B_q4</a>         <td class="num">    7.6<td class="num">      3.134<td class="num">      76.9%<td class="num">      79.3%<td class="num">      73.2%<td class="num">      78.8%<td class="num">      79.1%<td class="num">      77.5%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/llama2_70B_q4.bin">llama2_70B_q4</a>         <td class="num">   39.3<td class="num">      2.646<td class="num">      80.6%<td class="num">      84.0%<td class="num">      78.7%<td class="num">      82.0%<td class="num">      83.4%<td class="num">      81.7%</tr>
+
+<tr><td>llama2_7B_q3          <td class="num">  3.2<td class="num">      3.632<td class="num">      72.7%<td class="num">      74.1%<td class="num">      68.4%<td class="num">      77.1%<td class="num">      73.2%<td class="num">      73.1%</tr>
+<tr><td>llama2_13B_q3         <td class="num">  6.1<td class="num">      3.173<td class="num">      76.2%<td class="num">      78.0%<td class="num">      72.1%<td class="num">      78.2%<td class="num">      78.0%<td class="num">      76.5%</tr>
+<tr><td>llama2_70B_q3         <td class="num"> 30.8<td class="num">      2.638<td class="num">      79.9%<td class="num">      82.9%<td class="num">      77.7%<td class="num">      81.7%<td class="num">      82.6%<td class="num">      80.9%</tr>
+
+<tr><td>mistral_7B
+<td class="num"> 14.5<td class="num">      3.178<td class="num">      76.2%<td class="num">      81.0%<td class="num">      74.2%<td class="num">      80.4%<td class="num">      80.9%<td class="num">      78.5%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/mistral_7B_q4.bin">mistral_7B_q4</a>
+<td class="num">  4.3<td class="num">      3.412<td class="num">      74.9%<td class="num">      80.1%<td class="num">      73.9%<td class="num">      80.7%<td class="num">      80.3%<td class="num">      78.0%</tr>
+<tr><td>mistral_7B_q8
+<td class="num">  7.8<td class="num">      3.174<td class="num">      76.0%<td class="num">      81.0%<td class="num">      73.6%<td class="num">      80.4%<td class="num">      80.7%<td class="num">      78.3%</tr>
+
+<tr><td>mixtral_47B_q3
+<td class="num"> 19.3<td class="num">      2.851<td class="num">      76.8%<td class="num">      82.2%<td class="num">      75.6%<td class="num">      81.3%<td class="num">      79.8%<td class="num">      79.1%</tr>
+<tr><td>mixtral_47B_q4
+<td class="num"> 26.5<td class="num">      2.811<td class="num">      78.6%<td class="num">      83.3%<td class="num">      76.0%<td class="num">      82.6%<td class="num">      80.4%<td class="num">      80.2%</tr>
+<tr><td>mixtral_47B_q8
+<td class="num"> 49.7<td class="num">      2.790<td class="num">      79.3%<td class="num">      83.9%<td class="num">      78.1%<td class="num">      82.0%<td class="num">      80.7%<td class="num">      80.8%</tr>
+
+</tbody>
+</table>
+</p>
+
+<p>Chat Models:
+
+<table class="sortable">
+  <thead>
+    <tr>
+      <th aria-sort="ascending" style="width:20em;"><button>Model<sup>(1)(2)(3)</sup><span aria-hidden="true"></span><br></button>
+      <th class="num" style="width:7em;"><button>Size<sup>(4)</sup><span aria-hidden="true"></span><br>(GB)</button>
+      <th style="width:30em;">Description
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/llama2_7B_chat_q4.bin">llama2_7B_chat_q4</a><td class="num">3.9<td>Llama 2 7B chat model</tr>
+    <tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/llama2_13B_chat_q4.bin">llama2_13B_chat_q4</a><td class="num">7.6<td>Llama 2 13B chat model</tr>
+    <tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/llama2_70B_chat_q4.bin">llama2_70B_chat_q4</a><td class="num">39.3<td>Llama 2 70B chat model</tr>
+    <tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/mistral_7B_instruct_q4.bin">mistral_7B_instruct_q4</a><td class="num">3.9<td>Mistral 7B chat model</tr>
+    <tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/vicuna_13B_v1.1_q4.bin">vicuna_13B_v1.1_q4</a><td class="num">7.6<td><a href="https://huggingface.co/TheBloke/vicuna-13B-1.1-HF">Vicuna</a> chat model</tr>
+    <tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/rwkv_raven_v12_14B_q4.bin">rwkv_raven_v12_14B_q4</a><td class="num">8.5<td><a href="https://huggingface.co/BlinkDL/rwkv-4-raven">RWKV Raven</a> version 12</tr>
+    <tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/RedPajama-INCITE-7B-Chat_q4.bin">RedPajama-INCITE-7B-Chat_q4</a><td class="num">4.3<td><a href="https://huggingface.co/togethercomputer/RedPajama-INCITE-7B-Chat">RedPajama INCITE Chat</a> model</tr>
+  </tbody>
+</table>
+  
+<p>
+Additional Models:
+
+<table class="sortable">
+  <thead>
+    <tr>
+      <th aria-sort="ascending" style="width:15em;"><button>Model<sup>(1)(2)(3)</sup><span aria-hidden="true"></span><br></button>
+      <th class="num" style="width:7em;"><button>Size<sup>(4)</sup><span aria-hidden="true"></span><br>(GB)</button>
+      <th style="width:30em;">Description
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/m2m100_1_2B_q8.bin">m2m100_1_2B_q8</a><td class="num">1.6<td>Translation between 100 languages</tr>
+    <tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/nllb200_1.3B_q8.bin">nllb200_1.3B_q8</a><td class="num">2.0<td>Translation between 200 languages</tr>
+    <tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/nllb200_3.3B_q8.bin">nllb200_3.3B_q8</a><td class="num">4.6<td>Translation between 200 languages</tr>
+    <tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/madlad400_7B_q4.bin">madlad400_7B_q4</a><td class="num">5.7<td>Translation between 400 languages</tr>
+    <tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/sd_v1.4.bin">sd_v1.4</a><td class="num">2.1<td>Stable Diffusion text-to-image version 1.4</tr>
+    <tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/sd_v2.1.bin">sd_v2.1</a><td class="num">2.6<td>Stable Diffusion text-to-image version 2.1</tr>
+  </tbody>
+</table>
+</p>
+<p>
+  SHA256 of all the models: <a href="sha256.txt">sha256.txt</a>.
+</p>
+<p>
+  Notes:
+  <ol>
+    <li>Some models have restrictive licenses. In particular, OPT,
+    Vicuna and NLLB200 cannot be used commercially. BLOOM,
+    Stable Diffusion and Llama 2 can be used commercially but have use
+    limitations.</li>
+    <li>For the larger models we don't provide the unquantized version when it is too large for consumer GPUs or when the quantized version gives the same performance as the unquantized version.</li>
+    <li>The <b>q8</b> suffix indicates that the model was 8 bit
+    quantized. The <b>q4</b> suffix indicates that the model was 4 bit
+    quantized. The <b>q3</b> suffix indicates that the model was 3 bit
+    quantized. Unquantized models use either float16 or bfloat16
+    parameters.</li>
+    <li>File size on disk (1 GB = 10<sup>9</sup> bytes). The amount of
+      CPU or GPU RAM needed to run the model is close to this value.</li>
+    <li>lambada perplexity (ppl) are comparable only for models
+      using the same tokenizer. So the lambada accuracy (acc) should be used
+      when comparing all models.</li>
+    <li>The speed is measured on an AMD Epyc 7313 CPU using 16 threads (<tt>ts_test -T 16</tt>)</li>
+  </ol>
+</p>
+
+<hr>
+Fabrice Bellard - <a href="../index.html">https://bellard.org/</a>
+</body>
+</html>

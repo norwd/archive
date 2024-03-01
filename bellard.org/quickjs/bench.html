@@ -1,0 +1,95 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <link href="style.css" type="text/css" rel="stylesheet"/>
+   <title>QuickJS Benchmark</title>
+</head>
+<body>
+<h1>QuickJS Benchmark</h1>
+
+<h2>Results</h2>
+
+Here are some results on
+the <a href="https://github.com/mozilla/arewefastyet/tree/master/benchmarks/v8-v7">bench-v8
+version 7 benchmark</a>. 
+<p>
+<table>
+  <tr><th>Engine <th>QuickJS<th>DukTape<th>XS<th>MuJS<th>JerryScript<th>Hermes<th>V8 --jitless<th>V8 (JIT)</tr>
+  <tr style="border: 1px solid"><td>Executable size
+                      <td>620K<td>331K<td>1.2M<td>244K<td>211K<td> 27M<td> 28M<td> 28M</tr>
+  <tr><td>Richards    <td> 777<td> 218<td> 444<td> 187<td> 238<td> 818<td>1036<td>29745</tr>
+  <tr><td>DeltaBlue   <td> 761<td> 266<td> 553<td> 245<td> 209<td> 651<td>1143<td>65173</tr>
+  <tr><td>Crypto      <td>1061<td> 202<td> 408<td> 113<td> 255<td>1090<td> 884<td>34215</tr>
+  <tr><td>RayTrace    <td> 915<td> 484<td>1156<td> 392<td> 286<td> 937<td>2989<td>69781</tr>
+  <tr><td>EarleyBoyer <td>1417<td> 620<td>1175<td> 315<td>   -<td>1728<td>4583<td>48254</tr>
+  <tr><td>RegExp      <td> 251<td> 156<td>   -<td> 155<td>   -<td> 335<td>2142<td> 7637</tr>
+  <tr><td>Splay       <td>1641<td>1389<td>1048<td>36.7<td>   -<td>1602<td>4303<td>26150</tr>
+  <tr><td>NavierStokes<td>1856<td>1003<td> 836<td> 109<td> 394<td>1522<td>1377<td>36766</tr>
+  <tr><td><b>Total score<br>
+        (w/o RegExp)</b>
+                      <td>1138<td> 468<td> 738<td> 159<td>  -<td>1127<td>1886<td>41576</tr>
+  <tr><td><b>Total score</b>
+                      <td> 942<td> 408<td>   -<td> 158<td>  -<td> 968<td>1916<td>33640</tr>
+</table>
+<p>
+(Higher scores are better).
+
+<h2>Test details</h2>
+
+All tested JS engines are interpreters and may run with limited
+resources. The performance of the V8 engine is also given as a
+reference for a high performance Javascript engine using just-in-time
+compilation and optimized for this benchmark.
+<p>
+The bench-v8 source code is provided in the QuickJS tests archive
+(<tt>tests/bench-v8</tt> directory).
+<p>
+The programs were compiled with gcc 4.9.2 on a Fedora 21. They were
+run on a Core i5 4570 CPU at 3.2 GHz.
+<p>
+The executable size is measured by summing the size of all the
+resources necessary to run the Engine with the exception of the
+system C library. For all engines except V8 it consists in a single
+executable file.
+<p>
+
+<ul>
+  <li><a href="index.html">QuickJS</a>: version
+  2019-07-09, qjs executable, 64 bits, compiled with -O2.</li>
+
+  <li><a href="https://duktape.org/">DukTape</a>: version 2.3.0, duk executable, 64 bits, compiled with -O2.</li>
+
+  <li><a href="https://github.com/Moddable-OpenSource/moddable">XS</a>:
+  version 8.8.0, xst executable, 64 bits, compiled with -O3. The
+  engine cannot correctly run the RegExp test, so it was
+  disabled.</li>
+
+  <li><a href="https://mujs.com/">MuJS</a>: version 1.0.6, mujs
+  executable, 64 bits, compiled with -O2. JS_STACKSIZE and
+  JS_ENVLIMIT were increased to 32768 to run EarleyBoyer. REG_MAXSUB
+  was increased to 12 to run RegExp.</li>
+  <li><a href="http://jerryscript.net/">JerryScript</a>: git version
+  2b8c4286, jerry executable, 64 bits. The engine could not run EarleyBoyer, RegExp
+  and Splay.</li>
+
+  <li><a href="https://hermesengine.dev/">Hermes</a>: version 0.1.0,
+  64 bit Linux binary downloaded
+  from <a href="https://github.com/facebook/hermes/releases">here</a>. The
+  benchmark was run with the -O option (=enable expensive
+    optimizations). </li>
+  <li><a href="https://v8.dev/">V8</a>: version 7.7.289, Linux 64 bit
+  executable downloaded
+  from <a href="https://storage.googleapis.com/chromium-v8/official/canary/v8-linux64-rel-7.7.289.zip">here</a>.</li>
+</ul>
+
+<p>
+Other Javascript engines can be added on demand provided they can run
+the benchmark.
+
+<p>
+<a href="index.html">[back]</a>
+</body>
+</html>
+
+  

@@ -1,0 +1,98 @@
+<html>
+<head>
+<title>Pi Computation Record</title>
+</head>
+<body>
+<h1>Pi Computation Record</h1>
+<a href="../../index.html">Fabrice Bellard</a>
+
+<p>
+December 31st, 2009
+<p>
+I am pleased to announce a new world record for the computation of the
+digits of Pi. The following number of digits were computed:
+<pre>
+  2242301460000 hexadecimal digits (base 16)
+  2699999990000 decimal digits (base 10)
+</pre>
+
+The base 10 result needs about 1137 GB<sup><a href="announce.html#note1">(1)</a></sup> of storage. Parts
+of the result are available <a href="pidigits.html">here</a>.
+<p>
+Most of the computation was carried out on a single desktop computer
+costing less than 2000 euros. The previous records since 1995 were done
+using multi-million euro supercomputers.
+<p>
+Computation time:
+<ul>
+<li>computation of the binary digits: 103 days</li>
+<li><td>Verification of the binary digits: 13 days</li>
+<li><td>Conversion to base 10:  12 days</li>
+<li><td>Verification of the conversion: 3 days</li>
+<li><td>Total: 131 days</li>
+</ul>
+
+The previous record of about <a
+ href="http://www.hpcs.is.tsukuba.ac.jp/~daisuke/pi.html">2577 billion
+ decimal digits</a> was published by Daisuke Takahashi on August 17th
+ 2009.
+
+<h2>Formula and verification</h2>
+
+The main computation used the Chudnovsky formula to give the binary
+result. Then the binary result was converted to a base 10 result. 
+<p>
+The binary result was verified with a formula found by the author with
+the Bailey-Borwein-Plouffe algorithm which directly gives the n'th
+hexadecimal digits of Pi. With this algorithm, the last 50 hexadecimal
+digits of the binary result were checked. A checksum modulo a 64 bit
+prime number done in the last multiplication of the Chudnovsky formula
+evaluation ensured a negligible probability of error.
+<p>
+The conversion from binary to base 10 was verified with a checksum
+modulo a 64 bit prime number.
+<p>
+More technical details are available <a href="pipcrecord.pdf">here</a>.
+
+<h2>Hardware</h2>
+
+PC used during the computation:
+<ul>
+<li>Core i7 CPU at 2.93 GHz</li>
+<li>6 GiB <sup><a href="announce.html#note1">(1)</a></sup> of RAM</li>
+<li>7.5 TB of disk storage using five 1.5 TB hard disks (Seagate
+    Barracuda 7200.11 model)</li>
+</ul>
+Backups were done using 2 TB hard disks (Seagate Barracuda LP model).
+<p>
+The verification of the binary digits used a network of 9 Desktop PCs
+during 34 hours. It could have been done on the same PC as the main
+computation by using 13 more days.
+
+<h2>Operating System</h2>
+
+The Linux Operating System was used with the 64 bit Red Hat Fedora 10
+distribution. The 7.5 TB disk storage was managed using software
+RAID-0 and the ext4 filesystem. Files of up to 2.5 TB were manipulated
+during the computation.
+
+<h2>Pi Software</h2>
+
+All the software was written by the author. The most important part is
+an arbitrary-precision arithmetic library able to manipulate huge
+numbers stored on hard disks. Technical details are available <a
+href="pipcrecord.pdf">here</a>.
+
+<dl compact>
+<dt><a name="note1">(1)</a>
+<dd>The standard SI and binary prefixes are used. For example:
+<ul>
+<li>1 GB = 10^9 bytes</li>
+<li>1 TB = 10^12 bytes</li>
+<li>1 GiB = 2^30 bytes (approx. 1.07 GB)</li>
+</ul>
+</dl>
+<hr>
+Back to <a href="index.html">Home</a>
+</body>
+</html>

@@ -1,0 +1,348 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!Converted with LaTeX2HTML 95.1 (Fri Jan 20 1995) by Nikos Drakos (nikos@cbl.leeds.ac.uk), CBLU, University of Leeds >
+<HEAD>
+<TITLE>Compression Statistique à Contexte Fini</TITLE>
+</HEAD>
+<BODY>
+<meta name="description" value="Compression Statistique à Contexte Fini">
+<meta name="keywords" value="rapport">
+<meta name="resource-type" value="document">
+<meta name="distribution" value="global">
+<P>
+  <H1>Compression Statistique à Contexte Fini</H1>
+<P><STRONG>Fabrice Bellard</STRONG><P>
+<P>
+
+<P>
+<H1><A NAME=SECTION00010000000000000000>1 Présentation générale</A></H1>
+<P>
+<H2><A NAME=SECTION00011000000000000000>1.1 Cahier des charges</A></H2>
+<P>
+Il s'agit de réaliser un compresseur/décompresseur de données sans perte.
+Les priorités ont été définies ainsi :
+<OL><LI> taux de compression très important ;  
+  <LI> grande vitesse ; 
+	<LI> faible quantité de mémoire requise ;
+  <LI> facilité d'interfaçage des routines de compression.
+</OL><H2><A NAME=SECTION00012000000000000000>1.2 Choix de la méthode de compression</A></H2>
+ <A NAME=choixmthode>&#160;</A>
+<P>
+Les méthodes classiques fondées sur les dictionnaires du type Ziv-Lempel sont
+dépassées en terme de taux de compression par les méthodes statistiques à
+contexte fini [<A HREF="rapport.html#BCW90">1</A>]. Nous avons donc choisi une de ces dernières.
+<P>
+<H2><A NAME=SECTION00013000000000000000>1.3 Description simplifiée de l'algorithme</A></H2>
+<P>
+L'algorithme est mono-passe, donc il doit s'adapter aux données de façon
+dynamique. Le principe du compresseur est le suivant:
+<P>
+Il s'agit de prédire le <i> symbole</i> suivant d'un fichier en utilisant un
+<i> contexte</i> constitué au plus des <IMG  ALIGN=BOTTOM ALT="" SRC="img1.gif"> symboles précédents (<IMG  ALIGN=BOTTOM ALT="" SRC="img2.gif"> est
+un nombre positif arbitraire fixé). On conserve donc en mémoire une table
+<b>T</b> de tous les contextes déjà rencontrés dans le fichier. Lorsque le
+symbole a été codé, on met à jour <b>T</b>. Notons que le décompresseur
+fonctionne de façon exactement symétrique.
+<P>
+Pour le codage du symbole courant, on commence par chercher dans <b>T</b> le plus
+long contexte déjà recontré co&#239;ncidant avec le contexte courant. On a
+noté pour chaque contexte de <b>T</b> une liste <b>L</b> des fréquences de tous les
+symboles le suivant. Plusieurs cas se présentent :
+<P>
+<UL><LI> Aucun contexte n'a été trouvé. Le symbole est codé tel quel.
+<P>
+ <LI> Le symbole se trouve dans la liste <b>L</b>. On le code en utilisant peu
+ de bits si la fréquence du symbole a été importante.
+<P>
+ <LI> Le symbole n'est pas présent dans <b>L</b>. On envoie un code spécial <tt>
+ ESCAPE</tt> et on recherche dans <b>T</b> un contexte plus court.
+<P>
+</UL><H2><A NAME=SECTION00014000000000000000>1.4 Interface utilisateur</A></H2>
+<P>
+Ce n'est pas la partie principale du projet, et elle ne sera pas décrite
+ici. On s'attachera à faire un programme rappelant <tt> gzip</tt> ou <tt>
+compress</tt> et pouvant facilement être étendu par ajout d'autres méthodes de
+compression, de cryptage, ou de détection et correction d'erreurs.
+<P>
+<H1><A NAME=SECTION00020000000000000000>2 Architecture générale</A></H1>
+<P>
+En fait l'algorithme choisi est un peu plus compliqué que celui décrit en 
+<A HREF="rapport.html#choixmthode">1.2</A>. En voici les détails.
+<P>
+<H2><A NAME=SECTION00021000000000000000>2.1 Le codeur arithmétique</A></H2>
+<P>
+Nous utilisons un <i> codeur arithmétique </i> pour coder les symboles. Si un
+symbole a une probabilité d'apparition <b>p</b>, nous le codons en utilisant en
+moyenne <IMG  ALIGN=BOTTOM ALT="" SRC="img3.gif"> bits.
+<P>
+Nous prévoyions au départ d'utiliser un codeur arithmétique binaire
+fonctionnant par approximations, ce qui aurait donné une vitesse plus grande
+[<A HREF="rapport.html#RT87">2</A>]. Malheureusement, son utilisation est empêchée par le mécanisme
+d'exclusion des symboles. Notre codeur est donc du type très classique <i>
+bit plus follow</i> et utilise 2 multiplications et 2 divisons entières par
+symbole codé. Une description précise de ce codeur sort du cadre de ce
+rapport.
+<P>
+Nous avons intégré au codeur et au décodeur des buffers pour accélérer les
+entrées/sorties.
+<P>
+Les tests de vitesse démontrent que le codeur ne mobilise pas plus de 15%
+du temps total de compression, ce qui est satisfaisant.
+<P>
+<H2><A NAME=SECTION00022000000000000000>2.2 Le système d'exclusion</A></H2>
+<P>
+Lorsqu'on a été obligé d'envoyer des codes <tt> ESCAPE</tt>, on peut <i>
+exclure</i> de la liste <b>L</b> des symboles associés au contexte courant ceux qui
+ont déjà été rencontrés dans les contextes de longueur supérieure. En effet,
+la génération de <tt> ESCAPE</tt> implique qu'aucun des symboles des contextes
+de longueur supérieure ne vient après le contexte courant. Cette
+amélioration augmente le taux de compression d'environ 5% [<A HREF="rapport.html#BCW90">1</A>].
+<P>
+Etant donné notre cahier des charges, nous devons l'incorporer. Cela pose un
+grave problème: il est quasiment impossible d'utiliser une structure autre
+qu'une liste chaînée pour stocker la liste des symboles associés à un
+contexte si on veut permettre le mécanisme d'exclusion, tout en facilitant
+les calculs pour le codage du symbole courant. Etant donné que l'on a 256
+symboles différents, le temps de parcours de la liste n'est pas négligeable.
+<P>
+Le système d'exclusion utilise un tableau à 256 entrées. L'idée de départ
+consiste à initialiser ce tableau à <tt> FALSE</tt>, puis mettre à <tt> TRUE</tt>
+toutes les entrées correspondant aux numéros de symboles exclus. Cela
+présente un défaut: il faut initialiser ce tableau avant chaque nouveau
+codage de symbole, et le temps pris n'est pas négligeable.
+<P>
+Une méthode consiste à utiliser un tableau d'entiers, et à caractériser
+l'exclusion d'un symbole par la mise dans l'entrée du tableau correspondante
+d'un certain code. Si on change ce code à chaque nouveau symbole (par
+incrémentation par exemple), on évite l'étape d'initialisation, ou du moins
+on la rend moins fréquente.
+<P>
+<H2><A NAME=SECTION00023000000000000000>2.3 Le codage d'un symbole</A></H2>
+<P>
+L'utilisation du codeur/décodeur arithmétique nécessite le partitionnement
+de l'intervalle <IMG  ALIGN=BOTTOM ALT="" SRC="img4.gif"> en sous-intervalles de mesure <IMG  ALIGN=BOTTOM ALT="" SRC="img5.gif"> où <IMG  ALIGN=BOTTOM ALT="" SRC="img6.gif"> est la
+probabilité d'apparition du symbole <IMG  ALIGN=BOTTOM ALT="" SRC="img7.gif">. Plus précisément, pour coder le
+symbole <IMG  ALIGN=BOTTOM ALT="" SRC="img8.gif">, il suffit de connaitre <IMG  ALIGN=BOTTOM ALT="" SRC="img9.gif"> et <IMG  ALIGN=BOTTOM ALT="" SRC="img10.gif">. Les
+probabilités sont transmises au codeur sous la forme fractionnaire <IMG  ALIGN=BOTTOM ALT="" SRC="img11.gif">
+avec <IMG  ALIGN=BOTTOM ALT="" SRC="img12.gif">.
+<P>
+Le codage d'un symbole nécessite donc un parcours linéaire de <b>L</b> où l'on
+additionne les fréquences des symboles jusqu'à la rencontre du symbole à
+coder. Notons que l'on numérote ici les symboles suivant leur ordre
+d'apparition dans la liste car il suffit que compresseur et décompresseur
+utilisent la même convention.
+<P>
+On incrémente ensuite la fréquence associée au symbole codé et l'on teste
+s'il faut renormaliser le contexte.
+<P>
+Pour des raisons d'efficacité, on peut inclure dans le contexte la somme
+totale des fréquences des symboles associés, <b>c</b>, et le nombre de
+symboles, <b>t</b>. On évite ainsi un parcours global de la liste <b>L</b>. Notons que
+ces variables sont inutiles dans le cas où certains symboles doivent être
+exclus.
+<P>
+<H3><A NAME=SECTION00023100000000000000>2.3.1 Le codage de ESCAPE</A></H3>
+<P>
+Quelle est la probabilité à affecter à <tt> ESCAPE</tt> ? Il n'existe pas de
+méthode optimale. Nous avons choisi pour des questions de vitesse et de
+simplicité une probabilité égale à <IMG  ALIGN=BOTTOM ALT="" SRC="img13.gif">. Elle correspond à la méthode
+PPMC décrite dans [<A HREF="rapport.html#BCW90">1</A>].
+<P>
+<H3><A NAME=SECTION00023200000000000000>2.3.2 La renormalisation des contextes</A></H3>
+<P>
+Pour des questions d'encombrement mémoire, la fréquence de chaque symbole de
+<b>L</b> est codée sur 1 octet. D'autre part, nos routines de codage arithmétique
+imposent une borne supérieure sur la valeur du dénominateur des
+probabilités. Nous devons donc <i> renormaliser</i> les contextes de temps en
+temps en divisant par exemple les fréquences par 2. Les symboles atteignant
+une fréquence nulle sont exclus du contexte.
+<P>
+Ce dernier point augmente légèrement le taux de compression en permettant
+une adaption plus rapide.
+<P>
+<H3><A NAME=SECTION00023300000000000000>2.3.3 Indication de la fin de fichier</A></H3>
+<P>
+On utilise un symbole spécial pour coder la fin de fichier. Cela permet de
+rendre le compresseur réellement monopasse. D'autres caractères spéciaux
+peuvent être ajoutés pour permettre par exemple un contrôle de flux. Ils
+sont codés comme s'ils n'apparaissaient dans aucun contexte.
+<P>
+<H2><A NAME=SECTION00024000000000000000>2.4 La gestion des contextes</A></H2>
+<P>
+La taille de la table des contextes est limitée par la mémoire allouée au
+compresseur. On a choisi ici une approche originale consistant à éliminer
+les contextes les moins récemment utilisés [<A HREF="rapport.html#HA">3</A>]. Les contextes sont
+donc rangés dans une liste doublement chaînée permettant les 2 opérations de
+base:
+<UL><LI> remettre un contexte en tête de la liste lorsqu'il est utilisé pour le
+codage d'un symbole ;
+<LI> effacer le dernier contexte de la liste si l'on manque de mémoire.
+</UL>
+<P>
+Cette structure ne permet pas d'utiliser facilement un arbre ou un trie pour
+rechercher les contextes. On utilise donc une table de hachage avec gestion
+des collisions par une liste simplement chaînée. Elle aurait dû être en fait
+doublement chaînée pour permettre l'effacement rapide d'un contexte. Comme
+les contraintes mémoire sont sévères, nous avons préféré supposer que la
+table de hachage est assez grande pour limiter le nombre de collisions.
+<P>
+La liste des fréquences des symboles est une liste simplement chaînée
+contenant le numéro du symbole et sa fréquence.
+<P>
+<H2><A NAME=SECTION00025000000000000000>2.5 La gestion de la mémoire</A></H2>
+<P>
+Etant données les contraintes de vitesse et de mémoire, un appel à
+l'allocateur mémoire standard du C est proscrit.
+<P>
+Nous aurions pu choisir comme dans [<A HREF="rapport.html#HA">3</A>] d'allouer un <i> heap </i> (zone
+mémoire) pour les structures de taille fixe associées aux contextes, et un
+autre pour stocker les éléments des listes de symboles associés aux contextes.
+Cette solution n'est pas bonne car elle n'utilise pas la mémoire de façon
+efficace: il faudrait connaitre <i> a priori</i> le rapport entre l'occupation
+mémoire du premier heap et du second, ce qui dépend du fichier compressé.
+<P>
+Notre compresseur n'utilise donc qu'un seul heap, de taille paramétrable
+suivant la mémoire disponible et le taux de compression voulu. Ce heap est
+structuré en <i> noeuds </i> de taille fixe. On maintient constamment une
+liste simplement chaînée des noeuds libres pour l'allocation et la
+désallocation mémoire. Dans un noeud on stocke soit un contexte, soit un
+certain nombre d'éléments de la liste des symboles associés aux contextes.
+<P>
+L'expérience montre que c'est un excellent compromis.
+<P>
+<H1><A NAME=SECTION00030000000000000000>3 L'implémentation</A></H1>
+<P>
+L'implémentation de l'algorithme doit être soignée car certaines procédures
+sont exécutées beaucoup de fois <i> par symbole</i>. On a veillé à limiter au
+maximum le nombre d'accès mémoire car c'est ce qui prend le plus de temps
+sur les ordinateurs modernes. De plus, en conservant l'adjacence des données
+corrélées, on favorise l'utilisation du cache interne du micro-processeur.
+Les seules suppositions faites au niveau du hardware sont: <tt> int</tt> codé
+sur 32 bits, <tt> short</tt> sur 16 bits, et <tt> char</tt> sur 8 bits.
+<P>
+<H2><A NAME=SECTION00031000000000000000>3.1 Le codeur/décodeur arithmétique</A></H2>
+<P>
+Voir les fichiers <tt> arith_e.c</tt> et <tt> arith_d.c</tt>.
+<P>
+On notera l'utilisation d'une fonction passée en argument aux fonctions de
+codage qui sert à écrire ou lire un buffer sur disque (ou ailleurs). Ainsi
+les routines de codages sont isolées des fonctions d'entrée/sortie.
+<P>
+<H2><A NAME=SECTION00032000000000000000>3.2 Le compresseur/décompresseur statistique</A></H2>
+<P>
+Voir le fichier <tt> ppm.c</tt>.
+<P>
+<H3><A NAME=SECTION00032100000000000000>3.2.1 La structure NODE</A></H3>
+<P>
+Tout l'algorithme s'articule autour de la structure <tt> NODE </tt>. On remarque
+l'utilisation massive d'index 16 bits à la place de pointeurs. Cela
+permet d'économiser de la précieuse mémoire. La structure <tt> NODE</tt> a ainsi
+une taille de 16 octets pour accélérer l'accès par les index.
+<P>
+Lors des statistiques, on a remarqué que les contextes contenant une liste de
+1 ou 2 symboles sont de loin les plus courants (80% des contextes en
+moyenne). On a donc intérêt à les gérer de façon spécifique, ce qui explique
+la structure un peu compliquée nécessaire pour gérer les contextes.
+<P>
+<H3><A NAME=SECTION00032200000000000000>3.2.2 La fonction de hachage</A></H3>
+<P>
+La fonction de hachage est du type: <IMG  ALIGN=BOTTOM ALT="" SRC="img14.gif"> où <b>a=63</b> et <b>n=14</b>. Au niveau théorique elle ne semble
+pas bonne mais les tests montrent qu'elle se comporte plutôt bien et surtout
+qu'elle se calcule très vite. Sa formule s'exprime aussi de façon récurente
+ce qui permet de la calculer partiellement pour chaque longueur de contexte
+à chercher.
+<P>
+<H2><A NAME=SECTION00033000000000000000>3.3 L'interface utilisateur</A></H2>
+<P>
+Voir les fichiers <tt> stat.c</tt>, <tt> testcode.c</tt>, et <tt> getopt.c</tt>.
+<P>
+Le fichier de commande <tt> stat_test </tt> permet de tester la compression sur
+un fichier donné en vérifiant le <i> checksum</i>. Une routine de calcul de
+CRC 32 bits aurait pu être incluse.
+<P>
+<H1><A NAME=SECTION00040000000000000000>4 Les performances</A></H1>
+<P>
+<H2><A NAME=SECTION00041000000000000000>4.1 Les tests</A></H2>
+<P>
+Nous avons réalisé les tests sur les fichiers du <i> Calgary Text
+Compression Corpus</i> sur un 486DX2/66 sous <i> Linux</i>. On a comparé les
+compresseurs suivants:
+<UL><LI> gzip, en mode compression maximale.
+<P>
+ <LI> stat, longueur maximum des contextes <IMG  ALIGN=BOTTOM ALT="" SRC="img15.gif">, nombre de noeuds
+ <b>N=40000</b> (640k de mémoire)
+<P>
+ <LI> stat, <IMG  ALIGN=BOTTOM ALT="" SRC="img16.gif">, <b>N=8000</b> (128k)
+<P>
+</UL>
+<P>
+Les résultats sont résumés dans le tableau <A HREF="rapport.html#tab1">1</A>
+<P>
+<P><A NAME=90>&#160;</A><A NAME=tab1>&#160;</A><IMG  ALIGN=BOTTOM ALT="" SRC="img17.gif">
+<BR><STRONG>Table 1:</STRONG> Résultats des tests<BR>
+<P><H2><A NAME=SECTION00042000000000000000>4.2 Analyse</A></H2>
+<P>
+<tt> stat </tt> est seulement 2 fois plus lent que <tt> gzip</tt> en compression.
+C'est au niveau de la décompression qu'il est très nettement distancé. En
+effet, la méthode utilisée est totalement symétrique, alors qu'un
+décompresseur de type LZ77 est très simple et très rapide.
+<P>
+Notre système de gestion de mémoire est très efficace, puisque même avec
+aussi peu de mémoire que 128k (soit moins que <tt> gzip</tt> en compression)
+nous avons des gains significatifs.
+<P>
+Des tests plus poussés non mentionnés ici montrent que sur les fichiers
+textes <tt> stat</tt> atteint des vitesses importantes et compresse beaucoup
+mieux (10% environ) que n'importe quel autre compresseur Ziv-Lempel. En
+revanche sur les fichiers binaires il peut être très lent, et les gains par
+rapport à Ziv-Lempel sont plus faibles. Cette lenteur provient de
+l'utilisation du mécanisme d'exclusion qui impose de longs parcours de
+listes chaînées.
+<P>
+En revanche, grace à son système de gestion de mémoire efficace, il bat les
+compresseurs statistiques standards comme PPMC grace à ses facultés &quot;d'oubli
+adaptif&quot; des contextes les moins utilisés.
+<P>
+<H1><A NAME=SECTION00050000000000000000>5 Conclusion</A></H1>
+<P>
+<H2><A NAME=SECTION00051000000000000000>5.1 Perspectives</A></H2>
+<P>
+Il reste encore bien des choses à améliorer. Ce compresseur ne représente
+qu'une étape dans la progression des méthodes statistiques. Nos dernières
+études montrent qu'il est possible de faire un compresseur/décompresseur
+beaucoup plus rapide que gzip tout en augmentant encore les gains (de
+quelques pourcents) en augmentant seulement légèrement l'encombrement
+mémoire. Sa description sort du cadre de ce rapport.
+<P>
+Au niveau des fichiers binaires, nos tests ont montré qu'il était possible
+de faire des &quot;pré-processeurs&quot; adaptés au langage machine d'un ordinateur
+donné qui présentent les données au compresseur sous un forme plus facilement
+compressible.
+<P>
+Pour les textes, on pourrait réaliser des pré-processeurs réalisant par
+exemple une prédiction de l'indentation des fichiers, ou de la justification
+des paragraphes, chose que les compresseurs à contexte fini ou à
+dictionnaire ne peuvent pas faire.
+<P>
+<H2><A NAME=SECTION00052000000000000000>5.2 La fin</A></H2>
+<P>
+Ce projet est un bon exercice de programmation puisqu'il utilise beaucoup de
+structures de données imbriquées. Ces dernières, ainsi que les différents
+algorithmes n'ont pas été choisi au hasard mais résultent bien d'une
+recherche de compromis entre les différents points du cahier des charges. On
+a essayé ici de retracer la démarche suivie.
+<P>
+
+<P>
+ <P><A NAME=SECTIONREF><H2>References</H2></A><P>
+<DL COMPACT>
+ <DT><A NAME=BCW90><STRONG>1</STRONG></A><DD> Bell, Cleary, Witten, <i> Text Compression</i>, 1990.
+<P>
+ <DT><A NAME=RT87><STRONG>2</STRONG></A><DD> Raita, Teuhola, <i> Predictive text compression by
+hashing</i>, 1987.
+<P>
+ <DT><A NAME=HA><STRONG>3</STRONG></A><DD> Harri Hirvola, <i> HA Archiver 0.98 </i>, 1993.
+</DL><BR> <HR>
+<P><ADDRESS>
+Sun Dec 10 18:42:24 MET 1995 <BR>Fabrice Bellard  (<A HREF="mailto:bellard@poly.polytechnique.fr">bellard@poly.polytechnique.fr</A>)
+</ADDRESS>
+</BODY>

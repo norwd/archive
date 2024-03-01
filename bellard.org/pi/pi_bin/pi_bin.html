@@ -1,0 +1,402 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with jLaTeX2HTML 2002 (1.62) JA patch-1.4
+patched version by:  Kenshi Muto, Debian Project.
+LaTeX2HTML 2002 (1.62),
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>A new formula to compute the n'th binary digit of pi</TITLE>
+<META NAME="description" CONTENT="A new formula to compute the n'th binary digit of pi">
+<META NAME="keywords" CONTENT="pi_bin">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<META NAME="Generator" CONTENT="jLaTeX2HTML v2002 JA patch-1.4">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="pi_bin.css">
+
+</HEAD>
+
+<BODY >
+
+<P>
+<H1 ALIGN="CENTER">A new formula to compute the n'th binary digit of pi</H1>
+<P ALIGN="CENTER"><STRONG>Fabrice Bellard</STRONG></P>
+<P ALIGN="CENTER"><STRONG>January 20, 1997</STRONG></P>
+
+<P>
+We describe here a mean to find formulas similar to those in [<A
+ HREF="pi_bin.html#bbp95">1</A>]. We
+show in particular that
+<BR>
+<DIV ALIGN="CENTER"><A NAME="formula1"></A>
+<!-- MATH
+ \begin{eqnarray}
+\nonumber
+\pi & =  & \frac{1}{2^6} \sum_{n=0}^{\infty}{ \frac{{(-1)}^n}{2^{10n}} 
+    ( -\frac{2^5}{4n+1} - \frac{1}{4n+3} + \frac{2^8}{10n+1} - }  \\& & { \frac{2^6}{10n+3} - 
+          \frac{2^2}{10n+5} - \frac{2^2}{10n+7} + \frac{1}{10n+9} )  } \quad \mbox{ . }
+\end{eqnarray}
+ -->
+<TABLE ALIGN="CENTER" CELLPADDING="0" WIDTH="100%">
+<TR VALIGN="MIDDLE"><TD NOWRAP ALIGN="RIGHT"><IMG
+ WIDTH="14" HEIGHT="28" ALIGN="MIDDLE" BORDER="0"
+ SRC="img1.png"
+ ALT="$\displaystyle \pi$"></TD>
+<TD ALIGN="CENTER" NOWRAP><IMG
+ WIDTH="16" HEIGHT="28" ALIGN="MIDDLE" BORDER="0"
+ SRC="img2.png"
+ ALT="$\textstyle =$"></TD>
+<TD ALIGN="LEFT" NOWRAP><IMG
+ WIDTH="321" HEIGHT="60" ALIGN="MIDDLE" BORDER="0"
+ SRC="img3.png"
+ ALT="$\displaystyle \frac{1}{2^6} \sum_{n=0}^{\infty}{ \frac{{(-1)}^n}{2^{10n}}
+( -\frac{2^5}{4n+1} - \frac{1}{4n+3} + \frac{2^8}{10n+1} - }$"></TD>
+<TD WIDTH=10 ALIGN="RIGHT">
+&nbsp;</TD></TR>
+<TR VALIGN="MIDDLE"><TD NOWRAP ALIGN="RIGHT">&nbsp;</TD>
+<TD>&nbsp;</TD>
+<TD ALIGN="LEFT" NOWRAP><IMG
+ WIDTH="328" HEIGHT="55" ALIGN="MIDDLE" BORDER="0"
+ SRC="img4.png"
+ ALT="$\displaystyle { \frac{2^6}{10n+3} -
+\frac{2^2}{10n+5} - \frac{2^2}{10n+7} + \frac{1}{10n+9} ) } \quad \mbox{ . }$"></TD>
+<TD WIDTH=10 ALIGN="RIGHT">
+(1)</TD></TR>
+</TABLE></DIV><BR CLEAR="ALL"><P></P>
+
+<P>
+This formula is very interesting because, with the algorithm described in
+[<A
+ HREF="pi_bin.html#bbp95">1</A>], it enables us to compute the <IMG
+ WIDTH="14" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img5.png"
+ ALT="$n$">th binary digit of <IMG
+ WIDTH="14" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img6.png"
+ ALT="$\pi$"> 43%
+faster than the previous known formula [<A
+ HREF="pi_bin.html#bbp95">1</A>]:
+<BR>
+<DIV ALIGN="CENTER">
+
+<!-- MATH
+ \begin{eqnarray}
+\pi = 
+\sum_{n=0}^{\infty}{ \frac{1}{{16}^n}
+    ( \frac{4}{8n+1} - \frac{2}{8n+4} - \frac{1}{8n+5} - \frac{1}{8n+6} ) }
+\end{eqnarray}
+ -->
+<TABLE ALIGN="CENTER" CELLPADDING="0" WIDTH="100%">
+<TR VALIGN="MIDDLE"><TD NOWRAP ALIGN="RIGHT"><IMG
+ WIDTH="356" HEIGHT="60" ALIGN="MIDDLE" BORDER="0"
+ SRC="img7.png"
+ ALT="$\displaystyle \pi =
+\sum_{n=0}^{\infty}{ \frac{1}{{16}^n}
+( \frac{4}{8n+1} - \frac{2}{8n+4} - \frac{1}{8n+5} - \frac{1}{8n+6} ) }$"></TD>
+<TD>&nbsp;</TD>
+<TD>&nbsp;</TD>
+<TD WIDTH=10 ALIGN="RIGHT">
+(2)</TD></TR>
+</TABLE></DIV><BR CLEAR="ALL"><P></P>
+
+<P>
+The method to get formulas such as (<A HREF="pi_bin.html#formula1">1</A>) is in fact very simple. 
+We use that
+<BR><P></P>
+<DIV ALIGN="CENTER">
+<!-- MATH
+ \begin{displaymath}
+-ln(1-x)=\sum_{n=1}^{\infty}{\frac{x^n}{n}} \quad \mbox{ for } |x|<1
+\end{displaymath}
+ -->
+
+<IMG
+ WIDTH="236" HEIGHT="53" BORDER="0"
+ SRC="img8.png"
+ ALT="\begin{displaymath}
+-ln(1-x)=\sum_{n=1}^{\infty}{\frac{x^n}{n}} \quad \mbox{ for } \vert x\vert&lt;1
+\end{displaymath}">
+</DIV><BR CLEAR="ALL">
+<P></P>
+and
+<BR><P></P>
+<DIV ALIGN="CENTER">
+<!-- MATH
+ \begin{displaymath}
+atan(y)=Im[-ln(1-i.y)]
+\end{displaymath}
+ -->
+
+<IMG
+ WIDTH="189" HEIGHT="28" BORDER="0"
+ SRC="img9.png"
+ ALT="\begin{displaymath}
+atan(y)=Im[-ln(1-i.y)]
+\end{displaymath}">
+</DIV><BR CLEAR="ALL">
+<P></P>
+for <IMG
+ WIDTH="12" HEIGHT="28" ALIGN="MIDDLE" BORDER="0"
+ SRC="img10.png"
+ ALT="$y$"> real.
+
+<P>
+In particular
+<BR>
+<DIV ALIGN="CENTER"><A NAME="lnm1"></A>
+<!-- MATH
+ \begin{eqnarray}
+atan(\frac{1}{a-1}) & = & Im[ -ln(1-\frac{(1+i)}{a}) ] \\
+\nonumber
+   & = & \sum_{n=0}^{\infty}{
+\frac{(-1)^n 2^{2n}}{a^{4n+3}} ( \frac{a^2}{4n+1} + \frac{2a}{4n+2} +
+\frac{2}{4n+3} )}
+\end{eqnarray}
+ -->
+<TABLE ALIGN="CENTER" CELLPADDING="0" WIDTH="100%">
+<TR VALIGN="MIDDLE"><TD NOWRAP ALIGN="RIGHT"><IMG
+ WIDTH="88" HEIGHT="49" ALIGN="MIDDLE" BORDER="0"
+ SRC="img11.png"
+ ALT="$\displaystyle atan(\frac{1}{a-1})$"></TD>
+<TD ALIGN="CENTER" NOWRAP><IMG
+ WIDTH="16" HEIGHT="28" ALIGN="MIDDLE" BORDER="0"
+ SRC="img2.png"
+ ALT="$\textstyle =$"></TD>
+<TD ALIGN="LEFT" NOWRAP><IMG
+ WIDTH="151" HEIGHT="53" ALIGN="MIDDLE" BORDER="0"
+ SRC="img12.png"
+ ALT="$\displaystyle Im[ -ln(1-\frac{(1+i)}{a}) ]$"></TD>
+<TD WIDTH=10 ALIGN="RIGHT">
+(3)</TD></TR>
+<TR VALIGN="MIDDLE"><TD NOWRAP ALIGN="RIGHT">&nbsp;</TD>
+<TD ALIGN="CENTER" NOWRAP><IMG
+ WIDTH="16" HEIGHT="28" ALIGN="MIDDLE" BORDER="0"
+ SRC="img2.png"
+ ALT="$\textstyle =$"></TD>
+<TD ALIGN="LEFT" NOWRAP><IMG
+ WIDTH="296" HEIGHT="60" ALIGN="MIDDLE" BORDER="0"
+ SRC="img13.png"
+ ALT="$\displaystyle \sum_{n=0}^{\infty}{
+\frac{(-1)^n 2^{2n}}{a^{4n+3}} ( \frac{a^2}{4n+1} + \frac{2a}{4n+2} +
+\frac{2}{4n+3} )}$"></TD>
+<TD WIDTH=10 ALIGN="RIGHT">
+&nbsp;</TD></TR>
+</TABLE></DIV><BR CLEAR="ALL"><P></P>
+and
+<BR>
+<DIV ALIGN="CENTER"><A NAME="lnp1"></A>
+<!-- MATH
+ \begin{eqnarray}
+atan(\frac{1}{a+1}) & = & Im[ -ln(1-\frac{(i-1)}{a}) ] \\
+\nonumber
+   & = & \sum_{n=0}^{\infty}{
+\frac{(-1)^n 2^{2n}}{a^{4n+3}} ( \frac{a^2}{4n+1} - \frac{2a}{4n+2} +
+\frac{2}{4n+3} )} \quad \mbox{.}
+\end{eqnarray}
+ -->
+<TABLE ALIGN="CENTER" CELLPADDING="0" WIDTH="100%">
+<TR VALIGN="MIDDLE"><TD NOWRAP ALIGN="RIGHT"><IMG
+ WIDTH="88" HEIGHT="49" ALIGN="MIDDLE" BORDER="0"
+ SRC="img14.png"
+ ALT="$\displaystyle atan(\frac{1}{a+1})$"></TD>
+<TD ALIGN="CENTER" NOWRAP><IMG
+ WIDTH="16" HEIGHT="28" ALIGN="MIDDLE" BORDER="0"
+ SRC="img2.png"
+ ALT="$\textstyle =$"></TD>
+<TD ALIGN="LEFT" NOWRAP><IMG
+ WIDTH="151" HEIGHT="53" ALIGN="MIDDLE" BORDER="0"
+ SRC="img15.png"
+ ALT="$\displaystyle Im[ -ln(1-\frac{(i-1)}{a}) ]$"></TD>
+<TD WIDTH=10 ALIGN="RIGHT">
+(4)</TD></TR>
+<TR VALIGN="MIDDLE"><TD NOWRAP ALIGN="RIGHT">&nbsp;</TD>
+<TD ALIGN="CENTER" NOWRAP><IMG
+ WIDTH="16" HEIGHT="28" ALIGN="MIDDLE" BORDER="0"
+ SRC="img2.png"
+ ALT="$\textstyle =$"></TD>
+<TD ALIGN="LEFT" NOWRAP><IMG
+ WIDTH="317" HEIGHT="60" ALIGN="MIDDLE" BORDER="0"
+ SRC="img16.png"
+ ALT="$\displaystyle \sum_{n=0}^{\infty}{
+\frac{(-1)^n 2^{2n}}{a^{4n+3}} ( \frac{a^2}{4n+1} - \frac{2a}{4n+2} +
+\frac{2}{4n+3} )} \quad \mbox{.}$"></TD>
+<TD WIDTH=10 ALIGN="RIGHT">
+&nbsp;</TD></TR>
+</TABLE></DIV><BR CLEAR="ALL"><P></P>
+
+<P>
+With <!-- MATH
+ $a \leftarrow 2$
+ -->
+<IMG
+ WIDTH="45" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img17.png"
+ ALT="$a \leftarrow 2$"> in (<A HREF="pi_bin.html#lnm1">3</A>) we get
+<BR>
+<DIV ALIGN="CENTER">
+
+<!-- MATH
+ \begin{eqnarray}
+\pi =
+\sum_{n=0}^{\infty}{ \frac{{(-1)}^n}{{4}^n}
+    ( \frac{2}{4n+1} + \frac{2}{4n+2} + \frac{1}{4n+3} ) }
+\end{eqnarray}
+ -->
+<TABLE ALIGN="CENTER" CELLPADDING="0" WIDTH="100%">
+<TR VALIGN="MIDDLE"><TD NOWRAP ALIGN="RIGHT"><IMG
+ WIDTH="304" HEIGHT="60" ALIGN="MIDDLE" BORDER="0"
+ SRC="img18.png"
+ ALT="$\displaystyle \pi =
+\sum_{n=0}^{\infty}{ \frac{{(-1)}^n}{{4}^n}
+( \frac{2}{4n+1} + \frac{2}{4n+2} + \frac{1}{4n+3} ) }$"></TD>
+<TD>&nbsp;</TD>
+<TD>&nbsp;</TD>
+<TD WIDTH=10 ALIGN="RIGHT">
+(5)</TD></TR>
+</TABLE></DIV><BR CLEAR="ALL"><P></P>
+which is mentionned in [<A
+ HREF="pi_bin.html#bbp95">1</A>].
+
+<P>
+Some classical arctangent relations give interesting results:
+<BR>
+<DIV ALIGN="CENTER"><A NAME="atan1"></A>
+<!-- MATH
+ \begin{eqnarray}
+\frac{\pi}{4} & = & 2atan(\frac{1}{2}) - atan(\frac{1}{7}) \\
+\frac{\pi}{4} & = & 2atan(\frac{1}{3}) + atan(\frac{1}{7}) \\
+\frac{\pi}{4} & = & 2atan(\frac{1}{2}) - atan(\frac{1}{9})  
+                    - atan(\frac{1}{32}) \\
+\frac{\pi}{4} & = & atan(\frac{1}{2}) + atan(\frac{1}{3}) \quad \mbox{.}
+\end{eqnarray}
+ -->
+<TABLE ALIGN="CENTER" CELLPADDING="0" WIDTH="100%">
+<TR VALIGN="MIDDLE"><TD NOWRAP ALIGN="RIGHT"><IMG
+ WIDTH="18" HEIGHT="43" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$\displaystyle \frac{\pi}{4}$"></TD>
+<TD ALIGN="CENTER" NOWRAP><IMG
+ WIDTH="16" HEIGHT="28" ALIGN="MIDDLE" BORDER="0"
+ SRC="img2.png"
+ ALT="$\textstyle =$"></TD>
+<TD ALIGN="LEFT" NOWRAP><IMG
+ WIDTH="144" HEIGHT="49" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$\displaystyle 2atan(\frac{1}{2}) - atan(\frac{1}{7})$"></TD>
+<TD WIDTH=10 ALIGN="RIGHT">
+(6)</TD></TR>
+<TR VALIGN="MIDDLE"><TD NOWRAP ALIGN="RIGHT"><IMG
+ WIDTH="18" HEIGHT="43" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$\displaystyle \frac{\pi}{4}$"></TD>
+<TD ALIGN="CENTER" NOWRAP><IMG
+ WIDTH="16" HEIGHT="28" ALIGN="MIDDLE" BORDER="0"
+ SRC="img2.png"
+ ALT="$\textstyle =$"></TD>
+<TD ALIGN="LEFT" NOWRAP><IMG
+ WIDTH="144" HEIGHT="49" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$\displaystyle 2atan(\frac{1}{3}) + atan(\frac{1}{7})$"></TD>
+<TD WIDTH=10 ALIGN="RIGHT">
+(7)</TD></TR>
+<TR VALIGN="MIDDLE"><TD NOWRAP ALIGN="RIGHT"><IMG
+ WIDTH="18" HEIGHT="43" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$\displaystyle \frac{\pi}{4}$"></TD>
+<TD ALIGN="CENTER" NOWRAP><IMG
+ WIDTH="16" HEIGHT="28" ALIGN="MIDDLE" BORDER="0"
+ SRC="img2.png"
+ ALT="$\textstyle =$"></TD>
+<TD ALIGN="LEFT" NOWRAP><IMG
+ WIDTH="228" HEIGHT="49" ALIGN="MIDDLE" BORDER="0"
+ SRC="img22.png"
+ ALT="$\displaystyle 2atan(\frac{1}{2}) - atan(\frac{1}{9})
+- atan(\frac{1}{32})$"></TD>
+<TD WIDTH=10 ALIGN="RIGHT">
+(8)</TD></TR>
+<TR VALIGN="MIDDLE"><TD NOWRAP ALIGN="RIGHT"><IMG
+ WIDTH="18" HEIGHT="43" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$\displaystyle \frac{\pi}{4}$"></TD>
+<TD ALIGN="CENTER" NOWRAP><IMG
+ WIDTH="16" HEIGHT="28" ALIGN="MIDDLE" BORDER="0"
+ SRC="img2.png"
+ ALT="$\textstyle =$"></TD>
+<TD ALIGN="LEFT" NOWRAP><IMG
+ WIDTH="156" HEIGHT="49" ALIGN="MIDDLE" BORDER="0"
+ SRC="img23.png"
+ ALT="$\displaystyle atan(\frac{1}{2}) + atan(\frac{1}{3}) \quad \mbox{.}$"></TD>
+<TD WIDTH=10 ALIGN="RIGHT">
+(9)</TD></TR>
+</TABLE></DIV><BR CLEAR="ALL"><P></P>
+
+<P>
+In particular, we obtain from (<A HREF="pi_bin.html#atan1">6</A>) and (<A HREF="pi_bin.html#lnm1">3</A>)
+<BR>
+<DIV ALIGN="CENTER">
+
+<!-- MATH
+ \begin{eqnarray}
+\nonumber
+\pi =
+4 \sum_{n=0}^{\infty}{ \frac{{(-1)}^n}{(2n+1) {4}^n}} - 
+\frac{1}{64} \sum_{n=0}^{\infty}{ \frac{{(-1)}^n}{{1024}^n} 
+    ( \frac{32}{4n+1} + \frac{8}{4n+2} + \frac{1}{4n+3} } ) \quad \mbox{ , }
+\end{eqnarray}
+ -->
+<TABLE ALIGN="CENTER" CELLPADDING="0" WIDTH="100%">
+<TR VALIGN="MIDDLE"><TD NOWRAP ALIGN="RIGHT"><IMG
+ WIDTH="492" HEIGHT="60" ALIGN="MIDDLE" BORDER="0"
+ SRC="img24.png"
+ ALT="$\displaystyle \pi =
+4 \sum_{n=0}^{\infty}{ \frac{{(-1)}^n}{(2n+1) {4}^n}} -
+\fr...
+...24}^n}
+( \frac{32}{4n+1} + \frac{8}{4n+2} + \frac{1}{4n+3} } ) \quad \mbox{ , }$"></TD>
+<TD>&nbsp;</TD>
+<TD>&nbsp;</TD>
+<TD WIDTH=10 ALIGN="RIGHT">
+&nbsp;</TD></TR>
+</TABLE></DIV><BR CLEAR="ALL"><P></P>
+which gives (<A HREF="pi_bin.html#formula1">1</A>) by reordering the terms.
+
+<P>
+The existence of a formula faster than (<A HREF="pi_bin.html#formula1">1</A>) to calculate
+the <IMG
+ WIDTH="14" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img5.png"
+ ALT="$n$">th binary digit of <IMG
+ WIDTH="14" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img6.png"
+ ALT="$\pi$"> remains an open question.
+
+<P>
+
+<P>
+ 
+<H2><A NAME="SECTION00010000000000000000">
+Bibliography</A>
+</H2><DL COMPACT><DD>
+<P>
+<P></P><DT><A NAME="bbp95">1</A>
+<DD> David H. Bailey, Peter B. Borwein and 
+Simon Plouffe, <I>On the Rapid Computation of Various Polylogarithmic
+Constants</I>, to appear in April 1997 in Mathematics of Computation.
+
+<P>
+</DL>
+
+<P>
+<BR><HR>
+<ADDRESS>
+Thu Feb 15 23:31:20 CET 2007 <BR>Fabrice Bellard  (<A HREF="../../index.html">http://bellard.org</A>)
+</ADDRESS>
+</BODY>
+</HTML>

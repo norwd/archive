@@ -1,0 +1,62 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <title>Tiny and Obfuscated Image Decoder</title>
+   <link href="style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1>Tiny and Obfuscated Image Decoder</h1>
+
+The goal of this project was to write a very small C program
+generating a non trivial RGB image. It won the 2018 Obfuscated C Code
+Contest as
+the <a href="http://www.ioccc.org/2018/bellard/hint.html">"most
+inflationary" entry</a>. Here are
+the <a href="http://www.ioccc.org/years.html#2018_bellard">corresponding
+files</a>.
+<p>
+This tiny C program outputs a 128x128 RGB image file to the standard
+output using the portable pixmap file format (PPM). The output looks
+like:
+<center>
+<img src="lena128.png">
+</center>
+It contains the famous "Lena" image which is used in many image
+compression tests.
+<p>
+The uncompressed image is 12 times larger than the source code of the program which includes the image data and the complete decoder. The actual image data is 1220 byte long, which gives a compression ratio of 40. Using a JPEG-like algorithm would not be enough to reach this level of compression (the Lena image would be barely recognizable). So the algorithm is based on the latest advances in image compression. It includes the following features:
+<ul>
+  <li>DCT transform with variable block size (4x4, 8x8, 16x16 and 32x32)</li>
+  <li>DC and directional predictors</li>
+  <li>arithmetic coding</li>
+  <li>YCgCo color space.</li>
+</ul>
+The image data is encoded to a C string with some tricks to make the best use of the IOCCC size constraints. The identifiers were shortened to a single letter to save space. No specific obfuscation was needed as the algorithms already have a significant complexity.
+<p>
+Those interested by the inner working of the program can
+read <a href="http://eastfarthing.com/blog/2020-09-14-decoder/">A Tour
+of the Tiny and Obfuscated Image Decoder</a> by Andrew Kensler.
+<p>
+
+The DCT transform is based on integer coefficients to avoid rounding
+errors. However I had not enough space to precompute them in the IOCCC
+entry so they were computed each time with a floating point expression
+which explains most of the slowness of the decoding. With comments
+from László Papp and Alex Rhatushnyak I updated the program to
+precompute the inverse DCT
+coefficients: <a href="prog.c">prog.c</a>. The result is a much
+faster decoding while still complying with the IOCCC size
+constraints. As the original IOCCC entry, it can be compiled and run
+under Linux with:
+<pre>
+gcc -O2 prog.c -o prog -lm
+./prog > lena.ppm
+</pre>
+Here is the corresponding deobfuscated
+version: <a href="ld.c">ld.c</a>, <a href="img.h">img.h</a>.
+
+<hr>
+Fabrice Bellard - <a href="../index.html">https://bellard.org/</a>
+</body>
+</html>

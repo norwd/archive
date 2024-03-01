@@ -1,0 +1,166 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+ 
+<html>
+<head>
+    <title>JSLinux - Technical Notes</title>
+    <link href="style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+  <h2>JSLinux - Technical Notes</h2>
+
+  <h3>History</h3>
+
+  This emulator has a long history. The current version is based
+  on <a href="../tinyemu/index.html">TinyEMU</a> and compiled to
+  Javascript or WASM
+  with <a href="http://kripken.github.io/emscripten-site/">emscripten</a>.
+
+  <p>
+  In 2011 I wrote the initial
+  version of JSLinux, the first PC/x86 emulator in Javascript running
+  Linux. I reused parts of another of my emulators
+  (<a href="http://www.qemu.org/">QEMU</a>) for the x86 helpers and the
+  devices.
+  <p>
+  After some time (2015), I modified it to use
+  the <a href="http://asmjs.org/">asm.js</a> Javascript subset so that
+  it is faster with the browsers supporting it.
+
+  <p>In 2016, after having
+  written <a href="../tinyemu/index.html">TinyEMU</a>, initially
+  a
+  <a href="https://riscv.org/">RISC-V</a> emulator, I decided to make
+  a Javascript version from its C code by
+  using <a href="http://kripken.github.io/emscripten-site/">emscripten</a>. I
+  added a <a href="http://wiki.osdev.org/Virtio">VirtIO</a> 9P
+  filesystem inspired by the one
+  in <a href="http://s-macke.github.io/jor1k/demos/main.html">jor1k</a>
+  by Sebastian Macke so that it is easier to use remote filesystems
+  and to import or export files.
+    
+  <p>Then I found interesting to reuse the VirtIO devices for the x86
+  JS emulator, so I converted the JSLinux asm.js code to C and
+  converted it back to Javascript
+  with <a href="http://kripken.github.io/emscripten-site/">emscripten</a>
+  ! With a careful tuning, the new version is now faster than the
+  hand-coded asm.js version.
+
+  <p>The next step was to run another operating system than Linux, for
+    example Windows NT. A first release of this emulator ran Windows
+    NT with QEMU inside the emulated Linux system. It
+    was still usable because the x86 emulator supports an x86
+    virtualization extension (AMD SVM) used by QEMU.
+
+  <p>The current version of JSLinux runs Windows NT by emulating the
+  few missing PC devices (PS/2 keyboard and mouse, IDE disk, dummy VGA).
+
+ <h3>x86 CPU Emulation</h3>
+
+    A x86 CPU with the following features is emulated:
+    <ul>
+      <li>Pentium class CPU</li>
+      <li>x87 with bit exact 80 bit floating point numbers</li>
+      <li>PAE support</li>
+      <li>CMOV instructions</li>
+      <li>MMX and SSE2 support</li>
+      <li>AMD Virtual Machine extensions (SVM) with Nested Page Table support</li>
+      <li>RDPMC support to read the instruction count</li>
+    </ul>
+    
+    Known limitations:
+    <ul>
+      <li>No segment limit and right checks when accessing memory</li>
+      <li>No debug support (DRx registers)</li>
+    </ul>
+    
+    <h3>Emulated Devices</h3>
+    <ul>
+      <li>8259 Programmble Interrupt Controller</li>
+      <li>8254 Programmble Interrupt Timer</li>
+      <li>16450 UART (only used to debug)</li>
+      <li>Real Time Clock</li>
+      <li>PCI bus</li>
+      <li>VirtIO console</li>
+      <li>VirtIO 9P filesystem</li>
+      <li>VirtIO network</li>
+      <li>VirtIO block device</li>
+      <li>VirtIO input</li>
+      <li>Simple framebuffer</li>
+      <li>IDE controller (optional)</li>
+      <li>PS/2 keyboard and mouse (optional)</li>
+      <li>Dummy VGA display (optional)</li>
+    </ul>
+
+    <h3>RISC-V CPU Emulation</h3>
+
+    A 32 bit or 64 bit RISC-V CPU is emulated with 64 bit FPU and
+    compressed instructions.
+    <p>
+    Only the RISC-V 64 bit Buildroot and Fedora distributions are now
+    available. The RISC-V 32 bit images are still available but no
+    longer actively maintained:
+    <ul>
+      <li><a href="./vm.html?cpu=riscv32&amp;url=https:%252F%252Fbellard.org%252Fjslinux%252Fbuildroot-riscv32.cfg">buildroot-riscv32</a> with console.</li>
+      <li><a href="./vm.html?cpu=riscv32&amp;url=https:%252F%252Fbellard.org%252Fjslinux%252Fbuildroot-riscv32-xwin.cfg&amp;graphic=1">buildroot-riscv32</a> with X Window.</li>
+    </ul>
+  
+    <h3>Performance</h3>
+
+    On a typical desktop PC (2017) with a Firefox browser, the
+    x86 emulator runs about 100 MIPS. Detailed benchmarks are possible
+    with the integrated <code>vmtime</code> utility.
+    
+    <h3>Javascript Terminal</h3>
+
+    It is an improved version of the original JSLinux one. It has a
+    scrollbar and supports URL highlighting.
+
+    <h3>Linux distribution</h3>
+
+    It uses the <a href="https://alpinelinux.org/">Alpine Linux</a>
+    and <a href="https://buildroot.org/">Buildroot</a>
+    distributions. Custom packages are added for vfsync, qemacs,
+    tcc. Optional X Window support is available with
+    the <a href="https://en.wikipedia.org/wiki/Fluxbox">Fluxbox</a>
+    window manager.
+    
+    <h3>Networking</h3>
+
+    Access to Internet is possible inside the emulator. It uses the
+    websocket VPN offered by Benjamin Burns (see
+    his <a href="http://www.benjamincburns.com/2013/11/10/jor1k-ethmac-support.html">blog</a>). The
+    bandwidth is capped to 40 kB/s and at most two connections are
+    allowed per public IP address. Please don't abuse the service.
+    
+    <h3>What's the use ?</h3>
+
+    I did it for fun, just because Javascript engines are fast
+    enough to do complicated things. Real use could be:
+    <ul>
+      <li>Benchmarking of Javascript engines (how much time takes your
+        Javascript engine to boot Linux ?) and use of new browser
+        technologies (asm.js, WASM).</li>
+      <li>Learning to use command line Unix tools without leaving the browser.</li>
+      <li>Secure file access within the browser (vfsync).</li>
+      <li>Running old PC software.</li>
+    </ul>
+
+    <h3>Source code</h3>
+
+    The source code of the RISC-V version is available in
+    the <a href="../tinyemu/index.html">TinyEMU</a> project. A
+    precompiled easy to install demo is also available.
+
+    <h3>Similar projects</h3>
+    
+    Several other PC or Linux emulators are available. In particular:
+    <ul>
+      <li><a href="http://s-macke.github.io/jor1k/demos/main.html">jor1k</a>: OpenRISC OR1K CPU emulator.</li>
+      <li><a href="http://copy.sh/v86/">v86</a>: PC emulator.</li>
+      <li><a href="http://riscv.org/angel/">angel</a>: RISC-V CPU emulator. </li>
+    </ul>
+<div>
+  <a href="index.html">[Back to the VM list]</a>
+</div>
+</body>
+</html>

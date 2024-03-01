@@ -1,0 +1,118 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <title>LibBF Library</title>
+</head>
+<body>
+<h1>LibBF Library</h1>
+
+<h2>News</h2> 
+<ul>
+  <li>New version with decimal floating point support.</li>
+  <li>Try LibBF <a href="http://numcalc.com">online</a>.</li>
+  <li>A <a href="benchmark.html">benchmark</a> comparing MPFR/GMP and
+LibBF.</li>
+</ul>
+
+<h2>Introduction</h2>
+
+<p>
+LibBF is a small library to handle arbitrary precision floating point
+numbers. Its compiled size is about 90 KB of x86 code and has no
+dependency on other libraries. It is not the fastest library nor the
+smallest but it tries to be simple while using asymptotically optimal
+algorithms. The basic arithmetic operations have a near linear running
+time.
+</p>
+<p>
+The TinyPI example computes billions of digits of Pi using the
+Chudnovsky formula.
+</p>
+
+Features:
+<ul>
+<li>Arbitrary precision floating point numbers in base 2 using
+the <a href="https://en.wikipedia.org/wiki/IEEE_754">IEEE 754
+semantics</a> (including subnormal numbers, infinities and NaN).</li>
+<li>All operations are exactly rounded using the 5 IEEE 754 rounding
+  modes (round to nearest with ties to even or away from zero, round
+  to zero, -/+ infinity). The additional non-deterministic faithful
+  rounding mode is supported when a lower or deterministic running
+  time is necessary.</li>
+<li>Stateless API (each function takes as input the rounding mode,
+  mantissa and exponent precisions in bits and return the IEEE status
+  flags).</li>
+<li>The basic arithmetic operations (addition, subtraction,
+  multiplication, division, square root) have a near linear running
+  time.</li>
+<li>Multiplication using a SIMD optimized Number Theoretic Transform.</li>
+<li>Exactly rounded floating point input and output in any base between
+  2 and 36 with near linear runnning time. Floating point output can
+  select the smallest amount of digits to get the required precision.
+<li>Transcendental functions are supported (exp, log, pow, sin, cos, tan,
+  asin, acos, atan, atan2).</li>
+<li>Operations on arbitrarily large integers are supported by using a
+  special "infinite" precision. Integer division with remainder and
+  logical operations (assuming two complement binary representation)
+  are implemented.</li>
+<li>Arbitrary precision floating point numbers in base 10 corresponding
+  to the IEEE 754 2008 semantics with the limitation that the mantissa
+  is always normalized. The basic arithmetic operations, output and
+  input are supported with a quadratic running time.</li>
+<li>Easy to embed: a few C files need to be copied, the memory
+  allocator can be redefined, the memory allocation failures are
+  tested.</li>
+<li>MIT license.</li>
+</ul>
+
+<h2><a href="benchmark.html">Benchmark</a></h2> 
+
+<h2>Download</h2> 
+
+<p>
+Source code: <a href="libbf-2020-01-19.tar.gz">libbf-2020-01-19.tar.gz</a>.
+</p>
+<p>
+Windows executables of TinyPI: <a href="tinypi-2018-02-03-win.zip">tinypi-2018-02-03-win.zip</a>.
+</p>
+<p>
+TinyPI is also included in the <a href="../jslinux/index.html">RISCVEMU Javascript demo</a>
+</p>
+
+<h2><a href="readme.txt">Technical documentation</a></h2> 
+
+<h2>Related projects</h2> 
+
+<a href="../quickjs/index.html">QuickJS</a> relies on LibBF to handle the BigInt,
+BigFloat and BigDecimal numbers.
+
+<p>
+Arbitrary precision floating point libraries:
+<ul>
+  <li><a href="http://www.mpfr.org/">MPFR</a></li>
+  <li><a href="http://www.bytereef.org/mpdecimal/">mpdecimal</a></li>
+</ul>
+
+Other small open source programs to compute large number of digits of PI:
+
+<ul>
+  <li><a href="https://github.com/Mysticial/Mini-Pi">Mini-Pi</a></li>
+  <li><a href="https://gmplib.org/pi-with-gmp.html">gmp-chudnovsky</a></li>
+</ul>  
+
+Larger and faster programs to compute PI:
+
+<ul>
+  <li><a href="http://www.numberworld.org/y-cruncher/">y-cruncher</a></li>
+  <li><a href="../pi/pi2700e9/tpi.html">TachusPI</a></li>
+</ul>
+
+<h2>Licensing</h2> 
+
+It is released under the <a href="https://opensource.org/licenses/MIT">MIT license</a>.
+
+<hr>
+Fabrice Bellard - <a href="../index.html">http://bellard.org/</a>
+</body>
+</html>

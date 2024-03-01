@@ -1,0 +1,95 @@
+<TITLE> A Simple 8 bit Microprocessor </TITLE>
+<H1> A Simple 8 bit Microprocessor </H1>
+
+<UL>
+<LI> The simulator & diagrams: <A HREF="microproc.tar.gz"> microproc.tar.gz
+</A>
+
+<LI> The main diagram : <A HREF="micro.ps"> micro.ps
+</A>
+
+<LI> <A HREF="microp.html"> The report in French </A>
+
+<LI> The README file: 
+</UL>
+
+<PRE>
+
+We present here a complete 8 bits microprocessor with all the tools needed
+to build assembly program. This generic processor has been conceived and
+realized from scratch in about two weeks. It was the first design we made,
+so it was not optimal... but it worked !
+
+We designed the microprocessor with the XACT software environment provided
+by Xilinx. Then, we put it on a programmable Xilinx device. We used it with
+an evaluation board containing a 32KB SRAM, a 6-digit hexadecimal display, a
+16-key keyboard and the logic to establish a serial link with a PC.
+
+The microprocessor could address up to 64K and drive all the peripherials
+provided on the board. It was slow (0.3 MIPS), but it enabled us to make
+some programs such as a stack-based decimal calculator, a maze game which
+could transmit the map of the maze to a PC via the serial link, and a banner
+to display a scrolling message.
+
+The french report gives more information about the project.
+
+
+Files : 
+-----
+
+  * bdasm : the assembler we used to compile our programs.
+
+  * asm : a script to launch bdasm on asm .S files. We use cpp to preprocess
+  the asm sources.
+
+  * simu : the simulator. You may adjust its speed according to your
+  hardware. Try 'simu calc.bin' to launch the calculator. The 16-key
+  keyboard is emulated with the keys 0-9, a-f under X11.
+
+  * calc.bin : the calculator. It is stack based (RPN notation) and work
+  with 16 bits numbers.
+    keys : 0-9 : enter a number (modulo 2^16).
+           A   : addition of the two number on the top of the stack. pop
+	         them and put the result on the stack.
+	   B   : substraction.
+	   D   : enter the current number on the stack.
+           E   : drop a number from the stack.
+	   F   : clear the current entry of the stack.
+	   C   : shift key. Then Press on :
+                  A : multiplication
+		  B : division ( 16 bits / 8 bits)
+		  C : copyright notice :-)
+
+    example : 1 2 3 D 
+              5 A 
+	      D F 4
+              C A
+            	      
+    to calculate : (123+5)*4
+
+  * banner.bin : a simple banner. You should adjust the speed on the
+  simulator to read it well.
+  
+  * laby.bin : a maze game - read the sources to understand :)
+  
+  * xxx.S : the assembler sources for all the programs
+  
+  * doc/  : the report (in French)
+
+  * scheme/ : the complete schemes of the microprocessor in postscript, and
+  the logic functions in ascii.
+  
+
+Notes :
+-----
+
+  * All these tools are provided 'as is'.
+
+  * The tools have been compiled under Linux. They should work on any Unix
+  computer with X11.
+
+
+
+Fabrice Bellard & Sylvain Delas.
+
+</PRE>
