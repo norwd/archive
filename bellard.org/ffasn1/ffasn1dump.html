@@ -1,0 +1,212 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>ffasn1dump ASN.1 Message Converter</title>
+
+<meta name="description" content="ffasn1dump ASN.1 Message Converter">
+<meta name="keywords" content="ffasn1dump ASN.1 Message Converter">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="ffasn1dump.html#SEC_Contents" rel="contents" title="Table of Contents">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<h1 class="settitle" align="center">ffasn1dump ASN.1 Message Converter</h1>
+
+
+
+<a name="SEC_Contents"></a>
+<h2 class="contents-heading">Table of Contents</h2>
+
+<div class="contents">
+<ul class="no-bullet">
+<li><a name="toc-Introduction" href="ffasn1dump.html#Introduction">1 Introduction</a></li>
+<li><a name="toc-Installation" href="ffasn1dump.html#Installation">2 Installation</a></li>
+<li><a name="toc-Quick-start" href="ffasn1dump.html#Quick-start">3 Quick start</a></li>
+<li><a name="toc-Command-line-usage" href="ffasn1dump.html#Command-line-usage">4 Command line usage</a></li>
+<li><a name="toc-Supported-ASN_002e1-standards" href="ffasn1dump.html#Supported-ASN_002e1-standards">5 Supported ASN.1 standards</a></li>
+<li><a name="toc-License" href="ffasn1dump.html#License">6 License</a></li>
+
+</ul>
+</div>
+
+
+<a name="Introduction"></a>
+<h2 class="chapter">1 Introduction</h2>
+
+<p>ffasn1dump compiles ASN.1 sources to memory and converts messages from
+one ASN.1 encoding to another. The supported encodings are BER/DER,
+aligned PER, unaligned PER, XER, OER, JER and GSER (RFC 3641).
+</p>
+<p>Because the XER, JER or GSER encoding are human readable, it also allows
+easy editing of ASN.1 messages with a text editor.
+</p>
+<p>ffasn1dump is a free demo of the FFASN1 compiler. This compiler
+generates efficient and small C code to encode or decode ASN.1 messages
+in all supported encodings.
+</p>
+
+<a name="Installation"></a>
+<h2 class="chapter">2 Installation</h2>
+
+<p>No specific installation is needed. The executable <samp>ffasn1dump</samp> is
+self contained. On a unix system, you can copy it in <samp>/usr/local/bin</samp>
+for example.
+</p>
+<a name="Quick-start"></a>
+<h2 class="chapter">3 Quick start</h2>
+
+<p>Here are a few examples by using the source <samp>simpletest.asn</samp> from the
+<samp>examples</samp> directory:
+</p>
+<ol>
+<li> Dump the message of type <code>ObjectList</code> defined in
+<samp>simpletest.asn</samp> from BER (file <samp>simpletest.der</samp>) to GSER
+(default output format is GSER to console, default input format is
+BER):
+
+<div class="example">
+<pre class="example">ffasn1dump simpletest.asn ObjectList simpletest.der
+</pre></div>
+
+</li><li> Dump the unaligned PER message:
+
+<div class="example">
+<pre class="example">ffasn1dump -I uper simpletest.asn ObjectList simpletest.uper
+</pre></div>
+
+</li><li> Convert the aligned PER message to DER:
+
+<div class="example">
+<pre class="example">ffasn1dump -I aper -O der simpletest.asn ObjectList simpletest.aper simpletest.der
+</pre></div>
+
+</li><li> Just compile the ASN.1 source to check it:
+
+<div class="example">
+<pre class="example">ffasn1dump simpletest.asn 
+</pre></div>
+</li></ol>
+
+<a name="Command-line-usage"></a>
+<h2 class="chapter">4 Command line usage</h2>
+
+<p>Usage:
+</p><div class="example">
+<pre class="example">ffasn1dump [options] asn1source [type infile [outfile]]
+</pre></div>
+
+<ul class="no-bullet">
+<li>- <var>asn1source</var> is the ASN.1 source file defining the various message
+types. If no other parameters are provided, then the ASN.1 source is
+just compiled. It can be used to check for syntactic or semantic
+errors.
+
+</li><li>- <var>type</var> is the ASN.1 type of the converted ASN.1 message. It can be
+optionally prefixed by an ASN.1 module name (syntax
+<code>module.identifier</code>).
+
+</li><li>- <var>infile</var> is the input ASN.1 message
+
+</li><li>- <var>outfile</var> is the output ASN.1 message. If none is provided, it is output to the standard output.
+
+</li></ul>
+
+<p>Options:
+</p><dl compact="compact">
+<dt><samp>-h</samp></dt>
+<dd><p>help
+</p>
+</dd>
+<dt><samp>-i <var>filename</var></samp></dt>
+<dd><p>include additionnal ASN.1 source file(s)
+</p>
+</dd>
+<dt><samp>-I [ber|uper|aper|gser|xer|oer|jer|random]</samp></dt>
+<dd><p>input message format (default=ber). 
+</p>
+<p>If <code>random</code> is used, a valid ASN.1 message with random content is
+generated. In this case, <var>infile</var> is a number used as seed by the
+random generator.
+</p>
+</dd>
+<dt><samp>-O [der|uper|aper|gser|xer|oer|jer]</samp></dt>
+<dd><p>set output message format (default=gser)
+</p>
+</dd>
+<dt><samp>-n</samp></dt>
+<dd><p>disable constraint check.
+</p>
+</dd>
+<dt><samp>-c</samp></dt>
+<dd><p>decode messages embedded in OCTET STRING or BIT STRING with a CONTAINING constraint. It only works when outputting to GSER, XER or JER. The embedded message is decoded using the input message format specified with <code>-I</code>. 
+</p>
+</dd>
+</dl>
+
+<a name="Supported-ASN_002e1-standards"></a>
+<h2 class="chapter">5 Supported ASN.1 standards</h2>
+
+<p>ffasn1dump supports the following standards: X.680, X.681, X.682,
+X.683, X.690, X.691, X.693, X.696, X.697 and RFC 3641.
+</p>
+<p>The <code>ANY</code> type from the older X.208 ASN.1 specification is also
+supported.
+</p>
+<p>Limitations:
+</p><ul class="no-bullet">
+<li>- Only PER-visible constraints are tested (but all constraints are
+correctly compiled). Table constraints are only used to decode the
+open types.
+</li></ul>
+
+<a name="License"></a>
+<h2 class="chapter">6 License</h2>
+
+<p>ffasn1dump is copyright 2011-2023 Fabrice Bellard.
+</p>
+<p>ffasn1dump is available free of charge, but its redistribution on any
+medium needs written consent of the author.
+</p>
+<p>ffasn1dump is available without any express or implied warranty. In no
+event will the author be held liable for any damages arising from the
+use of this software.
+</p>
+<hr>
+
+
+
+</body>
+</html>

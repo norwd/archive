@@ -1,0 +1,128 @@
+<HTML>
+<HEAD>
+<TITLE>A generic Linux Soft Modem</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+
+<H1> A generic Linux Soft Modem </H1>
+
+<P>
+The source code: <A HREF="linmodem-0.2.5.tgz"> linmodem-0.2.5.tgz </A>
+
+<P>
+This program is for developpers only ! It does nothing useful yet. <B>
+I won't answer to any mail saying: <I>why does my XXXX modem not work
+with linmodem ? </I> </B>. Look at the <A
+HREF="http://www.linmodems.org">linmodems.org</A> site to see if
+there is a working driver for your modem.
+<P>
+
+Here is the generic Linux Modem. This modem is totally software,
+it means that all the DSP stuff is done by the main CPU, as in some so
+called "winmodems". 
+
+<P>
+<UL>
+<LI>
+Linmodem is also a research project. It contains all the necessary
+stuff to test new digital communication algorithms. The line simulator
+and the X11 interface can be used to simulate a complete communication
+chain.
+<LI>
+Linmodem is the first modem to integrate a graphical user interface
+which shows the data transmitted graphically (QAM constellation, real
+time FFT of the received signal, etc...) and which will allow you to
+monitor the line quality.
+
+<LI> Linmodem will work with any "winmodem" hardware, provided that we
+know how to make it send and receive samples (as a soundcard) to the
+telephone line.
+
+<LI> Unlike the "winmodems", Linmodem will gracefuly integrate
+with Linux. In particular, It will be possible to share some ISDN code
+and to optimize closely the PPP handling so that the latency is dimished.
+
+<LI> It gives us a total control over the modem code and the ability to
+develop our own "linux modem" protocols, which could potentially be
+more efficient than the ITU standards. 
+
+</UL>
+
+<H2> What's done </H2>
+
+<UL>
+<LI> V34 modulator (sampling rate of 8000 Hz, handle all the symbol rate, carrier and trellis combinaisons).
+<LI> V34 demodulator (no echo cancellor yet, and startup phases not complete).
+<LI> Algebraic part of V90.
+<LI> DTMF dialing/receive.
+<LI> V8 protocol.
+<LI> V21 modulation & demodulation
+<LI> V23 modulation & demodulation
+<LI> sample code to test the protocol.
+<LI> sample code to test V21, V22, V23, V34 and V90 independently from the modem.
+<LI> a basic phone line simulator (with echos & typical line
+  amplitude/phase distortion).
+<LI> an X11 interface.
+<LI> soundcard interface.
+<LI> AT command parser & sample tty simulator.
+<LI> asynchronous protocol.
+</UL>
+
+<H2> Current priority </H2>
+
+I am working on the V34 code so that it can work at moderate speeds (
+>= 9600 bps). I am working on the V22 protocol too since parts of it
+are necessary for the initial V34 negociation.
+
+
+<H2> What can you do ? </H2>
+
+Here are the tasks that you could do (with the name of the person who
+has requested to work on it):
+
+<UL>
+
+<LI> Add AT commands & logic to handle voice (AT+FCLASS=8, etc...) and
+debug dtmf detection. Deepu Chandy Thomas (deepu at poboxes dot com)
+is working on it.
+
+<LI> Do extensive testing of V21/V23/V8 on real lines (but you need to
+have a proper line interface first, I have no solution for you now,
+but expect it to change soon). Analog tests can be done now by using
+two PCs connected with a soundcard. However, this is not a complete
+test because it does not test the echo cancellor and the typical line
+distorsion we will encounter.
+
+<LI> Code hardware drivers. The <A
+HREF="http://www.close.u-net.com/ltmodem.html"> LTModem project </A>
+is almost ready to use Linmodem. Some work has been done for PCTel
+drivers too. I am working on AC97 codec support (more info soon).
+
+<LI> Add the V42 protocol (serial.c is a good start to look at).
+
+<LI> Add the V42bis protocol.
+
+<LI> add fax capabilities. It requires some protocol and V29
+implementation.  V29 at emission is easy, but trickier at
+reception. Fax emission should be easy. Some projects already exists
+on this areas, so it may not be necessary to reinvent the wheel. See
+for example: <A HREF="http://www-users.cs.york.ac.uk/~fisher/"> Tony
+Fisher's home page </A> or the <A
+HREF="http://home.telia.no/Morten.Rolland/linux/i4lfax/"> I4L project
+</A> (fax for ISDN cards).
+
+<LI> Work on V90. Even if V90 depends on V34, there are many points of
+the modulation that can de done before finishing V34, in particular
+the V90 training. The V90 core is already implemented (see v90.c), so
+you have a starting point.
+</UL>
+
+
+<HR>
+Fabrice Bellard - <A HREF="../index.html"> http://bellard.org/ </A>
+<BR>
+<B> last update: Mar 6, 2000 </B>
+<BR>
+<!--img src="/cgi-bin/Count.cgi?ft=2|md=5|dd=E|sh=1|df=bellard_linmodem.cnt"-->
+</BODY>
+</HTML>

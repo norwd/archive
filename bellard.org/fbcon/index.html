@@ -1,0 +1,170 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.5 [en] (X11; I; Linux 2.1.114 i586) [Netscape]">
+</head>
+<body>
+
+<center>
+<h1>
+<b>New internal structure for the Linux Framebuffer drivers</b></h1></center>
+<b>Note: this is only a draft. Please send your comment to <em>fabrice.bellard at free.fr</em></b>
+<h2>
+Note:</h2>
+(Apr 10 1999) <a href="http://www.edgeglobal.com/~jsimmons">James Simmons</a>
+is now maintaining the patch and it is likely to be included in the 2.3.x
+Linux kernels.&nbsp;The acceleration scheme proposed here is no longer
+supported.
+<h2>
+Why ?</h2>
+Currently, here is the structure of the <a href="http://www.cs.kuleuven.ac.be/~geert/Console/">linux
+console and frame buffer drivers</a> :
+<p><img SRC="struct.gif" height=420 width=630>
+<p>Although it allows to have a console on any frame buffer device, it
+has some drawbacks :
+<ul>
+<li>
+You cannot compile the frame buffer drivers without compiling the console
+code (flag <tt>CONFIG_VT</tt> in the kernel) because they depend on a structure
+(<tt>struct display</tt>) provided by the console code (<tt>fbcon.c</tt>).
+This is an important drawback when you want a small linux kernel for embedded
+appliances for example.</li>
+
+<li>
+Each frame buffer driver must handle some console related problems, which
+complicates them and makes the kernel code harder to understand (and to
+debug !). For example, each frame buffer driver must handle the console
+switch. Moreover, each frame buffer drivers parses parameters which are
+only related to the console (<tt>ywrap,</tt> <tt>ypan</tt> for <tt>vesafb</tt>,
+the default font for other drivers).</li>
+
+<li>
+The recent frame buffer drivers add primitives for text acceleration. If
+you read their source code (see <tt>matroxfb, atyfb</tt>, ...), you'll
+understand that this is in fact really a 'kernel mode acceleration' which
+is included in the kernel. A clear policy should be defined on this topic.</li>
+</ul>
+Here is the structure I propose in my patch for fbcon :
+<p><img SRC="modif.gif" height=255 width=762>
+<p>The following points have been modified :
+<ul>
+<li>
+You can compile the console and the frame buffer devices separately. The
+frame buffer console (fbcon) is activated with the flag <tt>CONFIG_FB_CONSOLE</tt>
+while the frame buffer drivers are enabled with the existing flag <tt>CONFIG_FB</tt>.
+A new menu 'Console drivers' is added in the main kernel configuration
+menu. The fonts are clearly associated with the flag CONFIG_FB_CONSOLE
+because they are only useful when you use the frame buffer console.</li>
+
+<li>
+All the console related problems are handled in fbcon.c (console switch,
+console palette handling, etc...). It means that each frame buffer driver
+is a lot simpler, making the kernel smaller and simpler.</li>
+
+<li>
+The generic support functions (fbcon-cfb8, fbcon-iplan2p2, ...) for the
+frame buffer devices are no longer linked to the console code. It means
+that they provide generic graphical functions (at least FillRect, CopyArea,
+GlyphBlt) which are used by the console code to display <i>any font width</i>.
+Of course, as it is done now, the support for some fonts width may be faster
+due to constraints in the frame buffer structure.</li>
+
+<li>
+<i>Optionnaly, </i>these generic graphical primitives can be made accessible
+from user space with a special ioctl (FBIOACCEL_EXEC). Since they are intended
+to be accelerated, the user process supplies a <i>display list</i> where
+several commands are grouped in order to compensate the overhead of the
+system call. This kernel space acceleration costs almost nothing in terms
+of size and complexity of&nbsp; the kernel code since the code is the one
+used for the text console acceleration. Each graphical driver can add more
+commands, but only the text related commands are mandatory.</li>
+</ul>
+
+<h2>
+Compatibility</h2>
+From user space, nothing is changed, which means that even <i>binary compatibility
+is preserved</i>. This is only an internal kernel modification. However,
+each frame buffer driver must be slightly patched in order to work with
+this system. Since there are about twenty frame buffer drivers, it is still
+a big work (most of the work would consist in testing the driver of every
+supported architecture)... so that's why we need to know whether it is
+worth doing it.
+<p>The patches proposed here would make each driver a lot simpler and would
+accelerate the developpement of new frame buffers drivers. Since theses
+changes do not modify too much the current fbcon internal structures, the
+risks of bugs are diminished compared to a 'completely new good idea (tm)'.
+<h2>
+<a href="accel.html">How to use the kernel space acceleration in user mode
+?</a></h2>
+
+<h2>
+<a href="bench.html">Benchmarks</a></h2>
+
+<h2>
+The current implementation (version 0.2 - Jan 27 1999):</h2>
+It is a patch against the lastest kernel (2.2.0-final). It is maintained
+by <a href="http://www-stud.enst.fr/~bellard">Fabrice Bellard</a> and <a href="http://www.edgeglobal.com/~jsimmons">James
+Simmons</a>.
+<p>The vesafb and vfb drivers are implemented. cfb8,cfb16,cfb24 and cfb32
+are implemented. mfb, cfb2 and cfb4 support compiles but <i>is untested.</i>
+<p>Get the kernel patch: <a href="linux-2.2.0-final-fb-0.2.patch.gz">linux-2.2.0-final-fb-0.2.patch.gz</a>
+<p>Get the example program (for benchmarking and testing) :&nbsp;<a NAME="test"></a><a href="fbcon-test-0.1.tgz">fbcon-test-0.1.tgz</a>
+<br>&nbsp;
+<h2>
+TODO LIST</h2>
+
+<ul>
+<li>
+Finish and test mfb/cfb2/cfb4 on PC architecture.</li>
+
+<li>
+Include PolyGlyphBlt support for mfb/cfb2/cfb4.</li>
+
+<li>
+Include a vga16/vga2 device and fbcon-vga16 to be able to use fbcon on
+any PC. Include a 256 color VGA 320x200 console with 4x8 fonts too (everything
+could go in vesafb).</li>
+
+<li>
+Include support for MSB/LSB first, different FB endianness (the code is
+ready for that, mainly a problem of naming).</li>
+
+<li>
+Patch afb/ilbm and iplan2pX for Amiga and Atari frame buffer structure.
+merge iplan2p2/4/8 into one generic driver. Suppress fbcon-mac (emulated
+by fbcon-mfb).</li>
+
+<li>
+Find a better naming for fbcon-cfbX (maybe fbdev-cfbX). Find a way
+to name
+alternate endianness/bit ordering generic drivers.</li>
+
+<li>
+Include support for the fbcon=xxx kernel option which contains fbcon related
+option (font: ywrap: mapping of fb devices to virtual consoles)</li>
+
+<li>
+Separate acceleration definitions from fb.h to fbaccel.h.</li>
+
+<li>
+Include hardware cursor support in fbcon (at least for testing the hardware
+cursor API).</li>
+
+<li>
+Convert more drivers (matroxfb is the priority, in order to test the accelerated
+stuff and mode switching).</li>
+
+<li>
+Debug mode switching code in fbcon/fbmem (it is now incorrect).</li>
+
+<li>
+Put console in a sane state after a console switch (need to issue at least
+SetClipRect command).</li>
+</ul>
+
+<hr WIDTH="100%">
+<br>Fabrice Bellard <em> fabrice.bellard at free.fr </em>, Apr 10,
+1999.
+</body>
+</html>

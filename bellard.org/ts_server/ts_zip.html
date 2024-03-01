@@ -1,0 +1,158 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <title>ts_zip: Text Compression using Large Language Models</title>
+   <style>
+    
+table, th {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+
+table tbody tr:nth-child(odd) {
+    background-color: #ddd;
+}
+
+table td {
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+}
+
+td, th {
+    padding: 3px;
+}
+
+th {
+    font-size: 85%;
+    font-weight: bold;
+    text-align: left;
+    padding: 4px;
+    margin: 1px;
+}
+
+.num {
+    text-align: right;
+}
+</style>
+</head>
+<body>
+<h1>ts_zip: Text Compression using Large Language Models</h1>
+
+The <code>ts_zip</code> utility provided with
+the <a href="index.html">ts_server</a> software can
+compress (and hopefully decompress) text files with Large Language
+Models. The compression ratio is much higher than with other
+compression tools. There are some caveats of course:
+<ul>
+  <li>Unlike <a href="../nncp/index.html">NNCP</a>, the language
+    model must be available when decompressing.</li>
+  <li>A GPU is mandatory to get a reasonable speed. Depending on the
+  model size, the speed varies between a few kB/s to one
+  hundred kB/s.</li>
+  <li>The same exact GPU model and program versions must be used for
+    compression and decompression.</li>
+  <li>The model is frozen so it works only for text files in a
+    language that the model has already seen.</li>
+</ul>
+
+<h4>Compression Ratio</h4>
+<p>
+The compression ratio is given in bits per byte for each
+model. <a href="http://www.byronknoll.com/cmix.html">CMIX v19</a> is
+one of the best lossless data compression program.
+</p>
+<table>
+  <thead>
+    <tr>
+      <th aria-sort="ascending" style="width:15em;">File
+      <th class="num" style="width:8em;">Original size<br>(bytes)
+      <th class="num" style="width:8em;"><a href="https://en.wikipedia.org/wiki/XZ_Utils">xz</a><br>(bpb)
+      <th class="num" style="width:8em;"><a href="http://www.byronknoll.com/cmix.html">CMIX v19</a><br>(bpb)
+      <th class="num" style="width:8em;"><a href="https://huggingface.co/fbellard/ts_server/resolve/main/pythia_deduped_70M.bin">pythia_deduped_70M</a><br>(bpb)
+      <th class="num" style="width:8em;"><a href="https://huggingface.co/fbellard/ts_server/resolve/main/rwkv_169M.bin">rwkv_169M</a><br>(bpb)
+      <th class="num" style="width:8em;"><a href="https://huggingface.co/fbellard/ts_server/resolve/main/rwkv_430M.bin">rwkv_430M</a><br>(bpb)
+      <th class="num" style="width:8em;"><a href="https://huggingface.co/fbellard/ts_server/resolve/main/falcon_7B_q4.bin">falcon_7B_q4</a><br>(bpb)
+      <th class="num" style="width:8em;"><a href="https://huggingface.co/fbellard/ts_server/resolve/main/rwkv_7B_q4.bin">rwkv_7B_q4</a><br>(bpb)
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><a href="https://en.wikipedia.org/wiki/Canterbury_corpus">alice29.txt</a>
+      <td class="num">152089
+      <td class="num">2.551
+      <td class="num">1.645
+      <td class="num">1.335
+      <td class="num">1.166
+      <td class="num">1.028
+      <td class="num">0.718
+      <td class="num">0.411
+    </tr>
+    <tr><td><a href="https://en.wikipedia.org/wiki/Calgary_corpus">book1</a>
+      <td class="num">768771
+      <td class="num">2.717
+      <td class="num">1.816
+      <td class="num">1.569
+      <td class="num">1.426
+      <td class="num">1.311
+      <td class="num">1.104
+      <td class="num">1.115
+    </tr>
+    <tr><td><a href="http://mattmahoney.net/dc/text.html">enwik8</a>
+      <td class="num">100000000
+      <td class="num">1.989
+      <td class="num">1.187
+      <td class="num">-
+      <td class="num">1.098
+      <td class="num">0.948
+      <td class="num">-
+      <td class="num">-
+    </tr>
+    <tr><td><a href="https://mirrors.edge.kernel.org/pub/linux/kernel/v1.2/linux-1.2.13.tar.xz">linux-1.2.13.tar</a>
+      <td class="num">9379840
+      <td class="num">1.441
+      <td class="num">-
+      <td class="num">1.010
+      <td class="num">0.991
+      <td class="num">0.837
+      <td class="num">-
+      <td class="num">-
+    </tr>
+  </tbody>
+</table>
+
+<h4>Compression Speed and Required Memory</h4>
+
+<p>
+They are measured when compressing the <tt>book1</tt> file on a RTX
+A6000 GPU. The decompression speed and memory requirements are similar.
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th aria-sort="ascending" style="width:15em;">Model
+      <th class="num" style="width:8em;">Compression speed<br>(kBytes/s)
+      <th class="num" style="width:8em;">GPU memory<br>(GB)
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>rwkv_169M<td class="num">128<td class="num">0.38</tr>
+    <tr><td>rwkv_430M<td class="num">85<td class="num">0.94</tr>
+    <tr><td>pythia_deduped_70M<td class="num">70<td class="num">6.61</tr>
+    <tr><td>rwkv_7B_q4<td class="num">15<td class="num">4.76</tr>
+    <tr><td>falcon_7B_q4<td class="num">6.7<td class="num">8.44</tr>
+  </tbody>
+</table>
+
+<h4>Conclusion</h4>
+
+<p>
+  The smaller <a href="https://github.com/BlinkDL/RWKV-LM">RWKV</a>
+  models seem a good compromise for text compression because they use
+  a small amount of memory due to their RNN structure and have a
+  (relatively) high running speed.
+</p>
+<hr>
+Fabrice Bellard - <a href="../index.html">https://bellard.org/</a>
+</body>
+</html>

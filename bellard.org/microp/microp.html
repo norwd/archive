@@ -1,0 +1,168 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!Converted with LaTeX2HTML 95.1 (Fri Jan 20 1995) by Nikos Drakos (nikos@cbl.leeds.ac.uk), CBLU, University of Leeds >
+<HEAD>
+<TITLE>Etude et réalisation d'un microprocesseur général</TITLE>
+</HEAD>
+<BODY>
+<meta name="description" value="Etude et réalisation d'un microprocesseur général">
+<meta name="keywords" value="microp">
+<meta name="resource-type" value="document">
+<meta name="distribution" value="global">
+<P>
+  <H1>Etude et réalisation d'un microprocesseur général</H1>
+<P><STRONG>Fabrice Bellard et Sylvain Delas</STRONG><P>
+<P>
+
+<P>
+<H1><A NAME=SECTION00010000000000000000>1 Cahier des charges</A></H1>
+<P>
+<UL><LI>
+Microprocesseur général rapide pouvant adresser 64kB de mémoire.
+<P>
+<LI>
+Gestion des entrées-sorties : afficheurs 7 segments, clavier, et
+éventuellement port série.
+<P>
+<LI>
+Minimisation du nombre de CLB.
+<P>
+<LI>
+Utilisation du microprocesseur pour simuler une calculatrice simple.
+<P>
+</UL><H1><A NAME=SECTION00020000000000000000>2 Solutions envisagées</A></H1>
+<P>
+<H2><A NAME=SECTION00021000000000000000>2.1 Taille des mots</A></H2>
+<P>
+<UL><LI>
+16 bits : avantage au niveau de l'adressage mémoire, mais risque de consommer
+trop de CLB.
+<P>
+<LI>
+8 bits : simplification de la logique, mais nécessité d'utiliser une paire de
+registres pour générer une adresse mémoire ou pour les sauts.
+<P>
+</UL><H2><A NAME=SECTION00022000000000000000>2.2 Architecture</A></H2>
+<P>
+<UL><LI>
+L'utilisation de beaucoup de registres diminue le nombre d'accès mémoire et
+permet d'avoir des instructions courtes. Mais cela augmente le nombre de CLB
+utilisés.
+<P>
+<LI>
+Une paire de registres 8 bits doit être utilisée pour le chargement du PC 
+et pour générer une adresse mémoire.
+<P>
+<LI>
+Sur quels registres l'ALU doit-elle travailler et quelles opérations sont
+indispensables ? L'utilisation d'un accumulateur permet de diminuer le
+nombre de chemins de données. Mais il faut aussi prévoir un mécanisme pour
+sauver l'accumulateur dans les autres registres.
+<P>
+<LI>
+La mise à jour de flags par l'ALU peut servir pour faire des sauts 
+conditionnels ; les sauts relatifs sont intéressants car ils minimisent la
+taille des programmes.
+<P>
+</UL><H2><A NAME=SECTION00023000000000000000>2.3 Jeu d'instruction</A></H2>
+<P>
+Un format homogène simplifie beaucoup le décodeur d'instruction. Des
+instructions sur 1 octet simplifient le séquenceur, mais un problème se
+pose pour le chargement de constantes de grande taille ( 8 ou 16 bits ).
+<P>
+D'un autre côté, si on inclut un champ d'adresse dans les instructions, la
+taille moyenne des programmes sera plus faible.
+<P>
+<H2><A NAME=SECTION00024000000000000000>2.4 Les périphériques</A></H2>
+<P>
+Une gestion <i> hardware</i> (notamment des afficheurs) rend le débogage plus
+facile, mais occupe beaucoup de CLB. Une gestion totalement <i> software</i>
+complique sensiblement le logiciel, mais donne plus de souplesse.
+<P>
+<H1><A NAME=SECTION00030000000000000000>3 Solution retenue</A></H1>
+<P>
+<H2><A NAME=SECTION00031000000000000000>3.1 Architecture générale</A></H2>
+<P>
+<UL><LI>
+Microprocesseur 8 bits adressant 64kB de mémoire avec au maximum 16
+registres 8 bits plus un accumulateur 8 bits. En fait seulement 8 registres
+ont été implémentés pour limiter le temps de compilation du circuit.
+<P>
+<LI>
+L'ALU peut faire les opérations suivantes: MOVR, MOVA, ADD, SUB, XOR, OR, AND. La
+rotation à droite a été prévue dans le jeu d'instruction mais non
+implémentée faute de temps (elle est simulée par des rotations à gauche).
+Les calculs sont de la forme : <IMG  ALIGN=BOTTOM ALT="" SRC="img1.gif"> ou <IMG  ALIGN=BOTTOM ALT="" SRC="img2.gif">. Le flag
+<b>Z</b> (résultat nul) est mis à jour après chaque calcul, et le flag <b>C</b> (retenue)
+l'est seulement après ADD,SUB,ROR. L'opération XOR remet le flag <b>C</b> à zéro.
+<P>
+<LI>
+On peut charger des constantes de 4 bits dans le quartet poids faible (avec
+extension du signe au quartet poids fort) et dans le quartet poids fort de
+<b>ACC</b>.
+<P>
+<LI>
+Les registres <IMG  ALIGN=BOTTOM ALT="" SRC="img3.gif"> servent pour générer une adresse 16 bits utilisée
+dans les sauts absolus et les accès mémoire. Le chargement du <b>PC</b> se fait
+aussi dans <IMG  ALIGN=BOTTOM ALT="" SRC="img4.gif">. Quatre instructions spéciales permettent la lecture
+et l'écriture mémoire (en utilisant <b>ACC</b> comme opérande), et la
+sauvegarde et la restauration du <b>PC</b>.
+<P>
+<LI>
+Les sauts conditionnels relatifs utilisent <b>ACC</b> pour le déplacement. Ils
+testent les flags <b>Z</b> et <b>C</b>.
+<P>
+<LI>
+Les périphériques ont d'abord été gérés de façon <i> hardware</i> pour
+faciliter le débogage, puis de façon totalement <i> software</i> pour limiter
+le nombre de CLB. Trois registres dédiés sont utilisés : <IMG  ALIGN=BOTTOM ALT="" SRC="img5.gif"> pour la
+sélection de l'afficheur et de la colonne du clavier actifs et la sortie
+série, <IMG  ALIGN=BOTTOM ALT="" SRC="img6.gif"> pour la commande des segments des afficheurs, et <IMG  ALIGN=BOTTOM ALT="" SRC="img7.gif"> pour
+lire la touche pressé sur la colonne du clavier sélectionnée.
+<P>
+</UL><H2><A NAME=SECTION00032000000000000000>3.2 Jeu d'instruction retenu</A></H2>
+<P>
+<P><IMG  ALIGN=BOTTOM ALT="" SRC="img8.gif"><P><H2><A NAME=SECTION00033000000000000000>3.3 Les outils de développement</A></H2>
+<P>
+Nous avons réalisé un macro-assembleur pour générer facilement les séquences
+de code les plus courantes. Un simulateur complet (incluant la simulation du
+<i> hardware</i>) a été réalisé sous XWindows et sur Macintosh.
+<P>
+<H1><A NAME=SECTION00040000000000000000>4 Bilan</A></H1>
+<P>
+<H2><A NAME=SECTION00041000000000000000>4.1 Retour au cahier des charges</A></H2>
+<P>
+Le microprocesseur fonctionne. Il utilise 190 CLB. Nous avons programmé une
+calculatrice 4 opérations avec affichage en décimal et un jeu de labyrinthe.
+Cela suffit à démontrer que notre microprocesseur est général.
+<P>
+La version testée atteint une vitesse de 0.3 MIPS, et peut être accélérée
+jusqu'à 1 MIPS.
+<P>
+La gestion par logiciel des périphériques permet d'avoir une grande
+souplesse d'utilisation.
+<P>
+<H2><A NAME=SECTION00042000000000000000>4.2 Regrets et améliorations possibles</A></H2>
+<P>
+<UL><LI>
+Finalement, il aurait été aussi facile de faire des instructions sur un nombre
+d'octets variable pour inclure des constantes de plus grande taille.
+<P>
+<LI>
+Le nombre de cycle par instruction pourrait lui aussi être variable (ajout
+d'un <i> reset</i> sur le séquenceur).
+<P>
+<LI>
+L'utilisation de buffers 3 états au niveau des registres aurait simplifié
+l'ensemble, mais nous aurions dû router certaines parties du circuit à la
+main.
+<P>
+<LI>
+Il est possible d'utiliser encore moins de CLB si on autorise un code
+automodifiant et des instructions opérant toutes sur un accumulateur et une 
+adresse mémoire.
+<P>
+</UL><BR> <HR>
+<P><ADDRESS>
+Tue Oct 15 03:37:32 MET 1996 <BR>Fabrice Bellard  (fabrice.bellard at free.fr)
+</ADDRESS>
+</BODY>

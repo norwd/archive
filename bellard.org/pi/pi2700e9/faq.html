@@ -1,0 +1,157 @@
+<html>
+<head>
+<title>Frequently Asked Questions</title>
+</head>
+<body>
+<h1>Frequently Asked Questions</h1>
+
+<h4>Summary</h4>
+<ul>
+<li><a href="faq.html#Q1">Why did you do this ?</a></li>
+<li><a href="faq.html#Q8">How does your record compare to the previous one ?
+</a></li>
+<li><a href="faq.html#Q11">Is your result consistent with the previously
+published computations ?</a></li>
+<li><a href="faq.html#Q2">Where can I download all the computed Pi digits ?</a></li>
+<li><a href="faq.html#Q3">Do you plan to go further ?</a></li>
+<li><a href="faq.html#Q5">Is the program used to establish the Pi computation
+record publically available ?</a></li>
+<li><a href="faq.html#Q6">Will you release the source code ?</a></li>
+<li><a href="faq.html#Q7">Why didn't you use a GPU (Graphics Processing Unit)
+?</a></li>
+<li><a href="faq.html#Q9">Which book should I read to learn arbitrary-precision
+arithmetic ?</a></li>
+<li><a href="faq.html#Q10">Who are you ?</a></li>
+</ul>
+
+<h4><a name="Q1">Why did you do this ?</a></h4>
+
+I am not especially interested in the digits of Pi, but in the various
+algorithms involved to do arbitrary-precision arithmetic. Optimizing these
+algorithms to get good performance is a difficult programming
+challenge.
+<p>
+Arbitrary-precision arithmetic with huge numbers has little practical
+use, but some of the involved algorithms are interesting to do other
+things. In particular:
+<ul>
+<li> The Discrete Fourier Transform. This transform is widely used in
+  many algorithms and most modern electronic appliances (such as
+  digital televisions, cell phones and music players) include at least
+  one instance of it.</li>
+<li> The reliable managing of a very large amount of disk storage, at
+  least for a single computer. Specific methods were developed to
+  ensure high reliability and high disk I/O bandwidth. The same ideas
+  can be applied to other fields such as video streaming or data base
+  access.</li>
+<li> The whole computation is an extensive test for a computer including
+  its CPU, RAM, disk storage and cooling system. A single bit error
+  during the computation gives a bad result. A bad cooling results in
+  a hardware failure.</li>
+</ul>
+
+<h4><a name="Q8">How does your record compare to the previous one ?
+</a></h4>
+
+The previous Pi computation record of
+about <a href="http://www.hpcs.is.tsukuba.ac.jp/~daisuke/pi.html">2577
+billion decimal digits</a> was published by Daisuke Takahashi on
+August 17th 2009. The main computation lasted 29 hours and used 640
+nodes of a <a href="http://www.top500.org/system/details/9479">T2K
+Open Supercomputer (Appro Xtreme-X3 Server)</a>. Each node contains 4
+Opteron Quad Core CPUs at 2.3 GHz, giving a peak processing power of
+94.2 Tflops (trillion floating point operations per second).<p>
+
+My computation used a single Core i7 Quad Core CPU at 2.93 GHz giving
+a peak processing power of 46.9 Gflops. So the supercomputer is about 2000
+times faster than my computer. However, my computation lasted 116
+days, which is 96 times slower than the supercomputer for about the
+same number of digits. So my computation is roughly 20 times
+more efficient. It can be explained by the following
+facts: 
+
+<ul> 
+
+<li>The Pi computation is I/O bound, so it needs very high
+communication speed between the nodes on a parallel supercomputer. So
+the full power of the supercomputer cannot really be used.</li>
+
+<li>The algorithm I used (Chudnovsky series evaluated using the
+binary splitting algorithm) is asymptotically slower than the
+Arithmetic-Geometric Mean algorithm used by Daisuke Takahashi, but it
+makes a more efficient use of the various CPU caches, so in practice
+it can be faster. Moreover, some mathematical tricks were used to
+speed up the binary splitting.
+
+</ul>
+
+<h4><a name="Q11">Is your result consistent with the previously
+published computations ?</a></h4>
+
+Yes, the result matches the <a
+href="http://www.hpcs.is.tsukuba.ac.jp/~daisuke/pi.html">decimal
+digits of Pi published by Daisuke Takahashi</a> and the <a
+href="http://www.super-computing.org/pi-hexa_current.html">hexadecimal</a>
+and <a
+href="http://www.super-computing.org/pi-decimal_current.html">decimal
+digits</a> published by <a
+href="http://www.super-computing.org/">Kanada</a>.
+
+<h4><a name="Q2">Where can I download all the computed Pi digits ?</a></h4>
+
+The files have a size of more than 1 TB, so it would take a while to download
+them, even with a fast Internet connection (e.g. 10 days with a 10Mb/s
+download speed). Instead, I may add a web page where the user can ask
+the digits at a specific position. Extracts of the decimal and hexadecimal digits are available <a href="pidigits.html">here</a>.
+
+<h4><a name="Q3">Do you plan to go further ?</a></h4>
+
+It will depend on my motivation and on the availability of new
+hardware with larger and faster storage. Interested sponsors can
+contact <a href="../../index.html">me</a>.
+
+<h4><a name="Q5">Is the program used to establish the Pi computation
+record publically available ?</a></h4>
+
+Yes, it is available <a href="tpi.html">here</a> for Linux and Windows
+(64 bit only).
+
+<h4><a name="Q6">Will you release the source code ?</a></h4>
+
+I have not decided yet.
+
+<h4><a name="Q7">Why didn't you use a GPU (Graphics Processing Unit)
+?</a></h4>
+
+The Pi computation algorithm I used is I/O bound, so the extra
+processing power of the GPU would not help much. What really matters
+is the speed of the hard disks. The question would be different if the
+computation could be done in RAM, but it is currently too expensive,
+at least for me !
+
+<h4><a name="Q9">Which book should I read to learn arbitrary-precision
+arithmetic ?</a></h4>
+
+I suggest:
+
+<ul>
+<li><em>Modern Computer Arithmetic</em> by Richard Brent and Paul
+Zimmermann, version 0.4, November 2009, Full text available <a
+href="http://www.loria.fr/~zimmerma/mca/pub226.html">here</a>.</li>
+
+<li><em>The Art of Computer Programming, volume 2 : Seminumerical
+Algorithms</em> by Donald E. Knuth, Addison-Wesley, third edition,
+1998. More information <a
+href="http://www-cs-staff.stanford.edu/~knuth/taocp.html">here</a>.</li>
+</ul>
+
+<h4><a name="Q10">Who are you ?</a></h4>
+
+I am a software engineer currently working in the field of Digital
+Television. I live in Paris, France.
+
+<hr>
+Back to <a href="index.html">Home</a>
+
+</body>
+</html>
