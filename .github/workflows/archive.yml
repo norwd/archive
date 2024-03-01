@@ -1,0 +1,254 @@
+---
+
+name: "Archive Link"
+run-name: "Archiving ${{ inputs.url }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        required: true
+        type: string
+        description: |
+          The url to archive.
+
+          By default, only the file specified will be archived.
+          If the url ends with a `/` then it will be treated like a directory and will be mirrored.
+
+env:
+  GH_TOKEN: ${{ secrets.AUTO_DOWNLOAD_ARCHIVE }}
+
+jobs:
+  archive-directory:
+    if: ${{ endsWith(inputs.url, '/') }}
+    name: Archive Directory
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.AUTO_DOWNLOAD_ARCHIVE }}
+      - name: Setup GPG Keys
+        uses: crazy-max/ghaction-import-gpg@v5
+        with:
+          gpg_private_key: ${{ secrets.AUTO_COMMIT_GPG_PRIVATE_KEY_ARCHIVE }}
+          passphrase: ${{ secrets.AUTO_COMMIT_GPG_PASSPHRASE_ARCHIVE }}
+          git_user_signingkey: true
+          git_commit_gpgsign: true
+
+      - name: Determine Target
+        id: target
+        env: { URL: '${{ inputs.url }}' }
+        run: |
+          grep --invert "^#" << EOF | tee -a "${GITHUB_OUTPUT}"
+
+          # Get the directory being saved
+          directory=$(
+            echo "${URL}" |
+              sed -E 's/^https?:\/\/web.archive.org\/web\/[0-9]+\/(https?:\/\/)?/https:\/\//' |
+              sed -E 's/^https?:\/\///' |
+              sed -E 's/^ftps?:\/\///' |
+              sed -E 's/%20/ /g'
+          )
+
+          # Get the url of the file (with any sanitisation)
+          url=$(
+            echo "${URL}"
+          )
+
+          # Get the branch that this url will be archived via
+          branch=$(
+            echo "archive/${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}"
+          )
+
+          EOF
+
+      - name: Mirror Directory
+        continue-on-error: true # Don't worry if it could not be mirrored, some individual files may fail but can be manually recovered later
+        run: wget --no-verbose --recursive -level=inf --no-parent --convert-links --page-requisites --content-on-error --content-disposition "${URL}"
+        env:
+          URL: ${{ steps.target.outputs.url }}
+
+      # See also https://gist.github.com/vpadhariya/90ab71c2a6a1203f5f9aa75ad5c5f32a
+      - name: Clean up query strings
+        run: for i in `find $1 -type f -name "*\?*"`; do mv $i `echo $i | cut -d? -f1`; done
+
+      - name: Push Downloaded Directory
+        id: auto-commit
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          file_pattern: .
+          create_branch: true
+          branch: ${{ steps.target.outputs.branch }}
+          commit_author: norwd <106889957+norwd@users.noreply.github.com>
+          commit_user_name: norwd
+          commit_user_email: 106889957+norwd@users.noreply.github.com
+          commit_options: -s -S
+          commit_message: |
+            Download ${{ steps.target.outputs.directory }}
+
+            Original source: ${{ steps.target.outputs.url }}
+
+            **NOTE:** This is an automatic commit. See the archive workflow.
+
+      - name: Create Pull Request
+        if: ${{ steps.auto-commit.outputs.changes_detected == 'true' }}
+        run: gh --repo "${{ github.repository }}" pr create --title "${TITLE}" --body "${BODY}" --head "${HEAD}" | tee -a "${GITHUB_STEP_SUMMARY}" | tee -a pr.txt
+        env:
+          HEAD: ${{ steps.target.outputs.branch }}
+          TITLE: "Archive ${{ steps.target.outputs.directory }}"
+          BODY: |
+            Original source: ${{ steps.target.outputs.url }}
+
+            **NOTE:** This is an automatic commit. See the archive workflow.
+
+  archive-file:
+    if: ${{ !endsWith(inputs.url, '/') }}
+    name: Archive File
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.AUTO_DOWNLOAD_ARCHIVE }}
+
+      - name: Setup GPG Keys
+        uses: crazy-max/ghaction-import-gpg@v5
+        with:
+          gpg_private_key: ${{ secrets.AUTO_COMMIT_GPG_PRIVATE_KEY_ARCHIVE }}
+          passphrase: ${{ secrets.AUTO_COMMIT_GPG_PASSPHRASE_ARCHIVE }}
+          git_user_signingkey: true
+          git_commit_gpgsign: true
+
+      - name: Determine Target
+        id: target
+        env: { URL: '${{ inputs.url }}' }
+        run: |
+          grep --invert "^#" << EOF | tee -a "${GITHUB_OUTPUT}"
+
+          # Get the directory to save the file into
+          directory=$(
+            dirname "$(
+              echo "${URL}" |
+                sed -E 's/^https?:\/\/web.archive.org\/web\/[0-9]+\/(https?:\/\/)?/https:\/\//' |
+                sed -E 's/^https?:\/\///' |
+                sed -E 's/^ftps?:\/\///' |
+                sed -E 's/%20/ /g'
+            )"
+          )
+
+          # Get the name of the file being saved  
+          file=$(
+            basename "${URL}" |
+            sed -E 's/%20/ /g'
+          )
+
+          # Get the url of the file (with any sanitisation)
+          url=$(
+            echo "${URL}"
+          )
+
+          # Get the branch that this url will be archived via
+          branch=$(
+            echo "archive/${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}"
+          )
+
+          EOF
+
+      - name: Create Target Directory
+        run: mkdir -p "${DIR}"
+        env:
+          DIR: ${{ steps.target.outputs.directory }}
+
+      - name: Download File
+        working-directory: ${{ steps.target.outputs.directory }}
+        run: wget --no-verbose --output-document "${FILE}" "${URL}"
+        env:
+          URL: ${{ steps.target.outputs.url }}
+          FILE: ${{ steps.target.outputs.file }}
+
+      - name: Push Downloaded File
+        id: auto-commit
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          file_pattern: .
+          create_branch: true
+          branch: ${{ steps.target.outputs.branch }}
+          commit_author: norwd <106889957+norwd@users.noreply.github.com>
+          commit_user_name: norwd
+          commit_user_email: 106889957+norwd@users.noreply.github.com
+          commit_options: -s -S
+          commit_message: |
+            Download ${{ steps.target.outputs.file }}
+
+            Original source: ${{ steps.target.outputs.url }}
+
+            **NOTE:** This is an automatic commit. See the archive workflow.
+
+      - name: Extract Tarball
+        continue-on-error: true # Don't worry if it could not be extracted, the tarball can be manually extracted later
+        working-directory: ${{ steps.target.outputs.directory }}
+        if: ${{ endsWith(steps.target.outputs.file, '.tar.Z') || endsWith(steps.target.outputs.file, '.tar.gz') || endsWith(steps.target.outputs.file, '.tar.Z') || endsWith(steps.target.outputs.file, '.tar.bz2') || endsWith(steps.target.outputs.file, '.tar.xz') || endsWith(steps.target.outputs.file, '.tgz') }}
+        run: tar -xvf "${FILE}" --one-top-level
+        env:
+          FILE: ${{ steps.target.outputs.file }}
+
+      - name: Push Extracted Tarball
+        continue-on-error: true # Don't worry if it could not be extracted, the tarball can be manually extracted later
+        id: auto-commit-extracted-tarball
+        if: ${{ endsWith(steps.target.outputs.file, '.tar.Z') || endsWith(steps.target.outputs.file, '.tar.gz') || endsWith(steps.target.outputs.file, '.tar.Z') || endsWith(steps.target.outputs.file, '.tar.bz2') || endsWith(steps.target.outputs.file, '.tar.xz') || endsWith(steps.target.outputs.file, '.tgz') }}
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          file_pattern: .
+          create_branch: true
+          branch: ${{ steps.target.outputs.branch }}
+          commit_author: norwd <106889957+norwd@users.noreply.github.com>
+          commit_user_name: norwd
+          commit_user_email: 106889957+norwd@users.noreply.github.com
+          commit_options: -s -S
+          commit_message: |
+            Extract ${{ steps.target.outputs.file }}
+
+            **NOTE:** This is an automatic commit. See the archive workflow.
+
+      - name: Extract Zipfile
+        continue-on-error: true # Don't worry if it could not be extracted, the zipfile can be manually extracted later
+        working-directory: ${{ steps.target.outputs.directory }}
+        if: ${{ endsWith(steps.target.outputs.file, '.zip') }}
+        run: unzip -o "${FILE}" -d "$(echo "${FILE}" | sed 's/.zip$//')"
+        env:
+          FILE: ${{ steps.target.outputs.file }}
+
+      - name: Push Extracted Zipfile
+        continue-on-error: true # Don't worry if it could not be extracted, the zipfile can be manually extracted later
+        id: auto-commit-extracted-zipfile
+        if: ${{ endsWith(steps.target.outputs.file, '.zip') }}
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          file_pattern: .
+          create_branch: true
+          branch: ${{ steps.target.outputs.branch }}
+          commit_author: norwd <106889957+norwd@users.noreply.github.com>
+          commit_user_name: norwd
+          commit_user_email: 106889957+norwd@users.noreply.github.com
+          commit_options: -s -S
+          commit_message: |
+            Unzip ${{ steps.target.outputs.file }}
+
+            **NOTE:** This is an automatic commit. See the archive workflow.
+
+      - name: Create Pull Request
+        if: ${{ steps.auto-commit.outputs.changes_detected == 'true' || steps.auto-commit-extracted-tarball.outputs.changes_detected == 'true' || steps.auto-commit-extracted-zipfile.outputs.changes_detected == 'true' }}
+        run: gh --repo "${{ github.repository }}" pr create --title "${TITLE}" --body "${BODY}" --head "${HEAD}" | tee -a "${GITHUB_STEP_SUMMARY}" | tee -a pr.txt
+        env:
+          HEAD: ${{ steps.target.outputs.branch }}
+          TITLE: "Archive ${{ steps.target.outputs.file }}"
+          BODY: |
+            Original source: ${{ steps.target.outputs.url }}
+
+            **NOTE:** This is an automatic commit. See the archive workflow.
+
+      - name: Approve Pull Request
+        continue-on-error: true # Don't worry if it can't merge, the PR can be manually merged later
+        if: ${{ steps.auto-commit.outputs.changes_detected == 'true' || steps.auto-commit-extracted-tarball.outputs.changes_detected == 'true' || steps.auto-commit-extracted-zipfile.outputs.changes_detected == 'true' }}
+        run: gh --repo "${{ github.repository }}" pr merge --auto --merge "$(cat pr.txt)"
