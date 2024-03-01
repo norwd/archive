@@ -28,6 +28,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.AUTO_DOWNLOAD_ARCHIVE }}
+
       - name: Setup GPG Keys
         uses: crazy-max/ghaction-import-gpg@v5
         with:
@@ -185,60 +186,8 @@ jobs:
 
             **NOTE:** This is an automatic commit. See the archive workflow.
 
-      - name: Extract Tarball
-        continue-on-error: true # Don't worry if it could not be extracted, the tarball can be manually extracted later
-        working-directory: ${{ steps.target.outputs.directory }}
-        if: ${{ endsWith(steps.target.outputs.file, '.tar.Z') || endsWith(steps.target.outputs.file, '.tar.gz') || endsWith(steps.target.outputs.file, '.tar.Z') || endsWith(steps.target.outputs.file, '.tar.bz2') || endsWith(steps.target.outputs.file, '.tar.xz') || endsWith(steps.target.outputs.file, '.tgz') }}
-        run: tar -xvf "${FILE}" --one-top-level
-        env:
-          FILE: ${{ steps.target.outputs.file }}
-
-      - name: Push Extracted Tarball
-        continue-on-error: true # Don't worry if it could not be extracted, the tarball can be manually extracted later
-        id: auto-commit-extracted-tarball
-        if: ${{ endsWith(steps.target.outputs.file, '.tar.Z') || endsWith(steps.target.outputs.file, '.tar.gz') || endsWith(steps.target.outputs.file, '.tar.Z') || endsWith(steps.target.outputs.file, '.tar.bz2') || endsWith(steps.target.outputs.file, '.tar.xz') || endsWith(steps.target.outputs.file, '.tgz') }}
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          file_pattern: .
-          create_branch: true
-          branch: ${{ steps.target.outputs.branch }}
-          commit_author: norwd <106889957+norwd@users.noreply.github.com>
-          commit_user_name: norwd
-          commit_user_email: 106889957+norwd@users.noreply.github.com
-          commit_options: -s -S
-          commit_message: |
-            Extract ${{ steps.target.outputs.file }}
-
-            **NOTE:** This is an automatic commit. See the archive workflow.
-
-      - name: Extract Zipfile
-        continue-on-error: true # Don't worry if it could not be extracted, the zipfile can be manually extracted later
-        working-directory: ${{ steps.target.outputs.directory }}
-        if: ${{ endsWith(steps.target.outputs.file, '.zip') }}
-        run: unzip -o "${FILE}" -d "$(echo "${FILE}" | sed 's/.zip$//')"
-        env:
-          FILE: ${{ steps.target.outputs.file }}
-
-      - name: Push Extracted Zipfile
-        continue-on-error: true # Don't worry if it could not be extracted, the zipfile can be manually extracted later
-        id: auto-commit-extracted-zipfile
-        if: ${{ endsWith(steps.target.outputs.file, '.zip') }}
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          file_pattern: .
-          create_branch: true
-          branch: ${{ steps.target.outputs.branch }}
-          commit_author: norwd <106889957+norwd@users.noreply.github.com>
-          commit_user_name: norwd
-          commit_user_email: 106889957+norwd@users.noreply.github.com
-          commit_options: -s -S
-          commit_message: |
-            Unzip ${{ steps.target.outputs.file }}
-
-            **NOTE:** This is an automatic commit. See the archive workflow.
-
       - name: Create Pull Request
-        if: ${{ steps.auto-commit.outputs.changes_detected == 'true' || steps.auto-commit-extracted-tarball.outputs.changes_detected == 'true' || steps.auto-commit-extracted-zipfile.outputs.changes_detected == 'true' }}
+        if: ${{ steps.auto-commit.outputs.changes_detected == 'true' }}
         run: gh --repo "${{ github.repository }}" pr create --title "${TITLE}" --body "${BODY}" --head "${HEAD}" | tee -a "${GITHUB_STEP_SUMMARY}" | tee -a pr.txt
         env:
           HEAD: ${{ steps.target.outputs.branch }}
@@ -250,5 +199,5 @@ jobs:
 
       - name: Approve Pull Request
         continue-on-error: true # Don't worry if it can't merge, the PR can be manually merged later
-        if: ${{ steps.auto-commit.outputs.changes_detected == 'true' || steps.auto-commit-extracted-tarball.outputs.changes_detected == 'true' || steps.auto-commit-extracted-zipfile.outputs.changes_detected == 'true' }}
+        if: ${{ steps.auto-commit.outputs.changes_detected == 'true' }}
         run: gh --repo "${{ github.repository }}" pr merge --auto --merge "$(cat pr.txt)"
