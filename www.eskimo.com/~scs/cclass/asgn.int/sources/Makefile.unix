@@ -1,0 +1,14 @@
+CC = gcc
+
+OBJS = commands.o getline.o getwords.o main.o object.o parser.o rooms.o
+
+game: $(OBJS)
+	$(CC) -o $@ $(OBJS)
+
+commands.o: commands.c game.h defs.h
+getline.o: getline.c utils.h
+getwords.o: getwords.c utils.h
+main.o: main.c game.h utils.h
+object.o: object.c game.h defs.h
+parser.o: parser.c defs.h game.h utils.h
+rooms.o: rooms.c game.h defs.h

@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>Chapter 17: Data Files</title>
+<link href="sx2k.html" rev=precedes>
+<link href="sx3a.html" rel=precedes>
+<link href="top.html" rev=subdocument>
+</head>
+<body>
+<H1>Chapter 17: Data Files</H1>
+
+<p>Many programs need to read and write data files.
+A program might read data files to initialize its configuration
+or to receive data from another program;
+a program might write data files to save its state
+or to send data to another program.
+In this chapter we'll explore techniques for reading and writing data files,
+and for designing data file formats
+so that they are functional, useful, and convenient.
+</p><p>What makes a good data file?
+There are many desirable attributes which we might want to achieve
+or to trade off against one another.
+We might want data files to be small (to save disk space)
+or to be efficient to read and write (to save computer time)
+or to be easy to read and write
+(that is, easy to implement, to save programmer time).
+We might want them to be human readable,
+to make them easier to debug or modify,
+or so that they could be created ``by hand''
+(i.e. all using standard file-manipulation tools).
+On the other hand, if the files are to contain sensitive data,
+we might prefer that they not be human-readable.
+We might want the files to be portable across different machine architectures
+(if we will be moving data files from machine to machine).
+We might want to ensure that if the data file format ever changes
+(perhaps to add new information),
+newer versions of our software
+(that is, the software that reads and writes the data files)
+can still read the old files,
+and perhaps even that old versions of the software
+can at least partially read the new files.
+We'll see ways of achieving all of these attributes.
+</p><p>Roughly speaking, there are two large classes of data file formats:
+``text'' and ``binary''.
+Text files, as their name implies, contain human-readable text;
+that is,
+if you were to read one into a text editor or dump one to your screen,
+it would consist of strings of printable characters,
+arranged into lines.
+(By ``printable characters''
+we mean characters which display nicely on the screen,
+as opposed to ``control characters.''
+Generally speaking,
+the only control characters a text file will contain
+will be CR or LF or CRLF combinations to mark the ends of lines,
+and perhaps horizontal tabs.
+C represents the end-of-line character(s) by <TT>\n</TT>,
+and tabs by <TT>\t</TT>.)
+</p><p>Binary files, on the other hand, contain arbitrary patterns of bits and bytes,
+arranged for the computer's convenience, not the human's.
+The bytes making up a binary file
+are not intended to be interpreted as characters or text;
+if you dump one to the screen,
+you get all sorts of garbage.
+Some of the bit patterns will happen to represent printable characters,
+but others will be control characters,
+others may be special graphics characters,
+and still others may end up representing sequences
+which will switch the display into inverse video, clear the screen, etc.
+(Depending on your display environment,
+printing arbitrary binary characters
+may confuse the display
+so badly that it
+becomes unusable
+and must be reset.)
+</p><p>In a text file, we might represent the integer 12345
+as the five characters <TT>1 2 3 4 5</TT>
+(that is, as the text string <TT>"12345"</TT>).
+In a binary file, on the other hand,
+we might represent it as two bytes with values <TT>0x30</TT> and <TT>0x39</TT>,
+since 12345 base 10 is 3039 base 16.
+(Just to confuse the issue,
+it happens that in the ASCII character set
+the values <TT>0x30</TT> and <TT>0x39</TT>
+represent the characters <TT>'0'</TT> and <TT>'9'</TT>,
+but this is sheer coincidence;
+the character values 0 and 9 of course have no meaningful relationship
+to the value 12345 that we're storing.)
+</p><p><a href="sx3a.html" rel=subdocument>17.1: Text Data Files</a></p>
+<p><a href="sx3b.html" rel=subdocument>17.2: Binary Data Files</a></p>
+<hr>
+<p>
+Read sequentially:
+<a href="sx2k.html" rev=precedes>prev</a>
+<a href="sx3a.html" rel=precedes>next</a>
+<a href="top.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1996-1999
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-03 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>10.6 Arrays and Pointers as Function Arguments</title>
+<link href="sx10e.html" rev=precedes>
+<link href="sx10g.html" rel=precedes>
+<link href="sx10.html" rev=subdocument>
+</head>
+<body>
+<H2>10.6 Arrays and Pointers as Function Arguments</H2>
+
+<p>[This section corresponds to K&amp;R Sec. 5.2]
+</p><p>Earlier, we learned that functions in C receive copies of their arguments.
+(This means that C uses <dfn>call by value</dfn>;
+it means that a function can modify one of its arguments
+without modifying the value in the caller.)
+We didn't say so at the time,
+but when a function is called,
+the copies of the arguments are made as if by assignment.
+But since arrays can't be assigned,
+how can a function receive an array as an argument?
+The answer will explain why arrays are an apparent exception
+to the rule that functions cannot modify their arguments.
+</p><p>We've been regularly calling a function <TT>getline</TT> like this:
+<pre>
+	char line[100];
+	getline(line, 100);
+</pre>
+with the intention that <TT>getline</TT> read
+the next line of input into the character array <TT>line</TT>.
+But in the previous paragraph,
+we learned that when we mention the name of an array in an expression,
+the compiler generates a pointer to its first element.
+So the call above is as if we had written
+<pre>
+	char line[100];
+	getline(&amp;line[0], 100);
+</pre>
+In other words, the <TT>getline</TT> function does <em>not</em> receive
+an array of <TT>char</TT>
+at all;
+it actually receives a pointer to <TT>char</TT>!
+</p><p>As we've seen throughout this chapter,
+it's straightforward to manipulate the elements of an array using pointers,
+so there's no particular insurmountable difficulty
+if <TT>getline</TT> receives a pointer.
+One question remains, though:
+we had been defining <TT>getline</TT>
+with its <TT>line</TT> parameter declared as an array:
+<pre>
+	int getline(char line[], int max)
+	{
+	...
+	}
+</pre>
+We mentioned that we didn't have to specify a size
+for the <TT>line</TT> parameter,
+with the explanation that <TT>getline</TT> really used
+the array in its caller,
+where the actual size was specified.
+But that declaration certainly does look like an array--how
+can it work when <TT>getline</TT> actually receives a pointer?
+</p><p>The answer is that the C compiler does a little something behind your back.
+It knows that whenever you mention an array name in an expression,
+it
+(the compiler)
+generates a pointer to the array's first element.
+Therefore, it knows that a function
+can never actually receive an array as a parameter.
+Therefore,
+whenever it sees you defining a function that seems to accept
+an array as a parameter,
+the compiler quietly pretends that you had declared it
+as accepting a pointer, instead.
+The definition of <TT>getline</TT> above
+is compiled exactly as if it had been written
+<pre>
+	int getline(char *line, int max)
+	{
+	...
+	}
+</pre>
+Let's look at how <TT>getline</TT> might be written
+if we thought of its first parameter (argument)
+as a pointer, instead:
+<pre>
+int getline(char *line, int max)
+{
+int nch = 0;
+int c;
+max = max - 1;			/* leave room for '\0' */
+
+while((c = getchar()) != EOF)
+	{
+	if(c == '\n')
+		break;
+
+	if(nch &lt; max)
+		{
+		*(line + nch) = c;
+		nch = nch + 1;
+		}
+	}
+
+if(c == EOF &amp;&amp; nch == 0)
+	return EOF;
+
+*(line + nch) = '\0';
+return nch;
+}
+</pre>
+But, as we've learned,
+we can also use ``array subscript'' notation with pointers,
+so we could rewrite the pointer version of <TT>getline</TT> like this:
+<pre>
+int getline(char *line, int max)
+{
+int nch = 0;
+int c;
+max = max - 1;			/* leave room for '\0' */
+
+while((c = getchar()) != EOF)
+	{
+	if(c == '\n')
+		break;
+
+	if(nch &lt; max)
+		{
+		line[nch] = c;
+		nch = nch + 1;
+		}
+	}
+
+if(c == EOF &amp;&amp; nch == 0)
+	return EOF;
+
+line[nch] = '\0';
+return nch;
+}
+</pre>
+But this is exactly what we'd written before
+(see chapter 6, Sec. 6.3),
+except that the declaration of the <TT>line</TT> parameter is different.
+In other words,
+within the body of the function,
+it hardly matters whether
+we thought
+<TT>line</TT>
+was
+an array or a pointer,
+since
+we can use array subscripting notation with
+both arrays and pointers.
+</p><p>These games that the compiler is playing
+with arrays and pointers
+may seem bewildering at first,
+and it may seem faintly miraculous
+that everything comes out in the wash
+when you declare a function like <TT>getline</TT>
+that seems to accept an array.
+The equivalence in C between arrays and pointers can be confusing,
+but it <em>does</em> work and is one of the central features of C.
+If the games which the compiler plays
+(pretending that you declared a parameter as a pointer
+when you thought you declared it as an array)
+bother you,
+you can do two things:
+<OL><li>Continue to pretend that functions can receive arrays as parameters;
+declare
+and use
+them that way,
+but remember that unlike other arguments,
+a function can modify the copy in its caller of an argument that
+(seems to be)
+an array.
+<li>Realize that arrays are always passed to functions as pointers,
+and always declare your functions as accepting pointers.
+</OL>
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx10e.html" rev=precedes>prev</a>
+<a href="sx10g.html" rel=precedes>next</a>
+<a href="sx10.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-03 per &lt;20001219223935.A2068@moni.msci.memphis.edu&gt; -->
+<!-- patched 2023-04-03 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

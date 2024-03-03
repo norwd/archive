@@ -1,0 +1,217 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>BSEARCH(1)</title>
+</head>
+<body>
+<H1>BSEARCH(1)</H1>
+<!-- Copyright 2001-2003 -->
+<!-- Steve Summit, scs@eskimo.com -->
+<!-- This program and its documentation may be freely redistributed and used -->
+<!-- so long as the author's name and this notice remain intact, -->
+<!-- and any modifications are marked as such. -->
+<!-- See http://www.eskimo.com/~scs/src/#bsearch for possible updates. -->
+<H2>NAME</H2>
+
+bsearch - find line(s) in sorted file
+<H2>SYNOPSIS</H2>
+
+<B>bsearch</B>
+[
+<B>-fmnprsx</B>
+]
+[
+<B>-t</B>
+c
+]
+[
+<B>-k col</B>
+]
+key inputfile
+<br><B>bsearch</B>
+[
+<B>-fmnprsx</B>
+]
+[
+<B>-t</B>
+c
+]
+[
+<B>-k col</B>
+]
+[
+<B>-range</B>
+]
+key1 key2 inputfile
+<br><B>look</B>
+[
+<B>-afrsxw</B>
+]
+key
+[
+inputfile
+]
+<H2>DESCRIPTION</H2>
+
+<p><I>bsearch</I>
+searches the sorted data file <B>inputfile</B>
+for a line or lines matching <B>key</B>.
+Binary search is used,
+performing random-access seeks within the file,
+not all of which therefore needs to be read.
+Binary searches,
+even on huge files, can be quite efficient.
+</p><p>By default, the search is for a line
+which contains <I>key</I> in its first (whitespace-separated) column.
+A few other variants on this basic search strategy
+are also supported,
+selected by option flags as described below.
+</p><p>The input data file must obviously be sorted,
+and moreover,
+<I>bsearch</I>
+must know <em>how</em> it was sorted.
+<I>bsearch</I> therefore accepts many of the same option
+flags as does <a href="../cgi-bin/manredir.cgi?name=sort&amp;sec=1"><I>sort(1)</I></a>,
+indicating whether the data file being searched was sorted
+numerically, or caselessly, or on a particular column.
+In general,
+<I>bsearch</I> should be given
+more or less
+the same option flags when searching
+as <a href="../cgi-bin/manredir.cgi?name=sort&amp;sec=1"><I>sort(1)</I></a> was when generating the file being searched.
+</p><H2>OPTIONS</H2>
+
+<dl>
+<dt><B>+</B><I>n</I>
+</dt><dd>Search the <I>n</I>'th whitespace-separated column,
+where the leftmost column is column 0.
+</dd><dt><B>-a</B>
+</dt><dd>Use alternate dictionary
+(``look'' only).
+</dd><dt><B>-br</B>
+</dt><dd>If a line or lines matching the key cannot be found,
+``bracket'' the position where it would have been
+found by printing the immediately preceding and following lines.
+The preceding line is prefixed with a `&lt;' character
+and the following line is prefixed with `&gt;'.
+</dd><dt><B>-D</B>
+</dt><dd>Assume the data was sorted by date and time.
+(Experimental;
+not enabled in all versions of the program.)
+</dd><dt><B>-f</B>
+</dt><dd>Fold upper/lower case
+(i.e. assume input sorted caselessly).
+</dd><dt><B>-k</B> <I>n</I>
+</dt><dd>Search the <I>n</I>'th whitespace-separated column,
+where the leftmost column is column 1.
+</dd><dt><B>-m</B>
+</dt><dd>Find and print multiple values,
+if the input happens to contain them;
+do not assume that the input contains at most one matching value.
+</dd><dt><B>-n</B>
+</dt><dd>Input is sorted numerically.
+</dd><dt><B>-off</B>
+</dt><dd>Precede each line with its lseek offset in the file.
+(For compatibility with the GNU version of
+
+<a href="../cgi-bin/manredir.cgi?name=grep&amp;sec=1"><I>grep(1)</I></a>,
+the option <B>--byte-offset</B> is also accepted.)
+</dd><dt><B>-p</B>
+</dt><dd>Prefix match;
+match any line whose selected column
+merely begins with <I>key</I>.
+(Recommend using <B>-m</B> along with this option.)
+</dd><dt><B>-r</B>
+</dt><dd>Input is sorted in reverse order.
+</dd><dt><B>-range</B>
+</dt><dd>Range match;
+print all lines whose selected column
+lies between <I>key1</I> and <I>key2</I>, inclusive.
+(When <B>-range</B> is used,
+two <I>key</I> arguments are accepted on the command line,
+with the filename therefore being the third argument.)
+</dd><dt><B>-s</B>
+</dt><dd>Do not print; exit status only.
+</dd><dt><B>-t</B><I>c</I>
+</dt><dd>Tab character separating columns is <I>c</I>.
+</dd><dt><B>-version</B>
+</dt><dd>Print program's version number.
+</dd><dt><B>-w</B>
+</dt><dd>``Word'' match,
+that is,
+of <I>key</I> against entire selected column.
+(Default.)
+</dd><dt><B>-x</B>
+</dt><dd>Exact match:
+match <I>key</I> against entire line.
+</dd><dt><B>-?</B>,<B>-h</B>
+</dt><dd>Print a brief help message.
+</dl>
+<p>A few combinations of options make no sense and are disallowed.
+Only one of <B>-p</B>,
+<B>-w</B>,
+and <B>-x</B> should appear.
+Only one of <B>-br</B>,
+<B>-m</B>,
+and <B>-range</B> should appear.
+Option <B>-x</B> precludes use of
+<B>-k</B> or <B>+</B><I>n</I>
+to select a search column.
+Option <B>-p</B> may not be used with <B>-n</B>.
+</p><p>If the program is invoked via a link named <I>look</I>,
+the <B>-m</B> and <B>-p</B> options are assumed,
+the <B>-w</B> option becomes useful to override the
+implicit <B>-p</B>,
+the file
+<TT>/usr/dict/words</TT>
+is assumed if the <I>filename</I> parameter is omitted,
+and the <B>-a</B> option selects the alternate
+default dictionary file
+<TT>/usr/dict/web2</TT>
+instead.
+</p></dd><H2>EXIT STATUS</H2>
+
+<p>The exit status is zero if a match is found,
+1 if no match is found
+(including when merely bracketing lines are printed using <B>-br</B>),
+and 2 for errors.
+</p><H2>BUGS</H2>
+
+<p>The numeric search
+(<B>-n</B>)
+works on integers only,
+not floating-point.
+</p><p>Not all of <a href="../cgi-bin/manredir.cgi?name=sort&amp;sec=1"><I>sort(1)</I></a>'s options are accepted.
+</p><p>The handling of column specifiers is incomplete,
+at least as far as compatibility with <a href="../cgi-bin/manredir.cgi?name=sort&amp;sec=1"><I>sort(1)</I></a> is concerned.
+The <I>m</I>.<I>n</I> notation
+for selecting a character position within a field
+is not supported.
+Only one search column may be specified.
+(A field-end specifier is ignored.)
+</p><p><I>bsearch</I> essentially acts as if
+<a href="../cgi-bin/manredir.cgi?name=sort&amp;sec=1"><I>sort(1)</I></a>'s
+<B>-b</B> flag is always in effect.
+</p><p>At most one column specifier is supported;
+it is not possible to specify addditional key(s)
+to search for in
+secondary (or tertiary...) sort columns.
+</p><H2>SEE ALSO</H2>
+
+<a href="../cgi-bin/manredir.cgi?name=look&amp;sec=1"><I>look(1)</I></a>,
+<a href="../cgi-bin/manredir.cgi?name=sort&amp;sec=1"><I>sort(1)</I></a>,
+<a href="../cgi-bin/manredir.cgi?name=bsearch&amp;sec=3"><I>bsearch(3)</I></a>
+<p>See
+<a href="index.html#bsearch"><TT>http://www.eskimo.com/~scs/src/#bsearch</TT></a>
+for possible updates.
+</p><H2>AUTHOR</H2>
+
+<p><a href="../index.html">Steve Summit</a>,
+<TT>scs@eskimo.com</TT>
+</p><hr>
+<hr>
+<p>
+</p>
+</body>
+</html>

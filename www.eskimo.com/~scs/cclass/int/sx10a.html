@@ -1,0 +1,220 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>24.1 Declaring, Assigning, and Using Function Pointers</title>
+<link href="sx10.html" rev=precedes>
+<link href="sx10b.html" rel=precedes>
+<link href="sx10.html" rev=subdocument>
+</head>
+<body>
+<H2>24.1 Declaring, Assigning, and Using Function Pointers</H2>
+
+<p>Just as for data pointers,
+we can think of three steps involved in using function pointers.
+First,
+we must declare a variable which can hold a pointer to a function,
+and this ends up being a somewhat complex declaration.
+A simple function pointer declaration looks like this:
+<pre>
+	int (*pfi)();
+</pre>
+This declares <TT>pfi</TT> as a
+pointer to a function which will return an <TT>int</TT>.
+As in other declarations,
+the <TT>*</TT> indicates that a pointer is involved,
+and the parentheses <TT>()</TT> indicate that a function is involved.
+But what about the extra parentheses around <TT>(*pfi)</TT>?
+They're needed because there are precedence relationships
+in declarations just as there are in expressions,
+and when the default precedence doesn't give you what you want,
+you have to override it with explicit parentheses.
+In declarations,
+the <TT>()</TT> indicating functions
+and the <TT>[]</TT> indicating arrays
+``bind'' more tightly than
+the <TT>*</TT>'s indicating pointers.
+Without the extra parentheses, the declaration above would look like
+<pre>
+	int *pfi();		/* WRONG, for pointer-to-function */
+</pre>
+and this would declare a function returning a pointer to <TT>int</TT>.
+With the explicit parentheses, however,
+<TT>int (*pfi)()
+</TT>tells us that <TT>pfi</TT> is a pointer first,
+and that what it's a pointer to is a function,
+and what that function returns is an <TT>int</TT>.
+</p><p>It's common to use typedefs
+(see
+
+section 18.1.6)
+with complicated types such as function pointers.
+For example,
+after defining
+<pre>
+	typedef int (*funcptr)();
+</pre>
+the identifier <TT>funcptr</TT> is now a synonym
+for the type ``pointer to function returning int''.
+This typedef would make
+declaring pointers such as <TT>pfi</TT> considerably easier:
+<pre>
+	funcptr pfi;
+</pre>
+(In
+
+section 18.1.6,
+we mentioned that typedefs were a little bit like preprocessor 
+<TT>define</TT> directives, but better.
+Here we see another
+reason:
+there's no way we could define a preprocessor macro which would
+expand to a correct function pointer declaration,
+but the <TT>funcptr</TT> type we just defined using <TT>typedef</TT>
+will work just fine.)
+</p><p>Once declared,
+a function pointer can of course be set to point to some function.
+If we declare some functions:
+<pre>
+	extern int f1();
+	extern int f2();
+	extern int f3();
+</pre>
+then we can set our pointer <TT>pfi</TT> to point to one of them:
+<pre>
+	pfi = &amp;f1;
+</pre>
+or to one or another of them depending on some condition:
+<pre>
+	if(condition)
+		pfi = &amp;f2;
+	else	pfi = &amp;f3;
+</pre>
+(Of course, we're not restricted to these two forms;
+we can assign function pointers under any circumstances we wish.
+The second example could be rendered more compactly
+using the conditional operator:
+<TT>pfi = condition ? &amp;f2 : &amp;f3</TT> .)
+</p><p>In these examples, we've used the <TT>&amp;</TT> operator
+as we always have,
+to generate a pointer.
+However, when generating pointers to functions,
+the <TT>&amp;</TT> is optional,
+because when you mention the name of a function but are not calling it,
+there's nothing else you could possibly be trying to do except
+generate a pointer to it.
+So, most programmers write
+<pre>
+	pfi = f1;
+</pre>
+or
+<pre>
+	if(condition)
+		pfi = f2;
+	else	pfi = f3;
+</pre>
+(or, equivalently,
+using the conditional operator,
+<TT>pfi = condition ? f2 : f3</TT> ).
+</p><p>(The fact that a function pointer is generated automatically
+when a function appears in an expression but is not being called
+is very similar to, and in fact related to,
+the fact that a pointer to the first element of an array
+is generated automatically when an array appears in an expression.)
+</p><p>Finally,
+once we have a function pointer variable
+which does point to a function,
+we can call the function that it points to.
+Broken down to a near-microscopic level,
+this, too,
+is a three-step procedure.
+First,
+we write the name of the function pointer variable:
+<pre>
+	  pfi
+</pre>
+This is a pointer to a function.
+Then, we put the <TT>*</TT> operator in front,
+to ``take the contents of the pointer'':
+<pre>
+	 *pfi
+</pre>
+Now we have a function.
+Finally, we append an argument list in parentheses,
+along with an extra set of parentheses to get the precedence right,
+and we have a function call:
+<pre>
+	(*pfi)(arg1, arg2)
+</pre>
+The extra parentheses are needed here
+for almost exactly the same reason
+as they were in the declaration of <TT>pfi</TT>.
+Without them,
+we'd have
+<pre>
+	*pfi(arg1, arg2)	/* WRONG, for pointer-to-function */
+</pre>
+and this would say,
+``call the function <TT>pfi</TT>
+(which had better return a pointer),
+passing it the arguments <TT>arg1</TT> and <TT>arg2</TT>,
+and take the contents of the pointer it returns.''
+However,
+what we want to do is take the contents of <TT>pfi</TT>
+(which is a pointer to a function)
+and
+call the pointed-to function,
+passing it the arguments <TT>arg1</TT> and <TT>arg2</TT>.
+Again, the explicit parentheses override the default precedence,
+arranging that we apply the <TT>*</TT> operator to <TT>pfi</TT>
+and <em>then</em> do the function call.
+</p><p>Just to confuse things,
+though,
+parts of the syntax are optional here as well.
+There's nothing you can do with a function pointer
+except assign it to another function pointer,
+compare it to another function pointer,
+or call the function that it points to.
+If you write
+<pre>
+	pfi(arg1, arg2)
+</pre>
+it's obvious,
+based on the parenthesized argument list,
+that you're trying to call a function,
+so the compiler goes ahead and calls the pointed to function,
+just as if you'd written
+<pre>
+	(*pfi)(arg1, arg2)
+</pre>
+When calling the function pointed to by a function pointer,
+the <TT>*</TT> operator
+(and hence the extra set of parentheses)
+is optional.
+I prefer to use the explicit <TT>*</TT>,
+because that's the way I learned it
+and it makes a bit more sense to me that way,
+but you'll
+also
+see code which leaves it
+
+out.
+</p><p></p><hr>
+<p>
+Read sequentially:
+<a href="sx10.html" rev=precedes>prev</a>
+<a href="sx10b.html" rel=precedes>next</a>
+<a href="sx10.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1996-1999
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

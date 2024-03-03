@@ -1,0 +1,53 @@
+The sources in this subdirectory have been modified to support
+a multiplayer version of the game.
+
+To most of the game, the single (though sweeping) modification is
+to replace each call to printf (for printing any message to the
+player) with a call to the new output() function, which outputs
+a message to the correct player (that is, the player who typed the
+command that resulted in the message; the player who should see
+the result of the command just typed).
+
+The new source files multiplayer.c and tcputil.c contain the code for
+running the game as a server, accepting connections over the network.
+
+The networking code is based on the BSD Unix socket model,
+present in many versions of Unix and in some other systems.
+The basic notion is that the game runs as a server, listening for
+incoming TCP/IP connections on a certain numeric "port".  Each
+time a new connection is received, a new instance of the actor
+structure is allocated to handle the new player.
+
+Under some versions of Unix (e.g. Sun Solaris), you may need to
+specify -lsocket when compiling, to request the library
+containing the socket calls.
+
+To run the game in multiplayer mode, invoke it with the -m flag.
+You may also want to put it in the background by appending a &
+character on the command line.  That is, you might type
+
+	game -m &
+
+When the game is running in multiplayer mode, it will no longer
+accept commands from the keyboard, or print messages to the screen.
+Instead, all I/O will be done to and from network connections.
+
+To connect to the game, you can use a telnet client to connect to
+the machine where the game is running, on port 4001.  (This port
+number is set by the call to socksetup() in multiplayer.c.)
+For example, on a Unix host, you might type
+
+	telnet mymachine 4001
+
+To disconnect, you can either use the telnet program's disconnect
+feature (for the Unix clients, this is control-] followed by the
+letter q), or type the "quit" command (which is redefined in
+multiplayer mode to quit just a particular connection, not shut
+down the entire game).
+
+If you have a mud client program, you could probably use it, too.
+
+Don't forget to shut down the game server when you're done
+playing with it!  You can either use control-C for this (after
+bringing the game to the foreground, if you placed it in the
+background), or the Unix kill command.

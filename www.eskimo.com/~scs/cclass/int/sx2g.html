@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>16.7: Arbitrary Input and Output
+(<TT>fread</TT>, <TT>fwrite</TT>)</title>
+<link href="sx2f.html" rev=precedes>
+<link href="sx2h.html" rel=precedes>
+<link href="sx2.html" rev=subdocument>
+</head>
+<body>
+<H2>16.7: Arbitrary Input and Output
+(<TT>fread</TT>, <TT>fwrite</TT>)</H2>
+
+<p>Sometimes,
+you want to read a chunk of characters,
+without treating it as a ``line''
+(as <TT>gets</TT> and <TT>fgets</TT> do)
+and certainly without doing any <TT>scanf</TT>-like parsing.
+Similarly,
+you may want to write an arbitrary chunk of characters,
+not as a string or a line.
+(Furthermore, the chunk might contain
+one or more <TT>\0</TT> characters
+which would otherwise terminate a string.)
+In these situations,
+you want <TT>fread</TT> and <TT>fwrite</TT>.
+</p><p><TT>fread</TT>'s prototype is
+<pre>
+	size_t fread(void *buf, size_t sz, size_t n, FILE *fp)
+</pre>
+Remember,
+<TT>void *</TT> is a ``generic'' pointer type
+(the type returned by <TT>malloc</TT>),
+which can point to anything.
+It may make it easier to think about <TT>fread</TT> at first
+if you imagine that its first argument were <TT>char *</TT>.
+<TT>size_t</TT> is a type we haven't met yet;
+it's a type that's guaranteed to be able to hold
+the size of any object
+(i.e. as returned by the <TT>sizeof</TT> operator);
+you can imagine for the moment that it's <TT>unsigned int</TT>.
+<TT>fread</TT> reads up to <TT>n</TT> objects,
+each of size <TT>sz</TT>,
+from the stream <TT>fp</TT>,
+and copies them to the buffer pointed to by <TT>buf</TT>.
+It reads them as a stream of bytes,
+without doing any particular formatting or other interpretation.
+(However, the default underlying stdio machinery
+may still translate
+
+newline characters
+unless the stream is open in binary or <TT>"b"</TT> mode).
+<TT>fread</TT>
+returns the number of items read.
+It returns 0
+(not <TT>EOF</TT>)
+
+at end-of-file.
+</p><p>Similarly,
+the prototype for <TT>fwrite</TT> is
+<pre>
+	size_t fwrite(void *buf, size_t sz, size_t n, FILE *fp)
+</pre>
+<pre>
+</pre>
+</p><p><TT>fread</TT> and <TT>fwrite</TT> are intended to write chunks 
+or ``arrays'' of items,
+with the interpretation that there are <TT>n</TT> items
+each of size <TT>sz</TT>.
+If what you want to do is read <I>n</I> characters,
+you can call <TT>fread</TT> with <TT>sz</TT> as 1,
+and <TT>buf</TT> pointing to an array of at least <I>n</I> characters.
+
+The return value will be in units of characters.
+(Of course,
+you could write <I>n</I> characters
+by using similar arguments with <TT>fwrite</TT>.)
+</p><p>Besides reading and writing ``blocks'' of characters,
+you can use <TT>fread</TT> and <TT>fwrite</TT>
+to do ``binary'' I/O.
+For example,
+if you have an array of <TT>int</TT> values:
+<pre>
+	int array[N];
+</pre>
+you could write them all out at once by calling
+<pre>
+	fwrite(array, sizeof(int), N, fp);
+</pre>
+This
+
+would write them all out in a byte-for-byte way,
+i.e. as a block copy of bytes from memory to the output stream,
+i.e. <em>not</em> as strings of digits
+as <TT>printf</TT> <TT>%d</TT> would.
+Since some of the bytes within the array of <TT>int</TT>
+might have the same value as the <TT>\n</TT> character,
+you would want to make sure that you had opened the stream
+in binary or <TT>"wb"</TT> mode when calling <TT>fopen</TT>.
+</p><p>Later,
+you could try to read the integers in by calling
+<pre>
+	fread(array, sizeof(int), N, fp);
+</pre>
+</p><p>Similarly,
+if you had a variable of some structure type:
+<pre>
+	struct somestruct x;
+</pre>
+you could write it out all at once by calling
+<pre>
+	fwrite(&amp;x, sizeof(struct somestruct), 1, fp);
+</pre>
+and read it in by calling
+<pre>
+	fread(&amp;x, sizeof(struct somestruct), 1, fp);
+</pre>
+</p><p>Although this ``binary'' I/O
+using <TT>fwrite</TT> and <TT>fread</TT>
+looks easy and convenient,
+it has a number of drawbacks,
+some of which we'll discuss in the next chapter.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx2f.html" rev=precedes>prev</a>
+<a href="sx2h.html" rel=precedes>next</a>
+<a href="sx2.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1996-1999
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

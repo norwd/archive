@@ -1,0 +1,586 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>Assignment #4</title>
+</head>
+<body>
+<H1>Assignment #4</H1>
+
+
+
+
+
+<B>Introductory C Programming
+<br>
+<br>
+UW Experimental College
+</B><br>
+<br>
+<B>Assignment #4
+</B><p><B>Handouts:
+</B></p><p><a href="PS4.html">Assignment #4</a>
+<br><a href="PS3a.html">Answers to Assignment #3</a>
+<br>Class Notes, Chapters
+<a href="../notes/sx6.html">6</a>,
+<a href="../notes/sx7.html">7</a>,
+and
+<a href="../notes/sx8.html">8</a>
+<br>``Expressions and Statements'' handout
+<p><B>Reading Assignment:
+</B></p><p><a href="../notes/sx6.html">Class Notes, Chapter 6</a>
+<br><a href="../notes/sx7.html">Class Notes, Chapter 7</a>
+(Sec. 7.3 is a bit advanced, but do at least skim it)
+<br><a href="../notes/sx8.html">Class Notes, Chapter 8</a>
+<p><B>Review Questions:
+</B></p><OL><li>What would the expression
+<pre>
+	c = getchar() != EOF
+</pre>
+do?
+<li>Why must the variable used to hold <TT>getchar</TT>'s return value be
+type <TT>int</TT>?
+<li>What is the difference between the prefix and postfix forms
+of the <TT>++</TT> operator?
+<li>(trick question)
+What would the expression
+<pre>
+	i = i++
+</pre>
+do?
+<li>What is the definition of a string in C?
+<li>(Advanced)
+What will the <TT>getline</TT> function
+from
+
+section 6.3
+of the notes
+do
+if successive calls to <TT>getchar</TT> return the four values
+<TT>'a'</TT>, <TT>'b'</TT>, <TT>'c'</TT>, and <TT>EOF</TT>?
+Is <TT>getline</TT>'s behavior reasonable?
+Is it possible for this situation to occur,
+that is,
+for a ``line'' somehow not to be terminated by <TT>\n</TT>?
+</OL><br>
+<br>
+<p><B>Tutorial Section:
+</B></p><OL><li>Here is a toy program for computing your car's gas mileage.
+It asks you for the distance driven on the last tank of gas,
+and the amount of gas used
+(i.e. the amount of the most recent fill-up).
+Then it simply divides the two numbers.
+<pre>
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;	/* for atoi() */
+
+int getline(char [], int);
+
+int main()
+{
+	char inputline[100];
+	float miles;
+	float gallons;
+	float mpg;
+
+	printf("enter miles driven:\n");
+	getline(inputline, 100);
+	miles = atoi(inputline);
+
+	printf("enter gallons used:\n");
+	getline(inputline, 100);
+	gallons = atoi(inputline);
+
+	mpg = miles / gallons;
+	printf("You got %.2f mpg\n", mpg);
+
+	return 0;
+}
+
+int getline(char line[], int max)
+{
+	int nch = 0;
+	int c;
+	max = max - 1;			/* leave room for '\0' */
+
+	while((c = getchar()) != EOF)
+		{
+		if(c == '\n')
+			break;
+
+		if(nch &lt; max)
+			{
+			line[nch] = c;
+			nch = nch + 1;
+			}
+		}
+
+	if(c == EOF &amp;&amp; nch == 0)
+		return EOF;
+
+	line[nch] = '\0';
+	return nch;
+}
+</pre>
+For each of the two pieces of information requested
+(mileage and gallons)
+the code uses a little three-step procedure:
+(1) print a prompt,
+(2) read the user's response as a string,
+and
+(3) convert that string to a number.
+The same character array variable, <TT>inputline</TT>,
+can be used to hold the string
+both times,
+because we don't care about keeping the string around
+once we've converted it to a number.
+The function for converting a string to an integer is <TT>atoi</TT>.
+(The compiler then automatically converts the integer returned by
+<TT>atoi</TT> into a floating-point number to be stored in
+<TT>miles</TT> or <TT>gallons</TT>.
+There's another function we could have used, <TT>atof</TT>,
+which converts a string--possibly including a decimal point--directly
+into a floating-point number.)
+<br>
+<br>
+You might wonder why we're reading the user's response as a string,
+only to turn around and convert it to a number.
+Isn't there a way to read a numeric response directly?
+There is
+(one way is with a function called <TT>scanf</TT>),
+but we're going to do it this way
+because it will give us more flexibility later.
+(Also, it's much harder to react gracefully to any errors by the
+user
+if you're using <TT>scanf</TT> for input.)
+<br>
+<br>
+Obviously, this program would be a nuisance to use if you had
+several pairs of mileages and gallonages to compute.
+You'd probably want the program to prompt you repetitively for
+additional pairs, so that you wouldn't have to re-invoke the
+program each time.
+Here is a revised version which has that functionality.
+It keeps asking you for more distances and more gallon amounts,
+until you enter 0 for the mileage.
+<pre>
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;	/* for atoi() */
+
+int getline(char [], int);
+
+int main()
+{
+	char inputline[100];
+	float miles;
+	float gallons;
+	float mpg;
+
+	for(;;)
+		{
+		printf("enter miles driven (0 to end):\n");
+		getline(inputline, 100);
+		miles = atoi(inputline);
+
+		if(miles == 0)
+			break;
+
+		printf("enter gallons used:\n");
+		getline(inputline, 100);
+		gallons = atoi(inputline);
+
+		mpg = miles / gallons;
+		printf("You got %.2f mpg\n\n", mpg);
+		}
+
+	return 0;
+}
+</pre>
+The (slightly) tricky part about writing a program like this is:
+what kind of a loop should you use?
+Conceptually, it seems you want some sort of a while loop along
+the lines of ``<TT>while(miles != 0)</TT>''.
+But that won't work, because we don't have the value of
+<TT>miles</TT>
+until after we've prompted the user for it and read it in and
+converted it.
+<br>
+<br>
+Therefore, the code above uses what at first looks like an
+infinite loop: ``<TT>for(;;)</TT>''.
+A <TT>for</TT> loop with no condition tries to run forever.
+But, down in the middle of the loop,
+if we've obtained a value of 0 for <TT>miles</TT>,
+we execute the <TT>break</TT> statement which forces the loop to terminate.
+This sort of situation
+(when we need the body of the loop to run part way through before
+we can decide whether we really wanted to make that trip or not)
+is precisely what the <TT>break</TT> statement is for.
+<li>Next, we're going to write our own version of the <TT>atoi</TT> function,
+so we can see how it works
+(or might work)
+inside.
+(I say ``might work'' because there's no guarantee that
+your compiler's particular implementation of <TT>atoi</TT> will
+work just like this one, but it's likely to be similar.)
+<pre>
+int myatoi(char str[])
+{
+	int i;
+	int digit;
+	int retval = 0;
+
+	for(i = 0; str[i] != '\0'; i = i + 1)
+		{
+		digit = str[i] - '0';
+		retval = 10 * retval + digit;
+		}
+
+	return retval;
+}
+</pre>
+You can try this function out and work with it
+by rewriting the gas-mileage program slightly to use it.
+(Just replace the two calls to <TT>atoi</TT> with <TT>myatoi</TT>.)
+<br>
+<br>
+Remember, the definition of a string in C is that it is an array
+of characters, terminated by <TT>'\0'</TT>.
+So the basic strategy of this function is to look at the input
+string,
+one character at a time,
+from left to right,
+until it finds the terminating <TT>'\0'</TT>.
+<br>
+<br>
+The characters in the string are assumed to be digits:
+<TT>'1'</TT>, <TT>'5'</TT>, <TT>'7'</TT>, etc.
+Remember that in C, a character's value is the numeric value of
+the corresponding character in the machine's character set.
+It turns out that we can write this string-to-number conversion
+code <em>without</em> knowing what character set our machine uses
+or what the values are.
+(If you're curious, in the ASCII character set which most
+machines use, the character
+<TT>'0'</TT> has the value 48,
+<TT>'1'</TT> has the value 49,
+<TT>'2'</TT> has the value 50,
+etc.)
+<br>
+<br>
+Whatever value the character <TT>'0'</TT> has,
+<TT>'0' - '0'</TT> will be zero.
+(<em>Anything</em> minus itself is 0.)
+In any realistic character set,
+<TT>'1'</TT> has a value 1 greater than <TT>'0'</TT>,
+so <TT>'1' - '0'</TT> will be 1.
+Similarly, <TT>'2' - '0'</TT> will be 2.
+So we can get the ``digit'' value of a character
+(in the range 0-9) by subtracting the value of the
+character <TT>'0'</TT>.
+Now all we have to do is figure out how to combine the digits
+together into the final value.
+<br>
+<br>
+If you look at the number 123 from left to right, the first thing
+you see is the digit 1.
+You might imagine that you'd seen the whole number,
+until you saw the digit 2 following it.
+So now you've seen the digits 1 2,
+and how you can get the number 12 from the digits 1 and 2
+is to multiply the 1 by 10 and add the 2.
+But wait!
+There's still a digit 3 to come,
+but if you multiply the 12 by 10 and add 3, you get 123,
+which is the answer you wanted.
+So the algorithm for converting digits to their decimal value is:
+look at the digits from left to right,
+and for each digit you find, multiply the number you had before by 10
+and add in the digit you just found.
+(When the algorithm begins, ``the number you had before''
+starts out as 0.)
+When you run out of digits, you're done.
+(The code above uses a variable named <TT>retval</TT> to keep track
+of ``the number you had before'', because it ends up being the
+value to be returned.)
+<br>
+<br>
+If you're not convinced that this algorithm will work,
+try adding the line
+<pre>
+	printf("digit = %d, retval = %d\n", digit, retval);
+</pre>
+at the end of the loop,
+so you can watch it as it runs.
+<br>
+<br>
+The code above works correctly as long as the string contains
+digits and only digits.
+But if
+the string contained, say, the letter <TT>'Q'</TT>,
+the code would compute the value <TT>'Q' - '0'</TT>,
+which would be a meaningless number.
+So we'd like to have the code do something reasonable if it
+should happen to encounter any non-digits
+(that is, if someone should happen to call it with a string
+containing non-digits).
+<br>
+<br>
+One way for the string to contain non-digits is if it contains
+any leading spaces.
+For example,
+the string <TT>"   123"</TT> should clearly be
+converted to the value 123,
+but our code above wouldn't be able to do so.
+One thing we need to do is skip leading spaces.
+And the other thing we'll do
+(which isn't perfect, but is a reasonable compromise)
+is that if we hit a non-space, non-digit character,
+we'll just stop
+(i.e. as if we'd reached the end of the string).
+This means that the call <TT>myatoi("123abc")</TT> will return 123,
+and <TT>myatoi("xyz")</TT> will return 0.
+(As it happens,
+the standard <TT>atoi</TT> function will behave exactly the same way.)
+<br>
+<br>
+Classifying characters (space, digit, etc.) is easy if we include
+the header file <TT>&lt;ctype.h&gt;</TT>,
+which gives us functions like
+<TT>isspace</TT> which returns true if a character is a space character,
+and
+<TT>isdigit</TT> which returns true if a character is a digit character.
+<br>
+<br>
+Putting this all together, we have:
+<pre>
+#include &lt;ctype.h&gt;
+
+int myatoi(char str[])
+{
+	int i;
+	int retval = 0;
+
+	for(i = 0; str[i] != '\0'; i = i + 1)
+		{
+		if(!isspace(str[i]))
+			break;
+		}
+
+	for(; str[i] != '\0'; i = i + 1)
+		{
+		if(!isdigit(str[i]))
+			break;
+		retval = 10 * retval + (str[i] - '0');
+		}
+
+	return retval;
+}
+</pre>
+(You may notice that I've deleted the <TT>digit</TT> variable in
+this second example, because we didn't really need it.)
+<br>
+<br>
+There are now two loops.
+The first loop starts at 0 and looks for space characters;
+it stops
+(using a <TT>break</TT> statement)
+when it finds the first non-space character.
+(There may not be any space characters, so it may stop right away,
+after making zero full trips through the loop.
+And the first loop doesn't do anything except look for non-space characters.)
+The second loop starts where the first loop left off--that's why
+it's written as
+<pre>
+	for(; str[i] != '\0'; i = i + 1)
+</pre>
+The second loop looks at digits;
+it stops early if it finds a non-digit character.
+<br>
+<br>
+The remaining problem with the <TT>myatoi</TT> function is that
+it doesn't handle negative numbers.
+See if you can add this functionality.
+The easiest way is to look for a <TT>'-'</TT> character up front,
+remember whether you saw one, and then at the end,
+after reaching the end of the digits and just before returning <TT>retval</TT>,
+negate <TT>retval</TT> if you saw the <TT>'-'</TT> character earlier.
+<li>Here
+is a silly little program
+which asks you to type a word, then does something unusual with
+it.
+<pre>
+#include &lt;stdio.h&gt;
+
+extern int getline(char [], int);
+
+int main()
+{
+	char word[20];
+	int len;
+	int i, j;
+
+	printf("type something: ");
+	len = getline(word, 20);
+
+	for(i = 0; i &lt; 80 - len; i++)
+		{
+		for(j = 0; j &lt; i; j++)
+			printf(" ");
+		printf("%s\r", word);
+		}
+	printf("\n");
+
+	return 0;
+}</pre>
+(To understand how it works, you need to know that <TT>\r</TT> prints
+a carriage return without a linefeed.)
+Type it in and see what
+it does.
+(You'll also need a copy of the <TT>getline</TT> function.)
+See if you can
+modify the program to move the word from right to
+left instead of left to right.
+</OL><br>
+<br>
+<p><B>Exercises:
+</B></p><OL><li>Type in the character-copying program from
+
+section 6.2
+of the notes, and run it to see how it works.
+(When
+you run it, it will wait for you to type some input.  Type a few
+characters, hit RETURN; type a few more characters, hit RETURN
+again.  Hit control-D or control-Z when you're finished.)
+<li>Type in the <TT>getline()</TT> function
+and its
+test program
+from
+
+section 6.3
+of the notes,
+and run it to see how it works.  You can either place
+<TT>getline()</TT> and its test program (<TT>main()</TT>) in one source file or,
+for extra credit, place <TT>getline()</TT> in a file <TT>getline.c</TT> and the
+test program in a file <TT>getlinetest.c</TT> (or perhaps <TT>gtlntst.c</TT>), for
+practice in compiling a program from two separate source files.
+<li>Rewrite the <TT>getline</TT> test program from Exercise 2
+to use the loop
+<pre>
+	while(getline(line, 256) != EOF)
+		printf("%s\n", line);
+</pre>
+That is, have it simply copy a line at a time, without printing
+``You typed''.  Compare the behavior of the character-copying and
+line-copying programs.  Do they behave differently?
+<br>
+<br>
+Now rewrite the character-copying program from Exercise 1 to use the loop
+<pre>
+	while((c = getchar()) != EOF)
+		printf("you typed '%c'\n", c);
+</pre>
+and try running it.  Now do things make more sense?
+<li>The standard library contains a function, <TT>atoi</TT>, which
+takes a string (presumably a string of digits) and converts it
+to an integer.  For example, <TT>atoi("123")</TT> would return the integer
+123.
+<br>
+<br>
+Write a program which reads lines (using <TT>getline</TT>), converts each
+line to an integer using <TT>atoi</TT>, and computes the average of all
+the numbers read.  (Like the example programs in the notes, it
+should determine the end of ``all the numbers read'' by checking for
+<TT>EOF</TT>.)
+See how much of the code from
+
+assignment 3, exercise 7
+you can reuse
+(if you did that exercise).
+Remember
+that integer division truncates, so you'll have to declare some
+of your variables as <TT>float</TT> or <TT>double</TT>.
+<br>
+<br>
+For extra credit, also compute the standard deviation
+(see
+
+assignment 3, exercise 7).
+<li>Write a rudimentary checkbook balancing program.
+It will use <TT>getline</TT> to read a line, which will contain either
+the word <TT>"check"</TT> or <TT>"deposit"</TT>.  The next line will contain the
+amount of the check or deposit.  After reading each pair of lines,
+the program should
+compute and
+print the new balance.
+You can declare the variable to hold the running balance
+to be type <TT>float</TT>,
+and you can use the function <TT>atof</TT>
+(also in the standard library)
+to convert an amount string read by <TT>getline</TT>
+into a floating-point number.
+When the program reaches end-of-file
+while reading <TT>"check"</TT> or <TT>"deposit"</TT>, it should exit.  (In outline,
+the program will be somewhat similar to the average-finding program.)
+<br>
+<br>
+For example, given the input
+<pre>
+	deposit
+	100
+	check
+	12.34
+	check
+	49.00
+	deposit
+	7.01
+</pre>
+the program should print something like
+<pre>
+	balance: 100.00
+	balance: 87.66
+	balance: 38.66
+	balance: 45.67
+</pre>
+<br>
+<br>
+Extra credit:
+Think about how you might
+have the program
+take the word <TT>"check"</TT> or <TT>"deposit"</TT>, <em>and</em>
+the amount, from a single line (separated by whitespace).
+<li>Rewrite the ``compass'' code from
+
+Assignment 2 (exercise 4)
+to use <TT>strcpy</TT> and <TT>strcat</TT> to build the <TT>"northeast"</TT>, <TT>"southwest"</TT>,
+etc. strings.  (Don't worry about capitalizing them carefully.)
+You should be able to write it in a cleaner way, without so many
+<TT>if</TT>'s and <TT>else</TT>'s.  Remember to declare the array in which you build
+the string big enough to hold the largest string you build (including
+the trailing <TT>\0</TT>).
+<li>Write a program to read its input, one character at
+a time, and print each character <em>and</em> its decimal value.
+<li>Write a program to read its input, one line at a time,
+and print each line backwards.  To do the reversing, write a function
+<pre>
+	int reverse(char line[], int len)
+	{
+	...
+	}
+</pre>
+to reverse a string, in place.  (It doesn't have to return anything
+useful.)
+</OL><hr>
+<hr>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-9
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-04 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

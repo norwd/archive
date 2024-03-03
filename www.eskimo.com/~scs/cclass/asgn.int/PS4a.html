@@ -1,0 +1,619 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>Assignment #4 Answers</title>
+</head>
+<body>
+<H1>Assignment #4 Answers</H1>
+
+
+
+
+
+<B>Intermediate C Programming
+<br>
+<br>
+UW Experimental College
+</B><br>
+<br>
+<B>Assignment #4 ANSWERS
+</B><br>
+<br>
+<p>Exercise 2.
+<I>Modify the <TT>findobject</TT> function in <TT>object.c</TT>
+so that it can find objects when they're inside containers.
+</I><p>As suggested in the assignment,
+we'll need to break the old <TT>findobject</TT> function up
+into two functions: 
+<TT>findobject</TT> and <TT>findobj2</TT>.
+<TT>findobject</TT> accepts an actor and the name of an object to find
+(as before);
+<TT>findobj2</TT> accepts a pointer to a list of objects,
+and the name of an object to find.
+<pre>
+static struct object *findobj2(struct object *, char *);
+
+struct object *
+findobject(struct actor *actp, char *name)
+{
+struct object *lp;
+
+/* first look in actor's possessions: */
+
+lp = findobj2(actp-&gt;contents, name);
+if(lp != NULL)
+	return lp;
+
+/* now look in surrounding room: */
+
+if(actp-&gt;location != NULL)
+	{
+	lp = findobj2(actp-&gt;location-&gt;contents, name);
+	if(lp != NULL)
+		return lp;
+	}
+
+/* didn't find it */
+
+return NULL;
+}
+
+/* find a named object in an object list */
+/* (return NULL if not found) */
+
+static struct object *
+findobj2(struct object *list, char *name)
+{
+struct object *lp;
+
+for(lp = list; lp != NULL; lp = lp-&gt;lnext)
+	{
+	if(strcmp(lp-&gt;name, name) == 0)
+		return lp;
+	if(lp-&gt;contents != NULL)
+		{
+		struct object *lp2 = findobj2(lp-&gt;contents, name);
+		if(lp2 != NULL)
+			return lp2;
+		}
+	}
+
+/* didn't find it */
+
+return NULL;
+}
+</pre>
+The body of <TT>findobj2</TT>
+is the loop that <TT>findobject</TT> used to use
+when it searched the player's possessions and the room's contents;
+<TT>findobject</TT> now simply calls <TT>findobj2</TT> at those two spots.
+<TT>findobj2</TT> also calls itself, recursively,
+when one of the objects it's inspecting
+(from either list,
+or any list)
+is a container object with its own contents.
+<p>I've declared <TT>findobj2</TT> as <TT>static</TT>,
+which means that it can only be called from within <TT>object.c</TT>.
+It's an auxiliary function,
+which only <TT>findobject</TT> calls,
+so no one outside needs to (or should) be able to call it.
+The function prototype for <TT>findobj2</TT>
+includes the keyword <TT>static</TT>, too.
+</p><p>Exercise 3.
+<I>Modify the <TT>takeobject</TT> function in <TT>object.c</TT>
+so that it can also take objects which are sitting in containers.
+</I><p>This is harder than it ought to be,
+because we have to remove the object from the container's list;
+however,
+it's not trivial to find the object which contains another object.
+Ideally, all objects would also have pointers back to their containers
+(just as actors already have pointers back to their rooms).
+For now, we'll write a <TT>findcontainer</TT> function
+which is kind of like <TT>findobject</TT>
+except that it returns the object's container.
+As for <TT>findobject</TT>,
+we'll also need a recursive <TT>findcont2</TT>
+function.
+<p>I added this code
+at the end of
+<TT>takeobject</TT>
+(just before the
+``didn't find it'' comment
+and the last
+<TT>return FALSE;</TT>
+line):
+<pre>
+/* perhaps it's in a container */
+
+containerp = findcontainer(objp, actp, roomp);
+
+if(containerp != NULL)
+	{
+	/* this test should probably be up in commands.c) */
+
+	if((containerp-&gt;attrs &amp; CLOSABLE) &amp;&amp; !Isopen(containerp))
+		{
+		printf("The %s is closed.\n", containerp-&gt;name);
+		return FALSE;
+		}
+
+	/* re-find in container's list, for splicing */
+
+	prevlp = NULL;
+
+	for(lp = containerp-&gt;contents; lp != NULL; lp = lp-&gt;lnext)
+		{
+		if(lp == objp)				/* found it */
+			{
+			/* splice out of room's list */
+
+			if(lp == containerp-&gt;contents)	/* head of list */
+				containerp-&gt;contents = lp-&gt;lnext;
+			else	prevlp-&gt;lnext = lp-&gt;lnext;
+
+			/* splice into actor's list */
+
+			lp-&gt;lnext = actp-&gt;contents;
+			actp-&gt;contents = lp;
+
+			return TRUE;
+			}
+
+		prevlp = lp;
+		}
+	}
+</pre>
+As the comment indicates,
+the test for a closed container probably belongs up in <TT>commands.c</TT>.
+(That's where the other similar tests are;
+the functions in <TT>object.c</TT> are supposed to be low-level,
+and just manipulate data structures.)
+But, because of the clumsy way we're currently handling actors,
+rooms, objects, and containers, it's hard to do it right.
+(You may not yet have realized the clumsiness of the current scheme.
+The problem is that actors are really objects
+and rooms are really containers,
+and since containers are objects,
+rooms are objects, too.
+We'll have more to say about this issue later.)
+<p>Here are <TT>findcontainer</TT> and <TT>findcont2</TT>:
+<pre>
+/* find an object's container (in actor's possession, or room) */
+/* (return NULL if not found) */
+
+static struct object *
+findcontainer(struct object *objp, struct actor *actp, struct room *roomp)
+{
+struct object *lp, *lp2;
+
+/* first look in possessions: */
+
+for(lp = actp-&gt;contents; lp != NULL; lp = lp-&gt;lnext)
+	{
+	if(lp-&gt;contents != NULL)
+		{
+		lp2 = findcont2(objp, lp);
+		if(lp2 != NULL)
+			return lp2;
+		}
+	}
+
+/* now look in room: */
+
+for(lp = roomp-&gt;contents; lp != NULL; lp = lp-&gt;lnext)
+	{
+	if(lp-&gt;contents != NULL)
+		{
+		lp2 = findcont2(objp, lp);
+		if(lp2 != NULL)
+			return lp2;
+		}
+	}
+
+return NULL;
+}
+
+static struct object *
+findcont2(struct object *objp, struct object *container)
+{
+struct object *lp;
+
+for(lp = container-&gt;contents; lp != NULL; lp = lp-&gt;lnext)
+	{
+	if(lp == objp)
+		return container;
+	if(lp-&gt;contents != NULL)
+		{
+		struct object *lp2 = findcont2(objp, lp);
+		if(lp2 != NULL)
+			return lp2;
+		}
+	}
+
+return NULL;
+}
+</pre>
+<p>Exercise 4.
+<I>Rewrite the ``examine'' command
+to mention some of the relevant attributes
+of the object being examined.</I>
+<p>Here is the modified code
+(from <TT>docommand</TT> in <TT>commands.c</TT>):
+<pre>
+else if(strcmp(verb, "examine") == 0)
+	{
+	int printedsomething;
+
+	if(objp == NULL)
+		{
+		printf("You must tell me what to examine.\n");
+		return FALSE;
+		}
+
+	printedsomething = FALSE;
+
+	if(objp-&gt;desc != NULL &amp;&amp; *objp-&gt;desc != '\0')
+		{
+		printf("%s\n", objp-&gt;desc);
+		printedsomething = TRUE;
+		}
+
+	if(Iscontainer(objp))
+		{
+		if(objp-&gt;attrs &amp; CLOSABLE)
+			{
+			printf("The %s is %s.\n", objp-&gt;name,
+				Isopen(objp) ? "open" : "closed");
+			printedsomething = TRUE;
+			}
+
+		if((!(objp-&gt;attrs &amp; CLOSABLE) || Isopen(objp)) &amp;&amp;
+				objp-&gt;contents != NULL)
+			{
+			printf("The %s contains:\n", objp-&gt;name);
+			listobjects(objp-&gt;contents);
+			printedsomething = TRUE;
+			}
+		}
+
+	if(objp-&gt;attrs &amp; BROKEN)
+		{
+		printf("The %s is broken.\n", objp-&gt;name);
+		printedsomething = TRUE;
+		}
+
+	if(objp-&gt;attrs &amp; SHARP)
+		{
+		printf("The %s is quite sharp.\n", objp-&gt;name);
+		printedsomething = TRUE;
+		}
+
+	if(!printedsomething)
+		printf("You see nothing special about the %s.\n", objp-&gt;name);
+	}
+</pre>
+There are several conditions
+under which this code prints something ``special''
+about the object being examined:
+if the object has a long description,
+if the object is a container,
+if the object has certain attributes,
+etc.
+Whenever the code prints one of these messages
+(i.e. under any circumstances)
+it sets the Boolean variable <TT>printedsomething</TT> to <TT>TRUE</TT>.
+At the very end,
+if we haven't found anything interesting to print
+(i.e. if <TT>printedsomething</TT> is still <TT>FALSE</TT>),
+we fall back on the generic
+``You see nothing special''
+message.
+<p>In simpler cases,
+it's nice to arrange conditionals
+so that you don't need extra Boolean variables.
+Here, however,
+the condition under which we print
+``You see nothing special''
+would be so complicated
+if we tried to express it directly
+that it's much easier to just use the little
+<TT>printedsomething</TT> variable.
+(Among other things, using <TT>printedsomething</TT>
+means that it will be easier to add more attribute printouts later,
+as long as they all set <TT>printedsomething</TT>, too.)
+<p>Exercise 5.
+<I>Modify the <TT>listobjects</TT> function in <TT>object.c</TT>
+to list the contents of objects which are containers.
+</I><p>Here is the simple, straightforward implementation:
+<pre>
+void
+listobjects(struct object *list)
+{
+struct object *lp;
+
+for(lp = list; lp != NULL; lp = lp-&gt;lnext)
+	{
+	printf("%s\n", lp-&gt;name);
+	if(lp-&gt;contents != NULL)
+		{
+		printf("The %s contains:\n", lp-&gt;name);
+		listobjects(lp-&gt;contents);
+		}
+	}
+}
+</pre>
+<p>However, this won't look too good,
+because when we list, say, the contents of a room,
+and the room contains a container and some other objects,
+the list of objects in the container won't be demarcated from
+the other objects in the room.
+So, a fancier solution would be to indent each container's list
+relative to the surrounding list.
+To do this, we add a ``depth'' parameter
+which keeps track
+(with each recursive call)
+of how deeply the objects and containers we're listing are.
+The depth obviously starts out as 0,
+and to keep all the old callers of <TT>listobjects</TT>
+from having to add this new argument,
+we rename <TT>listobjects</TT> as <TT>listobjs2</TT>,
+and then have a new, stub version of <TT>listobjects</TT>
+(which everyone else continues to call)
+which simply calls <TT>listobjs2</TT>,
+starting off the recursive chain at a depth of 0.
+(Since <TT>listobjs2</TT> is only called by <TT>listobjects</TT>,
+it's declared <TT>static</TT>.)
+<pre>
+static void listobjs2(struct object *, int);
+
+void
+listobjects(struct object *list)
+{
+listobjs2(list, 0);
+}
+
+static void
+listobjs2(struct object *list, int depth)
+{
+struct object *lp;
+
+for(lp = list; lp != NULL; lp = lp-&gt;lnext)
+	{
+	printf("%*s%s\n", depth, "", lp-&gt;name);
+	if(lp-&gt;contents != NULL)
+		{
+		printf("%*sThe %s contains:\n", depth, "", lp-&gt;name);
+		listobjs2(lp-&gt;contents, depth + 1);
+		}
+	}
+}
+</pre>
+The indentation is done
+using a
+trick:
+the <TT>"%*s"</TT> format means to print a string
+in a field of a given width,
+where the width is taken from <TT>printf</TT>'s argument list.
+The string we ask to be printed is the empty string,
+because all we want is a certain number of spaces
+(that is, the spaces which <TT>printf</TT> will add
+to pad our string out to the requested width).
+But
+(once we know the trick, anyway)
+this is considerably easier
+than having to write little loops which print a certain number of spaces.
+<p>Exercise 6.
+<I>Implement objects which can be locked.
+</I><p>Here are the new ``lock'' and ``unlock'' commands:
+<pre>
+else if(strcmp(verb, "lock") == 0)
+	{
+	if(objp == NULL)
+		{
+		printf("You must tell me what to lock.\n");
+		return FALSE;
+		}
+	if(!(objp-&gt;attrs &amp; LOCK))
+		{
+		printf("You can't lock the %s.\n", objp-&gt;name);
+		return FALSE;
+		}
+	if(Isopen(objp))
+		{
+		printf("The %s is open.\n", objp-&gt;name);
+		return FALSE;
+		}
+	if(cmd-&gt;preposition == NULL || strcmp(cmd-&gt;preposition, "with") != 0 ||
+			cmd-&gt;xobject == NULL)
+		{
+		printf("You must tell me what to lock with.\n");
+		return FALSE;
+		}
+	if(!contains(player-&gt;contents, cmd-&gt;xobject))
+		{
+		printf("You have no %s.\n", cmd-&gt;xobject-&gt;name);
+		return FALSE;
+		}
+	if(!(cmd-&gt;xobject-&gt;attrs &amp; KEY))
+		{
+		printf("The %s won't lock the %s.\n",
+					cmd-&gt;xobject-&gt;name, objp-&gt;name);
+		return FALSE;
+		}
+	if(objp-&gt;attrs &amp; LOCKED)
+		{
+		printf("The %s is already locked.\n", objp-&gt;name);
+		return FALSE;
+		}
+
+	objp-&gt;attrs |= LOCKED;
+	printf("The %s is now locked.\n", objp-&gt;name);
+	}
+
+else if(strcmp(verb, "unlock") == 0)
+	{
+	if(objp == NULL)
+		{
+		printf("You must tell me what to unlock.\n");
+		return FALSE;
+		}
+	if(!(objp-&gt;attrs &amp; LOCK))
+		{
+		printf("You can't unlock the %s.\n", objp-&gt;name);
+		return FALSE;
+		}
+	if(cmd-&gt;preposition == NULL || strcmp(cmd-&gt;preposition, "with") != 0 ||
+			cmd-&gt;xobject == NULL)
+		{
+		printf("You must tell me what to unlock with.\n");
+		return FALSE;
+		}
+	if(!contains(player-&gt;contents, cmd-&gt;xobject))
+		{
+		printf("You have no %s.\n", cmd-&gt;xobject-&gt;name);
+		return FALSE;
+		}
+	if(!(cmd-&gt;xobject-&gt;attrs &amp; KEY))
+		{
+		printf("The %s won't unlock the %s.\n",
+					cmd-&gt;xobject-&gt;name, objp-&gt;name);
+		return FALSE;
+		}
+	if(!(objp-&gt;attrs &amp; LOCKED))
+		{
+		printf("The %s is already unlocked.\n", objp-&gt;name);
+		return FALSE;
+		}
+
+	objp-&gt;attrs &amp;= ~LOCKED;
+	printf("The %s is now unlocked.\n", objp-&gt;name);
+	}
+</pre>
+<p>Here is the modified ``open'' command:
+<pre>
+else if(strcmp(verb, "open") == 0)
+	{
+	if(objp == NULL)
+		{
+		printf("You must tell me what to open.\n");
+		return FALSE;
+		}
+	if(Isopen(objp))
+		{
+		printf("The %s is already open.\n", objp-&gt;name);
+		return FALSE;
+		}
+	if(!(objp-&gt;attrs &amp; CLOSABLE))
+		{
+		printf("You can't open the %s.\n", objp-&gt;name);
+		return FALSE;
+		}
+	if((objp-&gt;attrs &amp; LOCK) &amp;&amp; (objp-&gt;attrs &amp; LOCKED))
+		{
+		printf("The %s is locked.\n", objp-&gt;name);
+		return FALSE;
+		}
+	objp-&gt;attrs |= OPEN;
+	printf("The %s is now open.\n", objp-&gt;name);
+	}
+</pre>
+(The ``close'' command doesn't need modifying;
+we'll let open containers and doors swing and latch closed
+even if they were already locked.)
+<p>Finally, here are a few more lines for <TT>io.c</TT>,
+to read the new attributes needed by
+this and the following two exercises:
+<pre>
+		else if(strcmp(av[1], "lock") == 0)
+			currentobject-&gt;attrs |= LOCK;
+		else if(strcmp(av[1], "locked") == 0)
+			currentobject-&gt;attrs |= LOCKED;
+		else if(strcmp(av[1], "key") == 0)
+			currentobject-&gt;attrs |= KEY;
+		else if(strcmp(av[1], "tool") == 0)
+			currentobject-&gt;attrs |= TOOL;
+		else if(strcmp(av[1], "immobile") == 0)
+			currentobject-&gt;attrs |= IMMOBILE;
+</pre>
+<p>Exercise 7.
+<I>Implement a ``fix'' command
+which will let the user fix broken objects.
+</I><p>Here is the code
+(for <TT>docommand</TT> in <TT>commands.c</TT>, of course):
+<pre>
+else if(strcmp(verb, "fix") == 0)
+	{
+	if(objp == NULL)
+		{
+		printf("You must tell me what to fix.\n");
+		return FALSE;
+		}
+	if(!(objp-&gt;attrs &amp; BROKEN))
+		{
+		printf("The %s is not broken.\n", objp-&gt;name);
+		return FALSE;
+		}
+	if(cmd-&gt;preposition == NULL || strcmp(cmd-&gt;preposition, "with") != 0 ||
+			cmd-&gt;xobject == NULL)
+		{
+		printf("You must tell me what to fix with.\n");
+		return FALSE;
+		}
+	if(!contains(player-&gt;contents, cmd-&gt;xobject))
+		{
+		printf("You have no %s.\n", cmd-&gt;xobject-&gt;name);
+		return FALSE;
+		}
+	if(!(cmd-&gt;xobject-&gt;attrs &amp; TOOL))
+		{
+		printf("I don't see how you can fix things with a %s.\n",
+							cmd-&gt;xobject-&gt;name);
+		return FALSE;
+		}
+
+	objp-&gt;attrs &amp;= ~BROKEN;
+	printf("Somehow you manage to fix the %s with the %s.\n",
+				objp-&gt;name, cmd-&gt;xobject-&gt;name);
+	}
+</pre>
+<p>Exercise 8.
+<I>Implement immobile objects that can't be picked up.
+</I><p>Here is the modified ``take'' command:
+<pre>
+else if(strcmp(verb, "take") == 0)
+	{
+	if(objp == NULL)
+		{
+		printf("You must tell me what to take.\n");
+		return FALSE;
+		}
+	if(contains(player-&gt;contents, objp))
+		{
+		printf("You already have the %s.\n", objp-&gt;name);
+		return FALSE;
+		}
+	if(objp-&gt;attrs &amp; IMMOBILE)
+		{
+		printf("The %s cannot be picked up.\n", objp-&gt;name);
+		return FALSE;
+		}
+	if(!takeobject(player, objp))
+		{
+		/* shouldn't happen */
+		printf("You can't pick up the %s.\n", objp-&gt;name);
+		return FALSE;
+		}
+	printf("Taken.\n");
+</pre>
+<hr>
+<hr>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-9
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-04 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

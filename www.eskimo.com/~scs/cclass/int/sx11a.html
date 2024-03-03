@@ -1,0 +1,85 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>25.1 Declaring ``varargs'' Functions</title>
+<link href="sx11.html" rev=precedes>
+<link href="sx11b.html" rel=precedes>
+<link href="sx11.html" rev=subdocument>
+</head>
+<body>
+<H2>25.1 Declaring ``varargs'' Functions</H2>
+
+<p>The ANSI/ISO C Standard requires that
+all functions which accept a variable number of arguments
+be declared explicitly to do so,
+and also that a function prototype be ``in scope''
+(that is, available) whenever a varargs function is called.
+You may remember that,
+under certain circumstances,
+unknown functions can be called at will,
+with the compiler assuming
+that they take ``normal'' arguments
+and return <TT>int</TT>.
+However,
+that exception
+does not apply here.
+(In other words, for varargs functions,
+function prototypes aren't just a good idea, they're the law.)
+The reason
+that prototypes are strictly required
+is that varargs functions may use special calling sequences;
+that is,
+the compiler may have to generate special code for these calls.
+</p><p>The presence of a variable-length argument list is indicated
+by an <dfn>ellipsis</dfn> in the prototype.
+For example, the prototype for <TT>printf</TT>,
+as found in <TT>&lt;stdio.h&gt;</TT>,
+looks something like this:
+<pre>
+	extern int printf(const char *, ...);
+</pre>
+Those three dots <TT>...</TT> don't mean that I left something out;
+they <em>are</em> the ellipsis notation;
+this is the syntax that C uses
+to indicate the presence of a variable-length argument list.
+This prototype says that <TT>printf</TT>'s first argument
+is of type <TT>const char *</TT>,
+and that it takes a variable
+(and hence unspecified)
+number of additional arguments.
+</p><p>The ellipsis notation must follow
+the ordinary, fixed arguments,
+and there must be at least one fixed argument.
+It is impossible in Standard C to define a function
+which accepts only variable arguments.
+(In general, this is not too much of a restriction,
+because the function must always be able to determine,
+for itself,
+how many arguments there are in the list,
+invariably
+by inspecting the first argument(s) in the list.
+In other words,
+the function will generally need at least one
+well-defined, fixed argument anyway,
+to get a toehold on the problem of figuring out
+what the other arguments are.)
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx11.html" rev=precedes>prev</a>
+<a href="sx11b.html" rel=precedes>next</a>
+<a href="sx11.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1996-1999
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

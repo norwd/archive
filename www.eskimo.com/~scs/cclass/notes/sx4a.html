@@ -1,0 +1,223 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>4.1 Arrays</title>
+<link href="sx4.html" rev=precedes>
+<link href="sx4aa.html" rel=precedes>
+<link href="sx4.html" rev=subdocument>
+</head>
+<body>
+<H2>4.1 Arrays</H2>
+
+<p>So far, we've been declaring simple variables:
+the declaration
+<pre>
+	int i;
+</pre>
+declares a single variable, named <TT>i</TT>, of type <TT>int</TT>.
+It is also possible to declare an <dfn>array</dfn> of several elements.
+The declaration
+<pre>
+	int a[10];
+</pre>
+declares an array, named <TT>a</TT>, consisting of ten elements,
+each of type <TT>int</TT>.
+Simply speaking, an array is a variable that can hold
+more than one value.
+You specify which of the several values you're referring to at
+any given time by using a numeric <dfn>subscript</dfn>.
+(Arrays in programming are similar to
+vectors or matrices in mathematics.)
+We can represent the array <TT>a</TT> above with a picture like this:
+<img src="fig4.1.gif"></p><p>In C, arrays are <dfn>zero-based</dfn>:
+the ten elements of a 10-element array are numbered from 0 to 9.
+The subscript which specifies a single element of an array
+is simply an integer expression
+in square brackets.
+The first element of the array is <TT>a[0]</TT>,
+the second element is <TT>a[1]</TT>, etc.
+You can use these ``array subscript expressions''
+anywhere you can use the name of a simple variable,
+for example:
+<pre>
+	a[0] = 10;
+	a[1] = 20;
+	a[2] = a[0] + a[1];
+</pre>
+Notice that the subscripted array references
+(i.e. expressions such as <TT>a[0]</TT> and <TT>a[1]</TT>)
+can appear on either side of the assignment operator.
+</p><p>The subscript does not have to be a constant like <TT>0</TT> or <TT>1</TT>;
+it can be any integral expression.
+For example,
+it's common to loop over all elements of an array:
+<pre>
+	int i;
+
+	for(i = 0; i &lt; 10; i = i + 1)
+		a[i] = 0;
+</pre>
+This loop sets all ten elements of the array <TT>a</TT> to 0.
+</p><p>Arrays are a real convenience for many problems,
+but there is not a lot that C will do with them for you
+automatically.
+In particular,
+you can neither set all elements of an array at once
+nor assign one array to another;
+both of the assignments
+<pre>
+	a = 0;			/* WRONG */
+</pre>
+and
+<pre>
+	int b[10];
+	b = a;			/* WRONG */
+</pre>
+are illegal.
+</p><p>To set all of the elements of an array to some value,
+you must do so one by one,
+as in the loop example above.
+To copy the contents of one array to another,
+you must again do so one by one:
+<pre>
+	int b[10];
+
+	for(i = 0; i &lt; 10; i = i + 1)
+		b[i] = a[i];
+</pre>
+Remember that for an array declared
+<pre>
+	int a[10];
+</pre>
+there is no element
+<TT>a[10]</TT>; the topmost element is <TT>a[9]</TT>.
+This is one reason that zero-based loops are also common in C.
+Note that the <TT>for</TT> loop
+<pre>
+	for(i = 0; i &lt; 10; i = i + 1)
+		...
+</pre>
+does just what you want in this case: it starts at 0, the
+number 10 suggests (correctly) that it goes through 10
+iterations, but the less-than comparison means that the last
+trip through the loop has <TT>i</TT> set to 9.
+(The comparison <TT>i &lt;= 9</TT> would also work,
+but it would be less clear and therefore poorer style.)
+</p><p>In the little examples so far,
+we've always looped over all 10 elements of the sample array <TT>a</TT>.
+It's common,
+however,
+to use an array that's bigger than necessarily needed,
+and to use a second variable
+to keep track of how many elements of the array are currently in use.
+For example, we might have an integer variable
+<pre>
+	int na;		/* number of elements of a[] in use */
+</pre>
+Then,
+when we wanted to do something with <TT>a</TT>
+(such as print it out),
+the loop would run from 0 to <TT>na</TT>,
+not 10
+(or whatever <TT>a</TT>'s size was):
+<pre>
+	for(i = 0; i &lt; na; i = i + 1)
+		printf("%d\n", a[i]);
+</pre>
+Naturally, we would have to ensure that <TT>na</TT>'s value
+was always less than or equal to
+the number of elements actually declared in <TT>a</TT>.
+</p><p>Arrays are not limited to type <TT>int</TT>;
+you can have arrays of <TT>char</TT> or <TT>double</TT> or any
+other type.
+</p><p>Here is a slightly larger example of the use of arrays.
+Suppose we want to investigate the behavior of rolling a pair of dice.
+The total roll can be anywhere from 2 to 12,
+and we want to count how often each roll comes up.
+We will use an array to keep track of the counts:
+<TT>a[2]</TT> will count how many times we've rolled 2, etc.
+</p><p>We'll simulate the roll of a die by calling C's random number
+generation function, <TT>rand()</TT>.
+Each time you call <TT>rand()</TT>,
+it returns a different, pseudo-random integer.
+The values that <TT>rand()</TT> returns
+typically span a large range,
+so we'll use C's <dfn>modulus</dfn> (or ``remainder'')
+operator <TT>%</TT> to produce random numbers in the range we want.
+The expression <TT>rand() % 6</TT> produces random 
+numbers in the range 0 to 5,
+and <TT>rand() % 6 + 1</TT> produces random 
+numbers in the range 1 to 6.
+</p><p>Here is the program:
+<pre>
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+main()
+{
+	int i;
+	int d1, d2;
+	int a[13];	/* uses [2..12] */
+
+	for(i = 2; i &lt;= 12; i = i + 1)
+		a[i] = 0;
+
+	for(i = 0; i &lt; 100; i = i + 1)
+		{
+		d1 = rand() % 6 + 1;
+		d2 = rand() % 6 + 1;
+		a[d1 + d2] = a[d1 + d2] + 1;
+		}
+
+	for(i = 2; i &lt;= 12; i = i + 1)
+		printf("%d: %d\n", i, a[i]);
+
+	return 0;
+}
+</pre>
+We include the header <TT>&lt;stdlib.h&gt;</TT>
+because it contains the necessary declarations
+for the <TT>rand()</TT> function.
+We declare the array of size 13
+so that its highest element will be <TT>a[12]</TT>.
+(We're wasting <TT>a[0]</TT> and <TT>a[1]</TT>;
+this is no great loss.)
+The variables <TT>d1</TT> and <TT>d2</TT> contain the rolls
+of the two individual dice;
+we add them together to decide which cell of the array to increment,
+in the line
+<pre>
+	a[d1 + d2] = a[d1 + d2] + 1;
+</pre>
+After 100 rolls, we print the array out.
+Typically
+(as craps players well know),
+we'll see mostly 7's, and relatively few 2's and 12's.
+</p><p>(By the way, it turns out that using the <TT>%</TT> operator
+to reduce the range of the <TT>rand</TT> function
+is <em>not</em> always a good idea.
+We'll say more about this problem in an exercise.)
+</p><p><a href="sx4aa.html" rel=subdocument>4.1.1 Array Initialization</a></p>
+<p><a href="sx4ba.html" rel=subdocument>4.1.2 Arrays of Arrays (``Multidimensional'' Arrays)</a></p>
+<hr>
+<p>
+Read sequentially:
+<a href="sx4.html" rev=precedes>prev</a>
+<a href="sx4aa.html" rel=precedes>next</a>
+<a href="sx4.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-1997
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-03 per &lt;20001219223935.A2068@moni.msci.memphis.edu&gt; -->
+<!-- patched 2023-04-03 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

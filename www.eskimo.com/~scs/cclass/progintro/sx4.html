@@ -1,0 +1,319 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>Elements of Real Programming Languages</title>
+<link href="sx3.html" rev=precedes>
+<link href="sx5.html" rel=precedes>
+<link href="top.html" rev=subdocument>
+</head>
+<body>
+<H1>Elements of Real Programming Languages</H1>
+
+<p>There are several elements which
+programming languages,
+and programs written in them,
+typically contain.
+These elements are found in all languages,
+not just C.
+If you understand these elements and what they're for,
+not only will you understand C better,
+but you'll also find learning other programming languages,
+and moving between different programming languages,
+much easier.
+</p><p>1.
+There are <dfn>variables</dfn> or <dfn>objects</dfn>,
+in which you can store the pieces of data that a program is 
+working on.
+Variables are
+the way we talk about memory locations (data),
+and are
+analogous to the
+``registers''
+in our pocket calculator example.
+Variables may be <dfn>global</dfn>
+(that is, accessible anywhere in a program)
+or <dfn>local</dfn>
+(that is,
+private to certain parts of a program).
+
+<p>2.
+There are <dfn>expressions</dfn>,
+which compute new values from old ones.
+<p>3.
+There are <dfn>assignments</dfn> which store values
+(of expressions, or other variables)
+into variables.
+In many languages, assignment is indicated by an equals sign;
+thus, we might have
+<pre>	b = 3
+</pre>or
+<pre>	c = d + e + 1
+</pre>The first sets the variable <TT>b</TT> to 3;
+the second sets the variable <TT>c</TT> to the sum of the variables <TT>d</TT> 
+plus <TT>e</TT> plus 1.
+<p>The use of an equals sign
+can be mildly confusing at first.
+In mathematics, an equals sign indicates equality:
+two things are stated to be inherently equal, for all time.
+In programming,
+there's a time element,
+and a notion of cause-and-effect:
+after the assignment,
+the thing on the left-hand side of the assignment statement
+is equal to what the stuff on the right-hand side was before.
+To remind yourself of this meaning,
+you
+might want to read the equals sign in an assignment
+as ``gets'' or ``receives'':
+<TT>a = 3</TT> means
+``<TT>a</TT> gets 3'' or ``<TT>a</TT> receives 3.''
+<p>(A few programming languages use a left arrow for assignment
+<pre>	a <-- 3
+</pre>to make the ``receives'' relation obvious,
+but this notation is not too popular,
+if for no other reason than that
+few character sets have left arrows in them,
+and the left arrow key on the keyboard usually
+moves the cursor rather than typing a left arrow.)
+<p>If assignment seems natural and unconfusing so far,
+consider the line
+<pre>	i = i + 1
+</pre>What can this mean?
+In algebra, we'd subtract <TT>i</TT> from both sides and end up 
+with
+<pre>	0 = 1
+</pre>which doesn't make much sense.
+In programming, however,
+lines like
+<pre>	i = i + 1
+</pre>are extremely common,
+and as long as we remember how assignment works,
+they're not too hard to understand:
+the variable i receives
+(its new value is),
+as always,
+what we get when we evaluate the expression on the right-hand side.
+The expression says to fetch <TT>i</TT>'s (old) value,
+and add 1 to it,
+and this new value is what will get stored into <TT>i</TT>.
+So <TT>i = i + 1</TT> adds 1 to <TT>i</TT>;
+we say that it <dfn>increments</dfn> i.
+<p>(We'll eventually see that,
+in C,
+assignments are just another kind of expression.)
+<p>4.
+There are <dfn>conditionals</dfn> which can be used to determine 
+whether some condition is true,
+such as whether one number is greater than another.
+(In some languages,
+including C,
+conditionals are actually expressions
+which compare two values and compute a ``true'' or ``false'' value.)
+<p>5.
+Variables and expressions may have <dfn>types</dfn>,
+indicating the nature of the expected values.
+For instance,
+you might declare that one variable is expected to 
+hold a number,
+and that another is expected to hold a
+piece of text.
+In many languages
+(including C),
+your <dfn>declarations</dfn> of
+the names of the
+variables you plan to use and what 
+types you expect
+them to hold
+must be explicit.
+<p>There are all sorts of data types handled by various computer 
+languages.
+There are single characters, integers,
+and ``real'' 
+(floating point) numbers.
+There are text strings
+(i.e. strings of several characters),
+and there are <dfn>arrays</dfn> of integers, reals, or other types.
+There are types which reference
+(point at)
+values of other types.
+Finally, there may be user-defined data types,
+such as <dfn>structures</dfn> or <dfn>records</dfn>,
+which allow the programmer
+to build a more complicated data structure,
+describing a more complicated object,
+by accreting together several simpler types
+(or even other user-defined types).
+<p>6.
+There are <dfn>statements</dfn> which contain instructions describing 
+what a program actually does.
+Statements may compute expressions,
+perform assignments,
+or call functions
+(see below).
+<p>7.
+There are <dfn>control flow constructs</dfn> which determine what 
+order statements are performed in.
+A certain statement might be performed only if a condition is 
+true.
+A sequence of several statements might be repeated over
+and over,
+until some condition is met;
+this is called a <dfn>loop</dfn>.
+<p>8.
+An
+entire set of statements, declarations, and control flow 
+constructs can be lumped together into a <dfn>function</dfn>
+(also called <dfn>routine</dfn>, <dfn>subroutine</dfn>, or <dfn>procedure</dfn>)
+which another piece of code can then <dfn>call</dfn> as a unit.
+<p>When you call a function,
+you transfer control to it
+and
+wait for it to do its job,
+after which it <dfn>returns</dfn> to you;
+it may also return a value as a result of what it has done.
+You may also pass values to the function
+on which it will operate
+or which otherwise direct its work.
+<p>Placing code into functions not only avoids repetition if the 
+same sequence of actions must be performed at several places 
+within a program,
+but it also makes programs easy to understand, because you can 
+see that some function is being called, and performing some 
+(presumably) well-defined subtask, without always concerning 
+yourself with the details of how that function does its job.
+(If you've ever done any knitting,
+you know that
+knitting instructions are often written with little 
+sub-instructions or patterns which describe a sequence of stitches which is 
+to be performed multiple times during the course of the main piece.
+These sub-instructions are very much like function calls in programming.)
+<p>9.
+A set of
+functions, global variables,
+and other elements makes up a <dfn>program</dfn>.
+An additional wrinkle is that the source code for a program may
+be distributed among one or more <dfn>source files</dfn>.
+(In the other direction,
+it is also common for a suite of related programs to work
+closely together to perform some larger task,
+but we'll not worry about that ``large scale integration''
+for now.)
+<p>10.
+In the process of specifying a program in a form suitable for a compiler,
+there are usually a few logistical details to keep track of.
+These details may involve the specification of
+compiler parameters
+or
+interdependencies between different functions and other parts 
+of the program.
+Specifying these details often involves miscellaneous syntax 
+which doesn't fall into any of the other categories listed 
+here, and which we might lump together as ``boilerplate.''
+<p>Many of these elements exist in a hierarchy.
+A program typically consists of functions and global variables;
+a function is made up of statements;
+statements usually contain expressions;
+expressions operate on objects.
+(It is also possible to extend the hierarchy in the other direction;
+for instance,
+sometimes several interrelated but distinct programs are 
+assembled into a suite,
+and used in concert to perform complex tasks.
+The various ``office'' packages--integrated word processor, 
+spreadsheet, etc.--are an example.)
+</p><p>As we mentioned,
+many of the concepts in programming are somewhat arbitrary.
+This is particularly so for the terms <dfn>expression</dfn>,
+<dfn>statement</dfn>, and <dfn>function</dfn>.
+All of these could be defined as
+``an element of a program that actually does something.''
+The differences are mainly in the level at which the
+``something'' is done,
+and it's not necessary at this point to define those ``levels.''
+We'll come to understand them as we begin to write programs.
+</p><p>An analogy may help:
+Just as a book is
+composed of chapters
+which are composed of sections
+which are composed of paragraphs
+which are composed of sentences
+which are composed of words
+(which are composed of letters),
+so is a program
+composed of functions
+which are composed of statements
+which are composed of expressions
+(which are in fact composed of smaller elements
+which we won't bother to define).
+Analogies are never perfect, though,
+and this one is weaker than most;
+it still doesn't tell us anything about what expressions,
+statements, and functions really <em>are</em>.
+If ``expression'' and ``statement'' and
+``function'' seem like totally arbitrary words to you,
+use the analogy to understand that what they are is arbitrary
+words
+describing arbitrary levels in the hierarchical composition of
+a program,
+just as ``sentence,'' ``paragraph,'' and
+``chapter'' are different levels of structure within
+a book.
+</p><p>The preceding discussion has been in very general terms,
+describing features common to most ``conventional''
+computer languages.
+If you understand these elements at a relatively abstract level,
+then
+learning a new computer language becomes a
+relatively simple
+matter of finding 
+out how that language implements each of the elements.
+(Of course,
+you can't understand these abstract elements in isolation;
+it helps to have concrete examples to map them to.
+If you've never programmed before,
+most of this section has probably seemed like words
+without
+meaning.
+Don't spend too much time trying to glean all the meaning,
+but do come back and reread this handout
+after you've started to learn the details
+of a particular programming language
+such as C.)
+</p><p>Finally,
+there's
+no need to overdo the abstraction.
+For the simple programs we'll be writing,
+in a language like C,
+the series of calculations and other operations that actually
+takes place as our program runs
+is a simpleminded translation
+(into terms the computer can understand)
+of the expressions, statements, functions, and other elements
+of the program.
+Expressions are evaluated and their results assigned to variables.
+Statements are executed one after the other,
+except when the control flow is modified by if/then
+conditionals and loops.
+Functions are called to perform subtasks,
+and return values to their callers,
+which have been waiting for them.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx3.html" rev=precedes>prev</a>
+<a href="sx5.html" rel=precedes>next</a>
+<a href="top.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

@@ -1,0 +1,387 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>section 2.7: Type Conversions</title>
+<link href="sx5f.html" rev=precedes>
+<link href="sx5h.html" rel=precedes>
+<link href="sx5.html" rev=subdocument>
+</head>
+<body>
+<H2>section 2.7: Type Conversions</H2>
+
+<p>The conversion rules described here and on page 44 are straightforward,
+but they're quite important,
+so you'll need to learn them well.
+Usually,
+conversions happen automatically and when you want them to,
+but not always,
+so it's important to keep
+the rules in mind.
+(Recall the discussion of <TT>5/9</TT> on page 12.)
+</p><p>Deep sentence:
+<blockquote>A <TT>char</TT> is just a small integer,
+so <TT>char</TT>s may be freely used in arithmetic expressions.
+</blockquote>Whether you treat a ``small integer'' as a character 
+or an integer is pretty much up to you.
+As we saw earlier,
+in the ASCII character set,
+the character <TT>'0'</TT> has the value 48.
+Therefore, saying
+<pre>	int i = '0';
+</pre>is the same as saying
+<pre>	int i = 48;
+</pre>If you print <TT>i</TT> out as a character,
+using
+<pre>	putchar(i);
+</pre>or
+<pre>	printf("%c", i);
+</pre>(the <TT>%c</TT> format prints characters; see page 13),
+you'll see the character <TT>'0'</TT>.
+If you print it out as a number:
+<pre>	printf("%d", i);
+</pre>you'll see the value 48.
+</p><p>Most of the time,
+you'll use whatever notation matches what you're trying to do.
+If you want the character <TT>'0'</TT>,
+you'll use <TT>'0'</TT>.
+If you want the value 48
+(as the number of months in four years, or something),
+you'll use <TT>48</TT>.
+If you want to print characters,
+you'll use <TT>putchar</TT> or <TT>printf</TT> <TT>%c</TT>,
+and if you want to print integers,
+you'll use <TT>printf</TT> <TT>%d</TT>.
+Occasionally, you'll cross over between
+thinking of characters as characters and as values,
+such as in the character-counting program in section 1.6 on page 22,
+or in the <TT>atoi</TT> function we'll look at next.
+(You should never have to know that <TT>'0'</TT> has the value 48,
+and you should never have to write code which depends on it.)
+</p><p>page 43
+</p><p>To illustrate the ``schitzophrenic'' nature of characters
+(are they characters, or are they small integer values?),
+it's useful to look at an implementation of the standard
+library function <TT>atoi</TT>.
+(If you're getting overwhelmed, though, you may skip this
+example for now, and come back to it later.)
+The <TT>atoi</TT> routine converts a string like <TT>"123"</TT>
+into an integer having the corresponding value.
+</p><p>As you study the <TT>atoi</TT> code at the top of page 43,
+figure out why it does <em>not</em> seem to explicitly check 
+for the terminating <TT>'\0'</TT> character.
+</p><p>The expression
+<pre>	s[i] - '0'
+</pre>is an example of the ``crossing over''
+between thinking about a character and its value.
+Since the value of the character <TT>'0'</TT> is not zero
+(and, similarly, the other numeric characters
+don't have their ``obvious'' values, either),
+we have to do a little conversion
+to get the value 0 from the character <TT>'0'</TT>,
+the value 1 from the character <TT>'1'</TT>, etc.
+Since
+the character set values for
+the digit characters <TT>'0'</TT> to <TT>'9'</TT> are contiguous
+(48-57, if you must know),
+the conversion involves simply subtracting an offset,
+and the offset
+(if you think about it)
+is simply the value of the character <TT>'0'</TT>.
+We could write
+<pre>	s[i] - 48
+</pre>if we really wanted to,
+but that would require knowing what the value actually is.
+We shouldn't have to know
+(and it might be different in some other character set),
+so we can let the compiler do the dirty work
+by using <TT>'0'</TT> as the offset
+(since subtracting <TT>'0'</TT> is,
+by definition,
+the same as subtracting the value of the character <TT>'0'</TT>).
+</p><p>The functions from <TT>&lt;ctype.h&gt;</TT> are being introduced 
+here without a lot of fanfare.
+Here is the main loop of the <TT>atoi</TT> routine,
+rewritten to use <TT>isdigit</TT>:
+<pre>	for (i = 0; isdigit(s[i]); ++i)
+		n = 10 * n + (s[i] - '0');
+</pre></p><p>Don't worry too much about the discussion of
+signed vs. unsigned characters for now.
+(Don't forget about it completely, though;
+eventually,
+you'll find yourself working with a program where the issue is significant.)
+For now, just remember:
+<OL><li>Use <TT>int</TT> as the type of any variable
+which receives the return value from <TT>getchar</TT>,
+as discussed in section 1.5.1 on page 16.
+<li>If you're ever dealing with arbitrary ``bytes'' of binary data,
+you'll usually want to use <TT>unsigned char</TT>.
+</OL></p><p>page 44
+</p><p>As we saw in section 2.6 on page 44,
+relational and logical operators always ``return'' 1 for ``true'' 
+and 0 for ``false.''
+However,
+when C wants to know whether something is true or false,
+it just looks at whether it's nonzero or zero,
+so any nonzero value is considered ``true.''
+Finally,
+some functions which return true/false values
+(the text mentions <TT>isdigit</TT>)
+may return ``true'' values of other than 1.
+</p><p>You don't have to worry about these distinctions too much,
+and you also don't have to worry about the fragment
+<pre>	d = c &gt;= '0' &amp;&amp; c &lt;= '9'
+</pre>as long as you write conditionals in a sensible way.
+If you wanted to see
+whether two variables <TT>a</TT> and <TT>b</TT> were equal,
+you'd never write
+<pre>	if((a == b) == 1)
+</pre>(although it <em>would</em> work:
+the <TT>==</TT> operator ``returns'' 1 if 
+
+they're equal).
+Similarly,
+you don't want to write
+<pre>	if(isdigit(c) == 1)
+</pre>because it's equally silly-looking,
+and in this case it might <em>not</em> work.
+Just write things like
+<pre>	if(a == b)
+</pre>and
+<pre>	if(isdigit(c))
+</pre>and you'll steer clear of most problems.
+(Make sure, though, that you never try something like
+<TT>if('0' &lt;= c &lt;= '9'</TT>),
+since this wouldn't do at all what it looks like it's supposed to.)
+</p><p>The set of implicit conversions on page 44,
+though informally stated,
+is exactly the set to remember for now.
+They're easy to remember if you notice that,
+as the authors say,
+``the `lower' type is <dfn>promoted</dfn> to the `higher' type,''
+where the ``order'' of the types is
+<pre>	char &lt; short int &lt; int &lt; long int &lt; float &lt; double &lt; long double
+</pre>(We won't be using <TT>long double</TT>,
+so you don't need to worry about it.)
+We'll have more to say about these rules on the next page.
+</p><p>Don't worry too much for now
+about the additional rules for <TT>unsigned</TT> values,
+because we won't be using them at first.
+</p><p>Do notice that implicit (automatic) conversions do happen 
+across assignments.
+It's perfectly acceptable to
+assign a <TT>char</TT> to an <TT>int</TT> or vice versa,
+or
+assign an <TT>int</TT> to a <TT>float</TT> or vice versa
+(or any other combination).
+Obviously, when you assign a value from a larger type to a 
+smaller one,
+there's a chance that it might not fit.
+Therefore, compilers will often warn you about such assignments.
+</p><p>page 45
+</p><p><dfn>Casts</dfn> can be a bit confusing at first.
+A <dfn>cast</dfn> is the syntax used to request an explicit type conversion;
+<dfn>coercion</dfn> is just a more formal word for ``conversion.''
+A cast consists of a type name in parentheses
+and is used as a unary operator.
+You may have used languages
+which had conversion operators
+which looked more like function calls:
+<pre>	integer i = 2;
+	floating f = floating(i);	/* not C */
+	integer i2 = integer(f);	/* not C */
+</pre>
+In C,
+you accomplish the same thing with casts:
+<pre>	int i = 2;
+	float f = (float)i;
+	int i2 = (int)f;
+</pre>(Actually, in C,
+we wouldn't need casts in those initializations at all,
+because conversions between <TT>int</TT> and <TT>float</TT>
+are some of the ones that C performs automatically.)
+</p><p>To further understand both how implicit conversions
+and explicit casts work,
+let's study how the implicit conversions would look
+if we wrote them out explicitly.
+First we'll declare a few variables of various types:
+<pre>	char c1, c2;
+	int i1, i2;
+	long int L1, L2;
+	double d1, d2;
+</pre>Next we'll look at the kinds of conversions which C
+automatically performs when performing arithmetic on two
+dissimilar types, or when assigning a value to a dissimilar type.
+The rules are straightforward:
+when performing arithmetic on two dissimilar types,
+C converts one or both sides to a common type;
+and when assigning a value,
+C converts it to the type of the variable being assigned to.
+</p><p>If we add a <TT>char</TT> to an <TT>int</TT>:
+<pre>	i2 = c1 + i1;
+</pre>the fourth rule on page 44 tells us to convert the <TT>char</TT> to an <TT>int</TT>,
+as if we'd written
+<pre>	i2 = (int)c1 + i1;
+</pre>If we multiply a <TT>long int</TT> and a <TT>double</TT>:
+<pre>	d2 = L1 * d1;
+</pre>the second rule tells us to convert the <TT>long int</TT> to a <TT>double</TT>,
+as if we'd written
+<pre>	d2 = (double)L1 * d1;
+</pre>An assignment of a <TT>char</TT> to an <TT>int</TT>
+<pre>	i1 = c1;
+</pre>is as if we'd written
+<pre>	i1 = (int)c1;
+</pre>and
+an assignment of a <TT>float</TT> to an <TT>int</TT>
+<pre>	i1 = f1;
+</pre>is as if we'd written
+<pre>	i1 = (int)f1;
+</pre></p><p>Some programmers worry that implicit conversions are somehow unreliable
+and prefer to insert lots of explicit conversions.
+I recommend that you get comfortable with implicit 
+conversions--they're quite useful--and don't clutter your 
+code with extra casts.
+</p><p>There are a few places where you do need casts, however.
+Consider the code
+<pre>	i1 = 200;
+	i2 = 400;
+	L1 = i1 * i2;
+</pre>The product
+200 x 400 is 80000,
+which is not guaranteed to fit into an <TT>int</TT>.
+(Remember that an <TT>int</TT> is only guaranteed to hold
+values up to 32767.)
+Since 80000 <em>will</em> fit into a <TT>long int</TT>,
+you might think that you're okay, but you're not:
+the two sides of the multiplication are of the same type,
+so the compiler doesn't see the need to perform any automatic conversions
+(none of the rules on page 44 apply).
+The
+multiplication is carried out as an <TT>int</TT>,
+which overflows with unpredictable results,
+and only after the damage has been done is the unpredictable 
+value converted to a <TT>long int</TT> for assignment to <TT>L1</TT>.
+To get a multiplication like this to work,
+you have to explicitly convert at least one of the <TT>int</TT>'s 
+to <TT>long int</TT>:
+<pre>	L1 = (long int)i1 * i2;
+</pre>Now,
+the two sides of the <TT>*</TT> are of different types,
+so they're <em>both</em> converted to <TT>long int</TT>
+(by the fifth rule on page 44),
+and the multiplication is carried out as a <TT>long int</TT>.
+If it makes you feel safer, you can use two casts:
+<pre>	L1 = (long int)i1 * (long int)i2;
+</pre>but only one is strictly required.
+</p><p>A similar problem arises when two integers are being divided.
+The code
+<pre>	i1 = 1;
+	f1 = i1 / 2;
+</pre>does not set f1 to 0.5, it sets it to 0.
+Again,
+the two operands of the <TT>/</TT> operand are already of the same type
+(the rules on page 44 still don't apply),
+so an integer division is performed,
+which discards any fractional part.
+(We saw a similar problem in section 1.2 on page 12.)
+Again, an explicit conversion saves the day:
+<pre>	f1 = (float)i1 / 2;
+</pre>Alternately,
+in a case like this,
+you can use a floating-point constant:
+<pre>	f1 = i1 / 2.0;
+</pre>In either case,
+as soon as one of the operands is floating point,
+the division is carried out in floating point,
+and you get the result you expect.
+</p><p>Implicit conversions always happen during arithmetic and 
+assignment to variables.
+The situation is a bit more complicated when functions are 
+being called, however.
+</p><p>The authors use the example of the <TT>sqrt</TT> function,
+which is as good an example as any.
+<TT>sqrt</TT> accepts an argument of type <TT>double</TT>
+and returns a value of type <TT>double</TT>.
+If the compiler didn't know that <TT>sqrt</TT> took a <TT>double</TT>,
+and if you called
+<pre>	sqrt(4);
+</pre>or
+<pre>	int n = 4;
+	sqrt(n);
+</pre>the compiler would pass an <TT>int</TT> to <TT>sqrt</TT>.
+Since <TT>sqrt</TT> expects a <TT>double</TT>,
+it will not work correctly if it receives an <TT>int</TT>.
+Therefore,
+it was once
+always
+necessary to use explicit conversions in cases like 
+this,
+by calling
+<pre>	sqrt((double)4)
+</pre>or
+<pre>	sqrt((double)n)
+</pre>or
+<pre>	sqrt(4.0)
+</pre></p><p>However,
+it is now possible,
+with a <dfn>function prototype</dfn>,
+to tell the compiler what types of arguments a function expects.
+The prototype for <TT>sqrt</TT> is
+<pre>	double sqrt(double);
+</pre>and as long as a prototype is in effect
+(``in scope,'' as the cognoscenti would say),
+you can call <TT>sqrt</TT> without worrying about conversions.
+When a prototype is in effect,
+the compiler performs implicit conversions during function calls
+(specifically, while passing the arguments)
+exactly as it does during simple assignments.
+</p><p>Obviously, using prototypes makes for much safer programming,
+and it is recommended that
+you use them
+whenever possible.
+For the standard library functions
+(the ones already written for you),
+you get prototypes automatically
+when you include the <dfn>header files</dfn> which describe
+sets of library functions.
+For example,
+you
+get prototypes for all of C's built-in math functions 
+by putting the line
+<pre>	#include &lt;math.h&gt;
+</pre>at the top of your program.
+For functions that you write,
+you can supply your own prototypes,
+which
+
+we'll be learning more about later.
+</p><p>However, there are a few situations
+(we'll talk about them later)
+where prototypes do not apply,
+so it's important to remember that function calls are a bit 
+different
+and that
+explicit conversions (i.e. casts) may 
+occasionally be required.
+Don't imagine that prototypes are a panacea.
+</p><p>page 46
+</p><p>Don't worry about the <TT>rand</TT> example.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx5f.html" rev=precedes>prev</a>
+<a href="sx5h.html" rel=precedes>next</a>
+<a href="sx5.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

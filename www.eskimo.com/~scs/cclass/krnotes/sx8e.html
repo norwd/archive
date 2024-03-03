@@ -1,0 +1,242 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>section 5.5: Character Pointers and Functions</title>
+<link href="sx8d.html" rev=precedes>
+<link href="sx8f.html" rel=precedes>
+<link href="sx8.html" rev=subdocument>
+</head>
+<body>
+<H2>section 5.5: Character Pointers and Functions</H2>
+
+page 104
+<p>Since text strings are represented in C by arrays of characters,
+and since arrays are very often manipulated via pointers,
+character pointers are probably the most common pointers in C.
+</p><p>Deep sentence:
+<blockquote>C does not provide any operators
+for processing an entire string of characters as a unit.
+</blockquote>We've said this sort of thing before,
+and it's a general statement which is true of all arrays.
+Make sure you understand that in the lines
+<pre>	char *pmessage;
+	pmessage = "now is the time";
+	pmessage = "hello, world";
+</pre>all we're doing is assigning two pointers,
+not copying two entire strings.
+</p><p>At the bottom of the page is a very important picture.
+We've said that pointers and arrays are different,
+and here's another illustration.
+Make sure you appreciate the significance of this picture:
+it's probably the most basic illustration
+of how arrays and pointers are implemented in C.
+</p><p>We also need to understand
+the two different ways that string literals like
+<TT>"now is the time"</TT> are used in C.
+In the definition
+<pre>	char amessage[] = "now is the time";
+</pre>the string literal is used as the initializer for the array <TT>amessage</TT>.
+<TT>amessage</TT> is here an array of 16 characters,
+which we may later overwrite with other characters if we wish.
+The string literal merely sets the initial contents of the array.
+In the definition
+<pre>	char *pmessage = "now is the time";
+</pre>on the other hand,
+the string literal is used to create a little
+block of characters
+somewhere in memory
+which the pointer <TT>pmessage</TT> is initialized to point to.
+We may reassign <TT>pmessage</TT> to point somewhere else,
+but as long as it points to the string literal,
+we can't modify the characters it points to.
+</p><p>As an example
+of what we can and can't do,
+given the lines
+<pre>	char amessage[] = "now is the time";
+	char *pmessage = "now is the time";
+</pre>we could say
+<pre>	amessage[0] = 'N';
+</pre>to make <TT>amessage</TT> say <TT>"Now is the time"</TT>.
+But if we tried to do
+<pre>	pmessage[0] = 'N';
+</pre>(which, as you may recall, is equivalent to <TT>*pmessage = 'N')</TT>,
+it would not necessarily work; we're not allowed to modify that string.
+(One reason is that
+the compiler might have placed the ``little block of characters''
+in read-only memory.
+Another reason is that
+if we had written
+<pre>	char *pmessage = "now is the time";
+	char *qmessage = "now is the time";
+</pre>the compiler might have used the same
+little block of memory
+to initialize both pointers,
+and we wouldn't want a change to one
+to
+alter
+the other.)
+</p><p>Deep sentence:
+<blockquote>The first function is <TT>strcpy(s,t)</TT>,
+which copies the string <TT>t</TT> to the string <TT>s</TT>.
+It would be nice just to say <TT>s=t</TT> but this copies the 
+pointer,
+not the characters.
+</blockquote>This is a restatement of what we said above,
+and a reminder of why we'll need a function,
+<TT>strcpy</TT>,
+to copy whole strings.
+</p><p>page 105
+</p><p>Once again, these code fragments are being written in a rather compressed way.
+To make it easier to see what's going on,
+here are alternate versions of <TT>strcpy</TT>,
+which don't bury the assignment in the loop test.
+First we'll use array notation:
+<pre>	void strcpy(char s[], char t[])
+	{
+		int i;
+		for(i = 0; t[i] != '\0'; i++)
+			s[i] = t[i];
+		s[i] = '\0';
+	}
+</pre>Note that we have to manually append
+the <TT>'\0'</TT> to <TT>s</TT> after the loop.
+Note that in doing so we depend upon <TT>i</TT> retaining its final value
+after the loop,
+but this is guaranteed in C,
+as we learned in Chapter 3.
+</p><p>Here is a similar function,
+using pointer notation:
+<pre>	void strcpy(char *s, char *t)
+	{
+		while(*t != '\0')
+			*s++ = *t++;
+		*s = '\0';
+	}
+</pre>Again, we have to manually append the <TT>'\0'</TT>.
+Yet another option might be to use a <TT>do</TT>/<TT>while</TT> loop.
+</p><p>All of these versions of <TT>strcpy</TT>
+are quite similar to the <TT>copy</TT> function
+we saw on page 29 in section 1.9.
+</p><p>page 106
+</p><p>The version of <TT>strcpy</TT> at the top of this page
+is my least favorite example in the whole book.
+Yes, many experienced C programmers would write 
+<TT>strcpy</TT> this way,
+and yes,
+you'll eventually need to be able to read and decipher code like this,
+but my own recommendation against this kind of cryptic code
+is strong enough that I'd rather not show this example yet,
+if at all.
+</p><p>We need <TT>strcmp</TT> for about the same reason we need <TT>strcpy</TT>.
+Just as we cannot assign one string to another using <TT>=</TT>,
+we cannot compare two strings using <TT>==</TT>.
+(If we try to use <TT>==</TT>, all we'll compare is the two pointers.
+If the pointers are equal, they point to the same place,
+so they certainly point to the same string,
+but if we have two strings in two different parts of memory,
+pointers to them will always compare different
+even if the strings pointed to
+contain identical sequences of characters.)
+</p><p>Note that <TT>strcmp</TT> returns
+a positive number if <TT>s</TT> is greater than <TT>t</TT>,
+a negative number if <TT>s</TT> is less than <TT>t</TT>,
+and zero if <TT>s</TT> compares equal to <TT>t</TT>.
+``Greater than'' and ``less than''
+are interpreted based on the
+relative values of the characters in the machine's character set.
+This means that <TT>'a' &lt; 'b'</TT>,
+but
+(in the ASCII character set, at least)
+it also means that <TT>'B' &lt; 'a'</TT>.
+(In other words, capital letters will sort before lower-case letters.)
+The positive or negative number which <TT>strcmp</TT> returns 
+is,
+in this implementation at least, actually the difference 
+between
+the values of
+the first two characters that differ.
+</p><p>Note that <TT>strcmp</TT> returns 0 when the strings are <em>equal</em>.
+Therefore, the condition
+<pre>	if(strcmp(a, b))
+		<I>do something...</I>
+</pre>doesn't do what you probably think it does.
+Remember that C considers zero to be ``false'' and nonzero to be ``true,''
+so this code does something
+if the strings <TT>a</TT> and <TT>b</TT> are <em>un</em>equal.
+If you want to do something if two strings are equal, use code like
+<pre>	if(strcmp(a, b) == 0)
+		<I>do something...</I>
+</pre>(There's nothing fancy going on here:
+<TT>strcmp</TT> returns 0 when the two strings are equal,
+so that's what we explicitly test for.)
+<br>
+</p><p>To continue our ongoing discussion of which pointer manipulations are safe
+and which are risky or must be done with care,
+let's consider character pointers.
+As we've mentioned, one thing to beware of is that a pointer 
+derived from a string literal,
+as in
+<pre>	char *pmessage = "now is the time";
+</pre>is usable but not writable
+(that is, the characters pointed to are not writable.)
+Another thing to be careful of is that any time you copy strings,
+using <TT>strcpy</TT> or some other method,
+you must be sure that the destination string is a writable 
+array with enough space for the string you're writing.
+Remember, too, that the space you need is the number of 
+characters in the string you're copying,
+plus one for the terminating <TT>'\0'</TT>.
+</p><p>For the
+above reasons,
+all three of these examples are incorrect:
+<pre>	char *p1 = "Hello, world!";
+	char *p2;
+	strcpy(p2, p1);		/* WRONG */
+</pre><br>
+<br>
+<pre>	char *p = "Hello, world!";
+	char a[13];
+	strcpy(a, p);		/* WRONG */
+</pre><br>
+<br>
+<pre>	char *p3 = "Hello, world!";
+	char *p4 = "A string to overwrite";
+	strcpy(p4, p3);		/* WRONG */
+</pre>In the first example, <TT>p2</TT> doesn't point anywhere.
+In the second example, <TT>a</TT> is a writable array,
+but it doesn't have room for the terminating <TT>'\0'</TT>.
+In the third example,
+<TT>p4</TT> points to memory which we're not allowed to overwrite.
+A correct example would be
+<pre>	char *p = "Hello, world!";
+	char a[14];
+	strcpy(a, p);
+</pre>(Another option would be to obtain some memory for the string copy,
+i.e. the destination for <TT>strcpy</TT>,
+using dynamic memory allocation,
+but we're not talking about that yet.)
+</p><p>page 106 continued (bottom)
+</p><p>Expressions like <TT>*p++</TT> and <TT>*--p</TT> may seem cryptic at first sight,
+but they're actually analogous to array subscript expressions like
+<TT>a[i++]</TT> and <TT>a[--i]</TT>,
+some of which we were using back on page 47 in section 2.8.
+<br><br></p><hr>
+<p>
+Read sequentially:
+<a href="sx8d.html" rev=precedes>prev</a>
+<a href="sx8f.html" rel=precedes>next</a>
+<a href="sx8.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

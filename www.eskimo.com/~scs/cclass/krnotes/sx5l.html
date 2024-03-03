@@ -1,0 +1,187 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>section 2.12: Precedence and Order of Evaluation</title>
+<link href="sx5k.html" rev=precedes>
+<link href="sx6.html" rel=precedes>
+<link href="sx5.html" rev=subdocument>
+</head>
+<body>
+<H2>section 2.12: Precedence and Order of Evaluation</H2>
+
+<p>Note that precedence is <em>not</em> the same thing as order of evaluation.
+Precedence determines how an expression is parsed,
+and it has an influence on the order in which parts of it are 
+evaluated,
+but the influence isn't as strong as you'd think.
+Precedence says that in the expression
+<pre>	1 + 2 * 3
+</pre>the multiplication happens
+before the addition.
+But if we have several function calls,
+such as
+<pre>	f() + g() * h()
+</pre>we have no idea which function will be called first;
+the compiler might arrange to call <TT>f()</TT> first even
+though its value won't be needed until last.
+If we were to write an abomination like
+<pre>	i = 1;
+	a[i++] + a[i++] * a[i++]
+</pre>we would have <em>no</em> way of knowing which order the three 
+increments would happen in,
+and in fact the compiler wouldn't have any idea either.
+We could <em>not</em> argue that since multiplication has 
+higher precedence than addition, and since multiplication 
+associates from left to right, the second <TT>i++</TT> would have to 
+happen first, then the third, then the first.
+(Actually, associativity <em>never</em> says anything about 
+which side of a single binary operator gets evaluated first;
+associativity says which of several adjacent same-precedence 
+operators happens first.)
+</p><p>In general,
+you should be wary of ever trying to
+second-guess the relative order
+in which the various parts of an expression will be evaluated,
+with two exceptions:
+<OL><li>You can obviously assume that precedence will dictate
+the order in
+which binary operators
+are applied.
+This typically says more than just what order things happens in,
+but also what the expression actually <em>means</em>.
+(In other words,
+the precedence of <TT>*</TT> over <TT>+</TT>
+says more than that the multiplication ``happens first''
+in <TT>1 + 2 * 3</TT>;
+it says that the answer is 7, not 9.)
+<li>You can assume that the <TT>&amp;&amp;</TT> and <TT>||</TT> operators
+are evaluated left-to-right,
+and that the right-hand side is not evaluated at all
+if the left-hand side determines the outcome.
+</OL></p><p>To look at one more example,
+it might seem that the code
+<pre>	int i = 7;
+	printf("%d\n", i++ * i++);
+</pre>would have to print 56, because no matter which order the
+increments happen in, 7x8 is 8x7 is 56.
+But <TT>++</TT> just says that the increment happens later,
+not that it happens immediately,
+so this code could print 49
+(if it chose to perform the multiplication first,
+and both increments later).
+And,
+it turns out that ambiguous expressions like this are such a
+bad idea that the ANSI C Standard does not require compilers to
+do anything reasonable with them at all,
+such that
+the above code
+might end up
+printing 42, or 8923409342, or 0, or crashing
+your computer.
+</p><p>Finally,
+note that parentheses don't dictate overall evaluation
+order any more than precedence does.
+Parentheses override precedence
+and say which operands go with which operators,
+and they therefore affect the overall meaning of an expression,
+but they don't
+say anything about the order of subexpressions or side effects.
+We could not ``fix''
+the evaluation order of
+any of the
+expressions we've been discussing
+by adding parentheses.
+If we wrote
+<pre>	f() + (g() * h())
+</pre>we still wouldn't know whether
+<TT>f()</TT>, <TT>g()</TT>, or <TT>h()</TT>
+would be called first.
+(The parentheses would force the multiplication to happen before the addition,
+but precedence already would have forced that, anyway.)
+If we wrote
+<pre>	(i++) * (i++)
+</pre>the parentheses wouldn't force the increments to happen before
+the multiplication or in any well-defined order;
+this parenthesized version would be just as undefined as
+<TT>i++ * i++</TT> was.
+</p><p>page 53
+</p><p>Deep sentence:
+<blockquote>Function calls,
+nested assignment statements,
+and increment and decrement operators cause
+``side effects''--some
+variable is changed as a by-product of the evaluation of an expression.
+</blockquote>(There's a slight inaccuracy in this sentence:
+<em>any</em> assignment expression counts as a side effect.)
+</p><p>It's these ``side effects'' that you want to keep in 
+mind when you're making sure that your programs are well-defined
+and don't suffer any of the undefined behavior we've been 
+discussing.
+(When we informally said that
+complex expressions had several things going on ``at once,''
+we were actually referring to expressions with multiple side effects.)
+As a general rule,
+you should make sure that each expression only has one side effect,
+or if it has several,
+that <em>different</em> variables are changed by the several side effects.
+</p><p>page 54
+</p><p>Deep sentence:
+<blockquote>The moral is that writing code
+that depends on order of evaluation
+is a bad programming practice in any language.
+Naturally,
+it is necessary to know what things to avoid,
+but if you don't know
+<I>how</I>
+they are done on various machines,
+you won't be tempted to take advantage of a particular implementation.
+</blockquote></p><p>The first edition of K&amp;R said
+<blockquote>...if you don't know
+<I>how</I>
+they are done on various machines,
+that innocence may help to protect you.
+</blockquote>I actually prefer the first edition wording.
+Many textbooks encourage you to write small programs
+to find out how your compiler
+implements some of these ambiguous expressions,
+but it's
+just
+one step from writing a small program to find out,
+to writing a real program which makes use of what you've just learned.
+And
+you <em>don't</em> want to write programs
+that work only under one particular compiler,
+that take advantage of the way that compiler
+(but perhaps no other)
+happens to implement the undefined expressions.
+It's fine to be curious about what goes on ``under the hood,''
+and many of you will be curious enough about what's going on 
+with these ``forbidden'' expressions that you'll want to 
+investigate them,
+but please keep very firmly in mind that,
+for real programs,
+the very easiest way of dealing with ambiguous, undefined expressions
+(which one compiler interprets one way
+and another interprets another way
+and a third crashes on)
+is not to write them in the first place.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx5k.html" rev=precedes>prev</a>
+<a href="sx6.html" rel=precedes>next</a>
+<a href="sx5.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

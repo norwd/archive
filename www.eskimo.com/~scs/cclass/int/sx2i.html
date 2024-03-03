@@ -1,0 +1,136 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>16.9: Random Access
+(<TT>fseek</TT>, <TT>ftell</TT>, etc.)</title>
+<link href="sx2h.html" rev=precedes>
+<link href="sx2j.html" rel=precedes>
+<link href="sx2.html" rev=subdocument>
+</head>
+<body>
+<H2>16.9: Random Access
+(<TT>fseek</TT>, <TT>ftell</TT>, etc.)</H2>
+
+<p>Normally, files and streams
+(that is, anything accessed via a <TT>FILE *</TT>)
+are read and written sequentially.
+However, it's also possible to jump to a certain position in a file.
+</p><p>To jump to a position,
+it's generally necessary to have ``been there'' once already.
+First,
+you use the function <TT>ftell</TT>
+to find out what your position in the file is;
+then, later,
+you can use the function <TT>fseek</TT> to get back to a saved position.
+</p><p>File positions are stored as <TT>long int</TT>s.
+To record a position, you would use code like
+<pre>
+	long int pos;
+	pos = ftell(fp);
+</pre>
+Later, you could ``seek'' back to that position with
+<pre>
+	fseek(fp, pos, SEEK_SET);
+</pre>
+The third argument to <TT>fseek</TT> is a code telling it
+(in this case)
+to set the position with respect to the beginning of the file;
+this is the mode of operation you need when you're seeking to a 
+position returned by <TT>ftell</TT>.
+</p><p>As an example, suppose we were writing a file, and one of the 
+lines in it contained the words ``This file is <I>n</I> 
+lines long'',
+where <I>n</I> was supposed to be replaced by the actual number 
+of lines in the file.
+At the time when we wrote that line, we might not know how many 
+lines we'd eventually write.
+We could resolve the difficulty by writing a placeholder line, 
+remembering where it was, and then going back and filling in the 
+right number later.
+The first part of the code might look like this:
+<pre>
+	long int nlinespos = ftell(fp);
+	fprintf(fp, "This file is %4d lines long\n", 0);
+</pre>
+Later, when we'd written the last line to the file,
+we could seek back and rewrite the ``number-of-lines'' line 
+like this:
+<pre>
+	fseek(fp, nlinespos, SEEK_SET);
+	fprintf(fp, "This file is %4d lines long\n", nlines);
+</pre>
+There's no way to insert or delete characters in a file after the fact,
+so we have to make sure that if we overwrite part of a file in this way,
+the overwritten text is exactly the same length as the previous text.
+
+That's why we used <TT>%4d</TT>,
+so that the number would always be printed in a field 4 characters wide.
+(However,
+since the field width
+in a <TT>printf</TT> format specifier
+is a <em>minimum</em> width,
+with this choice of width,
+the code would fail if a file ever had more than 9999 lines in it.)
+</p><p>Three other file-positioning functions are 
+<TT>rewind</TT>, 
+which rewinds a file to its beginning,
+and <TT>fgetpos</TT> and <TT>fsetpos</TT>,
+which are like <TT>ftell</TT> and <TT>fseek</TT> except that 
+they record positions in a special type, 
+<TT>fpos_t</TT>,
+which may be able to record positions in huge files for which 
+even a <TT>long int</TT> might not be sufficient.
+</p><p>If you're ever using one of the ``read/write'' modes
+(<TT>"r+"</TT> or <TT>"w+"</TT>),
+you must use a call to a file-positioning function
+(<TT>fseek</TT>, <TT>rewind</TT>, or <TT>fsetpos</TT>)
+before switching from reading to writing or vice versa.
+(You can also call <TT>fflush</TT>
+while writing
+and then switch
+to reading,
+or reach end-of-file
+while reading
+and then switch
+back
+to writing.)
+</p><p>In binary (<TT>"b"</TT>) mode,
+the file positions returned by <TT>ftell</TT> and used by <TT>fseek</TT>
+are byte offsets,
+such that it's possible to compute an <TT>fseek</TT> target
+without having to have it returned by an earlier call to <TT>ftell</TT>.
+On many systems
+(including Unix, the Macintosh, and to some extent MS-DOS),
+file positioning works this way in text mode as well.
+Code that
+relies on
+this
+
+isn't as portable,
+though,
+so it's not a good idea
+to treat <TT>ftell</TT>/<TT>fseek</TT> positions
+in text files
+as byte offsets
+unless you really have to.
+
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx2h.html" rev=precedes>prev</a>
+<a href="sx2j.html" rel=precedes>next</a>
+<a href="sx2.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1996-1999
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

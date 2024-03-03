@@ -1,0 +1,159 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>10.7 Strings</title>
+<link href="sx10f.html" rev=precedes>
+<link href="sx10h.html" rel=precedes>
+<link href="sx10.html" rev=subdocument>
+</head>
+<body>
+<H2>10.7 Strings</H2>
+
+<p>Because of the ``equivalence'' of arrays and pointers,
+it is extremely common to refer to and manipulate strings
+as character pointers,
+or <TT>char *</TT>'s.
+It is so common, in fact,
+that it is easy to forget that strings are arrays,
+and to imagine that they're represented by pointers.
+(Actually, in the case of strings,
+it may not even matter that much if the distinction gets a little blurred;
+there's certainly nothing wrong
+with referring to a character pointer,
+suitably initialized,
+as a ``string.'')
+Let's look at a few of the implications:
+<OL><li>Any function that manipulates a string
+will actually accept it as a <TT>char *</TT> argument.
+The caller may pass an array containing a string,
+but the function will receive a pointer
+to the array's (string's) first element (character).
+<li>The <TT>%s</TT> format in <TT>printf</TT> expects a character pointer.
+<li>Although you have to use <TT>strcpy</TT> to copy a string
+from one array to another,
+you can use simple pointer assignment
+to assign a string to a pointer.
+The string being assigned might either be in an array
+or pointed to by another pointer.
+
+In other words,
+given
+<pre>
+	char string[] = "Hello, world!";
+	char *p1, *p2;
+</pre>
+both
+<pre>
+	p1 = string
+</pre>
+and
+<pre>
+	p2 = p1
+</pre>
+are legal.
+(Remember, though,
+that when you assign a pointer,
+you're making a copy of the pointer
+but <em>not</em> of the data it points to.
+In the first example,
+<TT>p1</TT> ends up pointing to the string in <TT>string</TT>.
+In the second example,
+<TT>p2</TT> ends up pointing to the same string as <TT>p1</TT>.
+In any case,
+after a pointer assignment,
+if you ever change the string
+(or other data)
+pointed to,
+the change is ``visible'' to <em>both</em> pointers.
+<li>Many programs manipulate strings exclusively using character pointers,
+never explicitly declaring any actual arrays.
+As long as these programs are careful
+to allocate appropriate memory for the strings,
+they're perfectly valid and correct.
+</OL></p><p>When you start working heavily with strings, however,
+you have to be aware of one subtle fact.
+</p><p>When you initialize a character array with a string constant:
+<pre>
+	char string[] = "Hello, world!";
+</pre>
+you end up with an array containing the string,
+and you can modify the array's contents to your heart's content:
+<pre>
+	string[0] = 'J';
+</pre>
+However,
+it's possible to use string constants
+(the formal term is <dfn>string literals</dfn>)
+at other places in your code.
+Since they're arrays,
+the compiler generates pointers to their first elements
+when they're used in expressions,
+as usual.
+That is, if you say
+<pre>
+	char *p1 = "Hello";
+	int len = strlen("world");
+</pre>
+it's almost as if you'd said
+<pre>
+	char internal_string_1[] = "Hello";
+	char internal_string_2[] = "world";
+	char *p1 = &amp;internal_string_1[0];
+	int len = strlen(&amp;internal_string_2[0]);
+</pre>
+Here,
+the arrays named <TT>internal_string_1</TT> and <TT>internal_string_2</TT>
+are supposed to suggest the fact that
+the compiler is actually generating
+little temporary arrays
+every time you use a string constant in your code.
+<em>However</em>,
+the subtle fact
+is that the arrays which are ``behind'' the string constants
+are <em>not</em> necessarily modifiable.
+In particular, the compiler may store them in read-only-memory.
+Therefore,
+if you write
+<pre>
+	char *p3 = "Hello, world!";
+	p3[0] = 'J';
+</pre>
+your program may crash,
+because it may try to store a value
+(in this case, the character <TT>'J'</TT>)
+into nonwritable memory.
+</p><p>The moral is that whenever you're building or modifying strings,
+you have to make sure that
+the memory you're building or modifying them in is writable.
+That memory should either be an array you've allocated,
+or some memory which you've dynamically allocated
+by the techniques which we'll see in the next chapter.
+Make sure that no part of your program will ever try to modify
+a string which is actually one of the unnamed, unwritable arrays
+which the compiler generated for you
+in response to one of your string constants.
+(The only exception is array initialization,
+because if you write to such an array,
+you're writing to the array,
+not to the string literal
+which you used to initialize the array.)
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx10f.html" rev=precedes>prev</a>
+<a href="sx10h.html" rel=precedes>next</a>
+<a href="sx10.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>section 3.8: Goto and Labels</title>
+<link href="sx6g.html" rev=precedes>
+<link href="sx7.html" rel=precedes>
+<link href="sx6.html" rev=subdocument>
+</head>
+<body>
+<H2>section 3.8: Goto and Labels</H2>
+
+pages 65-66
+<p>A tremendous amount of impassioned debate surrounds the lowly 
+<TT>goto</TT> statement, which exists in many languages.
+Some people say that <TT>goto</TT>s are fine;
+others say that they must <strong>never</strong> be used.
+You should definitely shy away from <TT>goto</TT>s,
+but don't be dogmatic about it;
+some day,
+you'll find yourself writing some screwy piece of code where 
+trying to avoid a <TT>goto</TT>
+(by introducing extra tests or Boolean control variables)
+would only make things worse.
+</p><p></p><p>page 66
+</p><p>When you find yourself writing several nested loops
+in order to search for something,
+such that you would need to use a <TT>goto</TT>
+to break out of all of them
+when you do find what you're looking for,
+it's often an excellent idea to 
+move
+the search code out into a separate function.
+Doing so
+can make both the ``found'' and ``not found'' cases
+easier to handle.
+Here's a slight variation on the example in the middle of page 66,
+written as a function:
+<pre>	/* return i such that a[i] == b[j] for some j, or -1 if none */
+<br>
+<br>
+	int findequal(int a[], int na, int b[], int nb)
+	{
+		int i, j;
+<br>
+<br>
+		for(i = 0; i &lt; na; i++) {
+			for(j = 0; j &lt; nb; j++) {
+				if(a[i] == b[j])
+					return i;
+			}
+		}
+<br>
+<br>
+		return -1;
+	}
+</pre>This function can then be called as
+<pre>	i = findequal(a, na, b, nb);
+	if(i == -1)
+		/* didn't find any common element */
+	else	/* got one */
+</pre>(The only disadvantage here is that it's trickier to return 
+<TT>i</TT> and <TT>j</TT> if we need them both.)
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx6g.html" rev=precedes>prev</a>
+<a href="sx7.html" rel=precedes>next</a>
+<a href="sx6.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

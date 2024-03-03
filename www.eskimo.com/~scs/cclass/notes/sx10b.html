@@ -1,0 +1,206 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>10.2 Pointers and Arrays; Pointer Arithmetic</title>
+<link href="sx10a.html" rev=precedes>
+<link href="sx10c.html" rel=precedes>
+<link href="sx10.html" rev=subdocument>
+</head>
+<body>
+<H2>10.2 Pointers and Arrays; Pointer Arithmetic</H2>
+
+<p>[This section corresponds to K&amp;R Sec. 5.3]
+</p><p>Pointers do not have to point to single variables.
+They can also point at the cells of an array.
+For example, we can write
+<pre>
+	int *ip;
+	int a[10];
+	ip = &amp;a[3];
+</pre>
+and we would end up with
+<TT>ip</TT> pointing at the fourth cell of the array <TT>a</TT>
+(remember, arrays are 0-based, so <TT>a[0]</TT> is the first cell).
+We could illustrate the situation like this:
+<br>
+<center><img src="p6.gif"></center>
+<br>
+We'd use this <TT>ip</TT> just like the one in the previous section:
+<TT>*ip</TT> gives us what <TT>ip</TT> points to,
+which in this case will be the value in <TT>a[3]</TT>.
+</p><p>Once we have a pointer pointing into an array,
+we can start doing <dfn>pointer arithmetic</dfn>.
+Given that <TT>ip</TT> is a pointer to <TT>a[3]</TT>,
+we can add 1 to <TT>ip</TT>:
+<pre>
+	ip + 1
+</pre>
+What does it mean to add one to a pointer?
+In C,
+it gives a pointer to the cell one farther on,
+which in this case is <TT>a[4]</TT>.
+To make this clear,
+let's
+assign this new pointer to another pointer variable:
+<pre>
+	ip2 = ip + 1;
+</pre>
+Now the picture looks like this:
+<br>
+<center><img src="p7.gif"></center>
+<br>
+If we now do
+<pre>
+	*ip2 = 4;
+</pre>
+we've set <TT>a[4]</TT> to 4.
+But it's not necessary to assign a new pointer value to a pointer variable
+in order to use it;
+we could also compute a new pointer value and
+use it immediately:
+<pre>
+	*(ip + 1) = 5;
+</pre>
+In this last example,
+we've changed <TT>a[4]</TT> again,
+setting it to 5.
+The parentheses are needed
+because the unary ``contents of'' operator <TT>*</TT>
+has higher <dfn>precedence</dfn>
+(i.e., binds more tightly than)
+the addition operator.
+If we wrote <TT>*ip + 1</TT>,
+without the parentheses,
+we'd be fetching the value pointed to by <TT>ip</TT>,
+and adding 1 to that value.
+The expression <TT>*(ip + 1)</TT>,
+on the other hand,
+accesses the value one past the one pointed to by <TT>ip</TT>.
+</p><p>Given that we can add 1 to a pointer,
+it's not surprising
+that we can add and subtract other numbers as well.
+If <TT>ip</TT> still points to <TT>a[3]</TT>, then
+<pre>
+	*(ip + 3) = 7;
+</pre>
+sets <TT>a[6]</TT> to 7, and
+<pre>
+	*(ip - 2) = 4;
+</pre>
+sets <TT>a[1]</TT> to 4.
+</p><p>Up above,
+we added 1 to <TT>ip</TT> and assigned the new pointer to <TT>ip2</TT>,
+but there's no reason we can't add one to a pointer,
+and change the same pointer:
+<pre>
+	ip = ip + 1;
+</pre>
+Now <TT>ip</TT> points one past where it used to
+(to <TT>a[4]</TT>, if we hadn't changed it in the meantime).
+The shortcuts we learned in a previous chapter
+all work for pointers, too:
+we could also increment a pointer using
+<pre>
+	ip += 1;
+</pre>
+or
+<pre>
+	ip++;
+</pre>
+</p><p>Of course, pointers are not limited to <TT>int</TT>s.
+It's quite common to use pointers to other types,
+especially <TT>char</TT>.
+Here is the body of the <TT>mystrcmp</TT> function
+we saw in a previous chapter,
+rewritten to use pointers.
+(<TT>mystrcmp</TT>,
+you may recall,
+compares two strings, character by character.)
+<pre>
+	char *p1 = &amp;str1[0], *p2 = &amp;str2[0];
+
+	while(1)
+		{
+		if(*p1 != *p2)
+			return *p1 - *p2;
+		if(*p1 == '\0' || *p2 == '\0')
+			return 0;
+		p1++;
+		p2++;
+		}
+</pre>
+</p><p>The autoincrement operator <TT>++</TT>
+(like its companion, <TT>--</TT>)
+makes it easy to do two things at once.
+We've seen idioms like <TT>a[i++]</TT>
+which accesses <TT>a[i]</TT> and simultaneously increments <TT>i</TT>,
+leaving it referencing the next cell of the array <TT>a</TT>.
+We can do the same thing with pointers:
+an expression like <TT>*ip++</TT>
+lets us access what <TT>ip</TT> points to,
+while simultaneously incrementing <TT>ip</TT>
+so that it points to the next element.
+The preincrement form works, too:
+<TT>*++ip</TT> increments <TT>ip</TT>,
+then accesses what it points to.
+Similarly,
+we can use notations like <TT>*ip--</TT> and <TT>*--ip</TT>.
+</p><p>As another example,
+here is the <TT>strcpy</TT>
+(string copy)
+loop from a previous chapter,
+rewritten to use pointers:
+<pre>
+	char *dp = &amp;dest[0], *sp = &amp;src[0];
+	while(*sp != '\0')
+		*dp++ = *sp++;
+	*dp = '\0';
+</pre>
+</p><p>(One question that comes up
+is whether the expression <TT>*p++</TT>
+increments <TT>p</TT> or what it points to.
+The answer is that it increments
+<TT>p</TT>.
+
+To
+increment what <TT>p</TT> points to,
+you can use <TT>(*p)++</TT>.)
+</p><p>When you're doing pointer arithmetic,
+you have to remember how big the array the pointer points into is,
+so that you don't ever point outside it.
+If the array <TT>a</TT> has 10 elements,
+you can't access <TT>a[50]</TT> or <TT>a[-1]</TT> or even <TT>a[10]</TT>
+(remember,
+the valid subscripts for a 10-element array run from 0 to 9).
+Similarly, if <TT>a</TT> has 10 elements and <TT>ip</TT> points to <TT>a[3]</TT>,
+you can't compute or access <TT>ip + 10</TT> or <TT>ip - 5</TT>.
+(There is one special case:
+
+you can,
+in this case,
+compute, but not access,
+a pointer to the nonexistent element just beyond the end of the array,
+which in this case is <TT>&amp;a[10]</TT>.
+This becomes useful when you're doing pointer comparisons,
+which we'll look at next.)
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx10a.html" rev=precedes>prev</a>
+<a href="sx10c.html" rel=precedes>next</a>
+<a href="sx10.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-03 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

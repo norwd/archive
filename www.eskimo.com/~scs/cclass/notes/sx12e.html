@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>12.5 Example: Reading a Data File</title>
+<link href="sx12d.html" rev=precedes>
+<link href="sx13.html" rel=precedes>
+<link href="sx12.html" rev=subdocument>
+</head>
+<body>
+<H2>12.5 Example: Reading a Data File</H2>
+
+<p>Suppose you had a data file consisting of rows and columns of numbers:
+<pre>
+	1	2	34
+	5	6	78
+	9	10	112
+</pre>
+Suppose you wanted to read these numbers into an array.
+(Actually, the array will be an array of arrays,
+or a ``multidimensional'' array;
+see section
+
+4.1.2.)
+We can write code to do this by putting together several pieces:
+the <TT>fgetline</TT> function we just showed,
+and the <TT>getwords</TT> function from
+
+chapter 10.
+Assuming that the data file is named <TT>input.dat</TT>,
+the code would look like this:
+<pre>
+#define MAXLINE 100
+#define MAXROWS 10
+#define MAXCOLS 10
+
+int array[MAXROWS][MAXCOLS];
+char *filename = "input.dat";
+FILE *ifp;
+char line[MAXLINE];
+char *words[MAXCOLS];
+int nrows = 0;
+int n;
+int i;
+
+ifp = fopen(filename, "r");
+if(ifp == NULL)
+	{
+	fprintf(stderr, "can't open %s\n", filename);
+	exit(EXIT_FAILURE);
+	}
+
+while(fgetline(ifp, line, MAXLINE) != EOF)
+	{
+	if(nrows &gt;= MAXROWS)
+		{
+		fprintf(stderr, "too many rows\n");
+		exit(EXIT_FAILURE);
+		}
+
+	n = getwords(line, words, MAXCOLS);
+
+	for(i = 0; i &lt; n; i++)
+		array[nrows][i] = atoi(words[i]);
+	nrows++;
+	}
+</pre>
+Each trip through the loop reads one line from the file,
+using <TT>fgetline</TT>.
+Each line is broken up into ``words'' using <TT>getwords</TT>;
+each ``word'' is actually one number.
+The numbers are however still represented as strings,
+so each one is converted to an <TT>int</TT> by calling <TT>atoi</TT>
+before being stored in the array.
+The code checks for two different error conditions
+(failure to open the input file,
+and too many lines in the input file)
+and if one of these conditions occurs,
+it prints an error message, and exits.
+The <TT>exit</TT> function is a Standard library function
+which terminates your program.
+It is declared in <TT>&lt;stdlib.h&gt;</TT>,
+and accepts one argument,
+which will be the <dfn>exit status</dfn> of the program.
+<TT>EXIT_FAILURE</TT> is a code,
+also defined by
+<TT>&lt;stdlib.h&gt;</TT>,
+which indicates that the program failed.
+Success is indicated by a code of <TT>EXIT_SUCCESS</TT>, or simply 0.
+(These values can also be returned from <TT>main()</TT>;
+calling <TT>exit</TT> with a particular status value
+is
+essentially equivalent
+to returning that same status value from <TT>main</TT>.)
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx12d.html" rev=precedes>prev</a>
+<a href="sx13.html" rel=precedes>next</a>
+<a href="sx12.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-1997
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

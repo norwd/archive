@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>18.2.3: Default Type Promotions and Conversions</title>
+<link href="sx4bb.html" rev=precedes>
+<link href="sx4db.html" rel=precedes>
+<link href="sx4b.html" rev=subdocument>
+</head>
+<body>
+<H3>18.2.3: Default Type Promotions and Conversions</H3>
+
+<p>[This section corresponds to the first half of K&amp;R Sec. 2.7]
+</p><p>
+In many cases,
+C performs type conversions automatically when values of
+differing types participate in expressions.
+For most programming,
+you don't have to memorize these rules exactly,
+but it's a good idea to have a general understanding of how they work,
+so that you won't be surprised by any of the default conversions,
+and so that you'll know to use explicit conversions
+(as described in the previous section)
+in those few cases where C would not perform
+a needed conversion automatically.
+</p><p>The default conversion rules serve two purposes.
+One is purely selfish on the compiler's part:
+it does not want to have to know how to generate code to add,
+say, a floating-point number to an integer.
+The compiler would much prefer if all operations operated on two
+values of the same type:
+two integers, two floating-point numbers, etc.
+(Indeed, few processors have an instruction for adding a
+floating-point number to an integer;
+most have instructions for adding two integers, or two
+floating-point numbers.)
+The other purpose for the default conversions is the
+programmer's convenience:
+the mentality that ``the computer and the compiler are
+stupid, we programmers must specify everything in excruciating
+detail'' can be carried too far, and it's reasonable to
+define the language such that
+certain conversions are performed
+implicitly and automatically
+by the compiler,
+when it's unambiguous and safe to do so.
+</p><p>The rules, then
+(which you can also find on page 44 of K&amp;R2,
+or in section 6.2.1 of the newer ANSI/ISO C Standard)
+are approximately as follows:
+<OL><li>First, in most circumstances,
+values of type <TT>char</TT> and <TT>short int</TT>
+are converted to <TT>int</TT>
+right off the bat.
+<li>If an operation involves two operands,
+and one of them is of type <TT>long double</TT>,
+the other one is converted to <TT>long double</TT>.
+<li>If an operation involves two operands,
+and one of them is of type <TT>double</TT>,
+the other one is converted to <TT>double</TT>.
+<li>If an operation involves two operands,
+and one of them is of type <TT>float</TT>,
+the other one is converted to <TT>float</TT>.
+<li>If an operation involves two operands,
+and one of them is of type <TT>long int</TT>,
+the other one is converted to <TT>long int</TT>.
+<li>If an operation involves both signed and unsigned integers,
+the situation is a bit more complicated.
+If the unsigned operand is smaller
+(perhaps we're operating on
+<TT>unsigned int</TT> and <TT>long int</TT>),
+such that the larger, signed type could represent all values of
+the smaller, unsigned type,
+then the unsigned value is converted to the larger, signed type,
+and the result has the larger, signed type.
+Otherwise
+(that is, if the
+signed type can <em>not</em> represent
+all values of the unsigned type),
+both values are converted to
+a common
+
+unsigned
+type,
+and the result has that
+unsigned type.
+<li>Finally, when a value is assigned to a variable using the
+assignment operator,
+it is automatically converted to the type of the variable if
+(a) both the value and the variable have arithmetic type
+(that is, integer or floating point), or
+(b) both the value and the variable are pointers,
+and one or the other of them is of type <TT>void *</TT>.
+</OL>(This is <em>not</em> a precise statement of these rules.
+If you need to understand a complicated type conversion situation perfectly,
+you may have to consult a more definitive reference.
+In particular,
+the first five of
+these rules are usually described as being applied in order,
+in the order 2, 3, 4, 1, 5.
+Rule 6 is especially complicated,
+and although it is intended to prevent surprises,
+it still manages to introduce some.)
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx4bb.html" rev=precedes>prev</a>
+<a href="sx4db.html" rel=precedes>next</a>
+<a href="sx4b.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1996-1999
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-03 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

@@ -1,0 +1,275 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>25.2 Writing a ``varargs'' Function</title>
+<link href="sx11a.html" rev=precedes>
+<link href="sx11c.html" rel=precedes>
+<link href="sx11.html" rev=subdocument>
+</head>
+<body>
+<H2>25.2 Writing a ``varargs'' Function</H2>
+
+<p>In ANSI C, the head of a varargs function looks just like its prototype.
+We will illustrate by writing our own,
+stripped-down version of <TT>printf</TT>.
+The bare outline of the function definition will look like this:
+<pre>
+	void myprintf(const char *fmt, ...)
+	{
+	}
+</pre>
+<TT>printf</TT>'s job, of course,
+is
+
+to print its format string
+while
+looking for <TT>%</TT> characters and treating them specially.
+So the main loop of <TT>printf</TT> will look like this:
+<pre>
+	#include &lt;stdio.h&gt;
+
+	void myprintf(const char *fmt, ...)
+	{
+	const char *p;
+
+	for(p = fmt; *p != '\0'; p++)
+		{
+		if(*p != '%')
+			putchar(*p);
+		else	{
+			<I>handle it specially</I>
+			}
+		}
+	}
+</pre>
+In this stripped-down version,
+we won't worry about width and precision specifiers and other modifiers;
+we'll always look at the very next character after the <TT>%</TT>
+and assume that it's the primary format character.
+Continuing to flesh out our outline, we get this:
+<pre>
+	#include &lt;stdio.h&gt;
+
+	void myprintf(const char *fmt, ...)
+	{
+	const char *p;
+
+	for(p = fmt; *p != '\0'; p++)
+		{
+		if(*p != '%')
+			{
+			putchar(*p);
+			continue;
+			}
+
+		switch(*++p)
+			{
+			case 'c':
+				<I>fetch and print a character</I>
+				break;
+
+			case 'd':
+				<I>fetch and print an integer</I>
+				break;
+
+			case 's':
+				<I>fetch and print a string</I>
+				break;
+
+			case 'x':
+				<I>print an integer, in hexadecimal</I>
+				break;
+
+			case '%':
+				<I>print a single %</I>
+				break;
+			}
+		}
+	}
+</pre>
+(For clarity, we've rearranged
+the former <TT>if</TT>/<TT>else</TT> statement slightly.
+If the character we're looking at is not <TT>%</TT>,
+we print it out and continue immediately
+with the next iteration of the <TT>for</TT> loop.
+This is a good example of the use of the <TT>continue</TT> statement.
+Everything else in the body of the loop then
+takes care of the case where we <em>are</em> looking at a <TT>%</TT>.)
+</p><p>Printing these various argument types out will be relatively straightforward.
+The $64,000 question, of course, is how to fetch the actual arguments.
+The answer involves some specialized macros defined for us
+by the standard header <TT>&lt;stdarg.h&gt;</TT>.
+The macros we will use are
+<TT>va_list</TT>,
+<TT>va_start()</TT>,
+<TT>va_arg()</TT>,
+and
+<TT>va_end()</TT>.
+<TT>va_list</TT> is a special ``pointer'' type
+which allows us to manipulate a variable-length argument list.
+<TT>va_start()</TT> begins the processing of an argument list,
+<TT>va_arg()</TT> fetches arguments from it, and
+<TT>va_end()</TT> finishes processing.
+(Therefore, <TT>va_list</TT> is a little bit like
+the stdio <TT>FILE *</TT> type,
+and <TT>va_start</TT> is a bit like <TT>fopen</TT>.)
+</p><p>Here is the final version of our <TT>myprintf</TT> function,
+illustrating the fetching, formatting, and printing
+of the various argument types.
+(For simplicity--of presentation, if nothing else--the
+formatting step is deferred to
+a version of
+the nonstandard but popular <TT>itoa</TT> function.)
+
+<pre>
+#include &lt;stdio.h&gt;
+#include &lt;stdarg.h&gt;
+
+extern char *itoa(int, char *, int);
+
+void myprintf(const char *fmt, ...)
+{
+const char *p;
+va_list argp;
+int i;
+char *s;
+char fmtbuf[256];
+
+va_start(argp, fmt);
+
+for(p = fmt; *p != '\0'; p++)
+	{
+	if(*p != '%')
+		{
+		putchar(*p);
+		continue;
+		}
+
+	switch(*++p)
+		{
+		case 'c':
+			i = va_arg(argp, int);
+			putchar(i);
+			break;
+
+		case 'd':
+			i = va_arg(argp, int);
+			s = itoa(i, fmtbuf, 10);
+			fputs(s, stdout);
+			break;
+
+		case 's':
+			s = va_arg(argp, char *);
+			fputs(s, stdout);
+			break;
+
+		case 'x':
+			i = va_arg(argp, int);
+			s = itoa(i, fmtbuf, 16);
+			fputs(s, stdout);
+			break;
+
+		case '%':
+			putchar('%');
+			break;
+		}
+	}
+
+va_end(argp);
+}
+</pre>
+</p><p>Looking at the new lines, we have:
+<pre>
+	#include &lt;stdarg.h&gt;
+</pre>
+This header file is required in any file
+which uses the variable argument list (<TT>va_</TT>) macros.
+<pre>
+	va_list argp;
+</pre>
+This line declares a variable, <TT>argp</TT>,
+which we use while manipulating the variable-length argument list.
+The type of the variable is <TT>va_list</TT>,
+a special type defined for us by <TT>&lt;stdarg.h&gt;</TT>.
+<pre>
+	va_start(argp, fmt);
+</pre>
+This line initializes <TT>argp</TT>
+and initiates the processing of the argument list.
+The second argument to <TT>va_start()</TT> is simply
+the name of the
+function's
+last fixed argument.
+<TT>va_start()</TT> uses this
+
+to figure out
+where the variable arguments begin.
+<pre>
+	i = va_arg(argp, int);
+</pre>
+And here's the heart of the matter.
+<TT>va_arg()</TT> fetches the next argument from the argument list.
+The second argument to <TT>va_arg()</TT> is
+the <em>type</em> of the argument we expect.
+Notice carefully that <em>we</em> must supply this argument,
+which implies that <em>we</em> must somehow know
+what type of argument to expect next.
+The variable-length argument list machinery does <em>not</em> know.
+In this case, we know what the type of the next argument
+should be
+because it's
+supposed to match
+the format character we're processing.
+We can see,
+then,
+why such havoc results
+when <TT>printf</TT>'s arguments
+do not match its format string:
+<TT>printf</TT> tells the <TT>va_arg</TT> machinery
+to grab an argument of one type,
+with the type determined by one of the format specifiers,
+but since the <TT>va_arg</TT> machinery doesn't know
+what the actual argument type is,
+there's no way for it to do any automatic conversion.
+If the actual argument
+has the right type for the <TT>va_arg</TT> call which grabs it
+(as
+of course
+it's supposed to),
+it works,
+otherwise it doesn't.
+</p><p>(You may have noticed that we fetched the character
+to print for <TT>%c</TT>
+as an <TT>int</TT>, not a <TT>char</TT>.
+That's deliberate, and is explained in the next section.)
+<pre>
+	s = va_arg(argp, char *);
+</pre>
+Here's another invocation of <TT>va_arg()</TT>,
+this time fetching a string, represented as a character pointer,
+or <TT>char *</TT>.
+<pre>
+	va_end(argp);
+</pre>
+Finally, when we're all finished processing the argument list,
+we call <TT>va_end()</TT>, which performs any necessary cleanup.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx11a.html" rev=precedes>prev</a>
+<a href="sx11c.html" rel=precedes>next</a>
+<a href="sx11.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1996-1999
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

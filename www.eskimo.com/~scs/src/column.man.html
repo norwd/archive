@@ -1,0 +1,643 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>COLUMN(1)</title>
+</head>
+<body>
+<H1>COLUMN(1)</H1>
+<!-- Copyright 1987-2021 -->
+<!-- Steve Summit, scs@eskimo.com -->
+<!-- This program and its documentation may be freely redistributed -->
+<!-- and altered and used at will, as long as this notice remains attached -->
+<!-- and as long as any modifications are marked as such. -->
+<!-- See http://www.eskimo.com/~scs/src/#column for possible updates. -->
+<H2>NAME</H2>
+
+column - extract columns from file or stream
+<H2>SYNOPSIS</H2>
+
+<B>column</B>
+[
+options
+]
+columns
+[ files ]
+<H2>DESCRIPTION</H2>
+
+<p><B>column</B>
+extracts columns from standard input or named files.
+By default, input columns are separated by whitespace,
+but it is also possible to specify columns
+by character counts,
+or by specific punctuation delimiters.
+</p><p>As a simple example,
+the invocation
+<pre>
+	column 1 3 5 inputfile
+</pre>
+would print columns 1, 3, and 5 of the file named
+<I>inputfile</I>.
+(In other words,
+it would do the same thing as the simple
+<a href="../cgi-bin/manredir.cgi?name=awk&amp;sec=1"><B>awk(1)</B></a>
+script
+<pre>
+	awk '{print $1, $3, $5}' inputfile
+</pre>
+.)
+</p><p>If no filenames are given,
+<B>column</B> reads from standard input.
+Also, a filename of ``-'' indicates standard input.
+</p><p>Because multiple column numbers are entered as separate arguments,
+there is an ambiguity
+if an input filename has a name which looks like a number.
+To resolve the ambiguity, use an alternative pathname for the file
+which does not begin with a digit.
+The simplest way to do so is to precede a numeric filename with ``./''.
+</p><p><B>column</B> can work with several definitions
+of what a ``column'' is.
+Input columns separated by whitespace or other delimiter characters
+are referred to as ``floating'' columns.
+Input columns specified by character counts
+are referred to as ``fixed'' columns.
+Furthermore,
+floating columns can be delimited in two different ways.
+Sometimes, particularly when columns are delimited by whitespace,
+multiple adjacent instances of the delimiter character(s)
+should count for just one column separation.
+Other times,
+when columns are delimited by punctuation characters
+such as commas, colons, or vertical bars, 
+multiple adjacent instances of the delimiter character
+should imply the presence of one or more empty columns.
+(<B>column</B> can handle both of these situations.)
+</p><p><B>column</B>
+uses dynamically-allocated memory for input lines and column descriptors,
+and can therefore be used on input lines with thousands of
+characters and hundreds of columns
+(or more).
+</p><H2>OPTIONS</H2>
+
+<dl>
+<dt><B>-a</B> <I>chrs</I>
+</dt><dd>Specify delimiter characters which separate floating input columns.
+Any number of these characters may appear between columns,
+that is, multiple of these characters do not indicate multiple columns.
+By default,
+<B>column</B>'s
+behavior is as if the
+<B>-a</B>
+option had been used to select space and tab as column separator characters.
+</dd><dt><B>-c</B> <I>chr</I>
+</dt><dd>Set input file comment character.
+Lines beginning with the comment character are passed through verbatim;
+column extraction on those lines is not performed.
+</dd><dt><B>-e</B> <I>chrs</I>
+</dt><dd>Specify a delimiter character which separates floating input columns exactly.
+One instance of this character appears between each pair of columns,
+that is, adjacent delimiter characters indicate an empty column.
+The
+<B>-e</B>
+option is useful when working with files containing values
+separated by commas, colons, vertical bars, etc.
+</dd><dt><B>-fi</B> <I>m</I>-<I>n</I>
+</dt><dd>Define a fixed input column running from character positions
+<I>m</I>
+to
+<I>n</I>.
+(Note that
+<B>-fi</B>
+merely defines an input column;
+it does not select it for printing.)
+</dd><dt><B>-fmt</B> <I>fmtstr</I>
+</dt><dd>Specify an output format
+<I>fmtstr</I>
+in which the notations
+<I>$1</I>,
+<I>$2</I>,
+<I>$3</I>
+(etc.)
+are interpolated as columns 1, 2, 3, and so on.
+(See further description under OUTPUT COLUMN SPECIFICATION below.)
+</dd><dt><B>-m</B>
+</dt><dd>Permit multiple interspersed files and columns:
+additional column selectors
+following the first input filename on the command line
+request a different set of columns
+to be selected from an upcoming filename.
+(See examples below.)
+</dd><dt><B>-n</B> <I>name</I>
+</dt><dd>Select column by name
+(where input column names are described by the first line in the file).
+</dd><dt><B>-N</B>
+</dt><dd>Select many columns by name--<em>all</em>
+names on the command line are treated as column names,
+as if requested with <B>-n</B>.
+The input must therefore appear on the standard input.
+(No files will be opened,
+since no filenames can be specified.)
+</dd><dt><B>-p</B>
+</dt><dd>Preserve input column separators:
+each output column is followed by
+(and therefore separated from the next output column by)
+whatever set of delimiter characters
+followed it in the input.
+(By default,
+output columns are separated by tabs.)
+</dd><dt><B>-q</B>
+</dt><dd>Look for quotes around floating input columns,
+and do not recognize whitespace or other delimiters between quotes.
+</dd><dt><B>-qo</B>
+</dt><dd>Put quotes around output columns
+if necessary to protect column contents
+which might otherwise be interpreted as delimiters.
+</dd><dt><B>-v</B>
+</dt><dd>In<B>v</B>ert;
+print all columns
+except
+those explicitly selected.
+</dd><dt><B>-?</B>,<B>-h</B>
+</dt><dd>Print a brief help message.
+</dd></dl>
+<H2>INPUT COLUMN SPECIFICATION</H2>
+
+<p>By default, input columns are floating and are separated by whitespace,
+that is,
+by one or more spaces or tabs.
+In general,
+floating input columns are defined by two kinds of delimiters:
+``exact'' delimiters and ``any'' delimiters.
+Multiple adjacent instances of an ``exact'' delimiter
+indicate multiple (empty) columns,
+while
+multiple adjacent instances of the ``any'' delimiters
+indicate a single column division.
+The default, whitespace-separating behavior is therefore achieved
+by using an ``any'' delimiter
+set consisting of the space and tab characters, and an ``exact'' delimiter
+set which is empty.
+To select a specific ``exact'' character
+(or characters),
+use
+<B>-e</B>.
+To select
+a different set of
+``any'' characters,
+use
+<B>-a</B>.
+</p><p>Any leading instances of the ``any'' characters
+on an input line
+are ignored;
+they do not indicate the presence of an initial empty column.
+In fact,
+there are never any empty columns
+when only ``any'' characters are used;
+the only way to achieve empty floating columns
+is by using leading, trailing, or adjacent ``exact'' characters.
+</p><p>``Exact'' and ``any'' characters may be used simultaneously:
+for example, using
+<B>-e</B>
+to select a comma as the ``exact'' column separator,
+while leaving the ``any'' delimiter set as the default whitespace,
+would mean that whitespace at the beginning or end of a
+comma-separated column would be stripped, and would not appear in
+the column contents.
+(Stated another way,
+though comma is the ``real'' column separator,
+whitespace surrounding commas is not significant
+and is not taken to be part of either column.
+Stated yet another way,
+input columns would be assumed to be
+separated by exactly one comma, and zero or more spaces or tabs.)
+To disable the default ``any'' delimiter characters
+(that is, to arrange that all input whitespace does appear
+explicitly in
+input columns),
+use
+<B>-a</B>
+with an empty argument:
+<pre>
+	-a ''
+</pre>
+</p><p>It is also possible to specify,
+with the
+<B>-q</B>
+option,
+that the input consists of floating columns
+where some column data may contain whitespace or delimiter characters,
+protected by quotes.
+(See the examples below.)
+</p><p>Fixed input columns are defined using the
+<B>-fi</B>
+option.
+One
+<B>-fi</B>
+option describes one input column;
+in general, many
+<B>-fi</B>
+options will be used to describe the complete input format.
+The
+<B>-fi</B>
+options do not select input columns for printing;
+they only describe the input columns.
+The columns to be selected and printed must be requested using
+numeric arguments, just as for floating columns.
+</p><H2>COLUMN SELECTION</H2>
+
+<p>When selecting output columns,
+several notations may be used.
+The most basic output column selectors are individual numeric arguments,
+as in
+<pre>
+	column 1 3 5 file
+</pre>
+Column numbers can also be separated by commas:
+<pre>
+	column 1,3,5 file
+</pre>
+The notation <I>m</I><B>-</B><I>n</I> specifies a range of columns:
+<pre>
+	column 2-4 file
+</pre>
+These notations may be combined reasonably arbitrarily:
+<pre>
+	column 1,3 5-7 9,11-13 file
+Columns can also be counted from the right edge
+(that is, from the end of the line).
+The dollar sign <B>$</B> is a marker indicating the last column,
+and the notation <B>$-</B><I>n</I> indicates columns counted from the right.
+So
+<B>$</B>
+indicates the last column,
+<B>$-1</B>
+indicates the next-to-last column,
+<B>$-2</B>
+indicates the third-to-last column,
+etc.
+</pre>
+</p><p>Right-based columns are counted on a line-by-line basis, so the
+invocation
+<pre>
+	column $-1 $
+</pre>
+on a file containing the lines
+<pre>
+	a b c
+	d e f g
+	h i
+</pre>
+would result in the output
+<pre>
+	b c
+	f g
+	h i
+</pre>
+</p><p>Rather than specifying columns by number,
+it is possible to specify them by name,
+<em>if</em>
+the input file is self-describing
+by having as its first line
+a header denoting
+the column names.
+The
+<B>-n</B>
+option selects an output column by name;
+multiple
+<B>-n</B>
+options are used to select multiple columns.
+For example, given the input file
+<pre>
+	a b c d
+	1 2 3 4
+	5 6 7 8
+	9 10 11 12
+</pre>
+the invocation
+<pre>
+	column -n b -n d
+</pre>
+would select
+<pre>
+	b d
+	2 4
+	6 8
+	10 12
+</pre>
+</p><p>When the first line is being used as a header,
+its columns are determined using the same rules
+as for the remaining ``data'' lines.
+The header line is processed--columns selected from it and
+printed--just as for the remaining ``data'' lines,
+so the first line ends up being a self-describing header for the output,
+as shown in the example above.
+</p><p>When columns are requested by name using <B>-n</B>,
+and when simultaneously
+a comment character is requested using <B>-c</B>,
+the first line is taken as the column definition line
+even if it is commented.
+(Furthermore, if the first, column-definition line is commented,
+any whitespace between the comment character and the first column
+name is ignored.
+That is,
+if the comment character is
+<TT>#</TT>,
+the first lines
+``<TT>a&nbsp;b&nbsp;c</TT>'',
+``<TT>#a&nbsp;b&nbsp;c</TT>'',
+and
+``<TT>#&nbsp;a&nbsp;b&nbsp;c</TT>''
+would all be treated identically,
+and would describe a file with three columns named
+``a'', ``b'', and ``c''.)
+</p><p>For convenience when requesting many columns by name,
+the <B>-N</B> option requests that
+all names appearing on the command line be treated as column names
+(as if with <B>-n</B>),
+at the cost of constraining the input to be read from the standard input,
+rather than a named file.
+</p><H2>OUTPUT COLUMN SPECIFICATION</H2>
+
+It is possible to control the way columns,
+once selected, are printed.
+By default, they are simply separated by tab characters.
+The
+<B>-p</B>
+option requests that they be separated by whatever delimiters
+separated them in the input.
+The
+<B>-qo</B>
+option requests that output columns be quoted,
+if necessary, to prevent delimiter characters in the column data
+being output from being interpreted as column delimiters.
+(That is,
+<B>-qo</B>
+prepares
+<B>column</B>'s
+output to be parsed by some other program which understands quoted columns.)
+<p>It is possible to define output columns which should
+appear at fixed character positions,
+or which are delimited by specific strings.
+These output column specifications are made by appending additional
+information to the selectors which request the columns.
+For any number
+<I>m</I>
+on the invocation command line which requests that column
+<I>m</I> be
+selected and printed, the following notations may be used:
+<dl>
+<dt><I>m</I><B>:</B><I>n</I>
+</dt><dd>the output column should begin at character position
+<I>n</I>.
+</dd><dt><I>m</I><B>:,</B><I>n</I>
+</dt><dd>the output column should end at character position
+<I>n</I>
+(i.e. right justified).
+</dd><dt><I>m</I><B>:</B><I>n1</I><B>,</B><I>n2</I>
+</dt><dd>the output column should begin at character position
+<I>n1</I>
+and end at character position
+<I>n2</I>
+(with the column data being truncated if it's too big to fit).
+</dd><dt><I>m</I><B>:</B><I>str</I>
+</dt><dd>The output column should be prefixed with
+<I>str</I>.
+</dd><dt><I>m</I><B>:</B><I>str1</I><B>,</B><I>str2</I>
+</dt><dd>The output column should be prefixed with
+<I>str1</I>
+and suffixed with
+<I>str2</I>.
+</dd><dt><I>m</I><B>:,</B><I>str</I>
+</dt><dd>The output column should be suffixed with
+<I>str</I>.
+</dd></dl>
+</p><p>To describe a number of similar output columns,
+the above notations may be combined with the <I>m</I>-<I>n</I> column
+selection notation.
+Furthermore,
+it is also possible to specify a group of disjoint output
+columns,
+separated by commas,
+to which a single output column description notation is attached.
+See the examples below.
+</p><p>Finally, it is possible to generate arbitrarily-formatted output lines,
+using the <B>-fmt</B>&nbsp;<I>fmtstr</I> option.
+This option dispenses with all the other output column specification mechanisms
+(and, for that matter, it provides its own input column selection mechanism as well).
+The <I>fmtstr</I> is a skeleton template describing each output line,
+and in which the notation <B>$</B><I>n</I> is replaced by the contents of column <I>n</I>.
+See the example below.
+</p><H2>EXAMPLES</H2>
+
+<p>Select columns 1, 3, and 5,
+with columns separated by arbitrary whitespace:
+<pre>
+	column 1 3 5
+</pre>
+</p><p>Select columns 1, 3, and 5,
+with input columns separated by commas and optional whitespace:
+<pre>
+	column -e , 1 3 5
+</pre>
+</p><p>Select columns 1, 3, and 5,
+with input columns separated by commas and optional whitespace,
+but with quotes protecting whitespace or commas which should
+appear in the columns themselves:
+<pre>
+	column -q -e , 1 3 5
+</pre>
+(This is essentially ``CSV'' format.)
+</p><p>Select columns 1, 3, and 5,
+with input columns separated by commas and optional whitespace,
+with quotes protecting whitespace or commas which should
+appear in the columns themselves,
+and with the output columns protected by quotes if necessary:
+<pre>
+	column -q -qo -e , 1 3 5
+</pre>
+</p><p>Select columns 1, 3, and 5,
+with input columns separated by colons and without stripping any whitespace:
+<pre>
+	column -e : -a '' 1 3 5
+</pre>
+(This would be useful for parsing UNIX passwd files
+or related files.)
+</p><p>Select columns 1, 3, and 5,
+with input columns separated by tabs and without stripping any whitespace:
+<pre>
+	column -e '	' -a '' 1 3 5
+</pre>
+(The character between the single quotes following the 
+<B>-e</B>
+option is a single tab.
+This is essentially ``TDF'' format.)
+</p><p>Define input columns
+running from character positions 1-5, 6-10, 11-20, and 21-50,
+and print the second and fourth columns:
+<pre>
+	column -fi 1-5 -fi 6-10 -fi 11-20 -fi 21-50 2 4
+</pre>
+</p><p>Print the first and last columns:
+<pre>
+	column 1 $
+</pre>
+</p><p>Print the first two and last two columns:
+<pre>
+	column 1 2 '$-1' $
+</pre>
+</p><p>Print columns 1, 5, and 10 through 20:
+<pre>
+	column 1 5 10-20
+</pre>
+</p><p>Print all but columns 1, 5, and 10 through 20:
+<pre>
+	column -v 1 5 10-20
+</pre>
+</p><p>Print columns 1 and 3 (whitespace delimited) from file <I>a</I>,
+followed by 2 and 4 from file <I>b</I>:
+<pre>
+	column -m 1 3 a 2 4 b
+</pre>
+</p><p>Print columns 1 and 3 from file <I>a</I>,
+with column 2 from file <I>b</I> interspersed
+(that is,
+print column 1 from file <I>a</I>,
+followed by column 2 from file <I>b</I>,
+followed by column 3 from file <I>a</I> again):
+<pre>
+	column -m 1 a 2 b 3 a
+</pre>
+</p><p>Print columns 1 and 3 from standard input,
+with column 2 from file <I>b</I> interspersed:
+<pre>
+	column -m 1 - 2 b 3 -
+</pre>
+</p><p>Select column 1 and print it beginning at output position 1,
+and column 3 beginning at output position 10:
+<pre>
+	column 1:1 3:10
+</pre>
+</p><p>Select input columns 1 and 3, printing them in output columns
+in positions 1-9 and 11-20:
+<pre>
+	column 1:1,9 3:11,20
+</pre>
+</p><p>Select input columns 1 and 2, suffixing the first output column
+with a comma and a space and the second one with a period:
+<pre>
+	column '1:,, ' 2:,.
+</pre>
+</p><p>Select input columns 1 and 2,
+enclosing the first output column in parentheses
+(that is, prefixing it with '(' and suffixing it with ')')
+and enclosing the second one in square braces:
+<pre>
+	column '1:(,)' '2:[,]'
+</pre>
+</p><p>Select input columns 1, 3, 5, 7, and 9, suffixing all but the last
+with a comma and a space:
+<pre>
+	column '1,3,5,7:,, ' 9
+</pre>
+</p><p>Select columns named ``a'' and ``b'',
+under the assumption that
+the first line in the file is a header containing the column names:
+<pre>
+	column -n a -n b
+</pre>
+</p><p>Select columns named ``a'', ``b'' and ``c'',
+a bit more conveniently,
+but with the additional proviso that the input must appear on stdin:
+<pre>
+	column -N a b c
+</pre>
+</p><p>Print a bunch of lines like ``Now is the time for all good
+men to come to the aid of their party'', with key words
+taken from the input (i.e. <I>Mad Libs</I> style):
+<pre>
+	column -fmt 'Now is the time for all $1 $2 to come to the aid of their $3.'
+</pre>
+With the input
+<pre>
+	good	men	party
+	little	babies	playpen
+	true	hackers	codebase
+	tall	giraffes	savannah
+</pre>
+this would print
+<pre>
+	Now is the time for all good men to come to the aid of their party.
+	Now is the time for all little babies to come to the aid of their playpen.
+	Now is the time for all true hackers to come to the aid of their codebase.
+	Now is the time for all tall giraffes to come to the aid of their savannah.
+</pre>
+(Note that single quotes around the <I>fmt</I> are
+typically required in this situation, to protect the <B>$</B>'s in
+<I>fmt</I> from interpretation by the shell.)
+</p><H2>BUGS</H2>
+
+<p>Under
+<B>-m</B>,
+any
+<B>-e</B>,
+<B>-a</B>,
+and
+<B>-fi</B>
+flags apply across all input files;
+there's no way to provide different column specification
+for different input files.
+</p><p>The fixed input column specification mechanism
+<B>-fi</B>&nbsp;<I>m</I>-<I>n</I>,
+the fixed output column specification mechanism 
+<I>m</I><B>:</B><I>n1</I><B>,</B><I>n2</I>,
+and the output prefix/suffix mechanism
+<I>m</I><B>:</B><I>str1</I><B>,</B><I>str2</I>
+are all pretty dreadfully cumbersome to use
+and don't really carry their own weight.
+(To be honest,
+I put these features in out of a misguided sense of completeness,
+and I hardly ever use them myself.
+For formatted output,
+<B>-fmt</B>&nbsp;<I>fmtstr</I> is much more convenient.)
+</p><p>There is no way to have a comma as an output column prefix.
+There is no way to have output column prefix or suffix strings
+which are numeric.
+</p><p>The input quoting mechanism
+(<I>-q</I>)
+works properly only for simple quotes
+strictly surrounding the column data;
+it does not handle internal quotes
+(e.g. doubled, as in CSV files)
+or shell-style partial quoting and implicit concatenation
+(e.g. something like <TT>"a&nbsp;b"c</TT>).
+</p><p>The <I>m</I>-<I>n</I> column-selection notation
+does not work
+if either <I>m</I> or <I>n</I> involves a <B>$</B>.
+</p><H2>SEE ALSO</H2>
+
+<a href="../cgi-bin/manredir.cgi?name=cut&amp;sec=1"><B>cut(1)</B></a>,
+<a href="../cgi-bin/manredir.cgi?name=paste&amp;sec=1"><B>paste(1)</B></a>,
+<a href="../cgi-bin/manredir.cgi?name=awk&amp;sec=1"><B>awk(1)</B></a>,
+<a href="line.man.html"><B>line</B></a>
+<H2>HISTORY</H2>
+
+<p>I wrote this program because
+(a) I didn't have access to <a href="../cgi-bin/manredir.cgi?name=awk&amp;sec=1"><B>awk(1)</B></a> at the time
+(I was stranded in a godforsaken MS-DOS environment),
+and
+(b) I was working with files with lines hundreds of columns and
+thousands of characters long, so avoiding built-in limits was a must.
+</p><p>This documentation corresponds to version 2.6 of the program.<br>
+See
+<a href="index.html#column"><TT>http://www.eskimo.com/~scs/src/#column</TT></a>
+for possible updates.
+</p><H2>AUTHOR</H2>
+
+<p><a href="../index.html">Steve Summit</a>,
+<TT>scs@eskimo.com</TT>
+</p><hr>
+<hr>
+<p>
+</p>
+</body>
+</html>

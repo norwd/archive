@@ -1,0 +1,426 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>section 5.1: Pointers and Addresses</title>
+<link href="sx8.html" rev=precedes>
+<link href="sx8b.html" rel=precedes>
+<link href="sx8.html" rev=subdocument>
+</head>
+<body>
+<H2>section 5.1: Pointers and Addresses</H2>
+
+<p>If you like to use concrete examples
+and to think about exactly what's going on at the machine level,
+you'll want to know how many bytes are occupied by
+<TT>short</TT>s, <TT>long</TT>s, pointers, etc.
+It's equally possible, though,
+to understand pointers at a more abstract level,
+thinking about them only in terms of boxes and arrows,
+as in the figures on pages 96, 98, 104, 107, and 114-5.
+(Not worrying about the exact size in bytes basically means not 
+worrying about how big the boxes are.)
+The figure at the bottom of page 93
+is probably the least pretty pointer picture in the whole book;
+don't worry if it doesn't mean much to you.
+</p><p>When we say that a pointer holds an ``address,''
+and that unary <TT>&amp;</TT> is the ``address of'' operator,
+our language is of course influenced by the fact that the 
+underlying hardware assigns addresses to memory locations,
+but again,
+it is not necessary
+(nor necessarily desirable)
+to think about actual machine addresses when working with pointers.
+Thinking about the machine addresses
+can make certain aspects of pointers easier to understand,
+but doing so can also make certain mistakes and misunderstandings easier.
+In particular,
+
+a pointer in C is more than just an address;
+as we'll see on the next page,
+a pointer also carries the notion of what <em>type</em> of data it points to.
+</p><p>page 94
+</p><p>The presentation on this page is going to seem very artificial at first.
+At best, you're going to say,
+``This makes sense, but what's it <em>for</em>?''
+In fact,
+it <em>is</em> artificial,
+and no real program would ever do meaningless little pointer operations
+such as are embodied in the example on this page.
+However,
+this is the traditional way to introduce pointers from scratch,
+and once we've moved past it,
+we'll be able to talk about some more meaningful uses of pointers,
+and to forget about these artificial ones.
+(Once we're done talking about
+the traditional, artificial introduction on page 94,
+we'll also attempt a slightly more elaborate,
+slightly less traditional,
+slightly more meaningful
+parallel introduction,
+so stay tuned.)
+</p><p>Deep sentence:
+<blockquote>The declaration of the pointer <TT>ip</TT>,
+<pre>	int *ip;
+</pre>is intended as a mnemonic;
+it says that the expression <TT>*ip</TT> is an <TT>int</TT>.
+</blockquote>We'll have more to say about this sentence in a bit.
+</p><p>As an even more traditional,
+even less meaningful,
+even simpler example,
+we could say
+<pre>	int i = 1;		/* an integer */
+	int *ip;		/* a pointer-to-int */
+	ip = &amp;i;		/* ip points to i */
+	printf("%d\n", *ip);	/* prints i, which is 1 */
+	*ip = 5;		/* sets i to 5 */
+</pre>(The obvious questions are,
+``if you want to print <TT>i</TT>,
+or set it to 5,
+why not just <em>do</em> it?
+Why mess around with this `pointer' thing?''
+More on that in a minute.)
+</p><p>The unary <TT>&amp;</TT> and <TT>*</TT> operators are complementary.
+Given an object (i.e. a variable),
+<TT>&amp;</TT> generates a pointer to it;
+given a pointer, <TT>*</TT> ``returns'' the value of the pointed-to object.
+``Returns'' is in quotes because,
+as you may have noticed in the examples,
+you're not restricted to fetching values via pointers:
+you can also store values via pointers.
+In an assignment like
+<pre>	*ip = 0;
+</pre>the subexpression <TT>*ip</TT> is conceptually
+``replaced'' by the object which <TT>ip</TT> points to,
+and since <TT>*ip</TT> appears on the left-hand side of the 
+assignment operator,
+what happens to the pointed-to object is that it gets assigned to.
+</p><p>One of the things that's hard about pointers is simply talking 
+about what's going on.
+We've been using the words ``return'' and ``replace'' in quotes,
+because they don't quite reflect what's actually going on,
+and we've been using clumsy locutions like
+``fetch via pointers'' and ``store via pointers.''
+There is some jargon for referring to pointer use;
+one word you'll often see is <dfn>dereference</dfn>,
+a term which,
+though its derivation is suspect,
+is used to mean
+``follow a pointer to get at, and use, the object it points to.''
+Thus, we sometimes call unary <TT>*</TT>
+the ``pointer dereferencing operator,''
+and we may say that the expressions
+<pre>	printf("%d\n", *ip);
+</pre>and
+<pre>	*ip = 5;
+</pre>both ``dereference the pointer <TT>ip</TT>.''
+We may also talk about <dfn>indirecting</dfn> on a pointer:
+to <dfn>indirect</dfn> on a pointer
+is again to follow it to see what it points to;
+and <TT>*</TT> may also be called the ``pointer indirection operator.''
+</p><p>Our examples of pointers so far have been,
+admittedly,
+artificial and rather meaningless.
+Let's try a slightly more realistic example.
+In the previous chapter,
+we used the routines <TT>atoi</TT> and <TT>atof</TT>
+to convert strings representing numbers to the actual numbers represented.
+Often the strings were typed by the user,
+and read with <TT>getline</TT>.
+As you may have noticed,
+neither <TT>atoi</TT> nor <TT>atof</TT> does any validity or error checking:
+both simply stop reading
+when they reach a character
+that can't be part of the number they're converting,
+and if there aren't <em>any</em> numeric characters in the string,
+they simply return 0.
+(For example, <TT>atoi("49er")</TT> is 49,
+and <TT>atoi("three")</TT> is 0,
+and <TT>atof("1.2.3")</TT> is 1.2
+.)
+These attributes make <TT>atoi</TT> and <TT>atof</TT>
+easy to write and easy
+(for the programmer)
+to use,
+but they are not the most user-friendly routines possible.
+A good user interface would warn the user
+and prompt again
+in case of invalid, non-numeric input.
+</p><p>Suppose we were writing a simple inventory-control system.
+For each part stored in our warehouse,
+we might record the part number,
+location,
+and number of parts on hand.
+For simplicity,
+we'll assume that the location is always a simple bin number.
+</p><p>Somewhere in the inventory-control program,
+we might find the variables
+<pre>	int part_number;
+	int location;
+	int number_on_hand;
+</pre>and there might be a routine that lets the user enter any of these numbers.
+Suppose that there is another variable,
+<pre>	int which_entry;
+</pre>which indicates which of the three numbers is being entered
+(1 for <TT>part_number</TT>,
+2 for <TT>location</TT>,
+or 3 for <TT>number_on_hand</TT>).
+We might have code like this:
+<pre>	char instring[30];
+<br>
+<br>
+	switch (which_entry) {
+	case 1:
+		printf("enter part number:\n");
+		getline(instring, 30);
+		part_number = atoi(instring);
+		break;
+<br>
+<br>
+	case 2:
+		printf("enter location:\n");
+		getline(instring, 30);
+		location = atoi(instring);
+		break;
+<br>
+<br>
+	case 3:
+		printf("enter number on hand:\n");
+		getline(instring, 30);
+		number_on_hand = atoi(instring);
+		break;
+	}
+</pre>Suppose that we now begin to add
+a bit of rudimentary verification to the input routines.
+The first case might look like
+<pre>	case 1:
+		do {
+			printf("enter part number:\n");
+			getline(instring, 30);
+			if(!isdigit(instring[0]))
+				continue;
+			part_number = atoi(instring);
+		} while (part_number == 0);
+		break;
+</pre>If the first character is not a digit,
+or if <TT>atoi</TT> returns 0,
+the code
+goes around the loop another time,
+and prompts the user again,
+in hopes that the user will type some proper numeric input this time.
+(The
+tests
+for numeric input
+are not sufficient,
+nor even wise if 0 is a possible input value,
+as it presumably is for number on hand.
+In fact, the two tests really do the same thing!
+But please overlook these faults.
+If you're curious,
+you can learn about a new ANSI function, <TT>strtol</TT>,
+which is like <TT>atoi</TT> but gives you a bit more control,
+and would be a better routine to use here.)
+</p><p>The code fragment above is for just one of the three input cases.
+The obvious way to perform the same checking
+for the other two cases
+would be to repeat the same code two more times,
+changing the prompt string
+and the name of the variable assigned to
+(<TT>location</TT> or <TT>number_on_hand</TT> instead of <TT>part_number</TT>).
+Duplicating the code is a nuisance,
+though,
+especially if we later come up with a better way to do input verification
+(perhaps one not suffering from the imperfections mentioned above).
+Is there a better way?
+</p><p>One way would be to use a temporary variable in the input loop,
+and then set one of the three real variables
+to the value of the temporary variable,
+depending on <TT>which_entry</TT>:
+<pre>	int temp;
+<br>
+<br>
+	do {
+		printf("enter the number:\n");
+		getline(instring, 30);
+		if(!isdigit(instring[0]))
+			continue;
+		temp = atoi(instring);
+	} while (temp == 0);
+<br>
+<br>
+	switch (which_entry) {
+	case 1:
+		part_number = temp;
+		break;
+<br>
+<br>
+	case 2:
+		location = temp;
+		break;
+<br>
+<br>
+	case 3:
+		number_on_hand = temp;
+		break;
+	}
+</pre></p><p>Another way, however,
+would be to use a <em>pointer</em>
+to keep track of which variable we're setting.
+(In this example, we'll also get the prompt right.)
+<pre>	char instring[30];
+	int *numpointer;
+	char *prompt;
+<br>
+<br>
+	switch (which_entry) {
+	case 1:
+		numpointer = &amp;part_number;
+		prompt = "part number";
+		break;
+<br>
+<br>
+	case 2:
+		numpointer = &amp;location;
+		prompt = "location";
+		break;
+<br>
+<br>
+	case 3:
+		numpointer = &amp;number_on_hand;
+		prompt = "number on hand";
+		break;
+	}
+<br>
+<br>
+	do {
+		printf("enter %s:\n", prompt);
+		getline(instring, 30);
+		if(!isdigit(instring[0]))
+			continue;
+		*numpointer = atoi(instring);
+	} while (*numpointer == 0);
+</pre>The idea here is that
+<TT>prompt</TT> is the prompt string
+and
+<TT>numpointer</TT> points to the 
+particular numeric value we're entering.
+That way, a single input verification loop can
+print any of the three prompts
+and
+set any of the 
+three numeric variables,
+depending on where <TT>numpointer</TT> points.
+(We
+won't officially see
+character pointers and strings until section 5.5,
+so don't worry if
+the use of the <TT>prompt</TT> pointer seems
+new or inexplicable.)
+</p><p>This example is, in its own ways, quite artificial.
+(In a real inventory-control program,
+we'd obviously need to keep track of many parts;
+we couldn't use single variables for the part number, location, and quantity.
+We probably wouldn't really have a <TT>which_entry</TT> variable
+telling us which number to prompt for,
+and we'd do the numeric validation quite differently.
+We might well do numeric entry and validation in a separate function,
+removing this need for the pointers.)
+However,
+the pointer aspect of this
+example--using
+a pointer to refer to one of several different things,
+so that one generic piece of code can access any of the 
+things--is
+a very typical
+(i.e. realistic)
+use of pointers.
+</p><p>There's one nuance of pointer declarations which deserves mention.
+We've seen that
+<pre>	int *ip;
+</pre>declares the variable <TT>ip</TT> as a pointer to an <TT>int</TT>.
+We might look at that declaration and imagine that 
+<TT>int *</TT> is the type
+and <TT>ip</TT> is the name of the variable being declared.
+(Actually, so far, these assumptions are both true.)
+We might therefore imagine that a more ``obvious'' way of writing 
+the declaration would be
+<pre>	int* ip;
+</pre>This would work,
+but it is misleading,
+as we'll see if we try to declare two <TT>int</TT> pointers at once.
+How shall we do it?
+If we try
+<pre>	int* ip1, ip2;		/* WRONG */
+</pre>we don't succeed;
+this would declare <TT>ip1</TT> as a pointer-to-<TT>int</TT>,
+but <TT>ip2</TT> as an <TT>int</TT>
+(not a pointer).
+The correct declaration for two pointers is
+<pre>	int *ip1, *ip2;
+</pre>As the authors said in the middle of page 94,
+the intent of pointer
+(and in fact all)
+declarations is that they give little miniature expressions
+indicating what type
+a certain use
+of the variables
+will have.
+The declaration
+<pre>	int *ip1;
+</pre>doesn't so much say that <TT>ip</TT> is a pointer-to-<TT>int</TT>;
+it says that <TT>*ip</TT> is an <TT>int</TT>.
+(To be sure, <TT>ip</TT> <em>is</em> a pointer-to-<TT>int</TT>.)
+In the declaration
+<pre>	int *ip1, *ip2;
+</pre>both <TT>*ip1</TT> and <TT>*ip2</TT> are <TT>int</TT>s;
+so <TT>ip1</TT> and <TT>ip2</TT> are both pointers-to-<TT>int</TT>.
+You'll hear this aspect of C declarations referred to as
+``declaration mimics use.''
+If it bothers you,
+or if you think you might accidentally write things like
+<pre>	int *ip1, ip2;
+</pre>then
+to stay on the safe side
+you might want to get in the habit of writing declarations
+on separate lines:
+<pre>	int *ip1;
+	int *ip2;
+</pre></p><p>I promised to point out the safe techniques for ensuring that 
+pointers always point where they should.
+The examples in this section,
+which have all involved pointers pointing to single variables,
+are relatively safe;
+a single variable is not a very risky thing to point to,
+so code like the examples in this section is relatively 
+unlikely to go awry and result in invalid pointers.
+(One potential problem, though,
+which we'll talk more about later,
+
+is that since local, ``automatic'' variables
+are automatically deallocated when the function containing them returns,
+any pointer to a local variable also becomes invalid.
+Therefore, a function which returns a pointer
+must never return a pointer to one of its own local variables,
+and it would also be invalid to take
+a pointer to a local variable
+and assign it
+to a global pointer variable.)
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx8.html" rev=precedes>prev</a>
+<a href="sx8b.html" rel=precedes>next</a>
+<a href="sx8.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

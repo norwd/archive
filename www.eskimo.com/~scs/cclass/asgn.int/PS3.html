@@ -1,0 +1,145 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>Assignment #3</title>
+</head>
+<body>
+<H1>Assignment #3</H1>
+
+
+
+
+
+<B>Intermediate C Programming
+<br>
+<br>
+UW Experimental College
+</B><br>
+<br>
+<B>Assignment #3
+</B><p><B>Handouts:
+</B></p><p><a href="PS3.html">Assignment #3</a>
+<br><a href="PS2a.html">Assignment #2 Answers</a>
+<br><a href="../int/sx4.html">Class Notes, Chapter 18</a>
+<br><a href="../int/sx5.html">Class Notes, Chapter 19</a>
+<p><B>Exercises:
+</B></p><OL><li>Appended to this assignment are listings of
+new versions of
+<TT>commands.c</TT> and <TT>parser.c</TT>.
+(I've only printed the first page of <TT>commands.c</TT>, because 
+the rest doesn't change.)
+These versions implement a slightly more sophisticated scheme
+for parsing and representing commands;
+they will handle sentences like
+<pre>
+	hit nail with hammer
+</pre>
+The new scheme involves this structure,
+in <TT>game.h</TT>:
+<pre>
+struct sentence
+	{
+	char *verb;
+	struct object *object;
+	char *preposition;
+	struct object *xobject;	/* object of preposition */
+	};
+
+</pre>
+This structure can contain the verb, object, and prepositional phrase
+of one of these sentences.
+(Also, the object of the verb and the object of the preposition
+are represented by object pointers, filled in by the command parser,
+rather than simple object names.)
+<br>
+<br>
+Replace your copies of <TT>parser.c</TT> and <TT>commands.c</TT>
+with these new ones,
+which can be found in the <TT>week3</TT> subdirectory.
+Merge any of the commands you added (or other changes you made)
+from your old <TT>commands.c</TT> into the new one.
+In <TT>main.c</TT>,
+replace the declarations of the variables <TT>verb</TT> and <TT>object</TT>
+with the new variable
+<pre>
+	struct sentence cmd;
+</pre>
+which can contain the whole command,
+and change the calls to <TT>parseline</TT> and <TT>docommand</TT>
+to
+<pre>
+	if(!parseline(&amp;player, line, &amp;cmd))
+		continue;
+
+	docommand(&amp;player, &amp;cmd);
+</pre>
+You'll also need to change the prototype declarations for
+<TT>parseline</TT> and <TT>docommand</TT> in <TT>game.h</TT>.
+<br>
+<br>
+Although we can now <em>parse</em> these more-complicated commands,
+we need a bit more machinery before we can <em>implement</em> any of them.
+For now, here is a little ``hit'' command
+(to be added to <TT>commands.c</TT>)
+which will begin to give you a feel for what we'll be able to do:
+<pre>
+else if(strcmp(verb, "hit") == 0)
+	{
+	if(objp == NULL)
+		{
+		printf("You must tell me what to hit.\n");
+		return FALSE;
+		}
+	if(cmd-&gt;preposition == NULL || strcmp(cmd-&gt;preposition, "with") != 0 ||
+			cmd-&gt;xobject == NULL)
+		{
+		printf("You must tell me what to hit with.\n");
+		return FALSE;
+		}
+	if(!contains(player-&gt;contents, cmd-&gt;xobject))
+		{
+		printf("You don't have the %s.\n", cmd-&gt;xobject-&gt;name);
+		return FALSE;
+		}
+	printf("The %s says, \"Ouch!\"\n", objp-&gt;name);
+	}
+</pre>
+Add this command, too.
+<li>Add some other commands, such as ``break'' or 
+``cut'' or ``read''.
+(They won't really do anything yet,
+other than print little messages along the lines of the 
+``hit'' command in exercise 1.)
+<li>Write a function <TT>plural</TT>
+with the prototype
+<pre>
+	char *plural(char *);
+</pre>
+which, given a string,
+returns a new string with an ``s'' tacked on to the end.
+Use this new function to rewrite some of the messages printed by 
+the game from
+<pre>
+	printf("I see no %s here.\n", word);
+</pre>
+to
+<pre>
+	printf("I don't see any %s.\n", plural(word));
+</pre>
+Make an appropriate choice from among the techniques discussed 
+in class for the allocation of the string returned by 
+<TT>plural</TT>.
+(Extra credit:
+try to make <TT>plural</TT> a little smarter,
+by adding ``es'' where appropriate.)
+</OL><hr>
+<hr>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-9
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

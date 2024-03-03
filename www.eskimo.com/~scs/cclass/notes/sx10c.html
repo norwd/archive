@@ -1,0 +1,79 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>10.3 Pointer Subtraction and Comparison</title>
+<link href="sx10b.html" rev=precedes>
+<link href="sx10d.html" rel=precedes>
+<link href="sx10.html" rev=subdocument>
+</head>
+<body>
+<H2>10.3 Pointer Subtraction and Comparison</H2>
+
+<p>As we've seen,
+you can add an integer to a pointer to get a new pointer,
+pointing somewhere beyond the original
+(as long as it's in the same array).
+For example, you might write
+<pre>
+	ip2 = ip1 + 3;
+</pre>
+Applying a little algebra, you might wonder whether
+<pre>
+	ip2 - ip1 = 3
+</pre>
+and the answer is, yes.
+When you subtract two pointers,
+as long as they point into the same array,
+the result is the number of elements separating them.
+You can also ask
+(again, as long as they point into the same array)
+whether one pointer is greater or less than another:
+one pointer is ``greater than'' another
+if it points beyond where the other one points.
+You can also compare pointers for equality and inequality:
+two pointers are equal
+if they point to the same variable or to the same cell in an array,
+and are (obviously) unequal if they don't.
+(When testing for equality or inequality,
+the two pointers do not have to point into the same array.)
+</p><p>One common use of pointer comparisons is when copying arrays
+using pointers.
+Here is a code fragment which copies 10 elements
+from <TT>array1</TT> to <TT>array2</TT>, using pointers.
+It uses an end pointer, <TT>ep</TT>,
+to keep track of when it should stop copying.
+<pre>
+	int array1[10], array2[10];
+	int *ip1, *ip2 = &amp;array2[0];
+	int *ep = &amp;array1[10];
+	for(ip1 = &amp;array1[0]; ip1 &lt; ep; ip1++)
+		*ip2++ = *ip1;
+</pre>
+As we mentioned,
+there is no element <TT>array1[10]</TT>,
+but
+it is legal to compute a pointer to this (nonexistent) element,
+as long as we only use it in pointer comparisons like this
+(that is,
+as long as we never try to fetch or store the value that it points
+to.)
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx10b.html" rev=precedes>prev</a>
+<a href="sx10d.html" rel=precedes>next</a>
+<a href="sx10.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-1997
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

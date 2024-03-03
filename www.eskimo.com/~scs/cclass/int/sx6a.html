@@ -1,0 +1,477 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>20.1: Function-Like Preprocessor Macros</title>
+<link href="sx6.html" rev=precedes>
+<link href="sx6b.html" rel=precedes>
+<link href="sx6.html" rev=subdocument>
+</head>
+<body>
+<H2>20.1: Function-Like Preprocessor Macros</H2>
+
+<p>So far,
+we've been defining simple preprocessor macros with simple values,
+such as
+<pre>
+	#define MAXLINE 200
+</pre>
+and
+<pre>
+	#define DATAFILE "data.dat"
+</pre>
+These macros always expand to constant text
+(in these examples,
+the integer constant <TT>200</TT>
+and the string literal <TT>"data.dat"</TT>, respectively)
+wherever they're used.
+However,
+it's also possible to define macros
+which expand to text which is different each time,
+depending on some
+subsidiary text
+which you specify.
+These macros take arguments,
+in much the same way that functions take arguments.
+In either case,
+the outcome
+(the expansion of the macro,
+like the action of the function)
+depends in some way on the particular values passed to it as arguments.
+The basic syntax of a function-like macro definition is
+<pre>
+	#define <I>macroname</I>( <I>args</I> ) <I>expansion</I>
+</pre>
+There
+must be
+no space between <I>macroname</I> and the open parenthesis.
+</p><p>We will illustrate the use of function-like macros with several examples.
+</p><p>In a previous chapter,
+we used the ``bitwise'' operators
+<TT>&amp;</TT>, <TT>|</TT>, and <TT>~</TT>
+to manipulate individual bits
+within an integer value or ``flags word.''
+In one application,
+we defined several simple macros whose values were ``bitmasks'':
+<pre>
+	#define DIRTY	0x01
+	#define OPEN	0x02
+	#define VERBOSE	0x04
+</pre>
+Then we used code like
+<pre>
+	flags |= DIRTY;
+</pre>
+to ``set the <TT>DIRTY</TT> bit,''
+and code like
+<pre>
+	flags &amp;= ~DIRTY;
+</pre>
+to clear the <TT>DIRTY</TT> bit,
+and code like
+<pre>
+	if(flags &amp; DIRTY)
+</pre>
+to test it.
+With enough practice,
+these idioms become familiar enough that they can be read immediately,
+but suppose we wanted to make them less cryptic.
+Using the preprocessor,
+we'll be able to set up macros so that we can write
+<pre>
+	SETBIT(flags, DIRTY);
+</pre>
+and
+<pre>
+	CLEARBIT(flags, DIRTY);
+</pre>
+and
+<pre>
+	if(TESTBIT(flags, DIRTY))
+</pre>
+</p><p>The definition of the <TT>SETBIT()</TT> macro
+might look like this:
+<pre>
+	#define SETBIT(x, b) x |= b
+</pre>
+When a function-like macro is expanded,
+the preprocessor keeps track
+of the ``arguments'' it was ``called'' with.
+When we write
+<pre>
+	SETBIT(flags, DIRTY);
+</pre>
+we're invoking the <TT>SETBIT()</TT> macro
+with a first argument of <TT>flags</TT>
+and a second argument of <TT>DIRTY</TT>.
+Within the definition of the macro,
+those arguments were known as <TT>x</TT> and <TT>b</TT>.
+So in the replacement text of the macro,
+<TT>x |= b</TT>,
+everywhere that <TT>x</TT> appears
+it will be further replaced by (in this case) <TT>flags</TT>,
+and everywhere that <TT>b</TT> appears it will be replaced by
+<TT>DIRTY</TT>.
+So
+the invocation
+<pre>
+	SETBIT(flags, DIRTY);
+</pre>
+will result in the expansion
+<pre>
+	flags |= DIRTY;
+</pre>
+Notice that the semicolon had nothing to do with macro expansion;
+it appeared following the close parenthesis of the invocation,
+and so shows up following the final expansion.
+</p><p>Similarly, we can define the <TT>CLEARBIT()</TT>
+and <TT>TESTBIT()</TT> macros like this:
+<pre>
+	#define CLEARBIT(x, b) x &amp;= ~b
+	#define TESTBIT(x, b) x &amp; b
+</pre>
+Convince yourself that the invocations
+<pre>
+	CLEARBIT(flags, DIRTY);
+</pre>
+and
+<pre>
+	if(TESTBIT(flags, DIRTY))
+</pre>
+will result in the expansions
+<pre>
+	flags &amp;= ~DIRTY;
+</pre>
+and
+<pre>
+	if(flags &amp; DIRTY)
+</pre>
+as desired.
+</p><p>Just as for a regular function,
+parameter names such as <TT>x</TT> and <TT>b</TT>
+in a function-like macro definition are arbitrary;
+they're just used to indicate where in the replacement text
+the actual argument ``values'' should be plugged in.
+Also, those parameter names are <em>not</em> looked for
+within character or string constants.
+If you had a macro like
+<pre>
+	#define XX(a, b) printf("%s is a %s\n", a, b)
+</pre>
+then the invocation
+<pre>
+	XX("John", "pumpkin-head");
+</pre>
+would result in
+<pre>
+	printf("%s is a %s\n", "John", "pumpkin-head");
+</pre>
+It would <em>not</em> result in
+<pre>
+	printf("%s is "John" %s\n", "John", "pumpkin-head");
+</pre>
+which
+(in this case, anyway)
+would not have been at all what you wanted.
+</p><p>If we remember that
+(other than being careful
+not to expand macro arguments inside of string and character constants)
+the preprocessor is otherwise pretty dumb and literal-minded,
+we can see why there must not be a space
+between the macro name and the open parenthesis
+in a function-like macro definition.
+If we wrote
+<pre>
+	#define SETBIT (x, b) x |= b
+</pre>
+the preprocessor would think we were defining a simple macro,
+named <TT>SETBIT</TT>,
+with the
+(rather meaningless)
+replacement text
+<TT>(x, b) x |= b</TT>
+,
+and every time it saw <TT>SETBIT</TT>,
+it would replace it with
+<TT>(x, b) x |= b</TT>
+.
+(It would ignore any parentheses and arguments
+that the invocation of <TT>SETBIT</TT> happened to be followed with;
+that is,
+after the incorrect definition,
+the invocation
+<pre>
+	SETBIT(flags, DIRTY);
+</pre>
+would expand to
+<pre>
+	(x, b) x |= b(flags, DIRTY);
+</pre>
+where the <TT>(flags, DIRTY)</TT> part
+passed through without modification,
+along with the trailing semicolon.)
+</p><p>There are a few potential pitfalls associated with preprocessor macros,
+and with function-like ones in particular.
+To illustrate these,
+let's look at another example.
+C has no built-in exponentiation operator;
+if you want to square something,
+the easiest way is usually to multiply it by itself.
+Suppose that you got tired of writing
+<pre>
+	x * x
+</pre>
+and
+<pre>
+	a * a + b * b
+</pre>
+and
+<pre>
+	(x + 1) * (x + 1)
+</pre>
+Knowing about function-like preprocessor macros,
+you might be inspired to define a <TT>SQUARE()</TT> macro:
+<pre>
+	#define SQUARE(z) z * z
+</pre>
+Now you can write things like
+<TT>SQUARE(x)</TT> and <TT>SQUARE(a) + SQUARE(b)</TT>,
+and this seems like it will be workable and convenient.
+But wait:
+what about that third example?
+If you write
+<pre>
+	y = SQUARE(x + 1);
+</pre>
+the simpleminded preprocessor will expand it to
+<pre>
+	y = x + 1 * x + 1;
+</pre>
+Remember,
+the preprocessor doesn't evaluate arguments
+the same way a function call would,
+it just performs textual substitutions.
+So in this last example,
+the ``value'' of the macro parameter <TT>z</TT> is
+<TT>x + 1</TT>,
+and everywhere that a <TT>z</TT> had appeared in the replacement text,
+the preprocessor fills in <TT>x + 1</TT>.
+But when the rest of the compiler sees the result,
+it will give multiplication higher precedence,
+as usual,
+and it will interpret the result as if you had written
+<pre>
+	y = x + (1 * x) + 1;
+</pre>
+which will <em>not</em> usually give you the result you wanted!
+
+</p><p>How can we fix this problem?
+We could forbid ourselves to ever ``call''
+the <TT>SQUARE()</TT> macro
+on an argument that wasn't a single constant or variable name,
+but this seems like a harsh restriction.
+A better solution is to play with the definition of the macro itself:
+since the expansion we want is
+<pre>
+	(x + 1) * (x + 1)
+</pre>
+we can achieve that by defining the macro like this:
+<pre>
+	#define SQUARE(z) (z) * (z)
+</pre>
+Now
+<pre>
+	y = SQUARE(x + 1);
+</pre>
+expands to
+<pre>
+	y = (x + 1) * (x + 1);
+</pre>
+as we wished.
+</p><p>There's another problem, though:
+what if we write
+<pre>
+	q = 1 / SQUARE(r);
+</pre>
+Now we get
+<pre>
+	q = 1 / (r) * (r)
+</pre>
+and the rest of the compiler interprets this as
+<pre>
+	q = (1 / (r)) * (r)
+</pre>
+(Multiplication and division have the same precedence,
+and by default they
+go from left to right.)
+What can we do this time?
+We could enclose the invocation of the <TT>SQUARE()</TT> macro
+in extra parentheses,
+like this:
+<pre>
+	q = 1 / (SQUARE(r));
+</pre>
+but that seems like a real nuisance to remember.
+A better solution is to build those extra parentheses
+into the definition of the macro, too:
+<pre>
+	#define SQUARE(z) ((z) * (z))
+</pre>
+Now
+the code
+<TT>1 / SQUARE(r)
+</TT>expands to
+<TT>1 / ((r) * (r))
+</TT>and
+we have a macro that's safe
+against all of the troublesome invocations
+we've tried so far.
+</p><p>There's a <em>third</em> potential problem, though:
+suppose we write
+<pre>
+	y = SQUARE(x++);
+</pre>
+Even with all of our parentheses,
+this expands to
+<pre>
+	y = ((x++) * (x++));
+</pre>
+and this is a distinct no-no,
+because we're incrementing <TT>x</TT> twice within the same expression.
+We might end up with <TT>y</TT> containing the value
+<TT>x * x</TT>,
+as we wanted,
+but it's somewhat more likely that we'll end up with
+<TT>(x + 1) * x</TT>
+or
+<TT>x * (x + 1)</TT>,
+instead.
+(We're now worried not
+just
+about what the macro expands to,
+but what the resultant expression <em>evaluates</em> to.)
+Furthermore,
+since expressions like <TT>x++ * x++</TT>
+are <dfn>undefined</dfn> according to the ANSI/ISO C Standard,
+they can actually result in anything,
+even complete nonsense.
+So <TT>SQUARE(x++)</TT> simply isn't going to work.
+(The explicit parentheses,
+by the way, don't make the expression any
+less undefined.)
+</p><p>There's no good fix for this third problem.
+We
+are going to
+have to remember that when we invoke
+function-like
+macros,
+the macro might expand one of its arguments multiple times,
+so we had better not ever give it an argument with a side effect,
+such as <TT>x++</TT>,
+or else the side effect might end up happening multiple times,
+with undefined results.
+(That's one reason we always use capital letters for macro names,
+to remind ourselves that they are special,
+and that we might have to be careful when invoking them.)
+</p><p>The other way around the third problem
+is not to use a function-like preprocessor macro at all,
+but instead
+to
+use a genuine function.
+If we defined
+<pre>
+	int square(int x)
+	{
+		return x * x;
+	}
+</pre>
+then we wouldn't have <em>any</em> of these problems.
+(Of course,
+then we'd have the limitation
+that we could only use this <TT>square</TT> function
+on arguments of a certain type,
+in this case, <TT>int</TT>.
+We could declare it as accepting and returning type <TT>double</TT>,
+but then we might worry
+that it was doing needless floating-point conversions
+in the cases where we handed it integer values...)
+</p><p>When should you use a function-like macro
+and when should you use a real function?
+In most cases,
+it's safer to use real functions.
+Generally,
+you use function-like macros
+only when the code they expand to is quite small and simple,
+and when defining and using a real function would for some reason be awkward,
+or when the code will be executed so often
+that the overhead of calling a real function
+would significantly impact the program's efficiency.
+</p><p>As an example of how a real function might be awkward,
+notice that we couldn't write <TT>SETBIT()</TT>
+and <TT>CLEARBIT()</TT> as conventional functions,
+because functions can't modify their arguments,
+yet <TT>SETBIT()</TT> and <TT>CLEARBIT()</TT>
+are supposed to.
+(That is,
+<TT>SETBIT(flags, DIRTY)</TT> modifies <TT>flags</TT>.)
+</p><p>To summarize the important rules of this section,
+
+whenever defining a function-like macro, remember:
+<OL><li>Put parentheses around
+each instance of each macro parameter in the replacement text.
+<li>Put parentheses around
+the entire replacement text.
+<li>Capitalize the macro name to remind yourself that it is a macro,
+so that you won't call it on arguments with side effects.
+</OL>Remember, too, not to
+put a space between the macro name
+and the open parenthesis in the definition.
+</p><p>Rewriting our first three examples to follow these rules,
+we'd have:
+<pre>
+	#define SETBIT(x, b)   ((x) |= (b))
+	#define CLEARBIT(x, b) ((x) &amp;= ~(b))
+	#define TESTBIT(x, b)  ((x) &amp; (b))
+</pre>
+(It's harder to see how <TT>SETBIT()</TT>
+and <TT>CLEARBIT()</TT> might fail if they weren't parenthesized,
+but unless you're really sure of yourself,
+there usually
+isn't a reason
+not to use the extra parentheses.)
+</p><p>A few final notes about function-like preprocessor macros:
+Sometimes,
+people try to write function-like macros
+which are even more like functions
+in that they expand to multiple statements;
+however,
+this is considerably trickier than it looks
+(at least, if it's not to fall victim to additional sets of pitfalls).
+Also, people sometimes wish for macros
+that take a variable number of arguments
+(in much the same way that the <TT>printf</TT> function
+accepts a variable number of arguments),
+but there's
+not yet a
+good way to do this, either.
+
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx6.html" rev=precedes>prev</a>
+<a href="sx6b.html" rel=precedes>next</a>
+<a href="sx6.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1996-1999
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-03 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

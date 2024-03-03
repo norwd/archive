@@ -1,0 +1,91 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>section 2.10: Assignment Operators and Expressions</title>
+<link href="sx5i.html" rev=precedes>
+<link href="sx5k.html" rel=precedes>
+<link href="sx5.html" rev=subdocument>
+</head>
+<body>
+<H2>section 2.10: Assignment Operators and Expressions</H2>
+
+page 50
+<p>You may wonder what it means to say that
+``<I>expr</I><sub>1<sub> is computed only once''
+since in an assignment like
+<pre>	i = i + 2
+</pre>we don't ``evaluate''
+the <TT>i</TT> on the left hand side of the <TT>=</TT> at all,
+we assign to it.
+The distinction becomes important,
+however, when
+the left hand side
+(<I>expr</I><sub>1<sub>)
+is more complicated than a simple variable.
+For example,
+we could add 2 to
+each of
+the <TT>n</TT> cells of an array <TT>a</TT>
+with code like
+<pre>	int i = 0;
+	while(i &lt; n)
+		a[i++] += 2;
+</pre>If we tried to use the expanded form,
+we'd get
+<pre>	int i = 0;
+	while(i &lt; n)
+		a[i++] = a[i++] + 2;
+</pre>and by trying to increment <TT>i</TT> twice within the same expression
+we'd get (as we'll see) undesired, unpredictable,
+and in fact undefined results.
+(Of course,
+a more natural form of this loop would be
+<pre>	for(i = 0; i &lt; n; i++)
+		a[i] += 2;
+</pre>and with the increment of <TT>i</TT> moved out of the array subscript,
+it wouldn't matter so much whether we used <TT>a[i] += 2</TT>
+or <TT>a[i] = a[i] + 2</TT>.)
+</p><p>page 51
+</p><p>To make the point more clear,
+
+the ``complicated expression'' without using <TT>+=</TT> would look like
+<pre>	yyval[yypv[p3+p4] + yypv[p1+p2]] = yyval[yypv[p3+p4] + yypv[p1+p2]] + 2
+</pre>(What's going on here is that the subexpression
+<TT>yypv[p3+p4] + yypv[p1+p2]</TT> is being used as a subscript 
+to determine which cell of the <TT>yyval</TT> array to increment by 2.)
+
+</p><p>The sentence
+on p. 51
+that includes the words
+``the assignment statement has a value''
+is a bit misleading:
+an assignment is really an expression in C.
+Like any expression,
+it has a value,
+and it can therefore participate as a subexpression
+in a larger expression.
+(If the distinction between the terms ``statement'' and 
+``expression''
+seems vague,
+don't worry;
+we'll start talking about statements in the next chapter.)
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx5i.html" rev=precedes>prev</a>
+<a href="sx5k.html" rel=precedes>next</a>
+<a href="sx5.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

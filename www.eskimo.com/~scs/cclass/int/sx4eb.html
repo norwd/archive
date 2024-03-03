@@ -1,0 +1,92 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>18.2.5: The Conditional Operator</title>
+<link href="sx4db.html" rev=precedes>
+<link href="sx4c.html" rel=precedes>
+<link href="sx4b.html" rev=subdocument>
+</head>
+<body>
+<H3>18.2.5: The Conditional Operator</H3>
+
+<p>[This section corresponds to K&amp;R Sec. 2.11]
+</p><p>C has one last operator which we haven't seen yet.
+It's called the
+conditional or ``ternary'' or <TT>?:</TT> operator,
+and in action it looks something like this:
+<pre>
+	average = (n &gt; 0) ? sum / n : 0
+</pre>
+</p><p>The syntax of the conditional operator is
+<pre>
+	<I>e1</I> ? <I>e2</I> : <I>e3</I>
+</pre>
+and what happens is that <I>e1</I> is evaluated,
+and if it's true then <I>e2</I> is evaluated
+and becomes the result of the expression,
+otherwise
+<I>e3</I> is evaluated and becomes the result of the expression.
+In other words,
+the conditional expression is
+sort of an <TT>if</TT>/<TT>else</TT> statement
+buried inside of an expression.
+The above computation of <TT>average</TT> could be written out
+in a longer form using an <TT>if</TT> statement:
+<pre>
+	if(n &gt; 0)
+		average = sum / n;
+	else	average = 0;
+</pre>
+</p><p>The conditional operator,
+however,
+forms an expression
+and can therefore be used wherever an expression can be used.
+This makes it more convenient to use
+when an <TT>if</TT> statement
+would otherwise cause other
+sections
+of code to be needlessly repeated.
+For example,
+suppose we were trying to write a complicated function call
+<pre>
+	func(a, b + 1, c + d, <I>xx</I>, (g + h + i) / 2);
+</pre>
+where <I>xx</I> was supposed to be <TT>f</TT> if <TT>e</TT> was true
+and 0 if it was not.
+Using an <TT>if</TT> statement, we'd have to write:
+<pre>
+	if(e)
+		func(a, b + 1, c + d, f, (g + h + i) / 2);
+	else	func(a, b + 1, c + d, 0, (g + h + i) / 2);
+</pre>
+We could write this more compactly, more readably, and more safely
+(it's easier both to see and to guarantee
+that the other arguments are always the same)
+by writing
+<pre>
+	func(a, b + 1, c + d, e ? f : 0, (g + h + i) / 2);
+</pre>
+</p><p>(The obscure name ``ternary,'' by the way,
+comes from the fact that the conditional operator
+is neither unary nor binary;
+it takes <em>three</em> operands.)
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx4db.html" rev=precedes>prev</a>
+<a href="sx4c.html" rel=precedes>next</a>
+<a href="sx4b.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1996-1999
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

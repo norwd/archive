@@ -1,0 +1,250 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>section 4.3: External Variables</title>
+<link href="sx7b.html" rev=precedes>
+<link href="sx7d.html" rel=precedes>
+<link href="sx7.html" rev=subdocument>
+</head>
+<body>
+<H2>section 4.3: External Variables</H2>
+
+<p>The word ``external'' is, roughly speaking, equivalent to ``global.''
+</p><p>page 74
+</p><p>A program with
+``too many data connections between functions''
+hasn't managed to achieve
+the desirable attributes
+we were talking about earlier,
+in particular that a function's
+``interface to the rest of the program is clean and narrow.''
+Another bit of jargon you may hear is the word ``coupling,''
+which refers to how much one piece of a program has to know
+about another.
+</p><p>In general,
+as we have mentioned,
+the connections between functions should generally be few and well-defined,
+in which case they will be amenable to regular old function arguments,
+and you won't be tempted to pass lots of data around in global variables.
+(On the other hand,
+global variables are fine for some things,
+such as
+configuration information which the whole program cares about
+and which is set just once at program startup and then doesn't change.)
+</p><p>The word ``lifetime'' refers to how long a variable and its value stick around.
+(The jargon term is ``duration.'')
+So far, we've seen that global variables persist for the life of the program,
+while local variables last only as long
+as the functions defining them are active.
+However, lifetime (duration) is a separate and orthogonal concept from scope;
+we'll soon be meeting local variables which persist for the life of the program.
+</p><p>Deep sentence:
+<blockquote>Thus if two functions must share some data,
+yet neither calls the other,
+it is often most convenient
+if the shared data is kept in external variables
+rather than passed in and out via arguments.
+</blockquote>(Later,
+though,
+we'll learn about data structures
+which can make it more convenient
+to pass certain data around via function arguments,
+so we'll have less reason for using external variables
+for these sorts of purposes.)
+</p><p>``Reverse Polish'' is used by some
+(earlier, all)
+Hewlett-Packard calculators.
+(The name is based on the nationality of the mathematician who
+studied and formalized this notation.)
+It may seem strange at first,
+but it's natural if you observe that you need both numbers (operands)
+before you can carry out an operation on them.
+(This fact is one of the reasons that reverse Polish notation
+is ``easier to implement.'')
+</p><p>The calculator example is a bit long and a bit involved,
+but I urge you to work through and understand it.
+A calculator is something that everyone's likely to be familiar with;
+it's interesting to see how one might work inside;
+and the techniques used here are generally useful in all sorts of programs.
+</p><p>A ``stack'' is simply a last-in, first-out list.
+You ``push'' data items onto a stack,
+and whenever you ``pop'' an item from the stack,
+you get the one most recently pushed.
+</p><p>pages 76-79
+</p><p>The code for the calculator may seem daunting at first,
+but it's much easier to follow if you look at each part in isolation
+(as good functions are meant to be looked at),
+and notice that the routines fall into three levels.
+At the top level is the calculator itself,
+which resides in the function <TT>main</TT>.
+The main function calls three lower-level functions:
+<TT>push</TT>, <TT>pop</TT>, and <TT>getop</TT>.
+<TT>getop</TT>, in turn,
+is written in terms of the still lower-level functions 
+<TT>getch</TT> and <TT>ungetch</TT>.
+</p><p>A few details of the communication among these functions deserve mention.
+The <TT>getop</TT> routine actually returns two values.
+Its formal return value is a character
+representing the next operation to be performed.
+Usually,
+that character is just
+the character the user typed,
+that is, <TT>+</TT>, <TT>-</TT>, <TT>*</TT>, or <TT>/</TT>.
+In the case of a number typed by the user,
+the special code <TT>NUMBER</TT> is returned
+(which happens to be <TT>#define</TT>d to be the character <TT>'0'</TT>,
+but that's arbitrary).
+A return value of <TT>NUMBER</TT>
+indicates that an entire string of digits has been typed,
+and the string itself is copied into the array <TT>s</TT>
+passed to <TT>getop</TT>.
+In this case,
+therefore,
+the array <TT>s</TT> is the second return value.
+</p><p>In some printings,
+the second line on page 76 reads
+<pre>	#include &lt;math.h&gt;	/* for atof() */
+</pre>which is incorrect;
+it should be
+<pre>	#include &lt;stdlib.h&gt;	/* for atof() */
+</pre></p><p>page 77
+</p><p>Make sure you understand why the code
+<pre>	push(pop() - pop());	/* WRONG */
+</pre>might not work correctly.
+</p><p>``The representation can be hidden''
+means that the declarations of these variables can follow 
+<TT>main</TT> in the file, such that main can't ``see'' them
+(that is, can't attempt to refer to them).
+Furthermore,
+as we'll see,
+the declarations might be moved to a separate source file,
+and <TT>main</TT> won't care.
+</p><p>pages 77-78
+</p><p>Note that <TT>getop</TT> does not incorporate the 
+functionality of <TT>atoi</TT> or <TT>atof</TT>--it
+collects and returns the digits as a string,
+and <TT>main</TT> calls <TT>atof</TT> to convert the string 
+to a floating-point number (prior to pushing it on the stack).
+(There's nothing profound about this arrangement;
+there's no particular reason why
+<TT>getop</TT> couldn't have been set up to do the conversion itself.)
+</p><p>The reasons for using a routine like <TT>ungetch</TT> are good and sufficient,
+but they may not be obvious at first.
+The essential motivation,
+as the authors explain,
+is that when we're reading a string of digits,
+we don't know when we've reached the end of the string of digits
+until we've read a non-digit,
+and that non-digit is not part of the string of digits,
+so we really shouldn't have read it yet,
+after all.
+The rest of the program is set up based on the assumption that 
+one call to <TT>getop</TT> will return the string of digits,
+and the <em>next</em> call will return whatever operator 
+followed the string of digits.
+</p><p>
+To understand why the surprising
+and perhaps kludgey-sounding
+<TT>getch</TT>/<TT>ungetch</TT>
+approach is in fact a good one,
+let's consider the alternatives.
+<TT>getop</TT> could keep track of the one-too-far character somehow,
+and remember to use it next time instead of reading a new character.
+(Exercise 4-11 asks you to implement exactly this.)
+But this arrangement of <TT>getop</TT> is considerably less 
+clean from the standpoint of the ``invariants'' we were discussing 
+earlier.
+<TT>getop</TT> can be written relatively cleanly if one of its 
+invariants is that the operator it's getting is always formed 
+by reading the next character(s) from the input stream.
+<TT>getop</TT> would be considerably messier if it always had 
+to remember to use an old character if it had one,
+or read a new character otherwise.
+If <TT>getop</TT> were modified later
+to read new kinds of operators,
+and if reading them involved reading more characters,
+it would be easy to forget to take into account the possibility 
+of an old character each time a new character was needed.
+In other words,
+everywhere that
+<TT>getop</TT> wanted to do the operation
+<pre>	<I>read the next character</I>
+</pre>it would instead have to do
+<pre>	if (<I>there's an old character</I>)
+		<I>use it</I>
+	else
+		<I>read the next character</I>
+</pre>It's much cleaner to push the checking for an old character 
+down into the <TT>getch</TT> routine.
+</p><p>Devising a pair of routines like <TT>getch</TT> and <TT>ungetch</TT>
+is an excellent example of the process of <dfn>abstraction</dfn>.
+We had a problem:
+while reading a string of digits,
+we always read one character too far.
+The obvious solution--remembering the one-too-far character
+and using it later--would have been clumsy if we'd 
+implemented it directly within <TT>getop</TT>.
+So we invented some new functions to centralize and encapsulate 
+the functionality of remembering accidentally-read characters,
+so that <TT>getop</TT> could be written cleanly in terms of a 
+simple ``get next character'' operation.
+By centralizing the functionality,
+we make it easy for <TT>getop</TT> to use it consistently,
+and by encapsulating it,
+we hide the (potentially ugly) details from the rest of the program.
+<TT>getch</TT> and <TT>ungetch</TT> may be tricky to write,
+but once we've written them,
+we can seal up the little black boxes they're in
+and not worry about them any more,
+and the rest of the program
+(especially <TT>getop</TT>)
+is cleaner.
+</p><p>page 79
+</p><p>If you're not used to the conditional operator <TT>?:</TT> yet,
+here's how <TT>getch</TT> would look without it:
+<pre>	int getch(void)
+	{
+		if (bufp &gt; 0)
+			return buf[--bufp];
+		else	return getchar();
+	}	
+</pre>Also, the extra generality of these two routines
+(namely, that they can push back and remember several characters,
+a feature which the calculator program doesn't even use)
+makes them a bit harder to follow.
+Exercise 4-8 asks you two write simpler versions which allow 
+only one character of pushback.
+(Also, as the text notes,
+we don't really have to be writing <TT>ungetch</TT> at all,
+because the standard library already provides an 
+<TT>ungetc</TT> which
+can provide one character of pushback for
+<TT>getchar</TT>.)
+</p><p>When we defined a stack,
+we said that it was ``last-in, first-out.''
+Are the versions of <TT>getch</TT> and <TT>ungetch</TT> on 
+page 79 last-in, first-out or first-in, first out?
+Do you agree with this choice?
+</p><p>One last note:
+the name of the variable <TT>bufp</TT> suggests that it is a pointer,
+but it's actually an index into the <TT>buf</TT> array.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx7b.html" rev=precedes>prev</a>
+<a href="sx7d.html" rel=precedes>next</a>
+<a href="sx7.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

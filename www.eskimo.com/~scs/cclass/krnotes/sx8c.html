@@ -1,0 +1,465 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>section 5.3: Pointers and Arrays</title>
+<link href="sx8b.html" rev=precedes>
+<link href="sx8d.html" rel=precedes>
+<link href="sx8.html" rev=subdocument>
+</head>
+<body>
+<H2>section 5.3: Pointers and Arrays</H2>
+
+page 97
+<p>For some people,
+section 5.3 is evidently the hardest section in this book,
+or even if they haven't read this book,
+the most confusing aspect of the language.
+C introduces a novel and,
+it can be said,
+elegant integration of pointers and arrays,
+but there are a distressing number of ways of misunderstanding arrays,
+or pointers, or both.
+Take this section very slowly,
+learn the things it does say,
+and <em>don't</em> learn anything it doesn't say
+(i.e. don't make any false assumptions).
+</p><p>It's not necessarily true that
+``the pointer version will in general be faster'';
+efficiency is
+(or ought to be)
+a secondary concern when considering the use of pointers.
+</p><p>page 98
+</p><p>On the top half of this page,
+we aren't seeing anything we haven't seen before.
+We already knew
+(or should have known)
+that the declaration
+<TT>int a[10];</TT>
+declares an array of ten contiguous <TT>int</TT>'s
+numbered from 0 to 9.
+We saw on page 94 and again on page 96
+that <TT>&amp;</TT> can be used to take the address of one cell of an array.
+</p><p>What's new on this page are first the nice pictures
+(and they <em>are</em> nice pictures;
+I think they're the right way of thinking about arrays and pointers in C)
+and the definition of pointer arithmetic.
+If the phrase
+``then by definition <TT>pa+1</TT> points to the next element''
+alarms you;
+if you hadn't known that <TT>pa+1</TT> points to the next element;
+don't worry.
+You hadn't
+known this,
+and you aren't expected even to have suspected it:
+the reason that <TT>pa+1</TT> points to the next element
+is simply that it's defined that way,
+as the sentence says.
+Furthermore,
+subtraction works in an exactly analogous way:
+If we were to say
+<pre>	pa = &amp;a[5];
+</pre>then <TT>*(pa-1)</TT> would refer to the contents of <TT>a[4]</TT>,
+and <TT>*(pa-i)</TT> would refer to the contents of the location 
+<TT>i</TT> elements before cell 5
+(as long as <TT>i</TT> <= 5).
+</p><p>Note furthermore that we do <em>not</em> have to worry
+about the size of the objects pointed to.
+Adding 1 to a pointer
+(or subtracting 1)
+always means to move over one object of the type pointed to,
+to get to the next element.
+(If you're too worried about machine addresses,
+or the actual address values stored in pointers,
+or the actual sizes of things,
+it's easy to mistakenly assume that adding or subtracting 1 
+adds or subtracts 1 from the machine address,
+but as we mentioned,
+you don't have to think at this low level.
+We'll see in section 5.4 how pointer arithmetic is actually 
+scaled,
+automatically,
+by the size of the object pointed to,
+but we don't have to worry about it if we don't want to.)
+</p><p>Deep sentence:
+<blockquote>The meaning of ``adding 1 to a pointer,''
+and by extension,
+all pointer arithmetic,
+is that <TT>pa+1</TT> points to the next object,
+and <TT>pa+i</TT> points to the <TT>i</TT>-th object beyond <TT>pa</TT>.
+</blockquote></p><p>This aspect of pointers--that arithmetic works on them,
+and in this way--is one of
+several vital facts about pointers in C.
+On the next page, we'll see the others.
+</p><p>page 99
+</p><p>Deep sentences:
+<blockquote>The correspondence between indexing and pointer arithmetic is very close.
+By definition,
+the value of a variable or expression of type array
+is the address of element zero of the array.
+</blockquote>This is a fundamental definition,
+which we'll now spend several pages discussing.
+</p><p>Don't worry too much yet about the assertion that
+``<TT>pa</TT> and <TT>a</TT> have identical values.''
+We're not surprised about the value of <TT>pa</TT> after the assignment
+<TT>pa = &amp;a[0];</TT>
+we've been taking the address of array elements for several pages now.
+What we don't
+know--we're
+not yet in a position to be surprised about it or
+not--is
+what the ``value'' of the array <TT>a</TT> is.
+What <em>is</em> the value of the array <TT>a</TT>?
+</p><p>In some languages,
+the value of an array is the entire array.
+If an array appears on the right-hand sign of an assignment,
+the entire array is assigned,
+and the left-hand side had better be an array, too.
+C does not work this way;
+C never lets you manipulate entire arrays.
+</p><p>In C,
+by definition,
+the value of an array,
+when it appears in an expression,
+is a pointer to its first element.
+In other words,
+the value of the array <TT>a</TT> simply <em>is</em> <TT>&amp;a[0]</TT>.
+If this statement makes any kind of intuitive sense to you at 
+this point,
+that's great,
+but if it doesn't,
+please just take it on faith for a while.
+This statement is a fundamental
+(in fact <em>the</em> fundamental)
+definition about arrays and pointers in C,
+and if you don't remember it,
+or don't believe it,
+then
+pointers and arrays will never make proper sense.
+(You will also need to know another bit of jargon:
+we often say that,
+when
+an array appears
+in an expression,
+it <dfn>decays</dfn> into a pointer to its first element.)
+</p><p>Given the above definition,
+let's explore some of the consequences.
+First of all,
+though we've been saying
+<pre>	pa = &amp;a[0];
+</pre>we could also say
+<pre>	pa = a;
+</pre>because by definition the value of <TT>a</TT> in an expression
+(i.e. as it sits there all alone on the right-hand side)
+is <TT>&amp;a[0]</TT>.
+Secondly,
+anywhere we've been using square brackets <TT>[]</TT> to subscript an array,
+we could also have used the pointer dereferencing operator <TT>*</TT>.
+That is, instead of writing
+<pre>	i = a[5];
+</pre>we could,
+if we wanted to,
+instead write
+<pre>	i = *(a+5);
+</pre>Why would this possibly work?
+How could this possibly work?
+Let's look at the expression <TT>*(a+5)</TT> step by step.
+It contains a reference to the array <TT>a</TT>,
+which is by definition a pointer to its first element.
+So <TT>*(a+5)</TT> is equivalent to <TT>*(&amp;a[0]+5)</TT>.
+To make things clear,
+let's pretend that we'd assigned the pointer to the first element
+to an actual pointer variable:
+<pre>	int *pa = &amp;a[0];
+</pre>Now
+we have
+<TT>*(a+5)</TT> is equivalent to
+<TT>*(&amp;a[0]+5)</TT> is equivalent to <TT>*(pa+5)</TT>.
+But we learned on page 98 that <TT>*(pa+5)</TT> is simply the 
+contents of the location 5 cells past where <TT>pa</TT> points to.
+Since <TT>pa</TT> points to <TT>a[0]</TT>,
+<TT>*(pa+5)</TT> is <TT>a[5]</TT>.
+Thus,
+for whatever it's worth,
+any time you have an array subscript <TT>a[i]</TT>,
+you could write it as <TT>*(a+i)</TT>.
+</p><p>The idea of the previous paragraph isn't worth much,
+because if you've got an array <TT>a</TT>,
+indexing it using the notation <TT>a[i]</TT>
+is considerably more natural and convenient than the alternate <TT>*(a+i)</TT>.
+The significant fact is that this little correspondence between 
+the expressions <TT>a[i]</TT> and <TT>*(a+i)</TT>
+holds for more than just arrays.
+If <TT>pa</TT> is a pointer,
+we can get at locations near it by using <TT>*(pa+i)</TT>,
+as we learned on page 98,
+but we can <em>also</em> use <TT>pa[i]</TT>.
+This time, using the ``other'' notation
+(array instead of pointer,
+when we thought we had a pointer)
+can be more convenient.
+</p><p>At this point,
+you may be asking <em>why</em> you can write <TT>pa[i]</TT>
+instead of <TT>*(pa+i)</TT>.
+You may be wondering how you're going to remember that you can do this,
+or remember what it means if you see it in someone else's code,
+when it's such a surprising fact in the first place.
+There are several ways to remember it;
+pick whichever one suits you:
+<OL><li>It's an arbitrary fact,
+true by definition;
+just memorize it.
+<li>If,
+for an array <TT>a</TT>,
+instead of writing <TT>a[i]</TT>,
+you can also write <TT>*(a+i)</TT>
+(as we proved a few paragraphs back);
+then it's only fair that for a pointer <TT>pa</TT>,
+instead of writing <TT>*(pa+i)</TT>,
+you can also write <TT>pa[i]</TT>.
+<li>Deep sentence:
+``In evaluating <TT>a[i]</TT>,
+C converts it to <TT>*(a+i)</TT> immediately;
+the two forms are equivalent.''
+<li>An array is
+a contiguous block of elements of a particular type.
+A pointer often points to
+a contiguous block of elements of a particular type.
+Therefore, it's very handy to treat
+a pointer to a contiguous block of elements
+<em>as if</em>
+it were an array,
+by saying things like <TT>pa[i]</TT>.
+ <li>
+[This is the most radical explanation,
+though it's also the most true;
+but if it offends your sensibilities
+or only seems to make things more confusing,
+please ignore it.]
+When you said <TT>a[i]</TT>,
+you weren't really subscripting an array at all,
+because an array like <TT>a</TT> in an expression always turns 
+into a pointer to its first element.
+So the array subscripting operator <TT>[]</TT> <em>always</em> 
+finds itself working on pointers,
+and it's a simple identity
+(another definition)
+that <TT>pa[i]</TT> is <TT>*(pa+i)</TT>.
+</OL>(But do pick at least one reason to remember this fact,
+as it's a fact you'll need to remember;
+expressions like <TT>pa[i]</TT> are quite common.)
+</p><p>The authors point out that
+``There is one difference between an array name and a pointer 
+that must be kept in mind,''
+and this is quite true,
+but note very carefully that there is
+in fact
+<em>every</em> difference 
+between an array and a pointer.
+When an array name appears in most expressions,
+it turns into a pointer
+(to the array's first element),
+but that does <em>not</em> mean that the array <em>is</em> a pointer.
+You may hear it stated that ``an array is just a constant pointer,''
+and this is a convenient explanation,
+but it is a simplified and potentially misleading explanation.
+</p><p>With that said,
+do make sure you understand why <TT>a=pa</TT> and <TT>a++</TT>
+(where <TT>a</TT> is an array)
+cannot mean anything.
+</p><p>Deep sentence:
+<blockquote>When an array name is passed to a function,
+what is passed is the location of the initial element.
+</blockquote>Though perhaps surprising,
+this sentence doesn't say anything new.
+A function call,
+and more importantly,
+each of its arguments,
+is an expression,
+and in an expression,
+a reference to an array is always replaced by a pointer to its first element.
+So given
+<pre>	int a[10];
+	f(a);
+</pre>it is not the entire array <TT>a</TT> that is passed to <TT>f</TT>
+but rather just a pointer to its first element.
+For an example closer to the text on page 99,
+given
+<pre>	char string[] = "Hello, world!";
+	int len = strlen(string);
+</pre>it is not the entire array <TT>string</TT> that is passed to <TT>strlen</TT>
+(recall that C never lets you do anything with
+a string or
+an array all at once),
+but rather just a pointer to its first element.
+</p><p>We now realize that we've been operating under a gentle fiction
+during the first four chapters of the book.
+Whenever we wrote a function like <TT>getline</TT> or <TT>getop</TT>
+which seemed to accept an array of characters,
+and whenever we thought we were passing arrays of characters to these routines,
+we were actually passing pointers.
+This explains,
+among other things,
+how <TT>getline</TT> and <TT>getop</TT> were able to modify 
+the arrays in the caller,
+even though we said that call-by-value meant that functions 
+can't modify variables in their callers since they receive 
+copies of the parameters.
+When a function receives a pointer,
+it cannot modify the original pointer in the caller,
+
+but it can definitely modify what the pointer points <em>to</em>.
+</p><p>If that doesn't make sense,
+make sure you appreciate the full difference
+between a pointer and what it points to!
+It is intirely possible to modify one without modifying the other.
+Let's illustrate this with an example.
+If we say
+<pre>	char a[] = "hello";
+	char b[] = "world";
+</pre>we've declared two character arrays,
+<TT>a</TT> and <TT>b</TT>,
+each containing a string.
+If we say
+<pre>	char *p = a;
+</pre>we've declared <TT>p</TT> as a pointer-to-<TT>char</TT>,
+and initialized it to point to the first character of the array <TT>a</TT>.
+If we then say
+<pre>	*p = 'H';
+</pre>we've modified what <TT>p</TT> points to.
+We have not modified <TT>p</TT> itself.
+After saying <TT>*p = 'H';</TT>
+the string in the array <TT>a</TT>
+has been modified to contain <TT>"Hello"</TT>.
+</p><p>If we say
+<pre>	p = b;
+</pre>on the other hand,
+we have modified the pointer <TT>p</TT> itself.
+We have not really modified what <TT>p</TT> points to.
+In a sense,
+``what <TT>p</TT> points to''
+has changed--it
+used to be the string in the array <TT>a</TT>,
+and now it's the string in the array <TT>b</TT>.
+But saying <TT>p = b</TT> didn't modify either of the strings.
+</p><p>page 100
+</p><p>Since,
+as we've just seen,
+functions never receive arrays as parameters,
+but instead always receive pointers,
+how have we been able to get away with defining functions
+(like <TT>getline</TT> and <TT>getop</TT>)
+which seemed to accept arrays?
+The answer is that whenever you declare an array parameter to a function,
+the compiler pretends that you actually declared a pointer.
+(It does this mostly so that
+we can get away with the ``gentle fiction''
+of pretending that we can pass arrays to functions.)
+</p><p>When you see a statement like
+``<TT>char s[];</TT> and <TT>char *s</TT>; are equivalent''
+(as in fact you see at the top of page 100),
+you can be sure that
+(and you must remember that)
+it is <em>only</em> function formal parameters that are being 
+talked about.
+Anywhere else,
+arrays and pointers are quite different,
+as we've discussed.
+</p><p>Expressions like <TT>p[-1]</TT>
+(at the end of section 5.3)
+may be easier to understand
+if we convert them back to the pointer form <TT>*(p + -1)</TT>
+and thence to <TT>*(p-1)</TT>
+which,
+as we've seen,
+is the object one before what <TT>p</TT> points to.
+</p><p>With the examples in this section,
+we begin to see how pointer manipulations can go awry.
+In sections 5.1 and 5.2,
+most of our pointers were to simple variables.
+When we use pointers into arrays,
+and when we begin using pointer arithmetic
+to access nearby cells of the array,
+we must be careful never to go off the end of the array,
+in either direction.
+A pointer is only valid if it points to one of the allocated 
+cells of an array.
+(There is also an exception for a pointer just past the end of an array,
+which we'll talk about later.)
+Given the declarations
+<pre>	int a[10];
+	int *pa;
+</pre>the statements
+<pre>	pa = a;
+	*pa = 0;
+	*(pa+1) = 1;
+	pa[2] = 2;
+	pa = &amp;a[5];
+	*pa = 5;
+	*(pa-1) = 4;
+	pa[1] = 6;
+	pa = &amp;a[9];
+	*pa = 9;
+	pa[-1] = 8;
+</pre>are all valid.
+These statements set the pointer <TT>pa</TT>
+pointing to various cells of the array <TT>a</TT>,
+and modify some of those cells
+by <dfn>indirecting on</dfn> the pointer <TT>pa</TT>.
+(As an exercise,
+verify that each cell of <TT>a</TT> that receives a value
+receives the value of its own index.
+For example, <TT>a[6]</TT> is set to 6.)
+</p><p>However,
+the statements
+<pre>	pa = a;
+	*(pa+10) = 0;	/* WRONG */
+	*(pa-1) = 0;	/* WRONG */
+	pa = &amp;a[5];
+	*(pa+10) = 0;	/* WRONG */
+	pa = &amp;a[10];
+	*pa = 0;	/* WRONG */
+</pre>and
+<pre>	int *pa2;
+	pa = &amp;a[5];
+	pa2 = pa + 10;	/* WRONG */
+	pa2 = pa - 10;	/* WRONG */
+</pre>are all invalid.
+The first examples set <TT>pa</TT> to point into the array <TT>a</TT>
+but then use overly-large offsets
+(+10, -1)
+which end up trying to store a value outside of the array <TT>a</TT>.
+The statements in the last set of examples
+set <TT>pa2</TT> to point outside of the array <TT>a</TT>.
+Even though no attempt is made to access the nonexistent cells,
+these statements are illegal, too.
+Finally,
+the code
+<pre>	int a[10];
+	int *pa, *pa2;
+	pa = &amp;a[5];
+	pa2 = pa + 10;	/* WRONG */
+	*pa2 = 0;	/* WRONG */
+</pre>would be very wrong,
+because it not only computes a pointer to the nonexistent
+15<sup>th<sup> cell of a 10-element array,
+but it also tries to store something there.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx8b.html" rev=precedes>prev</a>
+<a href="sx8d.html" rel=precedes>next</a>
+<a href="sx8.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

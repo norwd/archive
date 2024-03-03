@@ -1,0 +1,145 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>section 4.11.2: Macro Substitution</title>
+<link href="sx7l.html" rev=precedes>
+<link href="sx7n.html" rel=precedes>
+<link href="sx7.html" rev=subdocument>
+</head>
+<body>
+<H2>section 4.11.2: Macro Substitution</H2>
+
+<p><TT>#define</TT>s last for the whole file;
+you can't have local ones like you can for local variables.
+</p><p>``Substitutions are made only for tokens''
+means that a substitutable macro name is only recognized
+when it stands alone.
+Also,
+substitution never happens in quoted strings,
+because it turns out that you usually don't want it to.
+Strings are generally used for communication with the user,
+while you want substitutions to happen where you're talking to the compiler.
+
+</p><p>The point of the ``<TT>forever</TT>'' example
+is to demonstrate that the replacement text
+doesn't have to be a simple number or string constant.
+You'd use the <TT>forever</TT> macro like this:
+<pre>	forever {
+		...
+	}
+</pre>which the preprocessor would expand to
+<pre>	for (;;) {
+		...
+	}
+</pre>which,
+as we learned in section 3.5 on page 60,
+is an infinite loop.
+(Presumably there's a <TT>break</TT>; see section 3.7 p. 64.)
+</p><p>Another popular trick is
+<pre>	#define ever ;;
+</pre>so that you can say
+<pre>	for(ever) {
+		...
+	}
+</pre>But ``preprocessor tricks'' like these
+tend to get out of hand very quickly;
+if you use too many of them
+you're not writing in C any more
+but rather in your own peculiar dialect,
+and no one will be able to read your code
+without understanding all of your ``silly little macros.''
+It <em>is</em> best if simple macros expand to simple constants 
+(or expressions).
+</p><p>Macros with arguments are also called ``function-like macros''
+because they act almost like miniature functions.
+There are some important differences, however:
+<UL><li>no call-by-value copying semantics
+
+<li>no space saving
+<li>hard to have local variables or block structure
+<li>have to parenthesize carefully
+(see below)
+</UL></p><p>page 90
+</p><p>The correct way to write the <TT>square()</TT> macro is
+<pre>	#define square(x) ((x) * (x))
+</pre>There are three rules to remember when defining
+function-like macros:
+</p><OL><li>The macro expansion must always be parenthesized
+so that any low-precedence operators it contains
+will still be evaluated first.
+
+If we didn't write the <TT>square()</TT> macro carefully,
+the invocation
+<pre>	1 / square(n)
+</pre>might expand to
+<pre>	1 / n * n
+</pre>while it should expand to
+<pre>	1 / (n * n)
+</pre><li>Within the macro definition,
+all
+occurrences
+of the parameters
+must be parenthesized
+so that any low-precedence operators
+the actual arguments contain
+will be evaluated first.
+
+If we didn't write the <TT>square()</TT> macro carefully,
+the invocation
+<pre>	square(n + 1)
+</pre>might expand to
+<pre>	n + 1 * n + 1
+</pre>while it should expand to
+<pre>	(n + 1) * (n + 1)
+</pre><li>If a parameter appears several times
+in the expansion,
+the macro may not work properly
+if the actual argument
+is an expression with
+side effects.
+No matter how we parenthesize the <TT>square()</TT> macro,
+the invocation
+<pre>	square(i++)
+</pre>would result in
+<pre>	i++ * i++
+</pre>(perhaps with some parentheses),
+but this expression is undefined,
+because we don't know when the two increments
+will happen with respect to each other or the multiplication.
+</OL>Since the <TT>square()</TT> macro can't be written perfectly safely,
+(arguments with side effects will always be troublesome),
+its callers will always have to be careful
+(i.e. not to call it with arguments with side effects).
+One convention is to capitalize the names of macros
+which can't be treated <em>exactly</em> as if they were functions:
+<pre>	#define Square(x) ((x) * (x))
+</pre><p>page 90 continued
+</p><p><TT>#undef</TT> can be used when you want to give a macro 
+restricted scope,
+if you can remember to undefine it when you want it to go out of scope.
+Don't worry about
+``[ensuring] that a routine is really a function, not a macro''
+or the <TT>getchar</TT> example.
+</p><p>Also, don't worry about the <TT>#</TT> and <TT>##</TT> operators.
+These are new ANSI features
+which aren't needed except in relatively special circumstances.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx7l.html" rev=precedes>prev</a>
+<a href="sx7n.html" rel=precedes>next</a>
+<a href="sx7.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

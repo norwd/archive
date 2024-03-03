@@ -1,0 +1,139 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>Computer Representation of Numbers</title>
+<link href="sx4.html" rev=precedes>
+<link href="sx6.html" rel=precedes>
+<link href="top.html" rev=subdocument>
+</head>
+<body>
+<H1>Computer Representation of Numbers</H1>
+
+<p>Most computers represent integers as binary numbers
+(see the ``math refresher'' handout)
+with 
+a certain number of bits.
+A computer with 16-bit integers
+can represent integers from 0 to 65,535
+(that is, from 0 to 2<sup>16<sup>-1),
+or if it chooses to make half of them negative,
+from -32,767 to 32,767.
+(We won't get into the details of how computers handle negative 
+numbers right now.)
+A 32-bit integer can represent values from 0 to 4,294,967,295, 
+or +-2,147,483,647.
+</p><p>Most of today's computers represent real
+(i.e. fractional)
+numbers using 
+exponential notation.
+(Again,
+see ``math refresher'' handout.
+Actually, deep down inside,
+computers usually
+use powers of 2 instead of powers of 10,
+but the difference isn't important to us right now.)
+The advantage of using exponential notation for real numbers is 
+that it lets you trade off the range and precision of values in 
+a useful way.
+Since there's an infinitely large number of real numbers
+(and in three directions: very large, very small, and very negative),
+it will never be possible to represent all of them
+(without using potentially infinite amounts of space).
+</p><p>Suppose you decide to
+give yourself six decimal digits' worth of storage
+(that is,
+you decide to devote an amount of memory
+capable of holding six digits)
+for each value.
+If you put three digits to the left and three to the right 
+of the decimal point,
+you could represent numbers from 999.999 to -999.999,
+and as small as 0.001.
+(Furthermore,
+you'd have a resolution of 0.001 everywhere:
+you could represent 0.001 and 0.002,
+as well as 999.998 and 999.999.)
+This would be a workable scheme,
+although 0.001 isn't a very small number
+and 999.999 isn't a very big one.
+</p><p>If, on the other hand, you used exponential notation,
+with four digits for the base number and two digits for the 
+exponent, you could represent numbers from 
+9.999 &times; 10<sup>99<sup>
+to
+-9.999 &times; 10<sup>99<sup>,
+and as small as
+1 &times; 10<sup>-99<sup>
+(or, if you cheat,
+0.001 &times; 10<sup>-99<sup>).
+You can now represent both much larger numbers and much smaller;
+the tradeoff is that
+the absolute resolution is no longer constant,
+and gets smaller as the absolute value of the numbers gets larger.
+The number 123.456 can only be represented as 123.4,
+and the number 123,456 can only be represented as 123,400.
+You can't represent 999.999 any more;
+you have to settle for 999.9 (9.999 &times; 10<sup>2<sup>)
+or 1000 (1.000 &times; 10<sup>3<sup>).
+You can't distinguish between 999.998 and 999.999 any more.
+</p><p>Since superscripts are difficult to type,
+computer programming languages usually use a slightly different 
+notation.
+For example,
+the number 1.234 &times; 10<sup>5<sup>
+might be
+indicated by <TT>1.234e5</TT>,
+where the letter <TT>e</TT> replaces the ``times ten to the'' part.
+</p><p>You will often hear real,
+exponential numbers referred to on computers as 
+``floating point numbers'' or simply ``floats,''
+and
+you will also hear the term ``double'' which is short for 
+``double-precision floating point number.''
+Some computers also use ``fixed point'' real numbers,
+(which work along the lines of our ``three to the left, three to 
+the right'' example of a few paragraphs back),
+but those are comparatively rare and we won't need to discuss 
+them.
+</p><p>It's important to remember that the precision of floating-point
+numbers is usually limited,
+and this can lead to surprising results.
+The result of a division like 1/3 cannot be represented exactly
+(it's an infinitely repeating fraction, 0.333333...),
+so the computation
+(1 / 3) &times; 3 tends to yield a
+result like 0.999999... instead of 1.0.
+Furthermore,
+in base 2, the fraction 1/10, or 0.1 in decimal,
+is <em>also</em> an infinitely repeating fraction,
+and cannot be represented exactly, either,
+so (1 / 10) &times; 10
+may also yield 0.999999....
+For these reasons and others, floating-point calculations are
+rarely exact.
+When working with computer floating point,
+you have to be careful not to compare two numbers for exact equality,
+and you have to ensure that ``round off error''
+doesn't accumulate
+until it seriously degrades the results of your calculations.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx4.html" rev=precedes>prev</a>
+<a href="sx6.html" rel=precedes>next</a>
+<a href="top.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-03 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

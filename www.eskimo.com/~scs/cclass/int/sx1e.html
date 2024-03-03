@@ -1,0 +1,319 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>15.5: Linked Data Structures</title>
+<link href="sx1d.html" rev=precedes>
+<link href="sx2.html" rel=precedes>
+<link href="sx1.html" rev=subdocument>
+</head>
+<body>
+<H2>15.5: Linked Data Structures</H2>
+
+<p>[This section corresponds to K&amp;R Sec. 6.5]
+</p><p>One reason that pointers to structures are useful and common
+is that they can be used to build linked data structures,
+in which a structure contains
+a pointer to another instance of the same structure
+(or perhaps a different structure).
+The simplest example is a singly-linked list,
+which we might
+declare like this:
+<pre>
+struct listnode
+	{
+	char *item;
+	struct listnode *next;
+	};
+</pre>
+This structure describes one <dfn>node</dfn> in a list;
+a list may consist of many nodes,
+one for each item in the list.
+Here, each item in the list
+(the field we've named <TT>item</TT>)
+will be a string,
+represented
+(i.e. pointed to)
+by a <TT>char *</TT>.
+Each node in the list is linked to its successor by its
+<TT>next</TT> field,
+which is a pointer to another <TT>struct listnode</TT>.
+(The compiler is perfectly happy to
+place a pointer to a structure inside that very same structure;
+it would only complain
+if you tried to stuff an entire <TT>struct listnode</TT>
+into a <TT>struct listnode</TT>,
+which would tend to make the <TT>struct listnode</TT> explode.)
+We'll use a null pointer as the <TT>next</TT> field
+of the last node in the list,
+since by definition a null pointer doesn't point anywhere.
+</p><p>We could set up a tiny list with these declarations:
+<pre>
+struct listnode node2 = {"world", NULL};
+struct listnode node1 = {"hello", &amp;node2};
+struct listnode *head = &amp;node1;
+</pre>
+A box-and-arrows picture of the resulting list would look like this:
+<br>
+<center><img src="fig15.3.gif"></center>
+<br>
+The list has two nodes, allocated by the compiler in response to
+the first two declarations we gave.
+We've also allocated a pointer variable, <TT>head</TT>,
+which points at the ``head'' of the list.
+</p><p>Once we've built a list, we'll naturally want to do things with it.
+One of the simplest operations is to print the list back out.
+The code to do so is very simple.
+We declare another list pointer <TT>lp</TT>
+and then cause it to step over each node in the list, in turn:
+<pre>
+	struct listnode *lp;
+	for(lp = head; lp != NULL; lp = lp-&gt;next)
+		printf("%s\n", lp-&gt;item);
+</pre>
+This <TT>for</TT> loop deserves some attention,
+especially if you haven't seen one like it before.
+Many <TT>for</TT> loops step an <TT>int</TT> variable
+(often called <TT>i</TT>)
+through a series of integer values.
+However,
+the three controlling expressions of a <TT>for</TT> loop
+are <em>not</em> limited to that pattern;
+you may in fact use any expressions at all,
+although it's best if they conform
+to the expected initialize;test;increment pattern.
+The list-printing loop above certainly does:
+the expression <TT>lp = head</TT> initializes <TT>lp</TT>
+to point to the head of the loop;
+the expression <TT>lp != NULL</TT> tests whether
+<TT>lp</TT> still points to a real node
+(or whether it has reached the null pointer which marks the end of the list);
+and the expression <TT>lp = lp-&gt;next</TT> sets
+<TT>lp</TT> to point to the next node in the list,
+one past where it did before.
+</p><p>The two-element list above is pretty useless;
+its only worth is as a first example.
+The real power of linked lists
+(and other linked data structures)
+is that they can grow on demand,
+in response to the data that your program finds itself working
+with.
+For a linked list to grow on demand,
+however,
+we'll have to allocate its nodes dynamically,
+because we won't know in advance how many of them we'll need.
+(In the first example,
+we had two static nodes,
+because we knew in advance,
+at compile time,
+that our list would have two elements.
+But that static allocation won't do for a dynamic list.
+How would we know how many <TT>struct listnode</TT>
+variables to allocate?)
+</p><p>The general solution, of course, is to call <TT>malloc</TT>.
+Here is a scrap of code which inserts a new word at the
+head of a list:
+<pre>
+	#include &lt;stdio.h&gt;		/* for fprintf, stderr */
+	#include &lt;stdlib.h&gt;		/* for malloc */
+
+	char *newword = "test";
+	struct listnode *newnode = malloc(sizeof(struct listnode));
+	if(newnode == NULL)
+		{
+		fprintf(stderr, "out of memory\n");
+		exit(1);
+		}
+
+	newnode-&gt;item = newword;
+	newnode-&gt;next = head;
+	head = newnode;
+</pre>
+The expression <TT>sizeof(struct listnode)</TT>
+in the call to <TT>malloc</TT>
+asks the compiler to compute the number of bytes required
+to store one <TT>struct listnode</TT>,
+and that's exactly how many bytes of memory we ask for from <TT>malloc</TT>.
+Make sure you see how the last two lines work
+to splice the new node in at the head of the list,
+by making the new node's <TT>next</TT> pointer
+point at the old head of the list,
+and then resetting the head of the list to be the new node.
+(Another word for a list where we always add new items
+at the beginning is a <dfn>stack</dfn>.)
+
+</p><p>Naturally, we'd like to encapsulate this operation of prepending
+an item to a list as a function.
+Doing so is just a little bit tricky,
+because the list's head pointer is modified every time.
+There are several ways to achieve this modification;
+the way we'll do it is to have our list-prepending function
+return a pointer to the new head of the list.
+Here is the function:
+<pre>
+#include &lt;stdio.h&gt;		/* for fprintf, stderr */
+#include &lt;stdlib.h&gt;		/* for malloc, exit */
+#include &lt;string.h&gt;		/* for strlen, strcpy */
+
+struct listnode *prepend(char *newword, struct listnode *oldhead)
+{
+struct listnode *newnode = malloc(sizeof(struct listnode));
+if(newnode == NULL)
+	{
+	fprintf(stderr, "out of memory\n");
+	exit(1);
+	}
+
+newnode-&gt;item = malloc(strlen(newword) + 1);
+if(newnode-&gt;item == NULL)
+	{
+	fprintf(stderr, "out of memory\n");
+	exit(1);
+	}
+strcpy(newnode-&gt;item, newword);
+
+newnode-&gt;next = oldhead;
+return newnode;
+}
+</pre>
+Since we want this to be a general-purpose function,
+we also allocate new space for the new string (word, item)
+being stored.
+Otherwise,
+we'd be depending on the caller to arrange that the pointer to
+the new string remain valid for as long as the list was in use.
+As we'll see, that's not always a safe assumption.
+By allocating our own memory,
+which ``belongs'' to the list,
+we ensure that the list isn't dependent on the caller in this way.
+(Notice, too, that the number of bytes we ask for is
+<TT>strlen(newword) + 1</TT>.)
+</p><p>(As an aside, it's a mild blemish on the above code that it
+contains two identical calls to <TT>fprintf</TT>,
+complaining about two separate potential failures in two calls
+to <TT>malloc</TT>.
+It's quite possible to combine these two cases,
+and many C programmers prefer to do so,
+although the expression may be a bit scary-looking at first:
+<pre>
+struct listnode *newnode;
+if((newnode = malloc(sizeof(struct listnode))) == NULL ||
+		(newnode-&gt;item = malloc(strlen(newword) + 1)) == NULL)
+	{
+	fprintf(stderr, "out of memory\n");
+	exit(1);
+	}
+</pre>
+How does this work?
+First it calls <TT>malloc(sizeof(struct listnode))</TT>,
+and assigns the result to <TT>newnode</TT>.
+Then it calls <TT>malloc(strlen(newword) + 1)</TT>,
+and assigns the result to <TT>newnode-&gt;item</TT>.
+This code relies on two special guarantees of C's <TT>||</TT> operator,
+namely that it always evaluates its left-hand side first,
+and that if the left-hand side evaluates as true,
+it doesn't bother to evaluate the right-hand side,
+because once the left-hand side is true,
+the final result is definitely going to be true.
+Therefore,
+we're guaranteed that we'll allocate space for <TT>newnode</TT>
+to point to before we try to fill in <TT>newnode-&gt;item</TT>,
+but if the first call to <TT>malloc</TT> fails,
+we won't
+call <TT>malloc</TT> a second time or
+try to fill in <TT>newnode-&gt;item</TT> at all.
+These guarantees--of left-to-right evaluation,
+and of skipping the evaluation of the right-hand side if the
+left-hand side determines the result--are
+unique to the <TT>||</TT> and <TT>&amp;&amp;</TT> operators.
+
+
+It's perfectly acceptable to rely on these guarantees when using
+<TT>||</TT> and <TT>&amp;&amp;</TT>,
+but don't assume that other operators will operate
+deterministically from left to right,
+because most of them don't.)
+</p><p>Now that we have our <TT>prepend</TT> function,
+we can build a list by calling
+it
+
+several times in succession:
+<pre>
+	struct listnode *head = NULL;
+	head = prepend("world", head);
+	head = prepend("hello", head);
+</pre>
+This code builds essentially the same list as our first, static example.
+Notice how we initialize the list head pointer with a null pointer,
+which is synonymous with an empty list.
+(Notice also that the code we wrote up above,
+for printing a list,
+would also deal correctly with an empty list.)
+</p><p>Using static calls to <TT>prepend</TT> is hardly more
+interesting than building a static link by hand.
+To make things truly interesting,
+let's read words or strings typed by the user
+(or redirected from a file),
+and prepend those to a list.
+The code is not hard:
+<pre>
+	#define MAXLINE 200
+
+	char line[MAXLINE];
+	struct listnode *head = NULL;
+	struct listnode *lp;
+
+	while(getline(line, MAXLINE) != EOF)
+		head = prepend(line, head);
+
+	for(lp = head; lp != NULL; lp = lp-&gt;next)
+		printf("%s\n", lp-&gt;item);
+</pre>
+(<TT>getline</TT> is the line-reading function we've been using.
+
+If you don't have a copy handy,
+you can use the <TT>fgets</TT> function from the standard 
+library.)
+</p><p>If you type in this code and run it,
+you will find that it prints lines back out in the reverse order
+that you typed them.
+(In doing so, of course,
+it slurps all the lines into memory,
+so you might run out of memory if you tried to use this
+technique for reversing all the lines in a huge file.)
+Notice that when we call <TT>prepend</TT> in this way,
+it <em>is</em> important that <TT>prepend</TT> allocate memory for,
+and stash away, each string.
+Can you see what would happen if <TT>prepend</TT> did not,
+that is,
+if it simply said <TT>newnode-&gt;item = newword</TT>?
+</p><p></p><p>Linked lists are only the simplest example of linked data structures.
+There are also queues, doubly-linked lists, trees,
+and circular lists.
+We'll see
+more
+concrete examples of linked structures in the adventure game example.
+The set of objects sitting in a room
+(or held by the player)
+will be represented by a linked list of objects,
+and the rooms will be linked to each other
+to indicate the passages between rooms.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx1d.html" rev=precedes>prev</a>
+<a href="sx2.html" rel=precedes>next</a>
+<a href="sx1.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1996-1999
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

@@ -1,0 +1,467 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>Assignment #4</title>
+</head>
+<body>
+<H1>Assignment #4</H1>
+
+
+
+
+
+<B>Intermediate C Programming
+<br>
+<br>
+UW Experimental College
+</B><br>
+<br>
+<B>Assignment #4
+</B><p><B>Handouts:
+</B></p><p><a href="PS4.html">Assignment #4</a>
+<br><a href="PS3a.html">Assignment #3 Answers</a>
+<br><a href="../int/sx6.html">Class Notes, Chapter 20</a>
+<p><B>Exercises:
+</B></p><OL><li>This week we're going to add containers
+(so that objects can be put inside of other objects)
+and attributes,
+so that we can remember things about objects
+(such as whether they're containers, whether they're open, etc.).
+<br>
+<br>
+The code to implement these changes is scattered,
+and not all of it is
+in the distribution directories.
+You'll have to type some of this new code in yourself.
+<br>
+<br>
+Here is the modified object structure,
+along with a few definitions:
+<pre>
+struct object
+	{
+	char name[MAXNAME];
+	unsigned int attrs;
+	struct object *contents;	/* contents (if container) */
+	struct object *lnext;		/* next in list of contained objects */
+					/* (i.e. in this object's container) */
+	char *desc;			/* long description */
+	};
+
+#define CONTAINER	0x0001
+#define CLOSABLE	0x0002
+#define OPEN		0x0004
+#define HEAVY		0x0008
+#define BROKEN		0x0010
+#define TOOL		0x0020
+#define SOFT		0x0040
+#define SHARP		0x0080
+#define LOCK		0x0100
+#define KEY		0x0200
+#define LOCKED		0x0400
+#define TRANSPARENT	0x0800
+#define IMMOBILE	0x1000
+
+#define Iscontainer(o) ((o)-&gt;attrs &amp; CONTAINER)
+#define Isopen(o) ((o)-&gt;attrs &amp; OPEN)
+</pre>
+(This code is in the file <TT>game.xh</TT> in the <TT>week4</TT> subdirectory,
+although the copy there is missing the new <TT>desc</TT> field for objects.)
+<br>
+<br>
+Here is new code,
+for <TT>commands.c</TT>,
+to implement new ``open,'' ``close,''
+and ``put (in)'' commands:
+<pre>
+else if(strcmp(verb, "open") == 0)
+	{
+	if(objp == NULL)
+		{
+		printf("You must tell me what to open.\n");
+		return FALSE;
+		}
+	if(Isopen(objp))
+		{
+		printf("The %s is already open.\n", objp-&gt;name);
+		return FALSE;
+		}
+	if(!(objp-&gt;attrs &amp; CLOSABLE))
+		{
+		printf("You can't open the %s.\n", objp-&gt;name);
+		return FALSE;
+		}
+	objp-&gt;attrs |= OPEN;
+	printf("The %s is now open.\n", objp-&gt;name);
+	}
+
+else if(strcmp(verb, "close") == 0)
+	{
+	if(objp == NULL)
+		{
+		printf("You must tell me what to close.\n");
+		return FALSE;
+		}
+	if(!(objp-&gt;attrs &amp; CLOSABLE))
+		{
+		printf("You can't close the %s.\n", objp-&gt;name);
+		return FALSE;
+		}
+	if(!Isopen(objp))
+		{
+		printf("The %s is already closed.\n", objp-&gt;name);
+		return FALSE;
+		}
+	objp-&gt;attrs &amp;= ~OPEN;
+	printf("The %s is now closed.\n", objp-&gt;name);
+	}
+
+else if(strcmp(verb, "put") == 0)
+	{
+	if(objp == NULL)
+		{
+		printf("You must tell me what to put.\n");
+		return FALSE;
+		}
+	if(!contains(player-&gt;contents, objp))
+		{
+		printf("You don't have the %s.\n", objp-&gt;name);
+		return FALSE;
+		}
+	if(cmd-&gt;preposition == NULL || strcmp(cmd-&gt;preposition, "in") != 0 ||
+			cmd-&gt;xobject == NULL)
+		{
+		printf("You must tell me where to put the %s.\n",
+							objp-&gt;name);
+		return FALSE;
+		}
+	if(!Iscontainer(cmd-&gt;xobject))
+		{
+		printf("You can't put things in the %s.\n",
+							cmd-&gt;xobject-&gt;name);
+		return FALSE;
+		}
+	if((cmd-&gt;xobject-&gt;attrs &amp; CLOSABLE) &amp;&amp; !Isopen(cmd-&gt;xobject))
+		{
+		printf("The %s is closed.\n", cmd-&gt;xobject-&gt;name);
+		return FALSE;
+		}
+	if(!putobject(player, objp, cmd-&gt;xobject))
+		{
+		/* shouldn't happen */
+		printf("You can't put the %s in the %s!\n",
+			objp-&gt;name, cmd-&gt;xobject-&gt;name);
+		return FALSE;
+		}
+	printf("Now the %s is in the %s.\n",
+			objp-&gt;name, cmd-&gt;xobject-&gt;name);
+	}
+</pre>
+(This code is in the file <TT>week4/commands.xc</TT>.)
+<br>
+<br>
+Here is a new version of <TT>newobject</TT>, for <TT>object.c</TT>,
+that initializes the new object attribute and contents fields.
+(It's also missing any required initialization
+of the new long description field;
+make sure you preserve yours.)
+<pre>
+struct object *
+newobject(char *name)
+{
+struct object *objp;
+
+if(nobjects &gt;= MAXOBJECTS)
+	{
+	fprintf(stderr, "too many objects\n");
+	exit(1);
+	}
+
+objp = &amp;objects[nobjects++];
+
+strcpy(objp-&gt;name, name);
+objp-&gt;lnext = NULL;
+objp-&gt;attrs = 0;
+objp-&gt;contents = NULL;
+
+return objp;
+}
+</pre>
+Here is the new <TT>putobject</TT> function, for <TT>object.c</TT>.
+(It's in <TT>week4/object.xc</TT>.)
+<pre>
+/* transfer object from actor to container */
+
+putobject(struct actor *actp, struct object *objp, struct object *container)
+{
+struct object *lp;
+struct object *prevlp = NULL;
+
+for(lp = actp-&gt;contents; lp != NULL; lp = lp-&gt;lnext)
+	{
+	if(lp == objp)				/* found it */
+		{
+		/* splice out of actor's list */
+
+		if(lp == actp-&gt;contents)	/* head of list */
+			actp-&gt;contents = lp-&gt;lnext;
+		else	prevlp-&gt;lnext = lp-&gt;lnext;
+
+		/* splice into container's list */
+
+		lp-&gt;lnext = container-&gt;contents;
+		container-&gt;contents = lp;
+
+		return TRUE;
+		}
+
+	prevlp = lp;
+	}
+
+/* didn't find it (error) */
+
+return FALSE;
+}
+</pre>
+Here is new code for the <TT>parsedatafile</TT> function
+in <TT>io.c</TT>,
+to read attributes for objects:
+<pre>
+	else if(strcmp(av[0], "attribute") == 0)
+		{
+		if(currentobject == NULL)
+			continue;
+		if(strcmp(av[1], "container") == 0)
+			currentobject-&gt;attrs |= CONTAINER;
+		else if(strcmp(av[1], "closable") == 0)
+			currentobject-&gt;attrs |= CLOSABLE;
+		else if(strcmp(av[1], "open") == 0)
+			currentobject-&gt;attrs |= OPEN;
+		else if(strcmp(av[1], "heavy") == 0)
+			currentobject-&gt;attrs |= HEAVY;
+		else if(strcmp(av[1], "soft") == 0)
+			currentobject-&gt;attrs |= SOFT;
+		else if(strcmp(av[1], "sharp") == 0)
+			currentobject-&gt;attrs |= SHARP;
+		}
+</pre>
+(This code is incomplete;
+at some point you'll have to add cases for the other attributes 
+defined
+in <TT>game.h</TT>.)
+<br>
+<br>
+Here are the ``break'' and ``cut'' commands
+from <TT>commands.c</TT>,
+modified to make use of a few attributes:
+<pre>
+else if(strcmp(verb, "break") == 0)
+	{
+	if(objp == NULL)
+		{
+		printf("You must tell me what to break.\n");
+		return FALSE;
+		}
+	if(cmd-&gt;preposition == NULL || strcmp(cmd-&gt;preposition, "with") != 0 ||
+			cmd-&gt;xobject == NULL)
+		{
+		printf("You must tell me what to break with.\n");
+		return FALSE;
+		}
+	if(!contains(player-&gt;contents, cmd-&gt;xobject))
+		{
+		printf("You have no %s.\n", cmd-&gt;xobject-&gt;name);
+		return FALSE;
+		}
+	if(!(cmd-&gt;xobject-&gt;attrs &amp; HEAVY))
+		{
+		printf("I don't think the %s is heavy enough to break things with.\n",
+							cmd-&gt;xobject-&gt;name);
+		return FALSE;
+		}
+	objp-&gt;attrs |= BROKEN;
+	printf("Oh, dear.  Now the %s is broken.\n", objp-&gt;name);
+	}
+
+else if(strcmp(verb, "cut") == 0)
+	{
+	if(objp == NULL)
+		{
+		printf("You must tell me what to cut.\n");
+		return FALSE;
+		}
+	if(cmd-&gt;preposition == NULL || strcmp(cmd-&gt;preposition, "with") != 0 ||
+			cmd-&gt;xobject == NULL)
+		{
+		printf("You must tell me what to cut with.\n");
+		return FALSE;
+		}
+	if(!contains(player-&gt;contents, cmd-&gt;xobject))
+		{
+		printf("You have no %s.\n", cmd-&gt;xobject-&gt;name);
+		return FALSE;
+		}
+	if(!(cmd-&gt;xobject-&gt;attrs &amp; SHARP))
+		{
+		printf("I don't think the %s is sharp enough to cut things with.\n",
+							cmd-&gt;xobject-&gt;name);
+		return FALSE;
+		}
+	if(!(objp-&gt;attrs &amp; SOFT))
+		{
+		printf("I don't think you can cut the %s with the %s.\n",
+					objp-&gt;name, cmd-&gt;xobject-&gt;name);
+		return FALSE;
+		}
+	printf("The %s is now cut in two.\n", objp-&gt;name);
+	}
+</pre>
+Try to get all of this code integrated, compiled, and working.
+You will probably have to add a few prototypes to <TT>game.h</TT>.
+<br>
+<br>
+Once it compiles,
+before you can play with the new features,
+you will have to make some changes to the data file,
+<TT>dungeon.dat</TT>, too.
+Make the hammer heavy by adding the line
+<pre>
+	attribute heavy
+</pre>
+just after the line
+<pre>
+	object hammer
+</pre>
+Make the kettle a container by adding the line
+<pre>
+	attribute container
+</pre>
+just after the line
+<pre>
+	object kettle
+</pre>
+Add a knife object by adding the lines
+<pre>
+	object knife
+	attribute sharp
+</pre>
+in one of the rooms.
+Add a box object by adding the lines
+<pre>
+	object box
+	attribute closable
+</pre>
+Now you should be able to break things with the hammer,
+and put things into the kettle or box
+(once you open the box).
+The knife won't cut things unless they're soft,
+so add an object with
+<pre>
+	attribute soft
+</pre>
+and try cutting it with the knife.
+Once you put things into containers,
+they'll seem to disappear;
+we'll fix that in the next two exercises.
+<br>
+<br>
+With these changes, the game suddenly explodes in potential complexity.
+There are lots and lots of features you'll be able to add,
+limited only by your own creativity and the amount of time you 
+care to spend/waste.
+I've suggested several changes and improvements below,
+although you don't have to make all of them,
+and you're not limited to these suggestions, either.
+(You won't be able to add too many more attributes, though, 
+without possibly running out of bits in an int.
+We'll start using a more open-ended scheme for implementing 
+attributes next time.
+In the mean time, you could make
+the <TT>attrs</TT> field
+an <TT>unsigned long int</TT>
+if you were desperate to add more attributes.)
+<li>Modify the <TT>findobject</TT> function in <TT>object.c</TT> so 
+that it can find objects when they're inside containers
+(both in the actor's possession and sitting in the room).
+The original implementation of <TT>findobject</TT>
+has separate loops for searching the actor's list of objects
+and the room's list of objects.
+But now, when an object
+(in either list)
+is a container,
+we'll need to search through <em>its</em> list of
+(contained)
+objects, too.
+It will be easiest if you add a new function,
+<TT>findobj2</TT>,
+
+which searches for an object in any list of objects.
+The code in <TT>findobj2</TT> will be just like
+the old code in <TT>findobject</TT>
+for searching the actor's and room's lists;
+in fact, once you write <TT>findobj2</TT>,
+you'll be able to replace the actor- and room-searching code
+with simple calls to
+<pre>
+	findobj2(actp-&gt;contents, name);
+</pre>
+and
+<pre>
+	findobj2(actp-&gt;location-&gt;contents, name);
+</pre>
+Ideally,
+your scheme should work even to find objects within objects 
+within objects
+(or deeper);
+this will involve recursive calls to <TT>findobj2</TT>.
+<li>Modify the <TT>takeobject</TT> function in <TT>object.c</TT>
+so that it can also take objects which are sitting in containers
+(both in the actor's possession and sitting in the room).
+If a container is <TT>CLOSABLE</TT>, make sure it's <TT>OPEN</TT>!
+<li>Rewrite the ``examine'' command
+(in <TT>commands.c</TT>)
+to mention some of the relevant attributes
+(<TT>OPEN</TT>, <TT>BROKEN</TT>, etc.)
+of the object being examined.
+(Hint: this is a good opportunity to use the conditional or 
+<TT>?:</TT> operator.)
+<li>Modify the <TT>listobjects</TT> function in <TT>object.c</TT> to 
+list the contents (if any) of objects which are containers.
+Should it print the contents of closed containers?
+(In a more complicated game, we might worry about transparency...)
+<li>Implement objects which can be locked
+(if they have the <TT>LOCK</TT> attribute).
+Add a ``lock'' command to lock them
+(i.e. to set the <TT>LOCKED</TT> attribute)
+and an ``unlock'' command to unlock them.
+Both ``lock'' and ``unlock'' should require 
+that the user use a tool which has the <TT>KEY</TT> attribute.
+(In other words, ``lock strongbox with key'' should 
+work,
+but ``lock strongbox with broom'' should not work.
+But don't worry about trying to make certain keys fit only certain locks.)
+Don't let objects be opened if they have the <TT>LOCK</TT> attribute
+and are locked.
+(You'll have to update the attribute-reading code in <TT>io.c</TT>
+to handle the <TT>LOCK</TT>, <TT>KEY</TT>, and <TT>LOCKED</TT> attributes.)
+<li>Implement a ``fix'' command which will let the user 
+fix broken objects,
+as long as the preposition ``with'' appears and the 
+implement is an object with the <TT>TOOL</TT> attribute.
+(You'll have to update the attribute-reading code in <TT>io.c</TT>
+to handle the <TT>TOOL</TT> attribute.)
+<li>Implement immobile objects that can't be picked up.
+(You'll have to update the attribute-reading code in <TT>io.c</TT>
+to handle the <TT>IMMOBILE</TT> attribute.)
+</OL><hr>
+<hr>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-9
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-04 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

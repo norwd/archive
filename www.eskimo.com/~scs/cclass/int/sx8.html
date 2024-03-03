@@ -1,0 +1,378 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>Chapter 22: Pointers to Pointers</title>
+<link href="sx7.html" rev=precedes>
+<link href="sx9.html" rel=precedes>
+<link href="top.html" rev=subdocument>
+</head>
+<body>
+<H1>Chapter 22: Pointers to Pointers</H1>
+
+<p>Since we can have pointers to <TT>int</TT>,
+and pointers to <TT>char</TT>,
+and pointers to any structures we've defined,
+and in fact pointers to any type in C,
+it shouldn't come as too much of a surprise that we can have
+pointers to other pointers.
+If we're used to thinking about simple pointers,
+and to keeping clear in our minds the distinction between
+<I>the pointer itself</I> and <I>what it points to</I>,
+we should be able to think about pointers to pointers, too,
+although we'll now have to distinguish between the pointer,
+what it points to,
+and what the pointer that it points to points to.
+(And, of course, we might also end up with
+pointers to pointers to pointers,
+or pointers to pointers to pointers to pointers,
+although these rapidly become too esoteric to have any practical
+use.)
+</p><p>The declaration of a pointer-to-pointer looks like
+<pre>
+	int **ipp;
+</pre>
+where the two asterisks indicate
+that two levels of pointers are involved.
+</p><p>Starting off with the familiar, uninspiring,
+kindergarten-style examples,
+we can demonstrate the use of <TT>ipp</TT>
+by declaring some pointers for it to point to and some
+<TT>int</TT>s for those pointers to point to:
+<pre>
+	int i = 5, j = 6; k = 7;
+	int *ip1 = &amp;i, *ip2 = &amp;j;
+</pre>
+Now we can set
+<pre>
+	ipp = &amp;ip1;
+</pre>
+and <TT>ipp</TT> points to <TT>ip1</TT> which points to <TT>i</TT>.
+<TT>*ipp</TT> is <TT>ip1</TT>,
+and <TT>**ipp</TT> is <TT>i</TT>, or 5.
+We can illustrate the situation,
+with our familiar box-and-arrow notation, like this:
+<br>
+<center><img src="fig22.1.gif"></center>
+<br>
+If we say
+<pre>
+	*ipp = ip2;
+</pre>
+we've changed the pointer pointed to by <TT>ipp</TT>
+(that is, <TT>ip1</TT>)
+to contain a copy of <TT>ip2</TT>,
+so that it (<TT>ip1</TT>)
+now points at <TT>j</TT>:
+<br>
+<center><img src="fig22.2.gif"></center>
+<br>
+If we say
+<pre>
+	*ipp = &amp;k;
+</pre>
+we've changed the pointer pointed to by <TT>ipp</TT>
+(that is, <TT>ip1</TT> again)
+to point to <TT>k</TT>:
+<br>
+<center><img src="fig22.3.gif"></center>
+<br>
+</p><p>What are pointers to pointers good for, in practice?
+One use is returning pointers from functions,
+via pointer arguments rather than as the formal return value.
+To explain this, let's first step back and consider the case of
+returning a simple type, such as <TT>int</TT>, from a function via
+a pointer argument.
+If we write the function
+<pre>
+	f(int *ip)
+	{
+		*ip = 5;
+	}
+</pre>
+and then call it like this:
+<pre>
+	int i;
+	f(&amp;i);
+</pre>
+then <TT>f</TT> will ``return'' the value 5 by writing
+it to the location specified by the pointer passed by the caller;
+in this case, to the caller's variable <TT>i</TT>.
+A function might ``return'' values in this way if it
+had multiple things to return,
+since a function can only have one formal return value
+(that is, it can only return one value via the <TT>return</TT>
+statement.)
+The important thing to notice is that for the function to return
+a value of type <TT>int</TT>,
+it used a parameter of type pointer-to-<TT>int</TT>.
+</p><p>Now, suppose that a function wants to return a <em>pointer</em> in this way.
+The corresponding parameter will then have to be a pointer to a pointer.
+For example, here is a little function which tries to allocate
+memory for a string of length <TT>n</TT>,
+and which returns zero (``false'') if it fails and 1
+(nonzero, or ``true'') if it succeeds, returning the
+actual pointer to the allocated memory via a pointer:
+<pre>
+	#include &lt;stdlib.h&gt;
+
+	int allocstr(int len, char **retptr)
+	{
+		char *p = malloc(len + 1);	/* +1 for \0 */
+		if(p == NULL)
+			return 0;
+		*retptr = p;
+		return 1;
+	}
+</pre>
+The caller can then do something like
+<pre>
+	char *string = "Hello, world!";
+	char *copystr;
+	if(allocstr(strlen(string), &amp;copystr))
+		strcpy(copystr, string);
+	else	fprintf(stderr, "out of memory\n");
+</pre>
+(This is a fairly crude example;
+the <TT>allocstr</TT> function is not terribly useful.
+It would have been just about as easy for the caller to call
+<TT>malloc</TT> directly.
+A different,
+and more useful,
+approach to writing a ``wrapper'' function around <TT>malloc</TT>
+is exemplified by the <TT>chkmalloc</TT> function we've been using.)
+</p><p>One side point about pointers to pointers and memory allocation:
+although the <TT>void *</TT> type,
+as returned by <TT>malloc</TT>,
+is a ``generic pointer,''
+suitable for assigning to or from pointers of any type,
+the hypothetical type <TT>void **</TT> is <em>not</em>
+a ``generic pointer to pointer.''
+Our <TT>allocstr</TT> example can only be used for allocating
+pointers to <TT>char</TT>.
+It would not be possible to use a function which returned generic
+pointers indirectly via a <TT>void **</TT> pointer,
+because when you tried to use it, for example by declaring and
+calling
+<pre>
+	double *dptr;
+	if(!hypotheticalwrapperfunc(100, sizeof(double), &amp;dptr))
+		fprintf(stderr, "out of memory\n");
+</pre>
+you would not be passing a <TT>void **</TT>,
+but rather a <TT>double **</TT>.
+</p><p>Another good use for pointers to pointers is in dynamically allocated,
+simulated multidimensional arrays,
+which we'll discuss in the next chapter.
+</p><p>As a final example,
+let's look at how pointers to pointers can be used to eliminate a
+nuisance we've had when trying to insert and delete items in
+linked lists.
+For simplicity, we'll consider lists of integers,
+built using this structure:
+<pre>
+	struct list
+		{
+		int item;
+		struct list *next;
+		};
+</pre>
+Suppose we're trying to write
+some code
+to delete a given integer from a list.
+The straightforward solution looks like this:
+<pre>
+	/* delete node containing i from list pointed to by lp */
+
+	struct list *lp, *prevlp;
+	for(lp = list; lp != NULL; lp = lp-&gt;next)
+		{
+		if(lp-&gt;item == i)
+			{
+			if(lp == list)
+				list = lp-&gt;next;
+			else	prevlp-&gt;next = lp-&gt;next;
+			break;
+			}
+		prevlp = lp;
+		}
+	}
+</pre>
+This code works, but it has two blemishes.
+One is that it has to use an extra variable to keep track of the
+node one behind the one it's looking at,
+and the other is that it has to use an extra test to special-case the
+situation in which the node being deleted is at the head of the
+list.
+Both of these problems arise because the deletion of a node from
+the list involves modifying the previous pointer to point to the next node
+(that is, the node before the deleted node to point to the one
+following).
+But, depending on whether the node being deleted is the first
+node in the list or not,
+the pointer that needs modifying is either the pointer that
+points to the head of the list,
+or the <TT>next</TT> pointer in the previous node.
+</p><p>To illustrate this, suppose that we have the list (1, 2, 3)
+and we're trying to delete the element 1.
+After we've found the element 1,
+<TT>lp</TT> points to its node,
+which just happens to be the same node
+that the main <TT>list</TT> pointer points to,
+as illustrated in (a) below:
+<br>
+<center><img src="fig22.4.gif"></center>
+<br>
+To remove element 1 from the list,
+then,
+we must adjust the main <TT>list</TT> pointer
+so that it points to 2's node,
+the new head of the list
+(as shown in (b)).
+If we were trying to delete node 2, on the other hand
+(as illustrated in (c) above),
+we'd have to adjust node 1's <TT>next</TT> pointer to point to 3.
+The <TT>prevlp</TT> pointer keeps track of
+the previous node we were looking at,
+since
+(at other than the first node in the list)
+that's the node whose <TT>next</TT> pointer will need adjusting.
+(Notice that if we were to delete node 3,
+we would copy its <TT>next</TT> pointer over to 2,
+but since 3's <TT>next</TT> pointer is the null pointer,
+copying it to node 2
+would make node 2 the end of the list,
+
+as desired.)
+</p><p>We can write another version of the list-deletion code,
+which is (in some ways, at least)
+much cleaner,
+by using a
+<em>pointer to a pointer</em>
+to a
+<TT>struct list</TT>.
+This pointer will point at the pointer which points at the node
+we're looking at;
+it will either point at the head pointer or at the <TT>next</TT>
+pointer of the node we looked at last time.
+Since this pointer points at the pointer that points at the node
+we're looking at (got that?),
+it points at the pointer which we need to modify if the node
+we're looking at is the node we're deleting.
+Let's see how the code looks:
+<pre>
+	struct list **lpp;
+	for(lpp = &amp;list; *lpp != NULL; lpp = &amp;(*lpp)-&gt;next)
+		{
+		if((*lpp)-&gt;item == i)
+			{
+			*lpp = (*lpp)-&gt;next;
+			break;
+			}
+		}
+	}
+</pre>
+That single line
+<pre>
+	*lpp = (*lpp)-&gt;next;
+</pre>
+updates the correct pointer,
+to splice the node
+it refers to
+out of the list,
+regardless of whether
+the pointer being updated is
+the head pointer
+or one of the <TT>next</TT> pointers.
+(Of course, the payoff is not absolute,
+because
+the use of a pointer to a pointer to a <TT>struct list</TT> leads
+to an algorithm which might not be nearly as obvious at first glance.)
+</p><p>To illustrate
+the use of the pointer-to-pointer <TT>lpp</TT>
+graphically,
+here are two more figures illustrating
+the situation just before deleting node 1
+(on the left)
+or node 2
+(on the right).
+<br>
+<center><img src="fig22.5.gif"></center>
+<br>
+In both cases,
+<TT>lpp</TT> points at a <TT>struct node</TT> pointer
+which points at the node to be deleted.
+In both cases,
+the pointer pointed to by <TT>lpp</TT>
+(that is, the pointer <TT>*lpp</TT>)
+is the pointer that needs to be updated.
+In both cases, the new pointer
+(the pointer that <TT>*lpp</TT> is to be updated <em>to</em>)
+is the <TT>next</TT> pointer of the node being deleted,
+which is always <TT>(*lpp)-&gt;next</TT>.
+</p><p>One other aspect of the code deserves mention.
+The expression
+<pre>
+	(*lpp)-&gt;next
+</pre>
+describes the <TT>next</TT> pointer of the <TT>struct node</TT>
+which is pointed to by <TT>*lpp</TT>,
+that is,
+which is pointed to by the pointer
+which is pointed to by <TT>lpp</TT>.
+The expression
+<pre>
+	lpp = &amp;(*lpp)-&gt;next
+</pre>
+sets <TT>lpp</TT> to point to the <TT>next</TT> field
+of the <TT>struct list</TT>
+pointed to by <TT>*lpp</TT>.
+In both cases,
+the parentheses
+around <TT>*lpp</TT>
+are needed because the precedence of <TT>*</TT> is
+lower than <TT>-&gt;</TT>.
+</p><p>As a second,
+related example,
+here is a piece of code for <em>inserting</em> a new node into a list,
+in its proper order.
+This code uses a pointer-to-pointer-to-<TT>struct list</TT>
+for the same reason,
+namely,
+so that it doesn't have to worry about treating the beginning of
+the list specially.
+<pre>
+	/* insert node newlp into list */
+
+	struct list **lpp;
+	for(lpp = &amp;list; *lpp != NULL; lpp = &amp;(*lpp)-&gt;next)
+		{
+		struct list *lp = *lpp;
+		if(newlp-&gt;item &lt; lp-&gt;item)
+			{
+			newlp-&gt;next = lp;
+			*lpp = newlp;
+			break;
+			}
+		}
+	}
+</pre>
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx7.html" rev=precedes>prev</a>
+<a href="sx9.html" rel=precedes>next</a>
+<a href="top.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1996-1999
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

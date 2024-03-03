@@ -1,0 +1,153 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<html>
+<head>
+</head>
+<body>
+<B>An Introduction to ``The Game''
+</B><br>
+<br>
+<p>Our ongoing example
+during this entire class
+will be a relatively simple but fully functional
+text-based adventure game,
+patterned roughly after the classic games ADVENT and Zork.
+If you haven't played one of these games before,
+the basic idea is that you are an ``actor''
+in a playing field
+(often referred to as a ``dungeon'')
+consisting of a number of interconnected rooms.
+You can move from room to room,
+pick up objects you find lying around
+(such as keys or swords or C compilers),
+and use these objects to perform various tasks,
+such as unlocking doors
+or slaying dragons
+or writing programs.
+</p><p>You interact with the game
+by typing commands
+which are simple English sentences.
+(In our first attempts,
+the sentences will be very simple indeed,
+but in sophisticated games of this sort
+the parsers are quite elaborate
+and can ``understand'' rather complicated sentences.)
+The game responds to each command
+by telling you what you see--a
+new room you've entered,
+or the result of some task you've managed to perform.
+</p><p>Part of the ``fun''
+(or, at least, the challenge)
+of these games
+is just figuring out what commands are acceptable.
+To get you started,
+you move from room to room
+with the commands ``north'', ``east'',
+``west'', and ``south''
+(which can be abbreviated to ``n'', ``e'',
+``w'', or ``s'').
+You can pick up objects with the ``take'' command
+and put them down by saying ``drop''.
+You can request a description of the room you're in
+by typing ``look'',
+and request a list of your possessions
+by typing ``inventory''
+(or just ``i'').
+</p><p>(Of course, since you have the source code of this particular game,
+there's an easy way out of the challenge of discovering
+which commands it accepts,
+once you discover the C function which is in charge of
+matching the commands you type
+against the list of verbs which the game understands.)
+</p><p>It might seem as if such a game would be
+difficult to write,
+but as we'll see,
+it can actually be quite easy.
+Study the code,
+starting with <TT>main.c</TT>,
+followed by <TT>commands.c</TT>,
+followed by <TT>object.c</TT> and <TT>room.c</TT>.
+(All along you'll want to refer to <TT>game.h</TT>.)
+At first it will seem that the high-level functions
+are all shirking their responsibilities--it
+will seem as if they're doing no real work,
+but rather doing only the easy part
+and then calling some other function to do the rest.
+At first, it will seem as if these sub-functions
+are going to get stuck with all the hard work,
+but when we get to them,
+we'll find that they're nicely simple, too.
+In fact,
+the complexity which we might have imagined the program would contain
+may seem to melt away before our eyes,
+as we discover that the program is composed of many functions
+each of which is quite easy to understand.
+If this
+
+result
+
+surprises you,
+study it well,
+because attacking a problem in this way--making
+a hard problem tractable by breaking it up into pieces
+each of which seems simple
+but which in concert perform a task
+which seems harder than the sum of the parts--this
+process is the essence of good programming.
+<br>
+<br>
+</p><p>The game revolves around three data structures,
+one describing the player (or ``actor''),
+one describing a room,
+and one describing an object.
+Since the dungeon will typically consist of many rooms,
+and since there will typically be many objects
+scattered among the rooms,
+we'll typically have many instances of the room and object structures.
+The object structure will contain a ``next'' field,
+capable of pointing at another object,
+so that several objects can be strung together
+as a singly-linked list.
+We'll use these lists of objects to represent
+the set of objects sitting in a room,
+or in an actor's possession.
+</p><p>Rooms will be linked together, too,
+but in a more complex way:
+each room will have up to four pointers
+to other rooms.
+These pointers can be thought of as doorways or corridors:
+the pointed-to room is the room that will be gone to
+if an actor travels in one of the four compass directions
+out of the original room.
+(A room's exits will be stored in an array of four pointers,
+where element <TT>[0]</TT> is the north exit,
+<TT>[1]</TT> is south,
+<TT>[2]</TT> is east,
+and <TT>[3]</TT> is west.
+Also, since pointers are inherently directional,
+it will be necessary for the linked-to room
+to have its own pointer back to the original room
+if the actor is to be able to return.
+This means that we can create
+deliberately confusing situations if we wish,
+such as one-way corridors,
+or rooms with exits that don't take you back to where you just came from.)
+</p><p>When linking objects and rooms together,
+we'll make heavy use of null pointers.
+The end of a linked list is indicated by a null pointer--that is,
+the last object in the list
+has a <TT>next</TT> pointer of null.
+A room with no objects,
+or an actor with no possessions,
+will have a null pointer in its <TT>contents</TT> field.
+When a room has a wall instead of a door
+in one of the four compass directions
+(that is, when it's impossible to leave a room in a particular direction)
+that will be indicated by a null pointer
+in the corresponding cell of the <TT>exits</TT> array.
+</p><hr>
+<hr>
+<p>
+<!-- patched 2023-04-04 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>16.1: Files and Streams</title>
+<link href="sx2.html" rev=precedes>
+<link href="sx2b.html" rel=precedes>
+<link href="sx2.html" rev=subdocument>
+</head>
+<body>
+<H2>16.1: Files and Streams</H2>
+
+<p>Since the beginning,
+we've been using
+``standard input''
+and ``standard output,''
+two predefined I/O streams which are available to every C program.
+The disposition of these streams is left deliberately unclear:
+the program can assume that they're connected to the ``right place'';
+usually
+(for an interactive program)
+to the user's keyboard and screen, respectively.
+However,
+since a program typically doesn't know
+exactly where they go,
+it's possible to redirect them,
+behind the program's back,
+and thereby to apply a program to some noninteractive input
+or to capture its output,
+without rewriting the program or doing any special I/O programming.
+(This ability is a cornerstone
+of the Unix ``toolkit'' methodology.
+In Unix and several other systems,
+you can redirect the input or output of a program
+as you invoke it from the shell command line
+using the <TT>&lt;</TT> or <TT>&gt;</TT> characters.)
+</p><p>Standard input is assumed by functions like <TT>getchar</TT>,
+and standard output is assumed
+by functions like <TT>putchar</TT> and <TT>printf</TT>.
+</p><p>Of course,
+it's also possible to open files
+(or other I/O sources)
+explicitly.
+We can open files using the function <TT>fopen</TT>;
+certain systems may also provide specialized ways
+of opening streams connected to I/O devices
+or set up in more exotic ways.
+A successful call to <TT>fopen</TT>
+returns a pointer of type <TT>FILE *</TT>,
+that is,
+``pointer to <TT>FILE</TT>,''
+where <TT>FILE</TT> is a special type
+defined by <TT>&lt;stdio.h&gt;</TT>.
+A <TT>FILE *</TT>
+(also called ``file pointer'')
+is the handle by which we refer to an I/O stream in C.
+I/O functions which do not assume standard input or standard output
+all accept a <TT>FILE *</TT> argument
+telling them which stream to read from or write to.
+(Examples are <TT>getc</TT>, <TT>putc</TT>, and <TT>fprintf</TT>.)
+Notice that a file pointer
+which has been opened on a file
+is not the same thing as the file itself.
+A file pointer is a data structure which helps us
+access or manipulate the file.
+</p><p>Occasionally it is necessary
+to refer to the standard input or standard output
+in a situation which calls for a general-purpose <TT>FILE *</TT>.
+To handle these cases,
+there are two predefined constants:
+<TT>stdin</TT> and <TT>stdout</TT>.
+Both of these are of type <TT>FILE *</TT>,
+are declared in <TT>&lt;stdio.h&gt;</TT>,
+and can be used wherever a <TT>FILE *</TT> is required.
+(For example,
+we could simulate--or,
+in fact,
+implement--<TT>getchar</TT>
+as <TT>getc(stdin)</TT>.)
+</p><p>There is also a third predefined stream,
+the ``standard error output.''
+It has its own constant, <TT>stderr</TT>.
+By default,
+<TT>stderr</TT> is typically connected to the same
+output device
+as <TT>stdout</TT>;
+the difference between <TT>stdout</TT> and <TT>stderr</TT>
+is that <TT>stderr</TT> is <em>not</em> redirected
+when <TT>stdout</TT> is.
+<TT>stderr</TT> is,
+as its name implies,
+intended for error messages:
+if your program printed its error messages to <TT>stdout</TT>
+(e.g. by calling <TT>printf</TT>),
+they would disappear into the output file
+if the user redirected the standard output.
+Therefore,
+it's customary to print error messages
+(and also prompts,
+or anything else that shouldn't be redirected)
+to <TT>stderr</TT>,
+often by calling <TT>fprintf(stderr, message, </TT>...<TT>)</TT>.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx2.html" rev=precedes>prev</a>
+<a href="sx2b.html" rel=precedes>next</a>
+<a href="sx2.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1996-1999
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

@@ -1,0 +1,518 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>Assignment #7</title>
+</head>
+<body>
+<H1>Assignment #7</H1>
+
+
+
+
+
+<B>Intermediate C Programming
+<br>
+<br>
+UW Experimental College
+</B><br>
+<br>
+<B>Assignment #7
+</B><p><B>Handouts:
+</B></p><p><a href="PS7.html">Assignment #7</a>
+<br><a href="PS6a.html">Assignment #6 Answers</a>
+<br><a href="../int/sx11.html">Class Notes, Chapter 25</a>
+<p><B>Exercises:
+</B></p><OL><li>Adding new command verbs to the game quickly becomes cumbersome.
+As long as they all go into <TT>commands.c</TT>, they can
+potentially be invoked on any object and with any tool.
+So if a new command is (or ought to be) specific to some tool
+or direct object,
+the code to implement it has to spend most of its time
+verifying that the overcreative player isn't trying to apply
+the new command verb in some wildly imaginative but utterly
+inappropriate way (``sharpen gum with feather'';
+``pierce idea with boot''; etc.).
+It would be far better,
+in several respects,
+if scraps of code,
+for implementing certain command verbs, could be attached
+directly to objects,
+so that they would only be invoked if those objects were involved
+(and, additionally, so that the same verb
+might possibly
+perform different
+actions if applied to different objects).
+The notion of attaching code to data structures is one
+of the fundamentals of <dfn>Object Oriented Programming</dfn>,
+and it's a curious coincidence (or is it?)
+that the data structures which in this program we'd like to
+attach code to are in fact what we call ``objects.''
+<br>
+<br>
+We're going
+to add a new field,
+of type pointer-to-function,
+to our <TT>struct object</TT>.
+This field will contain a pointer to a per-object function
+which handles one or more command verbs unique to that object.
+(If an object has no unique verbs it wishes to process,
+its function pointer will be null.)
+Here is the new field for <TT>struct object</TT> in <TT>game.h</TT>:
+<pre>
+	int (*func)(struct actor *, struct object *, struct sentence *);
+</pre>
+Notice that <TT>func</TT>
+takes the same arguments as all the other command functions
+which we split <TT>commands.c</TT> up into last week.
+<br>
+<br>
+If an object contains some custom verb-handling code,
+it will be called from
+<TT>docommand</TT> in
+<TT>commands.c</TT>.
+Before trying all of the default commands,
+it first sees if either of the two objects which a command might reference
+(the direct object, or the object of the preposition)
+has its own function.
+If so, it calls that (those) function(s).
+<br>
+<br>
+Now, those functions might or might not know how to handle the
+particular verb the user typed.
+If not,
+control should flow through to the default, global command functions.
+(For example, you can still <B>take</B> or <B>drop</B> or <B>examine</B>
+just about any object,
+even if it has its own special code for when you try to
+do other things with it,
+and
+the object's function
+shouldn't have to--and couldn't--repeat
+all the other code for all the other verbs.)
+To coordinate things, then,
+each function that tries to implement one of the user's commands
+can return various status codes.
+<br>
+<br>
+There are four status codes
+(which go in <TT>game.h</TT>):
+<pre>
+	#define FAILURE		0	/* command completed unsuccessfully */
+	#define SUCCESS		1	/* command completed successfully */
+	#define CONTINUE	2	/* command not completed */
+	#define ERROR		3	/* internal error */
+</pre>
+<TT>FAILURE</TT> means that the command completed, but unsuccessfully
+(the player couldn't do what he tried to do).
+<TT>SUCCESS</TT> means that the command completed, successfully.
+<TT>CONTINUE</TT> means that the function which was just called
+did not implement the command,
+and that the game system (i.e. the <TT>docommand</TT> function)
+should keep trying, by calling other functions (if any).
+Finally, <TT>ERROR</TT> indicates an internal error of some kind.
+<br>
+<br>
+Here
+is the new code for <TT>docommand</TT>.
+This goes at the top of the function,
+before it calls <TT>findcmd</TT>:
+<pre>
+if(cmd-&gt;object != NULL &amp;&amp; cmd-&gt;object-&gt;func != NULL)
+	{
+	r = (*cmd-&gt;object-&gt;func)(player, cmd-&gt;object, cmd);
+	if(r != CONTINUE)
+		return r;
+	}
+	
+if(cmd-&gt;xobject != NULL &amp;&amp; cmd-&gt;xobject-&gt;func != NULL)
+	{
+	r = (*cmd-&gt;xobject-&gt;func)(player, cmd-&gt;xobject, cmd);
+	if(r != CONTINUE)
+		return r;
+	}
+</pre>
+<br>
+<br>
+You'll also
+need to add
+the line
+<pre>
+	objp-&gt;func = NULL;
+</pre>
+to the <TT>newobject</TT> function in <TT>object.c</TT>.
+<br>
+<br>
+Next we'll need some actual functions
+(special-purpose ones)
+for various objects to use.
+Here are a few examples:
+<pre>
+int hammerfunc(struct actor *player, struct object *objp,
+					struct sentence *cmd)
+{
+	if(strcmp(cmd-&gt;verb, "break") != 0)
+		return CONTINUE;
+	if(objp != cmd-&gt;xobject)
+		return CONTINUE;
+
+	if(cmd-&gt;object == NULL)
+		{
+		printf("You must tell me what to break.\n");
+		return FAILURE;
+		}
+	if(!contains(player-&gt;contents, cmd-&gt;xobject))
+		{
+		printf("You have no %s.\n", cmd-&gt;xobject-&gt;name);
+		return FAILURE;
+		}
+
+	setattr(cmd-&gt;object, "broken");
+	printf("Oh, dear.  Now the %s is broken.\n", cmd-&gt;object-&gt;name);
+
+	return SUCCESS;
+}
+
+int toolfunc(struct actor *player, struct object *objp,
+					struct sentence *cmd)
+{
+	if(strcmp(cmd-&gt;verb, "fix") != 0)
+		return CONTINUE;
+	if(objp != cmd-&gt;xobject)
+		return CONTINUE;
+
+	if(cmd-&gt;object == NULL)
+		{
+		printf("You must tell me what to fix.\n");
+		return FAILURE;
+		}
+	if(!hasattr(cmd-&gt;object, "broken"))
+		{
+		printf("The %s is not broken.\n", cmd-&gt;object-&gt;name);
+		return FAILURE;
+		}
+	if(!contains(player-&gt;contents, cmd-&gt;xobject))
+		{
+		printf("You have no %s.\n", cmd-&gt;xobject-&gt;name);
+		return FAILURE;
+		}
+
+	unsetattr(cmd-&gt;object, "broken");
+	printf("Somehow you manage to fix the %s.\n", cmd-&gt;object-&gt;name);
+
+	return SUCCESS;
+}
+
+int cutfunc(struct actor *player, struct object *objp,
+					struct sentence *cmd)
+{
+	if(strcmp(cmd-&gt;verb, "cut") != 0)
+		return CONTINUE;
+	if(objp != cmd-&gt;xobject)
+		return CONTINUE;
+
+	if(cmd-&gt;object == NULL)
+		{
+		printf("You must tell me what to cut.\n");
+		return FAILURE;
+		}
+	if(!contains(player-&gt;contents, cmd-&gt;xobject))
+		{
+		printf("You have no %s.\n", cmd-&gt;xobject-&gt;name);
+		return FAILURE;
+		}
+	if(!hasattr(cmd-&gt;object, "soft"))
+		{
+		printf("I don't think you can cut the %s with the %s.\n",
+					cmd-&gt;object-&gt;name, cmd-&gt;xobject-&gt;name);
+		return FAILURE;
+		}
+
+	printf("The %s is now cut in two.\n", cmd-&gt;object-&gt;name);
+
+	return SUCCESS;
+}
+
+int playfunc(struct actor *player, struct object *objp,
+					struct sentence *cmd)
+{
+	if(strcmp(cmd-&gt;verb, "play") != 0)
+		return CONTINUE;
+	if(objp != cmd-&gt;object)
+		return CONTINUE;
+
+	if(!hasattr(cmd-&gt;object, "immobile"))
+		{
+		if(!contains(player-&gt;contents, cmd-&gt;object))
+			{
+			printf("You don't have the %s.\n", cmd-&gt;object-&gt;name);
+			return FAILURE;
+			}
+		}
+
+	printf("You're not quite ready for Carnegie hall,\n");
+	printf("but you do manage to force out a recognizable tune.\n");
+
+	return SUCCESS;
+}
+</pre>
+I put these functions in a new source file, <TT>objfuncs.c</TT>.
+(It is not on the disk.)
+<br>
+<br>
+The first three of these are basically simplifications
+of the <TT>breakcmd</TT>, <TT>fixcmd</TT>, and <TT>cutcmd</TT> functions
+(or, at any rate,
+the code for ``break'', ``fix'', and ``cut'')
+from <TT>commands.c</TT>.
+Since these functions will be attached to certain objects,
+and called only when those objects are involved in the command,
+these functions do not have to do quite so much checking.
+For example, <TT>hammerfunc</TT> does not have to
+make sure that the implement being used is heavy,
+because <TT>hammerfunc</TT> will only be attached to the hammer
+(or perhaps to other objects
+which it might be appropriate to smash things with).
+<br>
+<br>
+However,
+there are two new things these functions do need to check.
+Since they will be called first,
+before the default functions in <TT>commands.c</TT>,
+they must defer to those default functions for most verbs.
+They must check to see that they're being called for a verb they recognize,
+and if not, return the status code <TT>CONTINUE</TT>
+indicating that some other code down the line should keep trying.
+Also, these functions can be called
+when the object they're attached to is either
+the direct object of the sentence
+<em>or</em> the object of a preposition.
+When one of these functions is called
+for an object which appears as the direct object,
+the <TT>objp</TT> parameter is a copy of <TT>cmd-&gt;object</TT>,
+as before.
+When they're called for objects which are objects of prepositions,
+however,
+<TT>objp</TT> is a copy of that object pointer
+(see the new code for <TT>docommand</TT> above).
+So these commands must typically check
+that they're being used in the way they expect--for example,
+if <TT>hammerfunc</TT> didn't check to make sure that it was being used
+
+as a prepositional object,
+it might incorrectly attempt to handle a nonsense sentence like
+<pre>
+	break hammer
+</pre>
+<br>
+<br>
+The next step is to hook these functions up to the relevant objects.
+To do that, we'll need to invent
+a new object descriptor line for the data file,
+and add some new code to <TT>readdatafile</TT> in <TT>io.c</TT> to parse it.
+We'll rig it up so that we can say
+<pre>
+	object hammer
+	attribute heavy
+	func hmmerfunc
+</pre>
+(We'll keep the attribute ``heavy'' on the hammer,
+because it might be useful elsewhere,
+although we won't be needing it
+for the old <TT>breakcmd</TT> function any more.)
+The new code for <TT>io.c</TT> is pretty simple,
+but before we can write it,
+we have to remember that there's a significant distinction between
+the name by which we know a function
+and the internal address,
+or function pointer,
+by which the compiler knows it.
+When we write
+<pre>
+	func hammerfunc
+</pre>
+in the data file,
+it's obvious to <em>us</em>
+that we want the hammer object's <TT>func</TT> pointer
+to be hooked up to <TT>hammerfunc</TT>,
+but it is not at all obvious to the compiler.
+In particular, the compiler is not going to be looking at our data file
+at all!
+Code in <TT>io.c</TT> is going to be looking at the data file,
+and it's going to be doing it as the program is running,
+well
+after the compiler has finished its work.
+So we're going to have to ``play compiler'' just a bit,
+to match up the name of a function
+with the function itself.
+<br>
+<br>
+This will actually be rather simple to do,
+because matching up a name
+(i.e. a string)
+with a function is exactly what the <TT>struct cmdtab</TT> structure
+and <TT>findcmd</TT> function do.
+So if we build a second array of <TT>cmdtab</TT> structures,
+holding the names and function pointers
+for functions which it's appropriate to attach to objects,
+all we have to add to <TT>readdatafile</TT>
+is this scrap of code:
+<pre>
+	else if(strcmp(av[0], "func") == 0)
+		{
+		struct cmdtab *cmdtp = findcmd(av[1], objfuncs, nobjfuncs);
+		if(cmdtp != NULL)
+			currentobject-&gt;func = cmdtp-&gt;func;
+		else	fprintf(stderr, "unknown object func %s\n", av[1]);
+		}
+</pre>
+The new array of <TT>cmdtab</TT> structures is called <TT>objfuncs</TT>.
+I chose to define it at the end of the new source file <TT>objfuncs.c</TT>:
+<pre>
+struct cmdtab objfuncs[] =
+	{
+	"hammerfunc",	hammerfunc,
+	"toolfunc",	toolfunc,
+	"cutfunc",	cutfunc,
+	"playfunc",	playfunc,
+	};
+
+#define Sizeofarray(a) (sizeof(a) / sizeof(a[0]))
+
+int nobjfuncs = Sizeofarray(objfuncs);
+</pre>
+So that <TT>readdatafile</TT> can access the <TT>objfuncs</TT> array,
+we need these two lines at the top of <TT>io.c</TT>:
+<pre>
+	extern struct cmdtab objfuncs[];
+	extern int nobjfuncs;
+</pre>
+An explanation of the <TT>nobjfuncs</TT> variable is in order.
+When we called <TT>findcmd</TT> in <TT>commands.c</TT>
+to search our main list of commends,
+the call looked like
+<pre>
+	cmdtp = findcmd(cmd-&gt;verb, commands, Sizeofarray(commands));
+</pre>
+But our little <TT>Sizeofarray()</TT> macro uses <TT>sizeof</TT>,
+and <TT>sizeof</TT> works
+(rather obviously)
+only for objects which the compiler knows the size of.
+In <TT>io.c</TT>,
+where we have
+<pre>
+	extern struct cmdtab objfuncs[];
+</pre>
+the code
+<TT>sizeof(objfuncs)</TT> would not work,
+because in that source file,
+all the compiler knows about <TT>objfuncs</TT>
+is that it is an array which is defined
+(and which therefore has its size set)
+somewhere else.
+So we need to do
+the computation of the number of elements in the array
+within the source file <TT>objfuncs.c</TT>
+where the array is defined,
+and store this number in a second global variable, <TT>nobjfuncs</TT>,
+so that code in <TT>io.c</TT> can get its hands on it.
+<br>
+<br>
+Having made these changes,
+you should be able to add the line
+<pre>
+	func hammerfunc
+</pre>
+to the description of the hammer in <TT>dungeon.dat</TT>,
+and the line
+<pre>
+	func toolfunc
+</pre>
+to the description of the pliers or some other tool-like object,
+and the line
+<pre>
+	func cutfunc
+</pre>
+to the description of the knife or some other sharp object.
+You can also add the lines
+<pre>
+	object violin
+	func playfunc
+	object end
+
+	object piano
+	attribute immobile
+	func playfunc
+	object end
+</pre>
+to try out the sample ``play'' function.
+Notice that <TT>playfunc</TT> makes you
+pick up the violin before playing it,
+but since the piano is immobile,
+you can just walk up to it and start playing.
+<li>Rewrite the <TT>lockcmd</TT> and <TT>unlockcmd</TT> functions
+(from Assignment 4)
+as object functions.
+<li>Invent some more object functions and some objects for them to be attached to.
+Examples:
+weapons,
+other tools,
+magic wands...
+<li>Since object functions (if present)
+are called before the default functions in <TT>commands.c</TT>,
+they can not only supplement the commands in <TT>commands.c</TT>,
+they can also override (on a per-object basis)
+the default behavior of an existing verb.
+Invent a shower object.
+(If your dungeon doesn't already have a bathroom,
+perhaps you'll need to add that, too.)
+Rig it up so that if the player types
+<pre>
+	take shower
+</pre>
+the game will print neither ``Taken''
+nor ``The shower cannot be picked up''
+but rather something cute like
+``After spending 20 luxurious minutes in the shower,
+singing three full-length show tunes,
+and using up all the hot water,
+you emerge clean and refreshed.''
+<li>Since per-object functions are called before default functions,
+and since they can defer to those default functions
+by returning <TT>CONTINUE</TT>,
+another kind of customization is possible.
+A per-object function can recognize a verb,
+do some processing based upon it,
+but then return <TT>CONTINUE</TT>,
+so that the default machinery will also act.
+Implement a magic sword object
+so that when the player picks it up,
+the messages
+``As you pick it up,
+the sword briefly glows blue''
+and ``Taken''
+are printed.
+The first message is printed by the sword's custom function,
+and the second one by the normal ``take'' machinery in <TT>commands.c</TT>.
+<li>Implement a container of radioactive waste.
+Arrange that if the player tries to pick it up,
+the message ``the container is far too dangerous to pick up''
+is printed,
+<em>unless</em>
+the player is wearing a Hazmat suit,
+in which case the container can be picked up normally.
+Also implement the Hazmat suit object.
+(You can either just have the player pick up the Hazmat suit,
+or for extra credit,
+arrange that the Hazmat suit implement a custom ``wear'' verb.)
+</OL><hr>
+<hr>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-9
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-04 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

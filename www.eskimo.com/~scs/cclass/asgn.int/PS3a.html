@@ -1,0 +1,180 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>Assignment #3 Answers</title>
+</head>
+<body>
+<H1>Assignment #3 Answers</H1>
+
+
+
+
+
+<B>Intermediate C Programming
+<br>
+<br>
+UW Experimental College
+</B><br>
+<br>
+<B>Assignment #3 ANSWERS
+</B><br>
+<br>
+<p>Exercise 2.
+<I>Add some other commands, such as ``break'' or
+``cut'' or ``read''.
+</I><p>Here is the code I added
+(to <TT>commands.c</TT>, of course)
+to implement all three commands.
+They are all straightforward but quite boring,
+because they don't really <em>do</em> anything yet.
+(Soon we'll be able to make them more interesting.)
+<pre>
+else if(strcmp(verb, "break") == 0)
+	{
+	if(objp == NULL)
+		{
+		printf("You must tell me what to break.\n");
+		return FALSE;
+		}
+	if(cmd-&gt;preposition == NULL || strcmp(cmd-&gt;preposition, "with") != 0 ||
+			cmd-&gt;xobject == NULL)
+		{
+		printf("You must tell me what to break with.\n");
+		return FALSE;
+		}
+	if(!contains(player-&gt;contents, cmd-&gt;xobject))
+		{
+		printf("You have no %s.\n", cmd-&gt;xobject-&gt;name);
+		return FALSE;
+		}
+	printf("Oh, dear.  Now the %s is broken.\n", objp-&gt;name);
+	}
+
+else if(strcmp(verb, "cut") == 0)
+	{
+	if(objp == NULL)
+		{
+		printf("You must tell me what to cut.\n");
+		return FALSE;
+		}
+	if(cmd-&gt;preposition == NULL || strcmp(cmd-&gt;preposition, "with") != 0 ||
+			cmd-&gt;xobject == NULL)
+		{
+		printf("You must tell me what to cut with.\n");
+		return FALSE;
+		}
+	if(!contains(player-&gt;contents, cmd-&gt;xobject))
+		{
+		printf("You have no %s.\n", cmd-&gt;xobject-&gt;name);
+		return FALSE;
+		}
+	printf("The %s is now cut in two.\n", objp-&gt;name);
+	}
+
+else if(strcmp(verb, "read") == 0)
+	{
+	if(objp == NULL)
+		{
+		printf("You must tell me what to read.\n");
+		return FALSE;
+		}
+
+	printf("There isn't much to read on the %s.\n", objp-&gt;name);
+
+	}
+</pre>
+<p>Exercise 3.
+<I>Write a function <TT>plural</TT>
+so that the game can print slightly more interesting messages.
+</I><p>Here is my first <TT>plural</TT> function:
+<pre>
+#include &lt;string.h&gt;
+#include "game.h"
+
+#define MAXRETBUF 20
+
+char *
+plural(char *word)
+{
+static char retbuf[MAXRETBUF];
+strcpy(retbuf, word);
+strcat(retbuf, "s");
+return retbuf;
+}
+</pre>
+Notice that the <TT>retbuf</TT> array is declared <TT>static</TT>,
+so that it will persist after <TT>plural</TT> returns,
+so that the pointer that <TT>plural</TT> returns will remain valid.
+<p>Here is the change to
+(the newer version of)
+<TT>parser.c</TT>:
+<pre>
+if(ac &lt; 2)
+	cmd-&gt;object = NULL;
+else if((cmd-&gt;object = findobject(actor, av[1])) == NULL)
+	{
+	printf("I don't see any %s.\n", plural(av[1]));
+	return FALSE;
+	}
+</pre>
+(The only change is to the <TT>printf</TT> call.
+You could also make a similar change to the code just below
+which checks for the presence of the object of the preposition,
+if any.)
+<p>To keep my compiler happy,
+I also added the prototype
+<pre>
+	extern char *plural(char *);
+</pre>
+to <TT>game.h</TT>.
+<p>Finally, here is an improved version of the <TT>plural</TT> function.
+If the last character of the word being pluralized is s,
+it tacks on ``es''.
+(Unfortunately, if the word is <em>already</em> plural,
+this means that it ends up changing
+``marbles'' to ``marbleses,''
+and sounding like Gollum.)
+Since this version has to compute
+the length of the original word anyway,
+it's easy to make sure that it won't overflow the return buffer.
+(In this case,
+since <TT>plural</TT>'s function is relatively unimportant,
+I chose to have it return the original word,
+unpluralized,
+rather than printing error messages or aborting or anything.)
+<pre>
+#include &lt;string.h&gt;
+#include "game.h"
+
+#define MAXRETBUF 20
+
+char *
+plural(char *word)
+{
+static char retbuf[MAXRETBUF];
+int len = strlen(word);
+if(len + 3 &gt;= MAXRETBUF)
+	return word;
+strcpy(retbuf, word);
+if(word[len-1] != 's')
+	strcat(retbuf, "s");
+else	{
+	/* It ends in s. */
+	/* maybe we should add "es" */
+	strcat(retbuf, "es");
+	/* (or maybe it'a already plural and we should add nothing...) */
+	}
+return retbuf;
+}
+</pre>
+<hr>
+<hr>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-9
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

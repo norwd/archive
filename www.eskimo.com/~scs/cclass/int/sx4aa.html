@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>18.1.1: <TT>void</TT></title>
+<link href="sx4a.html" rev=precedes>
+<link href="sx4ba.html" rel=precedes>
+<link href="sx4a.html" rev=subdocument>
+</head>
+<body>
+<H3>18.1.1: <TT>void</TT></H3>
+
+<p>From time to time we have seen the keyword <TT>void</TT>
+lurking in various programs and code samples.
+<TT>void</TT> is sort of a ``placeholder'' type,
+used in circumstances where you need a type name
+but there's not really any one right type to use.
+Formally, we can say that <TT>void</TT> is a type with no values.
+</p><p>There are three main uses of the <TT>void</TT> type:
+<OL><li>As the return type of a function which does not return a value.
+A function declared as
+<pre>
+	void f()
+</pre>
+is declared as ``<TT>void</TT>'' or
+``returning <TT>void</TT>''
+which actually means that it returns no value.
+The compiler will not complain if you
+``fall off the end''
+of a <TT>void</TT> function
+without executing a <TT>return</TT> statement;
+the compiler <em>will</em> complain
+if you execute a return statement that specifies a value to be returned.
+(As far as the low-level syntax
+of the <TT>return</TT> statement is concerned,
+the expression is optional;
+but the expression is required in functions that return values
+and disallowed in <TT>void</TT> functions.)
+<li>As the argument list in the prototype of a function that accepts no parameters.
+In a function definition such as
+<pre>
+	int f()
+	{
+	...
+	}
+</pre>
+the empty parentheses indicate that the function accepts no parameters.
+But
+(for historical reasons)
+in an external function prototype declaration such as
+<pre>
+	extern int f();
+</pre>
+the empty parentheses indicate that we don't know how many
+(or what type of)
+parameters the function accepts.
+In either case,
+we can make the fact that the function accepts zero parameters explicit
+by using the keyword <TT>void</TT> in the parameter list:
+<pre>
+	extern int f(void);
+
+	int f(void)
+	{
+	...
+	}
+</pre>
+For obvious reasons, if <TT>void</TT> appears in a parameter list,
+it must be the first and only parameter,
+and it must not declare an argument name.
+(That is,
+prototypes like <TT>int f(int, void)</TT>
+and
+<TT>int f(void x)</TT>
+are meaningless and illegal.)
+<li>As a pointer type,
+to indicate a ``generic pointer''
+which might in fact point to any type.
+We need ``generic pointers''
+when we're using functions like <TT>malloc</TT>.
+<TT>malloc</TT> returns a pointer to <I>n</I> bytes of memory,
+which we may use as any type of pointer we wish.
+Normally,
+it is an error to use a value of one pointer type
+where another pointer type is required.
+For example, the fragments
+<pre>
+	int i;
+	double *dp = &amp;i;	/* WRONG */
+</pre>
+and
+<pre>
+	int *ip = dp;		/* WRONG */
+</pre>
+would both generate errors,
+because you can't assign back and forth
+between <TT>int</TT> pointers and <TT>double</TT> pointers.
+However,
+the type <TT>void *</TT>
+(``pointer to <TT>void</TT>'')
+is special:
+it <em>is</em> legal to assign a value
+of type pointer-to-<TT>void</TT>
+to a variable of some other pointer type,
+and vice versa.
+(In case the pointer types have different sizes or representations,
+the compiler will automatically perform conversions.
+We'll say more about type conversions,
+including pointer type conversions,
+in a later section.)
+So the lines
+<pre>
+	#include &lt;stdlib.h&gt;
+
+	char *cp = malloc(10);
+	int *ip = malloc(sizeof(int));
+	double *dp = malloc(sizeof(double));
+</pre>
+are all legal,
+since <TT>&lt;stdlib.h&gt;</TT> declares <TT>malloc</TT>
+as returning <TT>void *</TT>,
+indicating that an assignment of <TT>malloc</TT>'s return value
+to any pointer type is permissible.
+</OL></p><hr>
+<p>
+Read sequentially:
+<a href="sx4a.html" rev=precedes>prev</a>
+<a href="sx4ba.html" rel=precedes>next</a>
+<a href="sx4a.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1996-1999
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

@@ -1,0 +1,233 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>3.3. MS-DOS</title>
+<link href="sx3b.html" rev=precedes>
+<link href="sx3d.html" rel=precedes>
+<link href="sx3.html" rev=subdocument>
+</head>
+<body>
+<H2>3.3. MS-DOS</H2>
+
+<p>If you are using an older MS-DOS compiler,
+it may be invoked from the command line,
+in which case it will act somewhat similarly
+to the Unix compilers discussed above.
+On the other hand,
+there are several MS-DOS compilers which
+``roll their own''
+graphical user interfaces,
+and these act more like
+the GUI compilation environments described below.
+</p><p>The MS-DOS compilers I am familiar with are
+Microsoft's, Borland's,
+and DJ Delorie's (aka <TT>djgpp</TT>).
+Other MS-DOS compilers are Watcom's and Mix Software's.
+Microsoft and Borland, at least,
+make both command line compilers and
+``visual'' compilers with a more graphical user interface.
+
+The rest of this section assumes that
+you're not using much of a graphical interface,
+that you're instead simply typing commands at the DOS
+(<TT>C:\&gt;</TT>)
+prompt.
+(Theoretically,
+it's even possible to use these command-line compilers
+in a ``DOS box'' under Microsoft windows,
+but they tend not to work too well
+there.)
+</p><p>Step 1: entering or editing your source code
+</p><p>Most MS-DOS compilers probably come with
+some kind of a source code editor for typing in your programs,
+but if not,
+you'll have to use an ordinary text editor.
+(If you have a text editor you prefer,
+you can probably use it instead of the compiler's editor in any case.)
+</p><p>If at all possible,
+do <em>not</em> try to use a ``word processor''
+to enter or edit C source code.
+The compiler expects the source files
+you'll be giving it
+to be plain text files,
+not the document files
+(incorporating font and size changes, pagination,
+and all the other formatting
+goodies)
+that word processors create by default.
+Even if you remember to ask your word processor
+to save files as ``plain text'' or ``MS-DOS text files'',
+the word processor will still be
+eager to rearrange your source code
+into what it thinks of as nicely-formatted ``paragraphs'',
+which is not what you want your C code to look like.
+</p><p>In any case,
+whichever editor you use,
+make sure to type in the program
+(if it's
+an initial example from the class notes or from a book)
+<em>exactly</em> as shown,
+including all punctuation,
+and with the lines laid out
+just
+as they are in the code you're typing in.
+(Later, we'll learn what does and doesn't matter
+in terms of program layout:
+where your degrees of freedom are,
+what the compiler does and doesn't care so much about,
+which syntax you have to get exactly right
+and which parts allow you to express some creativity.
+For now,
+though,
+just
+type everything verbatim.)
+When you're finished,
+be sure to save your work in a filename ending in <TT>.c</TT>
+.
+(Also, once again,
+make sure it's a plain, MS-DOS text file,
+if you're trying to use a word processor to do the entering.)
+</p><p>Step 2: compiling the program
+</p><p>The older versions of the Microsoft compilers
+(e.g. MSC V6.00),
+which are the only ones I'm familiar with,
+use a command-line syntax like
+<pre>
+	C:\&gt; cl hello.c
+</pre>
+(``<TT>cl</TT>'' stands for ``compile and link''.
+If you're using a really ancient version, such as 3.00,
+the command may be <TT>msc</TT>,
+but I doubt there are too many of those in circulation any more.)
+</p><p>Borland's syntax
+(at least the versions I've used)
+is similar:
+<pre>
+	C:\&gt; bcc hello.c
+</pre>
+(``<TT>bcc</TT>'' obviously stands for
+``Borland C compiler''.)
+</p><p>Both of these commands request that
+the file named <TT>HELLO.C</TT> be compiled.
+Ideally
+(i.e. if there are no errors),
+an executable program will be created,
+named <TT>HELLO.EXE</TT>.
+</p><p>It's also possible to do a two-step compilation,
+requesting the compiler to build only an ``object''
+(<TT>.OBJ</TT>) file corresponding to the <TT>.C</TT> file,
+and then separately invoking the <dfn>linker</dfn>
+to actually create the executable.
+We'll defer discussion of the linker
+to the later topic of separate compilation,
+
+but I mention it here because
+I can't remember if
+<TT>bcc</TT> invokes the linker automatically at all.
+If, when you attempt to compile <TT>HELLO.C</TT>,
+the <TT>bcc</TT> command
+(or any MS-DOS compiler)
+creates <TT>HELLO.OBJ</TT>
+but not
+<TT>HELLO.EXE</TT>,
+it means that you'll have to invoke the linker yourself.
+For simple, one-source-file programs
+like the ones we'll be writing at first,
+the linker invocations will be equally simple:
+<pre>
+	C:\&gt; link hello;
+</pre>
+or
+<pre>
+	C:\&gt; tlink hello;
+</pre>
+(The Microsoft linker is usually named <TT>link</TT>;
+the Borland linker is usually named <TT>tlink</TT>.)
+The linker assumes
+a
+
+<TT>.obj</TT> extension
+on the input file names you give it
+(although you can type <TT>link hello.obj;</TT> if you prefer),
+and creates an executable named <TT>HELLO.EXE</TT>
+(or <I>whatever</I><TT>.EXE</TT>,
+depending on the name of the first object file you give it).
+The semicolon at the end of the line
+keeps the linker from prompting you for additional information
+which would be unnecessary for these simple examples.
+(The extra information,
+which you can also supply in advance on the command line if you wish,
+includes
+such things as
+an explicitly-selected name for the executable file
+and
+a list of extra libraries to load.)
+</p><p>I haven't said much about <TT>djgpp</TT>,
+which is DJ Delorie's
+monumental
+port of the entire GNU C compilation suite to MS-DOS.
+That topic deserves a section of its own, which I haven't written yet.
+<TT>djgpp</TT> is a very mixed bag:
+it's an extremely high-quality compiler,
+better in many ways than the commercial alternatives,
+but it is <em>not</em> easy to install or set up.
+Its opening documentation says something like
+``if you're just learning C, this is not the compiler you want.''
+Nevertheless, the price is right,
+and I have had students successfully use it.
+
+</p><p>Step 3: running the program
+</p><p>Once you've successfully created an executable file
+(which, for the sake of this example,
+we're still assuming is named <TT>HELLO.EXE</TT>),
+you can now attempt to run it by just typing its name:
+<pre>
+	C:\&gt; hello
+</pre>
+In other words, your program is now a <em>command</em>
+which you can type at the MS-DOS prompt,
+on the same footing as <TT>dir</TT>, <TT>type</TT>,
+and the compiler itself!
+</p><p>If your program prints its output to the screen
+(as most programs do),
+and if you'd like to save it
+(for posterity,
+or to print out or mail to me for review),
+you can type something like
+<pre>
+	C:\&gt; hello &gt; hello.out
+</pre>
+On the MS-DOS command line,
+a greater-than symbol <TT>&gt;</TT>
+requests that the command's output be <dfn>redirected</dfn>
+to the named file,
+instead of going to the screen.
+(Later,
+when you begin writing programs that read input from the keyboard,
+you may be interested to know
+that it's possible to redirect a program's input as well,
+using the less-than symbol, <TT>&lt;</TT>.
+An invocation like
+<TT>program &lt; inputfile
+</TT>requests that the program read its input
+from the file named <TT>inputfile</TT> instead of from the keyboard.)
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx3b.html" rev=precedes>prev</a>
+<a href="sx3d.html" rel=precedes>next</a>
+<a href="sx3.html" rev=subdocument>up</a>
+<a href="index.html">top</a>
+</p>
+<p>
+This page by <a href="../../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-9
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

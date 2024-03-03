@@ -1,0 +1,191 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>Simplified Programming Model</title>
+<link href="sx1.html" rev=precedes>
+<link href="sx3.html" rel=precedes>
+<link href="top.html" rev=subdocument>
+</head>
+<body>
+<H1>Simplified Programming Model</H1>
+
+<p>Imagine an ordinary pocket calculator
+which can add, subtract, multiply, and divide,
+and which has a few memory registers which you can store numbers in.
+At a grossly oversimplified level
+(so simple that we'll abandon it in just a minute),
+we can think of a computer as a calculator which is able to 
+push its own buttons.
+A computer program is simply the list of instructions that 
+tells the computer which buttons to push.
+(Actually, there are ``keystroke programmable'' calculators which 
+you program in just about this way.)
+</p><p>Imagine using such a calculator to perform the following task:
+<blockquote>Given a list of numbers,
+compute the average of all the numbers,
+and also find the largest number in the list.
+</blockquote>You can imagine giving the calculator a list of instructions 
+for performing this task,
+or you can imagine giving a list of instructions to a very 
+stupid but very patient person who is able to follow 
+instructions blindly but accurately, as long as the 
+instructions consist of pushing buttons on the calculator
+and 
+making simple yes/no decisions.
+(For our purposes just now,
+either imaginary model will work.)
+</p><p>Your instructions might look something like this:
+<blockquote>``We're going to use
+memory register 1 to store the running total of all the numbers,
+memory register 2 to store how many numbers we've seen,
+and register 3 to store the largest number we've seen.
+For each number in the input list,
+add it to register 1.
+Add 1 to register 2.
+If the number you just read is larger than the number in register 3,
+store it in register 3.
+When you've read all the numbers,
+divide register 1 by register 2
+to compute the average,
+and also retrieve the largest number from register 3.''
+</blockquote>There are several things to notice about the above list of 
+instructions:
+</p><p>1.
+The first sentence,
+which explains what the registers are used for,
+is more for our benefit than the entity who will be pushing the 
+buttons on the calculator.
+The entity pushing the buttons doesn't care what the numbers mean,
+it just manipulates them as directed.
+Similarly, the words ``to compute the average'' and ``largest''
+in the last sentence are extraneous;
+they don't tell the entity pushing the button anything it needs to know
+(or that it can even understand).
+<p>2.
+The instructions use the word ``it'' several times.
+Even in English,
+where we're used to a certain amount of ambiguity
+which we can usually work out from the context,
+pronouns like ``it'' can cause problems in sentences,
+because sometimes it isn't obvious what they mean.
+(For example, in the preceding sentence, does ``they'' refer to 
+``pronouns,'' ``problems,'' or ``sentences?'')
+In programming,
+you can never get away with ambiguity;
+you have to be quite precise about which ``it'' you're referring to.
+<p>3.
+The instructions are
+pretty vague about the details of
+reading the next number in the input list
+and detecting the end of the list.
+<p>4.
+The ``program'' contains several bugs!
+It uses registers 1, 2, and 3,
+but we never say what to store in them in the first place.
+Unless they all happen to start out containing zero,
+the average or maximum value computed by the ``program''
+will be incorrect.
+(Actually, if all of the numbers in the list are negative,
+having register 3 start out as 0 won't work, either.)
+<p>Here is a somewhat more detailed version of the ``program,'' 
+which removes some of the extraneous information and ambiguity,
+makes the input list handling a bit more precise,
+and fixes at least some of the bugs.
+(To make the concept of ``the number just read from the list''
+unambiguous,
+this ``program'' stores it in register 4, rather than referring 
+to it by ``it.''
+Also,
+for now, we're going to assume that the numbers in the input list
+are non-negative.)
+<blockquote>``Store 0 in registers 1, 2, and 3.
+Read the next number from the list.
+If you're at the end of the list,
+you're done.
+Otherwise, store the number in register 4.
+Add register 4 to register 1.
+Add 1 to register 2.
+If register 4 is greater than register 3,
+store
+register 4 in register 3.
+When you're done,
+divide register 1 by register 2
+and print the result,
+and print the contents of register 3.''
+</blockquote>When we add
+the initialization step
+(storing 0 in the registers),
+we realize
+that it's not quite obvious
+which steps happen once only
+and which steps happen once for each number in the input list
+(that is, each time through the processing loop).
+Also,
+we've assumed that the calculator can do arithmetic 
+operations directly into memory registers.
+To make the loop boundaries explicit,
+and the calculations even simpler
+(assuming that
+all the calculator can do is store or recall memory registers
+from or to the display,
+and do calculations in the display),
+the instructions would get more elaborate still:
+<blockquote>``Store 0 in register 1.
+Store 0 in register 2.
+Store 0 in register 3.
+Here is the start of the loop:
+read the next number from the list.
+If you're at the end of the list,
+you're done.
+Otherwise, store the number in register 4.
+Recall from register 1, recall from register 4, add them, store in register 1.
+Recall from register 2, add 1, store in register 2.
+Recall from register 3, recall from register 4, if greater store in register 3.
+Go back to the beginning of the loop.
+When you're done:
+recall from register 1, recall from register 2, divide them, print;
+recall from register 3, print.''
+</blockquote>We could continue to ``dumb down'' this list of instructions even 
+further,
+but hopefully you're getting the point:
+the instructions we use when programming computers have to be 
+very precise,
+and at a level of pickiness and detail which we don't usually 
+use with each other.
+(Actually, things aren't quite as bad as these examples might suggest.
+The ``dumbing down'' we've been doing
+has been 
+somewhat in the direction of assembly language,
+which wise programmers don't use much any more.
+In a higher-level language such as C,
+you don't have to worry so much about
+register assignment and individual arithmetic operators.)
+</p><p>Real computers can do quite a bit more than 4-function pocket 
+calculators can;
+for one thing,
+they can manipulate strings of text and other kinds of data 
+besides numbers.
+Let's leave pocket calculators behind,
+and start looking at what real computers
+(at least under the control of programming languages like C)
+can do.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx1.html" rev=precedes>prev</a>
+<a href="sx3.html" rel=precedes>next</a>
+<a href="top.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

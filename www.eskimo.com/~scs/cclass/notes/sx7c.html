@@ -1,0 +1,287 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>7.3 Order of Evaluation</title>
+<link href="sx7b.html" rev=precedes>
+<link href="sx8.html" rel=precedes>
+<link href="sx7.html" rev=subdocument>
+</head>
+<body>
+<H2>7.3 Order of Evaluation</H2>
+
+<p>[This section corresponds to K&amp;R Sec. 2.12]
+</p><p>When you start using
+the <TT>++</TT> and <TT>--</TT> operators
+in larger expressions,
+you end up with expressions which do several things at once,
+i.e., they modify several different variables at more or less the same time.
+When you write such an expression,
+you must be careful not to have the expression
+``pull the rug out from under itself''
+by assigning two different values to the same variable,
+or by assigning a new value to a variable
+at the same time that another part of the expression
+is trying to use the value of that variable.
+</p><p>Actually,
+we had already started writing expressions which did several things at once
+even before we met the <TT>++</TT> and <TT>--</TT> operators.
+The expression
+<pre>
+	(c = getchar()) != EOF
+</pre>
+assigns <TT>getchar</TT>'s return value to <TT>c</TT>,
+<em>and</em> compares it to <TT>EOF</TT>.
+The <TT>++</TT> and <TT>--</TT> operators make it much easier
+to cram a lot into a small expression:
+the example
+<pre>
+	line[nch++] = c;
+</pre>
+from the previous section
+assigned <TT>c</TT> to <TT>line[nch]</TT>,
+<em>and</em> incremented <TT>nch</TT>.
+We'll eventually meet expressions which do <em>three</em> things at once,
+such as
+<pre>
+	a[i++] = b[j++];
+</pre>
+which assigns <TT>b[j]</TT> to <TT>a[i]</TT>,
+and increments <TT>i</TT>,
+<em>and</em> increments <TT>j</TT>.
+</p><p>If you're not careful, though,
+it's
+easy for this sort of thing to get out of hand.
+Can you figure out exactly what the expression
+<pre>
+	a[i++] = b[i++];		/* WRONG */
+</pre>
+should do?
+I can't,
+and here's the important part:
+<em>neither can the compiler</em>.
+We know that the definition of postfix <TT>++</TT> is that the
+former value, before the increment, is what goes on to
+participate in the rest of the expression,
+but the expression <TT>a[i++] = b[i++]</TT>
+contains <em>two</em> <TT>++</TT> operators.
+Which of them happens first?
+Does this expression assign the old <TT>i</TT>th element of <TT>b</TT>
+to the new <TT>i</TT>th element of <TT>a</TT>, or vice versa?
+No one knows.
+</p><p>When the order of evaluation matters but is not well-defined
+(that is, when we can't say for sure which order the compiler 
+will evaluate the various dependent parts in)
+we say that the meaning of the expression is <dfn>undefined</dfn>,
+and if we're smart we won't write the expression in the first place.
+(Why would anyone ever write an ``undefined'' expression?
+Because sometimes,
+the compiler happens to evaluate it in the order a programmer wanted,
+and the programmer assumes that since it works,
+it must be okay.)
+</p><p>For example, suppose we carelessly wrote this loop:
+<pre>
+	int i, a[10];
+	i = 0;
+	while(i &lt; 10)
+		a[i] = i++;			/* WRONG */
+</pre>
+It looks like we're trying to set <TT>a[0]</TT> to 0,
+<TT>a[1]</TT> to 1, etc.
+But what if the increment <TT>i++</TT> happens
+before the compiler decides which cell of the array <TT>a</TT>
+to store the (unincremented) result in?
+We might end up setting
+<TT>a[1]</TT> to 0, <TT>a[2]</TT> to 1, etc.,
+instead.
+Since, in this case, we can't be sure which order things would happen in,
+we simply shouldn't write code like this.
+In this case, what we're doing matches the pattern of a 
+<TT>for</TT> loop, anyway, which would be a better choice:
+<pre>
+	for(i = 0; i &lt; 10; i++)
+		a[i] = i;
+</pre>
+Now that the increment <TT>i++</TT> isn't crammed
+into the same expression that's setting <TT>a[i]</TT>,
+the code is perfectly well-defined,
+and is guaranteed to do what we want.
+</p><p>In general,
+you should be wary of ever trying to
+second-guess the order an expression will be evaluated in,
+with two exceptions:
+<OL><li>You can obviously assume that precedence will dictate
+the order in
+which binary operators
+are applied.
+This typically says more than just what order things happens in,
+but also what the expression actually <em>means</em>.
+(In other words,
+the precedence of <TT>*</TT> over <TT>+</TT>
+says more than that the multiplication ``happens first''
+in <TT>1 + 2 * 3</TT>;
+it says that the answer is 7, not 9.)
+<li>Although we haven't mentioned it yet,
+
+it is guaranteed that the logical operators
+<TT>&amp;&amp;</TT> and <TT>||</TT>
+are evaluated left-to-right,
+and that the right-hand side is not evaluated at all
+if the left-hand side determines the outcome.
+</OL></p><p>To look at one more example,
+it might seem that the code
+<pre>
+	int i = 7;
+	printf("%d\n", i++ * i++);
+</pre>
+would have to print 56, because no matter which order the
+increments happen in, 7<TT>*</TT>8 is 8<TT>*</TT>7 is 56.
+But <TT>++</TT> just says that the increment happens later,
+not that it happens immediately,
+so this code could print 49
+(if the compiler chose to perform the multiplication first,
+and both increments later).
+And,
+it turns out that ambiguous expressions like this are such a
+bad idea that the ANSI C Standard does not require compilers to
+do anything reasonable with them at all.
+Theoretically,
+the above code
+could end up
+printing 42, or 8923409342, or 0, or crashing
+your computer.
+</p><p>Programmers sometimes mistakenly imagine
+that they can write an expression which tries to do too much at once
+and then predict exactly how it will behave
+based on ``order of evaluation.''
+For example, we know that multiplication has higher 
+<dfn>precedence</dfn> than addition, which means that in the 
+expression
+<pre>
+	i + j * k
+</pre>
+<TT>j</TT> will be multiplied by <TT>k</TT>,
+and then <TT>i</TT> will be added to the result.
+Informally, we often say that the multiplication happens 
+``before'' the addition.
+That's true in this case, but it doesn't say as much as we 
+might think about a more complicated expression,
+such as
+<pre>
+	i++ + j++ * k++
+</pre>
+In this case, besides the addition and multiplication,
+<TT>i</TT>, <TT>j</TT>, and <TT>k</TT> are all being incremented.
+We can <em>not</em> say which of them will be incremented first;
+it's the compiler's choice.
+(In particular, it is <em>not</em> necessarily the case
+that <TT>j++</TT> or <TT>k++</TT> will happen first;
+the compiler might choose to save <TT>i</TT>'s value somewhere and
+increment <TT>i</TT> first,
+even though it will have to keep the old value around until
+after it has done the multiplication.)
+</p><p>In the
+preceding example,
+it probably doesn't matter which variable is incremented first.
+It's not too hard, though,
+to write an expression where it does matter.
+In fact,
+we've seen one already:
+the ambiguous assignment
+<TT>a[i++] = b[i++]</TT>.
+We still don't know which <TT>i++</TT> happens first.
+(We can <em>not</em> assume,
+based on the right-to-left behavior of the <TT>=</TT> operator,
+that the right-hand <TT>i++</TT> will happen first.)
+But if we had to know what <TT>a[i++] = b[i++]</TT>
+really did, we'd have to know which <TT>i++</TT> happened first.
+</p><p>Finally,
+note that parentheses don't dictate overall evaluation
+order any more than precedence does.
+Parentheses override precedence
+and say which operands go with which operators,
+and they therefore affect the overall meaning of an expression,
+but they don't
+say anything about the order of subexpressions or side effects.
+We could not ``fix''
+the evaluation order of
+any of the
+expressions we've been discussing
+by adding parentheses.
+If we wrote
+<pre>
+	i++ + (j++ * k++)
+</pre>
+we still wouldn't know
+which of the increments would happen
+first.
+(The parentheses would force the multiplication to happen before the addition,
+but precedence already would have forced that, anyway.)
+If we wrote
+<pre>
+	(i++) * (i++)
+</pre>
+the parentheses wouldn't force the increments to happen before
+the multiplication or in any well-defined order;
+this parenthesized version would be just as undefined as
+<TT>i++ * i++</TT> was.
+</p><p>There's a line from Kernighan &amp; Ritchie, which I am fond of 
+quoting when discussing these issues
+[Sec. 2.12, p. 54]:
+<blockquote>The moral is that writing code
+that depends on order of evaluation
+is a bad programming practice in any language.
+Naturally,
+it is necessary to know what things to avoid,
+but if you don't know
+<I>how</I>
+they are done on various machines,
+you won't be tempted to take advantage of a particular implementation.
+</blockquote></p><p>The first edition of K&amp;R said
+<blockquote>...if you don't know
+<I>how</I>
+they are done on various machines,
+that innocence may help to protect you.
+</blockquote>I actually prefer the first edition wording.
+Many textbooks encourage you to write small programs
+to find out how your compiler
+implements some of these ambiguous expressions,
+but it's
+just
+one step from writing a small program to find out,
+to writing a real program which makes use of what you've just learned.
+But you <em>don't</em> want to write programs
+that work only under one particular compiler,
+that take advantage of the way that one compiler
+(but perhaps no other)
+happens to implement the undefined expressions.
+It's fine to be curious about what goes on ``under the hood,''
+and many of you will be curious enough about what's going on 
+with these ``forbidden'' expressions that you'll want to 
+investigate them,
+but please keep very firmly in mind that,
+for real programs,
+the very easiest way of dealing with ambiguous, undefined expressions
+(which one compiler interprets one way
+and another interprets another way
+and a third crashes on)
+is not to write them in the first place.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx7b.html" rev=precedes>prev</a>
+<a href="sx8.html" rel=precedes>next</a>
+<a href="sx7.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-1997
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

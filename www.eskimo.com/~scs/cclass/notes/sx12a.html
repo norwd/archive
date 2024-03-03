@@ -1,0 +1,164 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>12.1 File Pointers and <TT>fopen</TT></title>
+<link href="sx12.html" rev=precedes>
+<link href="sx12b.html" rel=precedes>
+<link href="sx12.html" rev=subdocument>
+</head>
+<body>
+<H2>12.1 File Pointers and <TT>fopen</TT></H2>
+
+<p>[This section corresponds to K&amp;R Sec. 7.5]
+</p><p>How will we specify that we want to access a particular data file?
+It would theoretically be possible
+to mention the name of a file
+each time it was desired to read from or write to it.
+But such an approach would have a number of drawbacks.
+
+Instead,
+the usual approach
+(and the one taken in C's stdio library)
+is that you mention the name of the file once,
+at the time you <dfn>open</dfn> it.
+Thereafter, you use some little
+token--in
+this case,
+the <dfn>file pointer</dfn>--which
+keeps track
+(both for your sake and the library's)
+of which file you're talking about.
+Whenever you want to
+read from or write to
+one of the files you're working with,
+you identify that file
+by using its file pointer
+(that is, the file pointer you obtained when you opened the file).
+As we'll see, you store file pointers in variables
+just as you store any other data you manipulate,
+so
+it
+is possible to have several files open,
+as long as you use distinct variables to store the file pointers.
+</p><p>You declare a variable to store a file pointer like this:
+<pre>
+	FILE *fp;
+</pre>
+The type <TT>FILE</TT> is predefined for you by
+<TT>&lt;stdio.h&gt;</TT>.
+It is a data structure which holds the information
+the standard I/O library needs to keep track of
+the file for you.
+For historical reasons,
+you declare a variable which is a pointer to this <TT>FILE</TT> type.
+The name of the variable can
+(as for any variable)
+be anything you choose;
+it is traditional to use the letters <TT>fp</TT> in the variable name
+(since we're talking about a <TT>f</TT>ile <TT>p</TT>ointer).
+If you were reading from two files at once
+you'd probably use two file pointers:
+<pre>
+	FILE *fp1, *fp2;
+</pre>
+If you were reading from one file and writing to another,
+you might declare
+an input file pointer and an output file pointer:
+<pre>
+	FILE *ifp, *ofp;
+</pre>
+</p><p>Like any pointer variable,
+a file pointer isn't any good until it's initialized to point to something.
+(Actually, no variable of any type is much good until you've initialized it.)
+To actually open a file,
+and receive the ``token''
+which you'll store in your file pointer variable,
+you call <TT>fopen</TT>.
+<TT>fopen</TT> accepts a file name (as a string)
+and a <dfn>mode</dfn> value
+indicating among other things whether you intend to read or write this file.
+(The mode variable is also a string.)
+To open the file <TT>input.dat</TT> for reading you might call
+<pre>
+	ifp = fopen("input.dat", "r");
+</pre>
+The mode string <TT>"r"</TT> indicates reading.
+Mode <TT>"w"</TT> indicates writing,
+so we could open <TT>output.dat</TT> for
+
+output like this:
+<pre>
+	ofp = fopen("output.dat", "w");
+</pre>
+The other values for the mode string are less frequently used.
+The third major mode is <TT>"a"</TT> for append.
+(If you use <TT>"w"</TT> to write to a file which already exists,
+its old contents will be discarded.)
+You may also add a <TT>+</TT> character
+to the mode string
+to indicate that you want to both read and write,
+or a <TT>b</TT> character
+to indicate that you want to do ``binary''
+(as opposed to text)
+I/O.
+</p><p>One thing to beware of when opening files
+is that it's an operation which may fail.
+The requested file might not exist,
+or it might be protected against reading or writing.
+(These possibilities ought to be obvious,
+but it's easy to forget them.)
+<TT>fopen</TT> returns a null pointer if it can't open the requested file,
+and it's important to check for this case
+before going off and using <TT>fopen</TT>'s return value as a file pointer.
+Every call to <TT>fopen</TT> will typically be followed with a test,
+like this:
+<pre>
+	ifp = fopen("input.dat", "r");
+	if(ifp == NULL)
+		{
+		printf("can't open file\n");
+		<I>exit or return</I>
+		}
+</pre>
+If <TT>fopen</TT> returns a null pointer,
+and you store it in your file pointer variable
+and go off and try to do I/O with it,
+your program will typically crash.
+</p><p>It's common to collapse the call to <TT>fopen</TT>
+and
+the assignment
+in with
+the test:
+
+<pre>
+	if((ifp = fopen("input.dat", "r")) == NULL)
+		{
+		printf("can't open file\n");
+		<I>exit or return</I>
+		}
+</pre>
+You don't have to write these ``collapsed'' tests
+if you're not comfortable with them,
+but you'll see them in other people's code,
+so you should be able to read them.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx12.html" rev=precedes>prev</a>
+<a href="sx12b.html" rel=precedes>next</a>
+<a href="sx12.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-1997
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-03 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

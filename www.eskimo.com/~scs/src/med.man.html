@@ -1,0 +1,576 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>MED(1)</title>
+</head>
+<body>
+<H1>MED(1)</H1>
+<!-- Copyright 1987-2003 by Steve Summit. -->
+<!-- This code and its documentation may be freely redistributed -->
+<!-- so long as the author's name, and this notice, are retained. -->
+<!-- See http://www.eskimo.com/~scs/src/#med for possible updates. -->
+<H2>NAME</H2>
+
+med - math editor
+<H2>SYNOPSIS</H2>
+
+<B>med</B>
+[
+options
+]
+[
+<B>-if</B>
+inputfile
+]
+{
+<B>-ef</B>
+expressionfile
+|
+expression(s)
+}
+[ file(s) ]
+<H2>DESCRIPTION</H2>
+
+<p><I>med</I>
+is a filter which
+reads a stream consisting of columns of data,
+performs mathematical
+(or perhaps string or other)
+operations on selected values,
+and writes out a stream of columns of
+modified data.
+The data is normally numeric
+(specifically, double-precision floating-point),
+but some versions of the program are able to additionally
+manipulate
+plain integers,
+strings,
+arbitrary-precision integers (``bigints''),
+and/or date/timestamps.
+</p><p>One column of output is generated for each expression present on
+the command line.
+The input is taken from
+either
+the named files,
+the file named by
+<B>-if</B>,
+or (if neither of these appear)
+the standard input.
+</p><p>The expression syntax is an amalgam of FORTRAN and C.
+The <TT>+</TT>, <TT>-</TT>, <TT>*</TT>, <TT>/</TT>,
+<TT>%</TT> (modulus) and <TT>**</TT> (exponentiation)
+operators are supported
+(with the customary associativity and precedence),
+as well as unary <TT>-</TT>, and parentheses for grouping.
+Relational and logical operators are also supported,
+both FORTRAN-style
+<TT>.gt.</TT>,
+<TT>.ge.</TT>,
+<TT>.lt.</TT>,
+<TT>.le.</TT>,
+<TT>.eq.</TT>,
+<TT>.ne.</TT>,
+<TT>.and.</TT>,
+<TT>.or.</TT>,
+and
+<TT>.not.</TT>,
+and C-style 
+<TT>&gt;</TT>,
+<TT>&gt;=</TT>,
+<TT>&lt;</TT>,
+<TT>&lt;=</TT>,
+<TT>==</TT>,
+<TT>!=</TT>,
+<TT>&amp;&amp;</TT>,
+<TT>||</TT>,
+and
+<TT>!</TT>.
+The C bitwise operators <TT>~</TT>, <TT>&amp;</TT>, <TT>|</TT>, <TT>^</TT>,
+<TT>&lt;&lt;</TT>, and <TT>&gt;&gt;</TT> are also supported.
+</p><p>The following built-in math functions are supported:
+</p><p><table><tr><td><TT>abs</TT><td><TT>floor</TT></tr>
+<tr><td><TT>acos</TT><td><TT>ln</TT> (natural log)</tr>
+<tr><td><TT>asin</TT><td><TT>log10</TT> (common log)</tr>
+<tr><td><TT>atan</TT><td><TT>sin</TT></tr>
+<tr><td><TT>atan2</TT> (two arguments)<td><TT>sinh</TT></tr>
+<tr><td><TT>ceil</TT><td><TT>sqrt</TT></tr>
+<tr><td><TT>cos</TT><td><TT>tan</TT></tr>
+<tr><td><TT>cosh</TT><td><TT>tanh</TT></tr>
+</table>There is also a rounding function:
+<TT>round(</TT><I>x</I><TT>, </TT><I>p</I><TT>)</TT>
+returns <I>x</I> rounded to the nearest multiple of <I>p</I>.
+There are also <TT>min()</TT> and <TT>max()</TT> functions;
+see below.
+</p><p>Some versions of the program additionally support these
+C-like string-handling functions:
+<pre>
+	strcat
+	strlen
+	strstr
+	substr
+</pre>
+<TT>strcat(</TT><I>s1</I><TT>,</TT> <I>s2</I><TT>)</TT> returns a new string
+which is the concatenation of 
+<I>s1</I> and <I>s2</I>.
+<TT>strlen(</TT><I>str</I><TT>)</TT> returns the length of <I>str</I>.
+<TT>strstr(</TT><I>s1</I><TT>,</TT> <I>s2</I><TT>)</TT>
+returns the 1-based position within <I>s1</I> of the substring <I>s2</I>
+(if any, or 0 if not).
+<TT>substr(</TT><I>str</I><TT>,</TT> <I>m</I><TT>,</TT> <I>n</I><TT>)</TT>
+returns the <I>n</I>-character substring of <I>str</I> beginning at position <I>m</I>
+(1-based).
+(There is no <TT>strcmp</TT> function,
+because the relational operators--
+<TT>.lt.</TT>, <TT>&gt;=</TT>, etc.--
+do work on strings.)
+</p><p>Some versions of the program additionally support these
+regular expression (``regexp'') functions:
+<pre>
+	strmatch
+	strsubst
+</pre>
+<TT>strmatch(</TT><I>str</I><TT>,</TT> <I>pat</I><TT>)</TT> returns ``true'' (nonzero)
+if the string <I>str</I> is matched by the regular expression <I>pat</I>.
+<TT>strsubst(</TT><I>str</I><TT>,</TT> <I>pat</I><TT>,</TT> <I>rep</I><TT>)</TT>
+returns a copy of <I>str</I>
+with the first occurrence of the regular expression <I>pat</I> (if any)
+replaced by <I>rep</I>
+(including <TT>&amp;</TT> and <TT>\</TT><I>digit</I> substitution).
+(Details of the regular expressions supported,
+including nuances such as
+whether <TT>\( \)</TT> or <TT>( )</TT> are used for substring matches,
+may vary depending on the underlying regular expression library in use.)
+</p><p>Access to input data, as well as a few useful constants, is
+through identifiers (``variables'').
+The following identifiers may be present in expressions:
+<dl>
+<dt><TT>pi</TT>
+</dt><dd>3.141592654
+</dd><dt><TT>e</TT>
+</dt><dd>2.718281828
+</dd><dt><TT>n</TT>
+</dt><dd>current input line number
+</dd><dt><TT>c1</TT>
+</dt><dd>data from input column 1 (similarly <TT>c2</TT>, <TT>c3</TT>, ...)
+</dd></dl>
+</p><p>(It is also possible to use arbitrary names for the columns,
+rather than <TT>c1</TT>, <TT>c2</TT>, <TT>c3</TT>, etc.;
+see the <B>-N</B> option below.)
+</p><p>An input column can be passed through to the output
+unchanged
+with a trivial expression such as ``<TT>c1</TT>''.
+(Also, even in versions without full string handling,
+as a special case,
+the input data in a column which is used only with such an expression
+is not required to be numeric,
+and is passed through verbatim even if it is alphabetic.)
+The
+input may contain more columns
+than are called for by the expressions;
+unused input columns are silently discarded.
+Blank lines,
+as well as those beginning with a comment character
+(by default, `<TT>#</TT>', but settable with
+<B>-cc</B>)
+are passed through to the output unchanged.
+</p><p>Limited control flow is provided via a conditional
+pseudofunction, ``<TT>if</TT>''.
+The value of the expression
+<pre>
+	if(e1, e2, e3)
+</pre>
+is <I>e2</I> if <I>e1</I> is nonzero
+(namely, ``true''),
+or <I>e3</I> if <I>e1</I> is zero
+(``false'').
+</p><p>Normally,
+<I>med</I>
+reads one line,
+evaluates the requested expressions
+for the data on that line,
+prints one line containing the results,
+and continues on to the next line.
+However, a few special-purpose function-like operators
+modify this behavior.
+There are six of these ``summarizing'' functions:
+<pre>
+	min
+	max
+	sum
+	product
+	mean
+	stdev
+</pre>
+When a ``summarizing:'' function is used,
+a value is accumulated,
+which is printed out
+only after a file's input lines have all been read.
+Line-by-line output is suppressed.
+(See the examples below.)
+When summarizing functions are used with multiple input files,
+one line of output is generated for each file,
+individually summarizing each file's data.
+(See also the <B>-bt</B> option below.)
+</p><p>The arguments of the ``summarizing'' functions can be
+arbitrarily complex expressions,
+and the results can be further operated upon before printing.
+(That is,
+compound expressions such as
+<TT>max(c1+c2)</TT> and <TT>max(c1)+max(c2)</TT>
+are permitted.)
+</p><p>Actually,
+the <TT>min()</TT> and <TT>max()</TT> functions exist in two different forms.
+With a single argument, they operate over multiple input lines,
+in ``summarizing'' mode,
+as described above.
+However, when invoked with two or more arguments,
+they compute the minimum or maximum of those arguments,
+immediately
+(more or less as in FORTRAN).
+</p><p>Output values are printed in an appropriate format--usually
+<a href="../cgi-bin/manredir.cgi?name=printf&amp;sec=3"><I>printf(3)</I></a>'s <B>%g</B>
+format for numeric data.
+It is also possible to override the default,
+and specify a format explicitly,
+either by
+(a) using the <B>-fmt</B> option described below,
+or
+(b) suffixing an expression with an at sign `<B>@</B>'
+and a <a href="../cgi-bin/manredir.cgi?name=printf&amp;sec=3"><I>printf(3)</I></a>
+(or other)
+format specifier,
+which will be applied to that expression's output only.
+</p><H2>OPTIONS</H2>
+
+<p>The
+<B>-b</B>
+(``bunch tallies'') option indicates that the summarizing
+functions should generate output after each group of numbers in
+the input stream.
+Groups of input numbers are separated by one or more blank lines.
+After printing the result from each group, all accumulated counts
+are zeroed before processing the next group.
+</p><p>The
+<B>-cc</B>
+(``comment character'') option indicates that the next
+argument is to be taken as the (single) character introducing
+comments in data and expression files.
+By default, the comment character is `<TT>#</TT>'.
+</p><p>The
+<B>-ef</B>
+(``expression file'') option indicates that the next
+argument is the name of a file out of which expressions are to be read.
+The file is assumed to contain one expression per line.
+Comments
+may appear in the expression file on lines beginning
+with `<TT>#</TT>' (or the comment character set with
+<B>-cc</B>).
+Expressions within expression files are immune from any unwanted
+interactions or restrictions imposed by the shell,
+and may therefore contain whitespace and `*'
+(which is presumed to be the multiplication operator,
+rather than a wildcard filename)
+with impunity.
+Also, use of <B>-ef</B> supersedes
+<I>med</I>'s attempt to parse expressions from the command line
+at all.
+</p><p>The
+<B>-fmt</B>
+(``format) option indicates that the next argument is a
+<a href="../cgi-bin/manredir.cgi?name=printf&amp;sec=3"><I>printf(3)</I></a>-style format string
+with which numeric output should be printed.
+(The default is <TT>%g</TT>.)
+<br>(In versions of the program that support multiple datatypes,
+other format specifiers may be possible,
+such as <a href="../cgi-bin/manredir.cgi?name=strftime&amp;sec=3"><I>strftime(3)</I></a>-style for date/timestamps.)
+<br>(See also the `<B>@</B>' notation discussed above.)
+</p><p>In versions of the program that support multiple datatypes,
+two options permit adjustment of some assumptions surrounding
+integral and floating-point types.
+The
+<B>-fp</B>
+option indicates that all input numbers
+(even those without explicit decimal points)
+should be treated as floating-point.
+The
+<B>-i</B>
+option indicates that division of integers should be truncating,
+integer division.
+(By default,
+division always generates floating-point results, if appropriate.
+That is,
+in the absence of <B>-i</B>, 1/2 is 0.5.)
+</p><p>The
+<B>-if</B>
+(``input file'') option indicates that the next
+argument is the name of a file from which input data will be read.
+(Input filenames may also appear as arguments on the command line.
+If neither
+<B>-if</B>
+nor standalone input file arguments appear,
+input is read from the standard input.)
+</p><p>The
+<B>-n</B>
+(``annotate output'') option indicates that,
+when ``summarizing'' functions are being used
+and multiple files are being read,
+each output line should be preceded by the originating file name.
+</p><p>The <B>-N</B> option indicates that
+the first nonblank line of the input
+is a header giving names for the columns.
+These are therefore the names
+used in the output expressions,
+rather than <TT>c1</TT>, <TT>c2</TT>, <TT>c3</TT>, etc.
+</p><p>The
+<B>-t</B>
+option indicates that the next argument is to be taken as
+the (single) character separating columns in the input.
+By default, input columns are separated by arbitrary whitespace.
+(For those who are more used to
+<a href="../cgi-bin/manredir.cgi?name=awk&amp;sec=1"><I>awk(1)</I></a>
+than
+<a href="../cgi-bin/manredir.cgi?name=sort&amp;sec=1"><I>sort(1)</I></a>,
+the
+<B>-F</B>
+option is also accepted with the same meaning.)
+</p><p>A brief summary of the invocation syntax and accepted options may
+be requested with
+<B>-help</B>.
+The <B>-version</B> option prints the program's version number.
+</p><H2>EXAMPLES</H2>
+
+<p>1.
+From a stream of two columns,
+print four columns consisting of the sum, difference, product,
+and quotient of the two input columns:
+<pre>
+	med c1+c2 c1-c2 'c1*c2' c1/c2
+</pre>
+With this invocation, the input
+<pre>
+	1	2
+	3	4
+	5	6
+	7	5
+	3	1
+</pre>
+would produce
+<pre>
+	3	-1	2	0.5
+	7	-1	12	0.75
+	11	-1	30	0.833333
+	12	2	35	1.4
+	4	2	3	3
+</pre>
+</p><p>2.
+Print the mean and standard deviation of a series of numbers:
+<pre>
+	med 'mean(c1)' 'stdev(c1)'
+</pre>
+The input
+<pre>
+	1
+	2
+	3
+	4
+</pre>
+would produce the single line
+<pre>
+	2.5	1.29099
+</pre>
+</p><p>3.
+Compute the mean and standard deviation of a column of numbers
+the ``hard way'':
+<pre>
+	med 'sum(c1)/n' 'sqrt((sum(c1**2)-sum(c1)**2/n)/(n-1))'
+</pre>
+This example would generate the same output as the previous one.
+(In fact, the built-in <TT>mean</TT> and <TT>stdev</TT> functions are implemented
+internally with exactly these latter expressions.)
+</p><p>4.
+Print the maximum of column 1,
+the maximum of column 2,
+and the maximum of column 3:
+<pre>
+	med 'max(c1)' 'max(c2)' 'max(c3)'
+</pre>
+The input
+<pre>
+	1	5	2
+	8	9	6
+	4	7	3
+</pre>
+would produce the line
+<pre>
+	8       9       6
+</pre>
+</p><p>5.
+Print
+(on each line)
+the maximum of columns 1, 2, and 3:
+<pre>
+	med 'max(c1, c2, c3)'
+</pre>
+The input of the previous example
+would generate
+<pre>
+	5
+	9
+	7
+</pre>
+</p><p>6.
+Print
+the maximum of
+the maximum of columns 1, 2, and 3:
+<pre>
+	med 'max(max(c1), max(c2), max(c3))'
+</pre>
+The input of the previous example
+would generate the single number 9.
+</p><H2>BUGS</H2>
+
+<p>Not all possible floating-point errors are handled gracefully.
+</p><p>C and FORTRAN differ in the naming of logarithmic functions.
+This program uses <TT>ln</TT> for natural log,
+and <TT>log10</TT> for ``common'' or base-10 log.
+(Plain <TT>log</TT> is also accepted,
+and implements common log,
+following FORTRAN.
+In C, <TT>log()</TT> is a natural log.)
+</p><p>It's probably a bad idea to have <TT>min()</TT> and <TT>max()</TT>
+do two such very different things
+depending simply on whether
+they're invoked with single or multiple arguments.
+</p><p>In versions of the program that handle multiple datatypes
+(e.g. bigints, date/timestamps, etc.),
+if operands of different types are mixed in the same expression,
+not all of the appropriate implicit type conversions
+are yet supported.
+</p><p>In versions of the program that handle multiple datatypes,
+when the <B>-fmt</B> option
+or @ notation
+is used to select an output format,
+and depending on the actual type of the result,
+it is not always possible to use the requested format exactly.
+</p><p>Because singleton column-selection expressions
+such as ``<TT>c1</TT>''
+are special-cased,
+causing the input to be passed through to the output unchanged,
+an attempt to use the <B>-fmt</B> option
+to simply change the base or format of a column of numbers
+may fail.
+This problem can be worked around
+by using a do-nothing expression
+such as ``<TT>c1+0</TT>''.
+</p><p>In versions of the program that handle multiple datatypes,
+constants within expressions can be problematical
+if the syntax of a constant of an exotic datatype is baroque.
+For example, when working with date/timestamps,
+the attempted expression
+<pre>
+	c1 + 1:00
+</pre>
+is an unparseable syntax error.
+(Although the expression evaluation machinery knows about date/timestamps,
+the lexical analyzer does not.)
+To work around this difficulty,
+an experimental new quoting mechanism has been introduced:
+a pair of backquotes
+(also known as grave accents)
+indicates a constant which is to be interpreted as an extended datatype.
+The above example could be successfully rendered as
+<pre>
+	c1 + `1:00`
+</pre>
+(Note, however, that backquotes are special to the shell
+and are thus another reason to quote <I>med</I>'s expressions.)
+As mentioned, this backquote mechanism is experimental
+and may not persist in eventual evolutions of the program.
+</p><p>Since the input is read only once,
+an expression like
+<pre>
+	c1/max(c1)
+</pre>
+which attempts to apply a summarizing function to each line of input,
+will not work.
+</p><p>The standard deviation function,
+since it is implemented in terms
+of running totals of <TT>x</TT> and <TT>x**2</TT>
+(rather than directly from the definition),
+can suffer numerical accuracy problems.
+</p><p>Since <I>med</I>'s datatypes are implicit
+and their handling currently somewhat approximate,
+it is not at all clear
+what the wordsize for the bitwise <TT>~</TT> operator should be.
+(For this reason, bitwise complement of bigints is not yet supported,
+although you can achieve the same effect
+by XORing with an all-1's mask of the desired size.)
+</p><p>The input is limited to 20 columns.
+There is also a limit on the number of embedded constants
+in expressions (33-36 distinct values).
+</p><p>When using <B>-N</B>
+(and, for that matter,
+when not using <B>-N</B>)
+there is no way to specify headings of any kind on the output columns.
+</p><p>Specifying expressions on the command line
+is awkward.
+Unless they are quoted,
+individual expressions must be devoid of whitespace,
+and operators such as `<TT>*</TT>' can cause difficulties with shell
+wildcarding.
+(It is safest,
+therefore,
+to routinely enclose each expression in single quotes.)
+Placing expressions in a separate file,
+and using <B>-ef</B>,
+avoids these difficulties,
+at the cost of the inconvenience of that separate file.
+</p><p>The lexical distinction between option flags,
+expressions, and input filenames is subtle if not downright
+ambiguous.
+It is safer to use
+<B>-ef</B>,
+or
+<B>-if</B>,
+or shell input redirection
+(that is, using <TT>&lt;</TT>),
+rather than
+mixing expressions and filenames on the command line.
+(In the presence of command line expressions,
+an attempted filename argument
+will definitely
+<em>not</em>
+work if the name is numeric,
+or otherwise looks like an expression.)
+</p><p>The command line option parser is even more so than usually baroque.
+Single-character options cannot be combined
+(e.g. <B>-bn</B>
+is not a substitute for <B>-b</B> <B>-n</B>).
+</p><p>There are no user-definable variables or functions.
+</p><p>It could be argued
+that this program is not sufficiently more useful
+than <a href="../cgi-bin/manredir.cgi?name=awk&amp;sec=1"><I>awk(1)</I></a> to warrant its existence.
+</p><H2>AUTHOR</H2>
+
+<p><a href="../index.html">Steve Summit</a>,
+<TT>scs@eskimo.com</TT>
+</p><H2>HISTORY</H2>
+
+<p><I>med</I> was written
+at a time
+when I was enduring the privations of an old MS-DOS environment,
+and didn't even have the option of using awk.
+</p><p>This documentation corresponds to version 2.9 of the program.
+See
+<a href="index.html#med"><TT>http://www.eskimo.com/~scs/src/#med</TT></a>
+for possible updates.
+</p><H2>SEE ALSO</H2>
+
+<a href="../cgi-bin/manredir.cgi?name=awk&amp;sec=1"><I>awk(1)</I></a>
+<hr>
+<hr>
+<p>
+</p>
+</body>
+</html>

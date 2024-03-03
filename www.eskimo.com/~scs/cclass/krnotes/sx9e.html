@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>section 6.4: Pointers to Structures</title>
+<link href="http://www.eskimo.com/~scs/cclass/krnotes/sx9d.html" rev=precedes>
+<link href="http://www.eskimo.com/~scs/cclass/krnotes/sx9f.html" rel=precedes>
+<link href="sx9.html" rev=subdocument>
+</head>
+<body>
+<H2>section 6.4: Pointers to Structures</H2>
+
+<p>The bulk of this section illustrates how to rewrite the 
+<TT>binsearch</TT> function
+(which we've already been glossing over)
+in terms of pointers instead of arrays
+(an exercise which we've
+been downplaying).
+There are a few important points towards the end of the section,
+however.
+</p><p>page 138
+</p><p>When we began talking about pointers and arrays,
+we said that it was important never to access outside of the 
+defined and allocated bounds of an array,
+either with an out-of-range index
+or an out-of-bounds pointer.
+There is one exception:
+you may compute
+(but not access, or ``dereference'')
+a pointer to the imaginary element
+which sits one past the end of an array.
+Therefore,
+a common idiom for accessing an array using a pointer looks 
+like
+<pre>	int a[10];
+	int *ip;
+<br>
+<br>
+	for (ip = &amp;a[0]; ip &lt; &amp;a[10]; ip++)
+		...
+</pre>or
+<pre>	int a[10];
+	int *endp = &amp;a[10];
+	int *ip;
+<br>
+<br>
+	for (ip = a; ip &lt; endp; ip++)
+		...
+</pre>The element <TT>a[10]</TT> does not exist
+(the allocated elements run from <TT>[0]</TT> to <TT>[9]</TT>),
+but we may compute the pointer <TT>&amp;a[10]</TT>,
+and use it in expressions like
+<TT>ip &lt; &amp;a[10]</TT>
+and
+<TT>endp = &amp;a[10]</TT>.
+</p><p>Deep sentence:
+<blockquote>Don't assume, however,
+that the size of a structure is the sum of the sizes of its members.
+</blockquote>If this isn't the sort of thing you'd be likely to assume,
+you don't have to remember the reason,
+which is mildly esoteric
+(having to do with memory alignment requirements).
+</p><hr>
+<p>
+Read sequentially:
+<a href="http://www.eskimo.com/~scs/cclass/krnotes/sx9d.html" rev=precedes>prev</a>
+<a href="http://www.eskimo.com/~scs/cclass/krnotes/sx9f.html" rel=precedes>next</a>
+<a href="sx9.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

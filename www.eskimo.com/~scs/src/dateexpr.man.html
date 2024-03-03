@@ -1,0 +1,290 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>DATEEXPR(1)</title>
+</head>
+<body>
+<H1>DATEEXPR(1)</H1>
+<!-- Copyright 2002, 2003 -->
+<!-- Steve Summit, scs@eskimo.com -->
+<!-- This program and its documentation may be freely redistributed -->
+<!-- and altered and used at will, as long as this notice remains attached -->
+<!-- and as long as any modifications are marked as such. -->
+<!-- See http://www.eskimo.com/~scs/src/#dateexpr for possible updates. -->
+<H2>NAME</H2>
+
+dateexpr - perform date and time calculations
+<H2>SYNOPSIS</H2>
+
+<B>dateexpr</B>
+[
+-fmt fmt
+]
+expression
+<H2>DESCRIPTION</H2>
+
+<p><I>dateexpr</I>
+evaluates an <I>expression</I>,
+much like <a href="../cgi-bin/manredir.cgi?name=expr&amp;sec=1"><I>expr(1)</I></a>,
+except that the expression may also involve dates and times.
+As a simple introductory example,
+the invocation
+<pre>
+	dateexpr today - 1 day
+</pre>
+prints yesterday's date.
+Since the date/time libraries used by <I>dateexpr</I>
+know about not only the basics of clocks and calendars
+(``Thirty days hath September...''),
+but also the more subtle details involving
+leap years
+and
+Daylight Saving Time
+(and even leap seconds!),
+it is straightforward to perform computations
+like the above accurately.
+</p><p>The supported operators are
+<pre>
+	* /
+	+ -
+	&lt; &lt;= &gt; &gt;= = !=
+</pre>
+Parentheses may be used to override the default precedence,
+which otherwise follows the traditional levels
+(as reflected in the list above).
+</p><p>The terms in an expression may consist of:
+<UL><li>integer constants: 1, 2, 3, 123, etc.
+<li>times:
+1:00,
+12:34:56,
+12:34:56.789,
+etc.
+<li>dates: 2002-12-34, 7/4/1976, September 4, etc.
+<li>dates and times together
+<li>integers suffixed with the units
+``sec'',
+``min'',
+``hr'',
+``day'',
+or
+``week''
+(and, in a future version of the program,
+``month''
+or
+``year'')
+<li>other special terms, as listed below
+</UL></p><p>Dates and times are relatively free-form,
+as suggested by the examples above.
+Notice that fractional seconds are supported.
+The notation ``nn:nn'' is interpreted as HH:MM;
+you can use either 0:nn:nn or nn:nn.0
+to explicitly force minutes and seconds.
+</p><p>These special terms may also appear:
+<dl>
+<dt><TT>now</TT>
+</dt><dd>The date and time as of the instant the program is run
+</dd><dt><TT>today</TT>
+</dt><dd>The date on which the program is run
+</dd><dt><TT>mtime</TT>(<I>file</I>)
+</dt><dd>The modification time of <I>file</I>
+</dd><dt><TT>atime</TT>(<I>file</I>)
+</dt><dd>The last-accessed time of <I>file</I>
+</dd><dt><TT>ctime</TT>(<I>file</I>)
+</dt><dd>The ctime (``inode changed'') time of <I>file</I>
+</dd></dl>
+</p><p>(Currently, the file name operands
+to the <TT>mtime()</TT>, <TT>atime()</TT>, and <TT>ctime()</TT> operators
+appear as ``bare words'',
+but
+this may change.)
+</p><p>Internally, <I>dateexpr</I> supports two kinds of
+date/timestamps: <dfn>relative</dfn> and <dfn>absolute</dfn>.
+Roughly speaking,
+date/timestamps that contain a calendar date are absolute,
+and
+all others are relative.
+Relative times can be added and subtracted freely,
+and added to and subtracted from absolute times.
+The difference between two absolute times is a relative time.
+The sum of two absolute times is meaningless and is disallowed.
+</p><p>Certain mixed-mode calculations are also permitted.
+Integers may be added to or subtracted from date/timestamps;
+the integer is interpreted as a number of seconds unless suffixed
+with a unit indicator.
+Relative timestamps (but not absolute) may be multiplied or
+divided by integers,
+yielding relative timestamps.
+</p><p>The relational operators
+(<TT>&lt;</TT>, <TT>&gt;=</TT>, <TT>=</TT>, etc.)
+may be applied to
+pairs of absolute times,
+to pairs of relative times,
+or
+to pairs of integers,
+but not to any other combinations.
+</p><p><I>dateexpr</I> attempts to print its output
+in a format mimicking its input,
+and with an appropriate amount of precision.
+The heuristics are not always successful,
+but the <B>-fmt</B> option can
+
+be used to force an explicit output representation.
+</p><p>The exit status is zero if a nonzero time or integer is computed
+(including as the result of a successful comparison),
+1 if a zero result is computed
+(including as the result of an unsuccessful comparison),
+and 2 on errors.
+</p><H2>OPTIONS</H2>
+
+<dl>
+<dt><B>-fmt</B> <I>fmt</I>
+</dt><dd>Set the output format specifier.
+For absolute times, the format string is in the style of
+<a href="../cgi-bin/manredir.cgi?name=strftime&amp;sec=3"><I>strftime(3)</I></a>,
+q.v. (but see below).
+For integers, the format string is in the style of
+<a href="../cgi-bin/manredir.cgi?name=printf&amp;sec=3"><I>printf(3)</I></a>.
+For relative times,
+an attempt is made to support strftime formats,
+although this attempt is not always meaningful or successful;
+more work (and likely some extension)
+is necessary in this area.
+</dd><dt></dt><dd>The strftime formats accepted by <I>dateexpr</I>
+have several extensions:
+</dd><dt></dt><dd>1. Widths may be specified, in the style of printf.
+The default width for most specifiers is 02,
+that is, a minimum width of 2, with 0-padding,
+for compatibility with <a href="../cgi-bin/manredir.cgi?name=strftime&amp;sec=3"><I>strftime(3)</I></a>.
+But, for example,
+%1d specifies a minimum width of 1 (and therefore with no padding),
+%3d specifies a minimum width of 3 with space padding, etc.
+</dd><dt></dt><dd>2.
+Decimal fractions are supported.
+For example, <TT>%.2S</TT> prints seconds and subseconds,
+with two digits of precision past the decimal.
+<TT>%.2M</TT> prints fractional minutes,
+where any seconds (and subseconds) information is rolled into the minutes.
+(That is, the time 1:15 printed as <TT>%.2M</TT> would yield 1.25.
+Therefore, if you're printing fractional minutes,
+you probably don't want to print explicit seconds at all.)
+Fractions are currently supported for the
+<TT>%d</TT>, <TT>%H</TT>, <TT>%M</TT>, and <TT>%S</TT> formats.
+</dd><dt><B>-?</B>, <B>-h</B>, <B>-help</B>
+</dt><dd>Print a brief help message.
+</dd><dt><B>-version</B>
+</dt><dd>Print <I>dateexpr</I>'s version number.
+</dd></dl>
+<H2>EXAMPLES</H2>
+
+<p>Compute the day before March 1, 2000,
+demonstrating that 2000 was a leap year:
+<pre>
+	dateexpr 2000-03-01 - 1 day
+</pre>
+</p><p>Compute the number of days between February 28 and March 1, 1900,
+demonstrating that 1900 was not a leap year:
+<pre>
+	dateexpr 3/1/1900 - 2/28/1900
+</pre>
+</p><p>Divide 1 hour by 3, yielding 20 minutes:
+<pre>
+	dateexpr 1:00:00 / 3
+</pre>
+</p><p>Compute the author's age:
+<pre>
+	dateexpr today - October 2, 1961
+</pre>
+</p><p>See if a file has been accessed since it's been modified:
+<pre>
+	dateexpr atime \( file \) \&gt; mtime \( file \)
+</pre>
+(The backslashes \ quote the parentheses and greater-than symbol
+to protect them from interpretation by the shell.)
+</p><p>See how long a command took to execute:
+<pre>
+	start=`date`
+	long_running_command
+	end=`date`
+	dateexpr $end - $start
+</pre>
+</p><p>See how long a command took to execute,
+another way:
+<pre>
+	start=`dateexpr now`
+	long_running_command
+	dateexpr now - $start
+</pre>
+</p><p>See how long a command took to execute,
+with subsecond resolution:
+<pre>
+	start=`dateexpr -fmt %H:%M:%.2S now`
+	long_running_command
+	dateexpr -fmt %H:%M:%.2S now - $start
+</pre>
+</p><p>Compare two times:
+<pre>
+	if dateexpr 0:91 '&gt;' 1:30 &gt; /dev/null; then echo yes; else echo no; fi
+</pre>
+</p><H2>BUGS</H2>
+
+<p>When adding integers to dates,
+you probably want the integers to be interpreted as days, not seconds.
+</p><p>Relative times are output in units of at most days,
+which is awkward if you're computing intervals which amount to years.
+(You can explicitly divide by 365 if you like,
+but the output will still be tagged with the word ``days''.)
+</p><p>It's unclear whether nn:nn should be interpreted as HH:MM or MM:SS.
+(On the other hand, in simple calculations
+like ``1:01 + 2:02'',
+it hardly matters.)
+The fact that nn:nn is interpreted as HH:MM,
+while nn:nn.nn is interpreted as MM:SS.ff,
+seems odd.
+</p><p>It is not fully possible to control the output format for
+relative date/timestamps.
+Negative relative times are probably not always printed correctly.
+</p><p>Division,
+especially by large numbers (e.g. greater than 1000)
+is buggy.
+</p><p>The syntax for the <TT>mtime</TT>, <TT>atime</TT>, and <TT>ctime</TT> operators is awkward
+and should probably be changed.
+</p><p>Time zones and Daylight Saving Time are not perfectly handled yet.
+(Nor are leap seconds, though the attempt is valiant.)
+</p><p>Calendars other than Gregorian are not handled yet.
+</p><p>Years 0 or B.C. are not properly handled yet.
+</p><p>When rounding times for printout,
+if 0.99999... seconds has to be rounded up to 1.000 second,
+it is not always possible to propagate the carry
+up through the %S, %M, %H, %d, %m, and %Y values.
+</p><H2>FILES</H2>
+
+<TT>/usr/local/lib/leapsec.tab</TT>     leap second information
+<H2>SEE ALSO</H2>
+
+<a href="../cgi-bin/manredir.cgi?name=expr&amp;sec=1"><I>expr(1)</I></a>,
+<a href="../cgi-bin/manredir.cgi?name=strftime&amp;sec=3"><I>strftime(3)</I></a>,
+<a href="../cgi-bin/manredir.cgi?name=ctime&amp;sec=3"><I>ctime(3)</I></a>,
+<a href="../cgi-bin/manredir.cgi?name=printf&amp;sec=3"><I>printf(3)</I></a>
+<H2>HISTORY</H2>
+
+<p>This documentation corresponds to version 1.6 of the program.
+</p><p>See
+<a href="index.html#dateexpr"><TT>http://www.eskimo.com/~scs/src/#dateexpr</TT></a>
+for possible updates.
+</p><H2>COPYRIGHT</H2>
+
+<p>Copyright 2002-2003
+<br>This program and its documentation may be freely redistributed
+and altered and used at will, as long as this notice remains attached
+and as long as any modifications are marked as such.
+</p><H2>AUTHOR</H2>
+
+<p><a href="../index.html">Steve Summit</a>,
+<TT>scs@eskimo.com</TT>
+</p><hr>
+<hr>
+<p>
+</p>
+</body>
+</html>
