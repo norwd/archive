@@ -1,0 +1,547 @@
+<html><head>
+
+<link rel="made" rev="made" href="mailto:jutta@cs.tu-berlin.de">
+<title>Arrays and Pointers</title>
+</head>
+<body>
+<a href="c-1.html"><img SRC="prev.xbm" ALT="[prev]"></a>
+<a href="index.html#comp-lang-c-faq"><img SRC="up.xbm" ALT="[up]"></a>
+<a href="c-faq-toc.html#c-2"><img SRC="overview.xbm" alt="[overview]"></a>
+<a href="c-3.html"><img SRC="next.xbm" ALT="[next]"></a>
+<hr>
+<h2>Section 2. Arrays and Pointers</h2>
+<p>
+<h3>
+<a name="2-1">
+2.1:	I had the definition </a><code>char a[6]</code> in one source file, and in
+	another I declared <code>extern char</code> <code>*a</code>.&#160;<tt> </tt>Why didn't it work?</h3>
+<p>
+  	The declaration <code>extern char</code> <code>*a</code> simply does not match the actual
+	definition.&#160;<tt> </tt>The type &quot;pointer-to-type-T&quot; is not the same as
+	&quot;array-of-type-T.&quot;&#160;<tt> </tt>Use <code>extern char a[]</code>.
+<p>
+	References: <a href="index.html#CT-amp-P">CT&amp;P</a> Sec. 3.3 pp. 33-4, Sec. 4.5 pp. 64-5.
+<p>
+
+<h3>
+<a name="2-2">
+2.2:	But I heard that</a><code> char a[] </code>was identical to<code> char</code> <code>*a</code>.</h3>
+<p>
+  	Not at all.&#160;<tt> </tt>(What you heard has to do with formal parameters to
+	functions; see <a href="c-2.html#2-4">question 2.4</a>.)&#160;<tt> </tt>Arrays are not pointers.&#160;<tt> </tt>The
+	array declaration &quot;<code>char a[6];</code>&quot; requests that space for six
+	characters be set aside, to be known by the name &quot;<code>a</code>.&quot;&#160;<tt> </tt>That is,
+	there is a location named &quot;<code>a</code>&quot; at which six characters can sit.
+	The pointer declaration &quot;<code>char</code> <code>*p;</code>&quot; on the other hand, requests a
+	place which holds a pointer.&#160;<tt> </tt>The pointer is to be known by the
+	name &quot;<code>p</code>,&quot; and can point to any <code>char</code> (or contiguous array of
+	<code>char</code>s) anywhere.
+<p>
+	As usual, a picture is worth a thousand words.&#160;<tt> </tt>The statements
+<p>
+<pre>
+	char a[] = &quot;hello&quot;;
+	char *p = &quot;world&quot;;
+</pre>
+<p>
+	would result in data structures which could be represented like
+	this:
+<p>
+<pre>
+	   +---+---+---+---+---+---+
+	a: | h | e | l | l | o |\0 |
+	   +---+---+---+---+---+---+
+</pre>
+<p>
+<pre>
+	   +-----+     +---+---+---+---+---+---+
+	p: |  *======&gt; | w | o | r | l | d |\0 |
+	   +-----+     +---+---+---+---+---+---+
+</pre>
+<p>
+	It is important to realize that a reference like <code>x[3]</code> generates
+	different code depending on whether <code>x</code> is an array or a pointer.
+	Given the declarations above, when the compiler sees the
+	expression <code>a[3]</code>, it emits code to start at the location &quot;a,&quot;
+	move three past it, and fetch the character there.&#160;<tt> </tt>When it sees
+	the expression <code>p[3]</code>, it emits code to start at the location &quot;p,&quot;
+	fetch the pointer value there, add three to the pointer, and
+	finally fetch the character pointed to.&#160;<tt> </tt>In the example above,
+	both <code>a[3]</code> and <code>p[3]</code> happen to be the character <code>'l'</code>, but the
+	compiler gets there differently.&#160;<tt> </tt>(See also questions <a href="c-17.html#17-19">17.19</a> and <a href="c-17.html#17-20">17.20</a>.)
+<p>
+
+<h3>
+<a name="2-3">
+2.3:	So what is meant by the &quot;equivalence of pointers and arrays&quot; in
+	C?</a></h3>
+<p>
+  	Much of the confusion surrounding pointers in C can be traced to
+	a misunderstanding of this statement.&#160;<tt> </tt>Saying that arrays and
+	pointers are &quot;equivalent&quot; neither means that they are identical
+	nor even interchangeable.
+<p>
+	&quot;Equivalence&quot; refers to the following key definition:
+<blockquote>
+		An lvalue [see <a href="c-2.html#2-5">question 2.5</a>] of type array-of-T
+		which appears in an expression decays (with
+		three exceptions) into a pointer to its first
+		element; the type of the resultant pointer is
+		pointer-to-T.
+</blockquote>
+	(The exceptions are when the array is the operand of a <code>sizeof</code> or
+	<code>&amp;</code> operator, or is a literal string initializer for a character
+	array.)
+<p>
+	As a consequence of this definition, there is no apparent
+	difference in the behavior of the &quot;array subscripting&quot; operator
+	<code>[]</code> as it applies to arrays and pointers.&#160;<tt> </tt>In an expression of
+	the form <code>a[i]</code>, the array reference &quot;<code>a</code>&quot; decays into a pointer,
+	following the rule above, and is then subscripted just as would
+	be a pointer variable in the expression <code>p[i]</code> (although the
+	eventual memory accesses will be different, as explained in
+	<a href="c-2.html#2-2">question 2.2</a>).&#160;<tt> </tt>In either case, the expression <code>x[i]</code> (where <code>x</code> is
+	an array or a pointer) is, by definition, identical to <code>*((x)+(i))</code>.
+<p>
+	References: <a href="index.html#K-amp-RI">K&amp;R I</a> Sec. 5.3 pp. 93-6; <a href="index.html#K-amp-RII">K&amp;R II</a> Sec. 5.3 p. 99; <a href="index.html#H-amp-S">H&amp;S</a>
+	Sec. 5.4.1 p. 93; <a href="index.html#ANSI">ANSI</a> Sec. 3.2.2.1, Sec. 3.3.2.1, Sec. 3.3.6 .
+<p>
+
+<h3>
+<a name="2-4">
+2.4:	Then why are array and pointer declarations interchangeable as
+	function formal parameters?</a></h3>
+<p>
+  	Since arrays decay immediately into pointers, an array is never
+	actually passed to a function.&#160;<tt> </tt>As a convenience, any parameter
+	declarations which &quot;look like&quot; arrays, e.g.
+<p>
+<pre>
+	f(a)
+	char a[];
+</pre>
+<p>
+	are treated by the compiler as if they were pointers, since that
+	is what the function will receive if an array is passed:
+<p>
+<pre>
+	f(a)
+	char *a;
+</pre>
+<p>
+	This conversion holds only within function formal parameter
+	declarations, nowhere else.&#160;<tt> </tt>If this conversion bothers you,
+	avoid it; many people have concluded that the confusion it
+	causes outweighs the small advantage of having the declaration
+	&quot;look like&quot; the call and/or the uses within the function.
+<p>
+	References: <a href="index.html#K-amp-RI">K&amp;R I</a> Sec. 5.3 p. 95, Sec. A10.1 p. 205; <a href="index.html#K-amp-RII">K&amp;R II</a>
+	Sec. 5.3 p. 100, Sec. A8.6.3 p. 218, Sec. A10.1 p. 226; <a href="index.html#H-amp-S">H&amp;S</a>
+	Sec. 5.4.3 p. 96; <a href="index.html#ANSI">ANSI</a> Sec. 3.5.4.3, Sec. 3.7.1, <a href="index.html#CT-amp-P">CT&amp;P</a> Sec. 3.3
+	pp. 33-4.
+<p>
+
+<h3>
+<a name="2-5">
+2.5:	How can an array be an lvalue, if you can't assign to it?</a></h3>
+<p>
+  	The <a href="index.html#ANSI">ANSI</a> C Standard defines a &quot;modifiable lvalue,&quot; which an
+	array is not.
+<p>
+	References: <a href="index.html#ANSI">ANSI</a> Sec. 3.2.2.1 p. 37.
+<p>
+
+<h3>
+<a name="2-6">
+2.6:	Why doesn't sizeof properly report the size of an array which is
+	a parameter to a function?</a></h3>
+<p>
+  	The sizeof operator reports the size of the pointer parameter
+	which the function actually receives (see <a href="c-2.html#2-4">question 2.4</a>).
+<p>
+
+<h3>
+<a name="2-7">
+2.7:	Someone explained to me that arrays were really just constant
+	pointers.</a></h3>
+<p>
+  	This is a bit of an oversimplification.&#160;<tt> </tt>An array name is
+	&quot;constant&quot; in that it cannot be assigned to, but an array is
+	<em>not</em> a pointer, as the discussion and pictures in <a href="c-2.html#2-2">question 2.2</a>
+	should make clear.
+<p>
+
+<h3>
+<a name="2-8">
+2.8:	Practically speaking, what is the difference between arrays and
+	pointers?</a></h3>
+<p>
+  	Arrays automatically allocate space, but can't be relocated or
+	resized.&#160;<tt> </tt>Pointers must be explicitly assigned to point to
+	allocated space (perhaps using malloc), but can be reassigned
+	(i.e. pointed at different objects) at will, and have many other
+	uses besides serving as the base of blocks of memory.
+<p>
+        Due to the so-called equivalence of arrays and pointers (see
+        <a href="c-2.html#2-3">question 2.3</a>), arrays and pointers often seem interchangeable,
+        and in particular a pointer to a block of memory assigned by
+        <code> malloc </code>is frequently treated (and can be referenced using<code> [] </code>exactly) as if it were a true array.  (See <a href="c-2.html#2-14">question 2.14</a>; see
+        also <a href="c-17.html#17-20">question 17.20</a>.)
+<p>
+
+<h3>
+<a name="2-9">
+2.9:	I came across some &quot;joke&quot; code</a> containing the &quot;expression&quot;
+	<code>5[&quot;abcdef&quot;]</code>.&#160;<tt> </tt>How can this be legal C?</h3>
+<p>
+  	Yes, Virginia, array subscripting is commutative in C.&#160;<tt> </tt>This
+	curious fact follows from the pointer definition of array
+	subscripting, namely that <code>a[e]</code> is identical to <code>*((a)+(e))</code>, for
+	<em>any</em> expression e and primary expression a, as long as one of
+	them is a pointer expression and one is integral.&#160;<tt> </tt>This
+	unsuspected commutativity is often mentioned in C texts as if it
+	were something to be proud of, but it finds no useful
+	application outside of the Obfuscated C Contest (see <a href="c-17.html#17-13">question
+	17.13</a>).
+<p>
+	References:
+	<a href="../rat/c3.html#3-3-2-1">ANSI Rationale Sec. 3.3.2.1 p. 41</a>.
+<p>
+
+<h3>
+<a name="2-10">
+2.10:	My compiler complained when I passed a two-dimensional array to
+	a routine expecting a pointer to a pointer.</a></h3>
+<p>
+  	The rule by which arrays decay into pointers is not applied
+	recursively.&#160;<tt> </tt>An array of arrays (i.e. a two-dimensional array
+	in C) decays into a pointer to an array, not a pointer to a
+	pointer.&#160;<tt> </tt>Pointers to arrays can be confusing, and must be
+	treated carefully.&#160;<tt> </tt>(The confusion is heightened by the
+	existence of incorrect compilers, including some versions of pcc
+	and pcc-derived lint's, which improperly accept assignments of
+	multi-dimensional arrays to multi-level pointers.)&#160;<tt> </tt>If you are
+	passing a two-dimensional array to a function:
+<p>
+<pre>
+	int array[NROWS][NCOLUMNS];
+	f(array);
+</pre>
+<p>
+	the function's declaration should match:
+<p>
+<pre>
+	f(int a[][NCOLUMNS]) {...}
+</pre>
+	or
+<pre>
+	f(int (*ap)[NCOLUMNS]) {...}   /* ap is a pointer to an array */
+</pre>
+<p>
+	In the first declaration, the compiler performs the usual
+	implicit parameter rewriting of &quot;array of array&quot; to &quot;pointer to
+	array;&quot; in the second form the pointer declaration is explicit.
+	Since the called function does not allocate space for the array,
+	it does not need to know the overall size, so the number of
+	&quot;rows,&quot; NROWS, can be omitted.&#160;<tt> </tt>The &quot;shape&quot; of the array is
+	still important, so the &quot;column&quot; dimension NCOLUMNS (and, for 3-
+	or more dimensional arrays, the intervening ones) must be
+	included.
+<p>
+	If a function is already declared as accepting a pointer to a
+	pointer, it is probably incorrect to pass a two-dimensional
+	array directly to it.
+<p>
+	References: <a href="index.html#K-amp-RI">K&amp;R I</a> Sec. 5.10 p. 110; <a href="index.html#K-amp-RII">K&amp;R II</a> Sec. 5.9 p. 113.
+<p>
+
+<h3>
+<a name="2-11">
+2.11:	How do I write functions which accept 2-dimensional arrays when
+	the &quot;width&quot; is not known at compile time?</a></h3>
+<p>
+  	It's not easy.&#160;<tt> </tt>One way is to pass in a pointer to the <code>[0][0]</code>
+	element, along with the two dimensions, and simulate array
+	subscripting &quot;by hand:&quot;
+<p>
+<pre>
+	f2(aryp, nrows, ncolumns)
+	int *aryp;
+	int nrows, ncolumns;
+	{ ... ary[i][j] is really aryp[i * ncolumns + j] ... }
+</pre>
+<p>
+	This function could be called with the array from <a href="c-2.html#2-10">question 2.10</a>
+	as
+<p>
+<pre>
+	f2(&amp;array[0][0], NROWS, NCOLUMNS);
+</pre>
+<p>
+	It must be noted, however, that a program which performs
+	multidimensional array subscripting &quot;by hand&quot; in this way is not
+	in strict conformance with the <a href="index.html#ANSI">ANSI</a> C Standard; the behavior of
+	accessing <code>(&amp;array[0][0])[x]</code> is not defined for <code>x &gt; NCOLUMNS</code>.
+<p>
+        gcc allows local arrays to be declared having sizes which are
+	specified by a function's arguments, but this is a nonstandard
+	extension.
+<p>
+	See also <a href="c-2.html#2-15">question 2.15</a>.
+<p>
+
+<h3>
+<a name="2-12">
+2.12:	How do I declare a pointer to an array?</a></h3>
+<p>
+  	Usually, you don't want to.&#160;<tt> </tt>When people speak casually of a
+	pointer to an array, they usually mean a pointer to its first
+	element.
+<p>
+	Instead of a pointer to an array, consider using a pointer to
+	one of the array's elements.&#160;<tt> </tt>Arrays of type T decay into
+	pointers to type T (see <a href="c-2.html#2-3">question 2.3</a>), which is convenient;
+	subscripting or incrementing the resultant pointer accesses the
+	individual members of the array.&#160;<tt> </tt>True pointers to arrays, when
+	subscripted or incremented, step over entire arrays, and are
+	generally only useful when operating on arrays of arrays, if at
+	all.&#160;<tt> </tt>(See <a href="c-2.html#2-10">question 2.10</a> above.)
+<p>
+	If you really need to declare a pointer to an entire array, use
+	something like &quot;<code>int (*ap)[N];</code>&quot; where <code>N</code> is the size of the array.
+	(See also <a href="c-10.html#10-4">question 10.4</a>.)&#160;<tt> </tt>If the size of the array is unknown,
+	<code>N</code> can be omitted, but the resulting type, &quot;pointer to array of
+	unknown size,&quot; is useless.
+<p>
+<h3>
+<a name="2-13">2.13:   Since array references decay to pointers, given</a></h3>
+<pre>
+                int array[NROWS][NCOLUMNS];
+</pre><h3>
+        what's the difference between<code> array </code>and<code> &amp;array</code>?
+</h3><p>
+        Under ANSI/ISO Standard C, &amp;array yields a pointer, of type
+        pointer-to-array-of-T, to the entire array (see also <a href="c-2.html#2-12">question 2.12</a>).&#160;<tt> </tt>
+Under pre-ANSI C, the &amp; in<code> &amp;array </code>generally elicited a
+        warning, and was generally ignored.&#160;<tt> </tt>Under all C compilers, an
+        unadorned reference to an array yields a pointer, of type
+        pointer-to-T, to the array's first element.  (See also <a href="c-2.html#2-3">question 2.3</a>.)
+<p>
+<h3>
+<a name="2-14">
+2.14:	How can I dynamically allocate a multidimensional array?</a></h3>
+<p>
+  	It is usually best to allocate an array of pointers, and then
+	initialize each pointer to a dynamically-allocated &quot;row.&quot;&#160;<tt> </tt>Here
+	is a two-dimensional example:
+<p>
+<pre>
+	int **array1 = (int **)malloc(nrows * sizeof(int *));
+	for(i = 0; i &lt; nrows; i++)
+		array1[i] = (int *)malloc(ncolumns * sizeof(int));
+</pre>
+<p>
+	(In &quot;real&quot; code, of course, malloc would be declared correctly,
+	and each return value checked.)
+<p>
+	You can keep the array's contents contiguous, while making later
+	reallocation of individual rows difficult, with a bit of
+	explicit pointer arithmetic:
+<p>
+<pre>
+	int **array2 = (int **)malloc(nrows * sizeof(int *));
+	array2[0] = (int *)malloc(nrows * ncolumns * sizeof(int));
+	for(i = 1; i &lt; nrows; i++)
+		array2[i] = array2[0] + i * ncolumns;
+</pre>
+<p>
+	In either case, the elements of the dynamic array can be
+	accessed with normal-looking array subscripts: <code>array[i][j]</code>.
+<p>
+	If the double indirection implied by the above schemes is for
+	some reason unacceptable, you can simulate a two-dimensional
+	array with a single, dynamically-allocated one-dimensional
+	array:
+<p>
+<pre>
+	   int *array3 = (int *)malloc(nrows * ncolumns * sizeof(int));
+</pre>
+<p>
+	However, you must now perform subscript calculations manually,
+	accessing the i,jth element with <code>array3[i * ncolumns + j]</code>.&#160;<tt> </tt>(A
+	macro can hide the explicit calculation, but invoking it then
+	requires parentheses and commas which don't look exactly like
+	multidimensional array subscripts.)
+<p>
+	Finally, you can use pointers-to-arrays:
+<p>
+<pre>
+	int (*array4)[NCOLUMNS] =
+		(int (*)[NCOLUMNS])malloc(nrows * sizeof(*array4));
+</pre>
+<p>
+	, but the syntax gets horrific and all but one dimension must be
+	known at compile time.
+<p>
+	With all of these techniques, you may of course need to remember
+	to free the arrays (which may take several steps; see <a href="c-3.html#3-9">question
+	3.9</a>) when they are no longer needed, and you cannot necessarily
+	intermix the dynamically-allocated arrays with conventional,
+	statically-allocated ones (see <a href="c-2.html#2-15">question 2.15</a> below, and also
+	question <a href="c-2.html#2-10">2.10</a>).
+<p>
+
+<h3>
+<a name="2-15">
+2.15:	How can I use statically- and dynamically-allocated
+	multidimensional arrays interchangeably when passing them to
+	functions?</a></h3>
+<p>
+  	There is no single perfect method.&#160;<tt> </tt>Given the declarations
+<pre>
+        int array[NROWS][NCOLUMNS];
+        int **array1;
+        int **array2;
+        int *array3;
+        int (*array4)[NCOLUMNS];
+</pre>
+	as initialized in the code fragments in questions <a href="c-2.html#2-10">2.10</a> and <a href="c-2.html#2-14">2.14</a>,
+	and functions declared as
+<pre>
+        f1(int a[][NCOLUMNS], int m, int n);
+        f2(int *aryp, int nrows, int ncolumns);
+        f3(int **pp, int m, int n);
+</pre>
+	(see questions <a href="c-2.html#2-10">2.10</a> and <a href="c-2.html#2-11">2.11</a>),
+	the following calls should work as expected:
+<pre>
+	f1(array, NROWS, NCOLUMNS);
+	f1(array4, nrows, NCOLUMNS);
+	f2(&amp;array[0][0], NROWS, NCOLUMNS);
+	f2(*array2, nrows, ncolumns);
+	f2(array3, nrows, ncolumns);
+	f2(*array4, nrows, NCOLUMNS);
+	f3(array1, nrows, ncolumns);
+	f3(array2, nrows, ncolumns);
+</pre>
+<p>
+	The following two calls would probably work, but involve
+	questionable casts, and work only if the dynamic ncolumns
+	matches the static <code>NCOLUMNS</code>:
+<p>
+<pre>
+	f1((int (*)[NCOLUMNS])(*array2), nrows, ncolumns);
+	f1((int (*)[NCOLUMNS])array3, nrows, ncolumns);
+</pre>
+<p>
+	It must again be noted that passing<code> &amp;array[0][0] </code>to<code> f2() </code>is not
+	strictly conforming; see <a href="c-2.html#2-11">question 2.11</a>.
+<p>
+	If you can understand why all of the above calls work and are
+	written as they are, and if you understand why the combinations
+	that are not listed would not work, then you have a <em>very</em> good
+	understanding of arrays and pointers (and several other areas)
+	in C.
+<p>
+
+<h3>
+<a name="2-16">
+2.16:	Here's a neat trick: if I write</a></h3>
+<pre>
+
+	int realarray[10];
+	int *array = &amp;realarray[-1];
+
+</pre><h3>
+	I can treat &quot;array&quot; as if it were a 1-based array.</h3>
+<p>
+      Although this technique is attractive (and was used in old
+      editions of the book Numerical Recipes in C), it does not
+      conform to the C standards.  Pointer arithmetic is defined only
+      as long as the pointer points within the same allocated block of
+      memory, or to the imaginary "terminating" element one past it;
+      otherwise, the behavior is undefined, <em>even if the pointer is
+      not dereferenced</em>.  The code above could fail if, while
+      subtracting the offset, an illegal address were generated
+      (perhaps because the address tried to "wrap around" past the
+      beginning of some memory segment).
+<p>
+	References: <a href="index.html#ANSI">ANSI</a> Sec. 3.3.6 p. 48,
+	<a href="../rat/c2.html#3-2-2-3">Rationale Sec. 3.2.2.3 p. 38</a>;
+	<a href="index.html#K-amp-RII">K&amp;R II</a> Sec. 5.3 p. 100,
+		Sec. 5.4 pp. 102-3, Sec. A7.7 pp. 205-6.
+<p>
+
+<h3>
+<a name="2-17">
+2.17:	I passed a pointer to a function which initialized it:</a></h3>
+<pre>
+	...
+	int *ip;
+	f(ip);
+	...
+
+	void f(ip)
+	int *ip;
+	{
+		static int dummy = 5;
+		ip = &amp;dummy;
+	}
+</pre>
+<h3>
+	, but the pointer in the caller was unchanged.</h3>
+<p>
+  	Did the function try to initialize the pointer itself, or just
+	what it pointed to?&#160;<tt> </tt>Remember that arguments in C are passed by
+	value.&#160;<tt> </tt>The called function altered only the passed copy of the
+	pointer.&#160;<tt> </tt>You'll want to pass the address of the pointer
+	(the function will end up accepting a pointer-to-a-pointer), or
+	have the function return the pointer.
+<p>
+<h3>
+<a name="2-18">
+2.18:	I have a</a><code> char</code> <code>* </code>pointer that happens to point to some ints, and
+	I want to step it over them.&#160;<tt> </tt>Why doesn't</h3>
+<p>
+<pre>
+	((int *)p)++;
+</pre>
+<h3>
+	work?</h3>
+<p>
+  	In C, a cast operator does not mean &quot;pretend these bits have a
+	different type, and treat them accordingly;&quot; it is a conversion
+	operator, and by definition it yields an rvalue, which cannot be
+	assigned to, or incremented with <code>++</code>.&#160;<tt> </tt>(It is an anomaly in pcc-
+	derived compilers, and an extension in gcc, that expressions
+	such as the above are ever accepted.)&#160;<tt> </tt>Say what you mean: use
+<p>
+<pre>
+	p = (char *)((int *)p + 1);
+</pre>
+<p>
+	, or simply
+<p>
+<pre>
+	p += sizeof(int);
+</pre>
+<p>
+	References: <a href="index.html#ANSI">ANSI</a> Sec. 3.3.4,
+	<a href="../rat/c3.html#3-3-2-4">Rationale Sec. 3.3.2.4 p. 43</a>.
+<p>
+<h3><a name="2-19">2.19: Can I use a</a><code> void</code> <code>** </code>pointer to pass a generic pointer to a
+      function by reference?
+</h3>
+      Not portably.  There is no generic pointer-to-pointer type in C.
+      <code> void</code> <code>* </code>acts as a generic pointer only because conversions are
+      applied automatically when other pointer types are assigned to
+      and from<code> void</code> <code>*</code>'s; these conversions cannot be performed (the
+      correct underlying pointer type is not known) if an attempt is
+      made to indirect upon a<code> void</code> <code>** </code>value which points at something
+      other than a<code> void</code> <code>*</code>.
+<hr>
+<a href="c-1.html"><img SRC="prev.xbm" ALT="[prev]"></a>
+<a href="index.html#comp-lang-c-faq"><img SRC="up.xbm" ALT="[up]"></a>
+<a href="c-faq-toc.html#c-2"><img SRC="overview.xbm" alt="[overview]"></a>
+<a href="c-3.html"><img SRC="next.xbm" ALT="[next]"></a>
+</body></html>

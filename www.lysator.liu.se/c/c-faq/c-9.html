@@ -1,0 +1,252 @@
+<html><head>
+<link rel="made" rev="made" href="mailto:jutta@cs.tu-berlin.de">
+<title>Structs, Enums, and Unions</title></head>
+<body>
+<a href="c-8.html"><img SRC="prev.xbm" ALT="[prev]"></a>
+<a href="index.html#comp-lang-c-faq"><img SRC="up.xbm" ALT="[up]"></a>
+<a href="c-faq-toc.html#c-9"><img SRC="overview.xbm" alt="[overview]"></a>
+<a href="c-10.html"><img SRC="next.xbm" ALT="[next]"></a>
+<hr>
+
+<h2>Section 9. Structs, Enums, and Unions</h2>
+<p>
+<h3>
+<a name="9-1">
+9.1:	What is the difference between an enum and a series of
+	preprocessor #defines?
+</a></h3><p>
+  	At the present time, there is little difference.&#160;<tt> </tt>Although many
+	people might have wished otherwise, the <a href="index.html#ANSI">ANSI</a> standard says that
+	enumerations may be freely intermixed with integral types,
+	without errors.&#160;<tt> </tt>(If such intermixing were disallowed without
+	explicit casts, judicious use of enums could catch certain
+	programming errors.)
+<p>
+	Some advantages of enums are that the numeric values are
+	automatically assigned, that a debugger may be able to display
+	the symbolic values when enum variables are examined, and that
+	they obey block scope.&#160;<tt> </tt>(A compiler may also generate nonfatal
+	warnings when enums and ints are indiscriminately mixed, since
+	doing so can still be considered bad style even though it is not
+	strictly illegal).&#160;<tt> </tt>A disadvantage is that the programmer has
+	little control over the size (or over those nonfatal warnings).
+<p>
+	References: <a href="index.html#K-amp-RII">K&amp;R II</a> Sec. 2.3 p. 39, Sec. A4.2 p. 196; <a href="index.html#H-amp-S">H&amp;S</a>
+	Sec. 5.5 p. 100; <a href="index.html#ANSI">ANSI</a> Secs. 3.1.2.5, 3.5.2, 3.5.2.2 .
+<p>
+<a name="9-2">
+</a> <h3>
+9.2:	I heard that structures could be assigned to variables and
+	passed to and from functions, but <a href="index.html#K-amp-RI">K&amp;R I</a> says not.
+</h3><p>
+  	What <a href="index.html#K-amp-RI">K&amp;R I</a> said was that the restrictions on struct operations
+	would be lifted in a forthcoming version of the compiler, and in
+	fact struct assignment and passing were fully functional in
+	Ritchie's compiler even as <a href="index.html#K-amp-RI">K&amp;R I</a> was being published.&#160;<tt> </tt>Although
+	a few early C compilers lacked struct assignment, all modern
+	compilers support it, and it is part of the <a href="index.html#ANSI">ANSI</a> C standard, so
+	there should be no reluctance to use it.
+<p>
+	References: <a href="index.html#K-amp-RI">K&amp;R I</a> Sec. 6.2 p. 121; <a href="index.html#K-amp-RII">K&amp;R II</a> Sec. 6.2 p. 129; <a href="index.html#H-amp-S">H&amp;S</a>
+	Sec. 5.6.2 p. 103; <a href="index.html#ANSI">ANSI</a> Secs. 3.1.2.5, 3.2.2.1, 3.3.16 .
+<p>
+<a name="9-3">
+</a> <h3>
+9.3:	How does struct passing and returning work?
+</h3><p>
+  	When structures are passed as arguments to functions, the entire
+	struct is typically pushed on the stack, using as many words as
+	are required.&#160;<tt> </tt>(Programmers often choose to use pointers to
+	structures instead, precisely to avoid this overhead.)
+<p>
+	Structures are often returned from functions in a location
+	pointed to by an extra, compiler-supplied &quot;hidden&quot; argument to
+	the function.&#160;<tt> </tt>Some older compilers used a special, static
+	location for structure returns, although this made struct-valued
+	functions nonreentrant, which <a href="index.html#ANSI">ANSI</a> C disallows.
+<p>
+	References: <a href="index.html#ANSI">ANSI</a> Sec. 2.2.3 p. 13.
+<p>
+<h3>
+<a name="9-4">
+9.4:	The following program works correctly, but it dumps core after
+	it finishes.</a>&#160;<tt> </tt>Why?</h3>
+<p>
+<pre>
+	struct list
+		{
+		char *item;
+		struct list *next;
+		}
+
+	/* Here is the main program. */
+
+	main(argc, argv)
+	...
+</pre>
+<p>
+  	A missing semicolon causes the compiler to believe that main
+	returns a structure.&#160;<tt> </tt>(The connection is hard to see because of
+	the intervening comment.)&#160;<tt> </tt>Since struct-valued functions are
+	usually implemented by adding a hidden return pointer, the
+	generated code for <code>main()</code> tries to accept three arguments,
+	although only two are passed (in this case, by the C start-up
+	code).&#160;<tt> </tt>See also <a href="c-17.html#17-21">question 17.21</a>.
+<p>
+	References: <a href="index.html#CT-amp-P">CT&amp;P</a> Sec. 2.3 pp. 21-2.
+
+<p><h3><a name="9-5">
+9.5:	Why can't you compare structs?
+</a></h3><p>
+  	There is no reasonable way for a compiler to implement struct
+	comparison which is consistent with C's low-level flavor.&#160;<tt> </tt>A
+	byte-by-byte comparison could be invalidated by random bits
+	present in unused &quot;holes&quot; in the structure (such padding is used
+	to keep the alignment of later fields correct;  see questions <a href="c-9.html#9-10">9.10</a> and 
+<a href="c-9.html#9-11">9.11</a>).&#160;<tt> </tt>A field-by-
+	field comparison would require unacceptable amounts of
+	repetitive, in-line code for large structures.
+<p>
+	If you want to compare two structures, you must write your own
+	function to do so.&#160;<tt> </tt>
+	C++ would let you arrange for the <code>==</code>
+	operator to map to your function.
+<p>
+	References:
+	<a href="index.html#K-amp-RII">K&amp;R II</a> Sec. 6.2 p. 129;
+	<a href="index.html#H-amp-S">H&amp;S</a> Sec. 5.6.2 p. 103;
+	<a href="../rat/c3.html#3-3-9">ANSI Rationale Sec. 3.3.9 p. 47</a>.
+<p><h3><a name="9-6">
+9.6:    How can I read/write structs from/to data files?</a></h3>
+<p>
+        It is relatively straightforward to write a struct out using
+        <code> fwrite</code>:
+<pre>
+                fwrite((char *)&amp;somestruct, sizeof(somestruct), 1, fp);
+</pre>
+        and a corresponding<code> fread </code>invocation can read it back in.
+        However, data files so written will <em>not</em> be very portable (see
+        questions <a href="c-9.html#9-11">9.11</a> and <a href="c-17.html#17-3">17.3</a>).  Note also that on many systems you
+        must use the "b" flag when fopening the files.
+<h3>
+<a name="9-7">
+9.7:	I came across some code that declared a structure like this:
+</a></h3><p>
+<pre>
+	struct name
+		{
+		int namelen;
+		char name[1];
+		};
+</pre>
+<p><h3>
+	and then did some tricky allocation to make the name array act
+	like it had several elements.&#160;<tt> </tt>Is this legal and/or portable?
+</h3><p>
+  	This technique is popular, although Dennis Ritchie has called it
+	&quot;unwarranted chumminess with the C implementation.&quot;&#160;<tt> </tt>
+	An <a href="index.html#ANSI">ANSI</a>
+        Interpretation Ruling has deemed it (more precisely, access
+        beyond the declared size of the<code> name </code>field) to be
+	not strictly conforming, although a thorough treatment of the arguments
+        surrounding the legality of the technique is beyond the scope of
+        this list.&#160;<tt> </tt>It seems, however, to be portable to all known
+        implementations.&#160;<tt> </tt>(Compilers which check array bounds carefully
+        might issue warnings.)
+<p>
+        To be on the safe side, it may be preferable to declare the
+        variable-size element very large, rather than very small; in the
+        case of the above example:
+<pre>
+                ...
+                char name[MAXSIZE];
+                ...
+</pre>
+        where<code> MAXSIZE </code>is larger than any name which will be stored.
+        (The trick so modified is said to be in conformance with the
+        Standard.)
+<p>
+	References:
+  <a href="../rat/c5.html#3-5-4-2">ANSI Rationale Sec. 3.5.4.2 pp. 54-5</a>.
+<p>
+<h3>
+<a name="9-8">
+9.8:	How can I determine the byte offset of a field within a
+	structure?
+</a></h3><p>
+  	<a href="index.html#ANSI">ANSI</a> C defines the offsetof macro,
+	which should be used if available; see &lt;stddef.h&gt;.&#160;<tt> </tt>
+	If you don't have it, a suggested implementation is
+<p>
+<pre>
+	#define offsetof(type, mem) ((size_t) \
+		((char *)&amp;((type *) 0)-&gt;mem - (char *)((type *) 0)))
+</pre>
+<p>
+	This implementation is not 100% portable; some compilers may
+	legitimately refuse to accept it.
+<p>
+	See the <a href="c-9.html#9-8">next question</a> for a usage hint.
+<p>
+	References: <a href="index.html#ANSI">ANSI</a> Sec. 4.1.5,
+	<a href="../rat/c5.html#offsetof-3-5-4-2">Rationale Sec. 3.5.4.2 p. 55</a>.
+<p>
+<h3>
+<a name="9-9">
+9.9:	How can I access structure fields by name at run time?
+</a></h3><p>
+  	Build a table of names and offsets, using the <code>offsetof()</code> macro.
+	The offset of field b in struct a is
+<p>
+<pre>
+	offsetb = offsetof(struct a, b)
+</pre>
+<p>
+	If structp is a pointer to an instance of this structure, and b
+	is an int field with offset as computed above, b's value can be
+	set indirectly with
+<p>
+<pre>
+	*(int *)((char *)structp + offsetb) = value;
+</pre>
+<p>
+<h3><a name="9-10">
+9.10:	Why does </a><code>sizeof</code> report a larger size than I expect for a
+	structure type, as if there was padding at the end?
+</h3><p>
+  	Structures may have this padding (as well as internal padding;
+	see also <a href="c-9.html#9-5">question 9.5</a>), so that alignment properties will be
+	preserved when an array of contiguous structures is allocated.
+<p>
+
+<h3>
+<a name="9-11">
+9.11:	My compiler is leaving holes in structures, which is wasting
+	space and preventing &quot;binary&quot; I/O to external data files.</a>&#160;<tt> </tt>Can I
+	turn off the padding, or otherwise control the alignment of
+	structs?
+</h3><p>
+  	Your compiler may provide an extension to give you this control
+	(perhaps a <code>#pragma</code>), but there is no standard method.&#160;<tt> </tt>See also
+	<a href="c-17.html#17-3">question 17.3</a>.
+<p>
+
+<h3><a name="9-12">
+9.12:	Can I initialize unions?
+</a></h3><p>
+  	<a href="index.html#ANSI">ANSI</a> Standard C allows an initializer for the first member of a
+	union.&#160;<tt> </tt>There is no standard way of initializing the other
+	members (nor, under a pre-<a href="index.html#ANSI">ANSI</a> compiler, is there generally any
+	way of initializing any of them).
+<p>
+<h3><a name="9-13">
+9.13:   How can I pass constant values to routines which accept struct
+        arguments?
+</a></h3><p>
+        C has no way of generating anonymous struct values.&#160;<tt> </tt>You will
+        have to use a temporary struct variable.
+<hr>
+<a href="c-8.html"><img SRC="prev.xbm" ALT="[prev]"></a>
+<a href="index.html#comp-lang-c-faq"><img SRC="up.xbm" ALT="[up]"></a>
+<a href="c-faq-toc.html#c-9"><img SRC="overview.xbm" alt="[overview]"></a>
+<a href="c-10.html"><img SRC="next.xbm" ALT="[next]"></a></body></html>

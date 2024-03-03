@@ -1,0 +1,223 @@
+<html>
+<head><title>Clive Feather on CPL and BCPL</title>
+<link rev="made" rel="made" href="mailto:jutta@pobox.com">
+</head>
+<body>
+BCPL to B to C: other articles by
+<a href="msb-on-b.html">Mark Brader</a>,
+<a href="alan-on-bcpl.html">Alan Watson</a>, and
+<a href="dmr-on-histories.html">Dennis Ritchie</a>
+<hr>
+<a name="intro">All</a> my attempts to locate a copy of the article that <a href="dmr-on-histories.html#clive">Dennis Ritchie is
+referring to</a> have failed.&#160;<tt> </tt>So I have made an Orwellian attempt
+to recreate it; as a long-time BCPL user, these are my comments on
+<a href="msb-on-b.html">Mark's</a>
+and <a href="alan-on-bcpl.html">Alan's articles</a>, and the BCPL parts of
+<a href="chistory.ps">Dennis's paper of the development
+of C</a>.
+<p>
+<address><a href="clive/index.html" name="clive">Clive D.W. Feather</a></address>
+<hr>
+<p>
+<a href="msb-on-b.html#main">Mark Brader wrote</a>:<p>
+&gt;&#160;<tt> </tt>To go back to the beginning, once upon a time in England there was a<br>
+&gt;&#160;<tt> </tt>language called CPL. I've heard this acronym explained both as Cambridge<br>
+&gt;&#160;<tt> </tt>Programming Language and as Combined ...<br>
+<p>
+CPL officially stood for "Combined Programming Language", because it was
+originally going to be developed by a joint team from Cambridge and London
+Universities; it thus gained the nickname "Cambridge Plus London".
+<p>
+&gt;&#160;<tt> </tt>the first version of B there [...] did not support floating-point. Later<br>
+&gt;&#160;<tt> </tt>it was added by means of adding floating-point operators: #+, #*, and so on.<br>
+<p>
+These operators appear in most versions of BCPL other than on 16-bit machines;
+I don't know whether B picked them up from BCPL or the other way round.<p>
+&gt;&#160;<tt> </tt>Here is a bit of C code and its B equivalent:
+<pre>
+&gt;     float infact (n) int n;
+&gt;     /* or, of course, the newer float infact (int n) */
+&gt;     {
+&gt;             float f = 1;
+&gt;             int i;
+&gt;             extern float fact[];
+&gt;
+&gt;             for (i = 0; i &lt;= n; ++i)
+&gt;                     fact[i] = f *= i;
+&gt;
+&gt;             return d;
+&gt;     }
+&gt;
+&gt;     #define TOPFACT 10
+&gt;     float fact[TOPFACT+1];
+</pre>
+&gt;&#160;<tt> </tt>And now in B:
+<pre>
+&gt;     infact (n)
+&gt;     {
+&gt;             auto f, i, j;   /* no initialization for auto variables */
+&gt;             extrn fact;     /* "What would I do differently if designing
+&gt;                              *  UNIX today?  I'd spell creat() with an e."
+&gt;                              *  -- Ken Thompson, approx. wording */
+&gt;
+&gt;             f = 1.;         /* floating point constant */
+&gt;             j = 0.;
+&gt;             for (i = 0; i &lt;= n; ++i) {
+&gt;                     fact[i] = f =#* j;      /* note spelling =#* not #*= */
+&gt;                     j =#+ 1.;               /* #+ for floating add */
+&gt;             }
+&gt;
+&gt;             return (f);     /* at least, I think the () were required */
+&gt;     }
+&gt;
+&gt;     TOPFACT = 10;   /* equivalent of #define, allows numeric values only */
+&gt;     fact[TOPFACT];
+</pre>
+<p>
+The BCPL equivalent would be:
+<pre>
+    MANIFEST ${ TOPFACT = 10 $)   // Equivalent of "const int TOPFACT = 10"
+    LET infact (n) = VALOF
+    $(
+            LET f, j = 1., 0.
+
+            FOR i = 0 TO n        // Declares i for the next block only
+            $(
+                    f #*:= j;     // := is assign, = is compare
+                    fact!i := f;  // assignment doesn't return a value
+                    j #+:= 1.
+            $)
+            RESULTIS f
+    $)
+    AND fact = VEC TOPFACT;       // As in B, allocates 0 to TOPFACT
+</pre>
+The use of AND means that fact is declared throughout infact.
+<p>
+&gt;&#160;<tt> </tt>The last line is of particular interest because it actually declares 12,<br>
+&gt;&#160;<tt> </tt>not 10, words of storage. In B the subscripts run from 0 to the declared<br>
+&gt;&#160;<tt> </tt>value, so [0] denoted a 1-element array. The extra word was a pointer<br>
+&gt;&#160;<tt> </tt>initialized to the first element of the array<br>
+<p>
+This worked in exactly the same way in BCPL, though the declaration used the
+keyword VEC, and subscripting was done with the ! operator instead of [].
+<p>
+&gt;&#160;<tt> </tt>If you wanted to deal with character strings, you could either store one<br>
+&gt;&#160;<tt> </tt>character per word in an array and index them directly, or store one<br>
+&gt;&#160;<tt> </tt>character per byte and access them with library functions.<br>
+<p>
+Early versions of BCPL had the same problem, but most compilers had a %
+operator which offered byte subscripting of memory, making string access
+much simpler.
+<p>
+<p>
+<a href="alan-on-bcpl.html#cpl">Alan Watson wrote</a>:<br>
+&gt;&#160;<tt> </tt>I'm not sure it was ever fully implemented.
+<p>
+As far as I know, it never was.&#160;<tt> </tt>According to one of my supervisors,
+writing a complete CPL compiler as part of one's B.A. degree at Cambridge
+is either a guaranteed pass or a guaranteed fail, depending on who the chief
+examiner is that year.
+<p>
+&gt;&#160;<tt> </tt>Further trivia is that on IBM mainframes (or at least those running Phoenix),<br>
+&gt;&#160;<tt> </tt>"/*" serves the same purpose as ctrl-d on a Unix system -- it terminates<br>
+&gt;&#160;<tt> </tt>input from the terminal. Was the adoption of this as a comment delimiter<br>
+&gt;&#160;<tt> </tt>an inside joke by Ritchie?<br>
+<p>
+I doubt it (though <a href="http://www.cs.bell-labs.com/who/dmr/index.html" name="dmr">DMR</a> may contradict me, of course).&#160;<tt> </tt>Every compiler I remember
+using allowed both // and /* */ type comment delimiters.&#160;<tt> </tt>Some also allowed | and \ to be used instead of /, so that || was also a comment-to-end-of-line,
+and \* ... *\ was an alternate block comment symbol.&#160;<tt> </tt>The latter was
+particularly useful, because it could be used to comment out blocks of code
+that included /* ... */ comments (as with C, comments do not nest).&#160;<tt> </tt>We used
+comments with vertical bars to implement a variety of conditional compilation:
+<pre>
+	|**||| IF
+	<i>normal code</i>
+	|*|||| ELSE
+	<i>alternate code</i>
+	|*|||| CANCEL ELSE
+	<i>more normal code</i>
+	|*|||| ELSE
+	<i>more alternate code</i>
+	|**||| ENDIF
+</pre>
+By default, this would compile the "normal code".&#160;<tt> </tt>To switch to the "alternate
+code", the first line was changed to |**||* or |*|||| instead.&#160;<tt> </tt>Because this
+comment symbol was used, the code could contain normal comments and the
+"commenting-out" reverse comments I described above.
+<p>
+&gt;&#160;<tt> </tt>the Phoenix system (layered over MVT and then MVS on the IBM 3081s and 3084s<br>
+&gt;&#160;<tt> </tt>at Cambridge and London)<br>
+<p>
+Actually, Phoenix was developed for MVT on an IBM 370-165. It was only much
+later (a few weeks before I graduated) that the 3081 replaced it.
+<p>
+<p>
+And now, with my heart in my mouth:<br>
+<a href="chistory.ps">Dennis Ritchie wrote</a>:
+<p>
+&gt;&#160;<tt> </tt>With less success, they also use library procedures to specify interesting<br>
+&gt;&#160;<tt> </tt>control constructs such as coroutines and procedure closures.<br>
+<p>
+I don't know where it came from, but there was a coroutine library for BCPL
+floating around the Cambridge scene. The fact that everything was just a
+word made this quite easy: there was only one non-portable statement in the
+entire package, to extract and replace the return address on the stack.
+<p>
+&gt;&#160;<tt> </tt>When in BCPL one writes<br>
+&gt;<tt>    let V = vec 10</tt><br>
+&gt;&#160;<tt> </tt>or in B,<br>
+&gt;<tt>    auto V[10];</tt><br>
+&gt;&#160;<tt> </tt>the effect is the same: a cell named V is allocated,
+	      then another group of<br>
+&gt; 10 contiguous cells is set aside,
+<p>
+At least in BCPL, and Mark Brader thinks also in B, the group would contain
+11, and not 10, cells.
+<p>
+&gt;&#160;<tt> </tt>Individual characters in a BCPL string were usually manipulated by spreading<br>
+&gt;&#160;<tt> </tt>the string out into another array, one character per cell, and then repacking<br>
+&gt;&#160;<tt> </tt>it later; B provided corresponding routines, but people more often used other<br>
+&gt;&#160;<tt> </tt>library functions that accessed or replaced individual characters in a<br>
+&gt;&#160;<tt> </tt>string.<br>
+<p>
+This was true in early BCPL, and if you were writing for maximal portability,
+but, as I said above, nearly all compilers provide a % operator to do byte
+subscripting:
+<pre>
+<tt>    string = "This string ends with X"
+    /* ... */
+    string % (string % 0) = 'A'
+</tt></pre>
+This would change the last character of the string to an A.
+<p>
+&gt;&#160;<tt> </tt>For example, B introduced generalized assignment operators, using x=+y to<br>
+&gt;&#160;<tt> </tt>add y to x.&#160;<tt> </tt>The notation came from Algol 68
+<p>
+These operators were introduced into BCPL as well, using the exact notation
+of Algol (x +:= y), probably by cross-fertilization from the Algol 68C compiler
+work at Cambridge.
+<p>
+&gt;&#160;<tt> </tt>Finally, the B and BCPL model implied overhead in dealing with pointers<br>
+[...]<br>
+&gt;&#160;<tt> </tt>Each pointer reference generated a run-time scale conversion from the pointer<br>
+&gt;&#160;<tt> </tt>to the byte address expected by the hardware.<br>
+<p>
+As far as I know, every real compiler for byte-addressed systems did it this
+way, presumably on the assumption that arithmetic was more important than
+indexing.&#160;<tt> </tt>In reality, the opposite was more often the case, and it is
+surprising that no compiler generated code optimized for this, by ignoring
+the two least significant bits of every word (on a 32 bit system).&#160;<tt> </tt>This would
+make addresses be byte addresses, while still preserving the property that
+consecutive words have addresses differing by 1 (which would be 0...0100 in
+binary).&#160;<tt> </tt>The trade-off would be that the &gt;&gt; operator would
+have to be implemented as a shift followed by AND-ing out the last two bits,
+and the multiplication and division operators (which are relatively slow
+anyway) would require their arguments (and result for division) to
+be adjusted.
+<hr>
+BCPL to B to C: other articles by
+<a href="msb-on-b.html">Mark Brader</a>,
+<a href="alan-on-bcpl.html">Alan Watson</a>, and
+<a href="dmr-on-histories.html">Dennis Ritchie</a>
+</body>
+</html>
