@@ -1,0 +1,135 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>16.3: Character Input and Output
+(<TT>getchar</TT>, <TT>putchar</TT>, etc.)</title>
+<link href="sx2b.html" rev=precedes>
+<link href="sx2d.html" rel=precedes>
+<link href="sx2.html" rev=subdocument>
+</head>
+<body>
+<H2>16.3: Character Input and Output
+(<TT>getchar</TT>, <TT>putchar</TT>, etc.)</H2>
+
+<p>Character-at-a-time input and output is simple and straightforward.
+The <TT>getchar</TT> function
+reads the next character from the standard input;
+<TT>getc(fp)</TT> reads the next character from the stream <TT>fp</TT>.
+Both return the next character or,
+if the next character can't be read,
+the non-character constant <TT>EOF</TT>,
+which is defined in <TT>&lt;stdio.h&gt;</TT>.
+(Usually the reason that the next character can't be read
+is that the input stream has reached end-of-file,
+but it's also possible that there's been some I/O error.)
+Since the value <TT>EOF</TT> is distinct from all character values,
+it's important that the return value
+from <TT>getc</TT> and <TT>getchar</TT>
+be assigned to a variable of type <TT>int</TT>,
+not <TT>char</TT>.
+Don't declare the variable to hold
+<TT>getc</TT>'s or <TT>getchar</TT>'s return value
+as a <TT>char</TT>;
+don't try to read characters
+directly into a character array with code like
+<pre>
+	while(i &lt; max &amp;&amp; (a[i] = getc(fp)) != EOF)	/* WRONG, for char a[] */
+</pre>
+The code may seem to work at first,
+but some day it will get confused
+when it reads a real character
+with a value
+which seems to equal that which results
+when the non-<TT>char</TT> value <TT>EOF</TT>
+is crammed into a <TT>char</TT>.
+</p><p>One more reminder about <TT>getchar</TT>:
+although it returns and therefore seems to read one character at a time,
+it typically delivers characters from internal buffers
+which may hold more characters which will be delivered later.
+For example,
+most command-line-based operating systems
+let you type an entire line of input,
+and wait for you to type the RETURN or ENTER key
+before making any of those characters available to a program
+(even if the program thought
+it was doing character-at-a-time input with
+calls to
+<TT>getchar</TT>).
+There are, of course,
+ways to read characters immediately
+(without waiting for the RETURN key),
+but they differ from operating system to operating system.
+</p><p>Writing single characters is just as easy
+as reading:
+<TT>putchar(c)</TT> writes the character <TT>c</TT> to standard output;
+<TT>putc(c, fp)</TT> writes the character <TT>c</TT> to the stream <TT>fp</TT>.
+(The character <TT>c</TT> must be a real character.
+If you want to ``send'' an end-of-file condition to a stream,
+that is,
+cause the program reading the stream to ``get'' end-of-file,
+you do that by closing the stream,
+not by trying to write <TT>EOF</TT> to it.)
+</p><p>Occasionally,
+when reading characters,
+you sometimes find that you've
+read a bit too far.
+For example,
+if one part of your code is supposed to read a
+number--a string of digits--from
+a file,
+leaving the characters after the digits on the input stream
+for some
+other part of the program to read,
+the digit-reading part of the program won't know that it has read 
+all the digits until it has read a non-digit,
+at which point it's too late.
+(The situation recalls Dave Barry's recipe for
+``food heated up'':
+``Put the food in a pot on the stove on medium heat
+until just before the kitchen fills with black smoke.'')
+When reading characters with the standard I/O library, at least, 
+we have an escape:
+the <TT>ungetc</TT> function ``un-reads'' one 
+character,
+pushing it back on the input stream for a later call to 
+<TT>getc</TT> (or some other input function) to read.
+The prototype for <TT>ungetc</TT> is
+<pre>
+	int ungetc(int c, FILE *fp)
+</pre>
+where <TT>c</TT> is the character
+which is to be pushed back onto the stream <TT>fp</TT>.
+For example, here is a code scrap that reads digits from a stream
+(and converts them to the corresponding integer),
+stopping at the first non-digit character and leaving it on the input stream:
+<pre>
+#include &lt;ctype.h&gt;
+
+int c, n = 0;
+while((c = getchar()) != EOF &amp;&amp; isdigit(c))
+	n = 10 * n + (c - '0');
+if(c != EOF)
+	ungetc(c, stdin);
+</pre>
+It's only guaranteed that you can push one character back,
+but that's usually all you need.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx2b.html" rev=precedes>prev</a>
+<a href="sx2d.html" rel=precedes>next</a>
+<a href="sx2.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1996-1999
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

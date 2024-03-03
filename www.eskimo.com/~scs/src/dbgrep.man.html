@@ -1,0 +1,646 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>DBGREP(1)</title>
+</head>
+<body>
+<H1>DBGREP(1)</H1>
+<!-- Copyright 1997-2003 -->
+<!-- Steve Summit, scs@eskimo.com -->
+<!-- This program and its documentation may be freely redistributed and used -->
+<!-- so long as the author's name and this notice remain intact, -->
+<!-- and any modifications are marked as such. -->
+<!-- See http://www.eskimo.com/~scs/src/#dbgrep for possible updates. -->
+<H2>NAME</H2>
+
+dbgrep - extract and process records from simple text databases
+<H2>SYNOPSIS</H2>
+
+<B>dbgrep</B>
+[
+options
+]
+expression
+[ dbfile ]
+<H2>DESCRIPTION</H2>
+
+<p><I>dbgrep</I>
+manipulates simple text databases in various ways.
+Its preferred ``database'' format consists of a series
+of keys and values
+with the reasonably obvious forms
+<pre>
+	key1 value11
+	key2 value21
+
+	key1 value12
+	key2 value22
+</pre>
+or
+<pre>
+	key1: value13
+	key2: value23
+
+	key1: value14
+	key2: value24
+</pre>
+In other words, the first word on a line (maybe followed by a
+colon) is a key; the rest of the line is that key's value.
+Blank lines separate records.
+The program discovers whether explicit colons are being used or not.
+Alternatively, it is possible to explicitly specify that
+keys and values are separated by
+colons, single tabs, or arbitrary whitespace
+by using the
+<B>-cs</B>,
+<B>-ts</B>,
+or <B>-ws</B> options,
+respectively.
+(Under <B>-cs</B> and <B>-ts</B>,
+a key name may contain spaces,
+and under <B>-ts</B> and <B>-ws</B>,
+keys may contain colons.)
+It is also possible to specify that
+new records begin on occurrence of a specific key,
+as opposed to a blank line.
+Databases may also contain comments,
+which are lines beginning with #,
+and which are not otherwise interpreted.
+</p><p>Given the similarity of the colon-separated form to an RFC822 mail header,
+it is possible for the program
+to deal with
+Unix-style
+mailbox files: it knows about lines beginning with the five
+characters ``<TT>From </TT>'' and preceded by a blank line, it knows about
+header line continuation, and it knows about body text (not
+containing explicit keys, and separated from the header by a blank
+line).
+In other words, each message in the mailbox is treated as a ``record'',
+and its header lines
+(or body text, using <B>-e</B>)
+can be searched upon.
+Mailbox mode is selected with the <B>-mail</B>
+(or <B>-mailh</B>)
+option.
+</p><p>There is also some support for
+``databases'' represented as tabular files.
+The first line of such a database is taken to be
+a header describing the field names,
+and the remaining lines are interpreted as records,
+one per line.
+Lines can be formatted as tab-separated, comma-separated,
+or ``SQL output format''.
+Columnar input or output is selected using the
+<B>-ifmt</B> and <B>-ofmt</B> options.
+</p><p>As its name implies,
+<I>dbgrep</I>'s original purpose in life
+was to select records
+matching certain patterns.
+Along the way, however,
+it has accumulated a number of
+other processing options which have turned it into more of a
+general-purpose database processing tool and report generator.
+</p><p><I>dbgrep</I>'s command line syntax is,
+perhaps unfortunately,
+modeled on that of <a href="../cgi-bin/manredir.cgi?name=find&amp;sec=1"><I>find(1)</I></a>.
+That is, the ``expression'' describing
+the records to be matched,
+and
+the operators specifying
+the actions to be carried out for matched records,
+are all specified as command-line options.
+(Once you get used to it, though,
+this sort of syntax isn't really all so painful as
+<a href="../cgi-bin/manredir.cgi?name=find&amp;sec=1"><I>find(1)</I></a>'s man
+page's ``BUGS'' section would lead you to believe.)
+It is also possible to prepare the search and processing
+expression
+(or a subexpression)
+in a file, and have <I>dbgrep</I> read it from there.
+</p><p><I>dbgrep</I>'s basic invocation syntax is
+<pre>
+	dbgrep [<I>options</I>] [<I>pattern</I> | <I>expression</I>] [<I>dbfile</I>]
+</pre>
+If the <I>dbfile</I> is omitted,
+input is naturally read from standard input.
+If a
+single,
+simple <I>pattern</I> is present, it is treated as a regexp
+(&agrave; la <a href="../cgi-bin/manredir.cgi?name=grep&amp;sec=1"><I>grep(1)</I></a>)
+to be searched for in any field; this is the same as <B>-e</B>.
+Otherwise, the
+<I>expression</I> is a series of match operators, perhaps with Boolean
+connectors (<B>-o</B>, <B>-a</B>, <B>!</B>, and <B>( )</B> for grouping); it may also contain
+operators (again like <a href="../cgi-bin/manredir.cgi?name=find&amp;sec=1"><I>find(1)</I></a>)
+which cause some particular action to be
+taken on a matched record.
+Finally, there is the usual
+assortment of <I>options</I>.
+(Actually, the options may be
+interspersed with the expression operators, since one parser
+scans them all.)
+</p><p>By default, most of <I>dbgrep</I>'s match operators
+use regular expressions,
+in the style of
+<a href="../cgi-bin/manredir.cgi?name=ed&amp;sec=1"><I>ed(1)</I></a>
+and
+<a href="../cgi-bin/manredir.cgi?name=grep&amp;sec=1"><I>grep(1)</I></a>.
+It is possible to disable the use of regular expressions,
+either in an individual match
+(by using alternative match operators such as <B>-km</B>
+or <B>-kx</B>),
+or on a global basis
+by using the <B>-m</B> or <B>-x</B> options.
+</p><p>The options, match operators, etc. (as listed by <B>dbgrep -help</B>) are:
+</p><H2>EXPRESSIONS</H2>
+
+<p>(match expression operators)
+<dl>
+<dt><B>-e</B> <I>pat</I>
+</dt><dd>Match <I>pat</I> in any field.
+</dd><dt><B>-expr</B> <I>e</I>
+</dt><dd>Evaluate ``secondary'' expression <I>e</I>
+and continue if true.
+(See ``SECONDARY EXPRESSIONS'' below.)
+</dd><dt><B>-k</B> <I>key</I> <I>pat</I>
+</dt><dd>Match <I>pat</I> in field <I>key</I>.
+</dd><dt><B>-km</B> <I>key</I> <I>pat</I>
+</dt><dd>Match <I>pat</I> anywhere in field <I>key</I>,
+but no regexp.
+</dd><dt><B>-kn</B> <I>key</I> <I>n</I> <I>pat</I>
+</dt><dd>Match <I>pat</I> against
+the <I>n</I>'th occurrence of <I>key</I>.
+</dd><dt><B>-ka</B> <I>keys</I> <I>pat</I> <B>;</B>
+</dt><dd>Match <I>pat</I> against any of the listed <I>keys</I>.
+<I>keys</I> is a list of one or more field names,
+separated by whitespace,
+followed by the pattern,
+followed by a semicolon
+(which must typically be escaped from the shell).
+</dd><dt><B>-kx</B> <I>key</I> <I>pat</I>
+</dt><dd>Match <I>pat</I> exactly in field <I>key</I>
+(no substring, no regexp).
+</dd><dt><B>-kxa</B> <I>key</I> <I>pats</I> <B>;</B>
+</dt><dd>Match (exactly) any of the listed <I>pats</I> in field <I>key</I>.
+<I>pats</I> is a list of one or more patterns,
+separated by whitespace, terminated by a semicolon
+(which must typically be escaped from the shell).
+</dd><dt><B>-kxaf</B> <I>key</I> <I>file</I>
+</dt><dd>Match (exactly) any of a list of patterns in field <I>key</I>,
+where the patterns are read (one per line) from <I>file</I>.
+</dd><dt><B>-kr</B> <I>keypat</I> <I>pat</I>
+</dt><dd>Match <I>pat</I> in any field whose key matches
+the regexp <I>keypat</I>.
+</dd><dt><B>-ke</B> <I>key</I>
+</dt><dd>True if field <I>key</I> exists.
+</dd><dt><B>-ker</B> <I>keypat</I>
+</dt><dd>True if field matching the regexp <I>keypat</I> exists.
+</dd><dt><B>-true</B>
+</dt><dd>Always true.
+</dd></dl>
+</p><p>(Boolean expression connectors)
+<dl>
+<dt><B>-a</B>
+</dt><dd>and (also implied by adjacent expressions)
+</dd><dt><B>-o</B>
+</dt><dd>or
+</dd><dt><B>!</B>
+</dt><dd>not
+</dd><dt><B>( )</B>
+</dt><dd>grouping (must typically be entered as \(
+and \) to protect from the shell)
+</dd></dl>
+</p><H2>OUTPUT PROCESSING</H2>
+
+<dl>
+<dt><B>-ak</B> <I>key</I> <I>val</I>
+</dt><dd>Append new <I>key</I> and <I>val</I>.
+</dd><dt><B>-ake</B> <I>key</I> <I>expr</I>
+</dt><dd>Append new <I>key</I> with value of
+secondary expression
+<I>expr</I>.
+</dd><dt><B>-c</B>
+</dt><dd>Print count of matching records.
+</dd><dt><B>-dk</B> <I>key</I>
+</dt><dd>Delete <I>key</I> (and its value).
+</dd><dt><B>-ek</B> <I>key</I>
+</dt><dd>Extract <I>key</I> (and its value),
+suppressing all others.
+(Multiple <B>-ek</B> options may be used to extract several keys.)
+</dd><dt><B>-exec</B> <I>cmd</I>
+</dt><dd>Invoke shell command <I>cmd</I> with matched record as input.
+(Unix only)
+</dd><dt><B>-exprp</B> <I>e</I>
+</dt><dd>Print result of evaluating secondary expression <I>e</I>.
+</dd><dt><B>-mof</B> <I>filepat</I>
+</dt><dd>Write the output to multiple numbered files,
+one per record.
+The file names are as specified by <I>filepat</I>,
+where the two characters <TT>%d</TT> appearing in <I>filepat</I>
+are replaced by
+the output record number.
+(Or, if you want to get crazy,
+any of <a href="../cgi-bin/manredir.cgi?name=printf&amp;sec=3"><I>printf(3)</I></a>'s integer formats could be used instead of <TT>%d</TT>.)
+</dd><dt><B>-mofk</B> <I>fpat</I> <I>key</I>
+</dt><dd>Write the output to multiple files,
+one per record.
+The file names are as specified by <I>fpat</I>,
+where the two characters <TT>%s</TT> appearing in <I>fpat</I>
+are replaced by
+the value of the field <I>key</I> of the record being written.
+</dd><dt><B>-mofka</B> <I>fpat</I> <I>key</I>
+</dt><dd>Like
+<B>-mofk</B>,
+but append to a file if it already exists
+(i.e. if multiple records have the same value for <I>key</I>).
+</dd><dt><B>-pkv</B> <I>key</I>
+</dt><dd>Print only <I>key</I>'s value.
+</dd><dt><B>-pkvn</B> <I>key</I> <I>n</I>
+</dt><dd>Print only the <I>n</I>'th occurrence of <I>key</I>.
+</dd><dt><B>-pkvsh</B> <I>key</I>
+</dt><dd>Print ``<I>key</I><TT>=</TT><I>value</I>''.
+</dd><dt><B>-print</B>
+</dt><dd>Print matching record.
+(This is the default action.)
+</dd><dt><B>-rgp</B> <I>pat</I>
+</dt><dd>Generate report from <I>pat</I>
+(see ``REPORT GENERATION'' section below).
+</dd><dt><B>-rgf</B> <I>file</I>
+</dt><dd>Generate report from skeleton in <I>file</I>.
+</dd><dt><B>-sk</B> <I>key</I> <I>val</I>
+</dt><dd>Set (existing) <I>key</I> to <I>val</I>.
+</dd><dt><B>-ska</B> <I>key</I> <I>val</I>
+</dt><dd>Set <I>key</I> to <I>val</I>
+(appending if <I>key</I> not already present).
+</dd><dt><B>-ske</B> <I>key</I> <I>e</I>
+</dt><dd>Set (existing) <I>key</I> to value of
+secondary expression <I>e</I>.
+</dd><dt><B>-writef</B> <I>file</I>
+</dt><dd>Write record to <I>file</I>.
+</dl>
+<p>The <B>-kn</B> and <B>-pkvn</B> operators
+reflect the (possibly surprising) fact that
+in the database scheme used by <I>dbgrep</I>
+it is possible to have,
+within one record,
+multiple values with the same key.
+</p><p>The <B>-expr</B>, <B>-exprp</B>, <B>-ake</B>, and <B>-ske</B> operators are not present in 
+all versions of the program; they depend on a separate expression 
+evaluator which
+may or may not be available.
+See also the ``SECONDARY EXPRESSIONS'' section below.
+</p></dd><H2>OPTIONS</H2>
+
+<dl>
+<dt><B>-cc</B> <I>c</I>
+</dt><dd>Set database comment character to <I>c</I>.
+(The default is <TT>#</TT>;
+use ``none'' to disable.)
+</dd><dt><B>-contin</B>, <B>-hc</B>
+</dt><dd>Allow continuation lines:
+a line beginning with whitespace
+is taken as a continuation of the previous line's value.
+</dd><dt><B>-cs</B>
+</dt><dd>Force colon separator between keys and values.
+(Keys may therefore contain whitespace.)
+</dd><dt><B>-f</B> <I>file</I>
+</dt><dd>Read match and processing operators from <I>file</I>,
+exactly as if typed on the command line
+(except that the expression may be spread across multiple lines
+for readability,
+and the characters (, ), and ; do not need to be quoted).
+Shell-style quote characters (", ', and \)
+may be used when patterns or other values contain whitespace.
+Expression files may contain comments,
+which are an unquoted # through end-of-line.
+(If <B>-f</B> is combined
+with a surrounding command-line match expression,
+you will probably want parentheses
+around <B>-f</B> and its filename.)
+</dd><dt><B>-i</B>
+</dt><dd>Ignore case in all matched values
+(<B>-k</B>, etc.).
+</dd><dt><B>-ifmt</B> <I>f</I>
+</dt><dd>Set input format.
+The default is ``dbf'',
+for the normal ``database'' format.
+Other possibilities are
+``ts'' for tab-separated columns,
+``csv'' for comma-separated values,
+or
+``sql'' for the format typically output by SQL interface tools
+(where the first line gives the column names
+and the second contains sequences of dashes suggesting the column widths).
+</dd><dt><B>-ki</B>
+</dt><dd>Ignore case in key names.
+(With <B>-ki</B> in effect,
+``-k key val'' would also
+search in keys named
+``Key'' and ``KEY''.)
+</dd><dt><B>-m</B>
+</dt><dd>Perform simple substring matches;
+do not treat patterns as regular expressions.
+(This option modifies the behavior of any
+<B>-e</B>, <B>-k</B>, and <B>-kr</B>
+operators that follow it.)
+</dd><dt><B>-mail</B>
+</dt><dd>Read mailbox format,
+treating each message as a record.
+Messages (records) begin with
+the five characters ``<TT>From </TT>''
+preceded by a blank line.
+The message body (separated from the header by a blank line)
+is treated as a series of keyless fields
+(i.e. with values only).
+Also implies <B>-ki</B> and <B>-hc</B>.
+</dd><dt><B>-mailh</B> <I>key</I>
+</dt><dd>Like <B>-mail</B>,
+but the ``header'' tag indicating the start of a new
+message is <I>key</I>
+(as opposed to ``<TT>From </TT>'').
+</dd><dt><B>-of</B> <I>file</I>
+</dt><dd>Write all output to <I>file</I>,
+instead of the default standard output.
+</dd><dt><B>-ofmt</B> <I>f</I>
+</dt><dd>Set output format <I>f</I>
+(see <B>-ifmt</B> for options).
+</dd><dt><B>-pc</B>
+</dt><dd>Preserve comment lines,
+passing them through to the output unchanged.
+</dd><dt><B>-pi</B>
+</dt><dd>Preserve ``indentation'',
+that is,
+if multiple whitespace characters appear between a key and its value,
+retain them all in the output.
+</dd><dt><B>-s</B>
+</dt><dd>No output; exit status only.
+</dd><dt><B>-sc</B> <I>c</I>
+</dt><dd>Set the character separating keys from values to <I>c</I>
+(instead of a colon, or whitespace).
+</dd><dt><B>-sepkey</B> <I>key</I>
+</dt><dd>On input, begin a new record whenever <I>key</I> is seen
+(as opposed to the default,
+which is that new records are signaled by blank lines).
+</dd><dt><B>-ts</B>
+</dt><dd>Force tab separation between keys and values;
+don't look for colons or arbitrary whitespace.
+(Implies <B>-pi</B>.)
+</dd><dt><B>-v</B>
+</dt><dd>In<B>v</B>ert; print records <em>not</em> matching.
+(Theoretically equivalent to putting <B>! (</B> ... <B>)</B>
+around the match expression.)
+</dd><dt><B>-version</B>
+</dt><dd>Print program's version number.
+</dd><dt><B>-ws</B>
+</dt><dd>Force whitespace separation between keys and values;
+don't look for colons.
+</dd><dt><B>-x</B>
+</dt><dd>Perform most matches exactly,
+neither looking for substrings nor matching regular expressions.
+(This option modifies the behavior of any
+<B>-e</B>, <B>-k</B>, and <B>-kr</B>
+operators that follow it.)
+</dd><dt><B>-?</B>, <B>-help</B>
+</dt><dd>Print a usage summary.
+</dd></dl>
+<H2>REPORT GENERATION</H2>
+
+<p>The
+<B>-rgp</B> and <B>-rgf</B> options
+request report generation.
+Output is generated based on a template,
+which is supplied either
+directly on the command line
+(with <B>-rgp</B>)
+or in a file
+(specified by <B>-rgf</B>).
+The template
+is repeated for as many (selected) records
+as there are to be output.
+The template contains text which is to be output verbatim,
+interspersed with values to be interpolated from the database,
+plus a few other processing options.
+Interpolated values and other processing options are requested
+by sequences beginning with a <B>$</B> character.
+The available <B>$</B> sequences are:
+<dl>
+<dt><B>$</B><I>key</I>
+</dt><dd>insert <I>key</I>'s value
+</dd><dt><B>${</B><I>key</I><B>}</B>
+</dt><dd>insert <I>key</I>'s value
+(esp. if the key name contains spaces or punctuation)
+</dd><dt><B>$</B><I>key</I><B>[</B><I>n</I><B>]</B>, <B>${</B><I>key</I><B>}[</B><I>n</I><B>]</B>
+</dt><dd>insert <I>n</I>'th of <I>key</I>'s several values
+</dd><dt><B>$$</B>
+</dt><dd>literal $
+</dd><dt><B>\$</B>, <B>\}</B>, <B>\\</B>
+</dt><dd>literal characters
+</dd><dt><B>\\n</B>
+</dt><dd>(backslash at end of line) eat newline; join lines
+</dd><dt><B>$?</B><I>key</I><B>{</B>...<B>}</B>
+</dt><dd>conditionally include bracketed text only if <I>key</I> exists
+</dd><dt><B>$?{</B><I>key</I><B>}{</B>...<B>}</B>
+</dt><dd>ditto
+</dd><dt><B>$!</B><I>key</I><B>{</B>...<B>}</B>
+</dt><dd>conditionally include bracketed text only if <I>key</I> does not exist
+</dd><dt><B>$!{</B><I>key</I><B>}{</B>...<B>}</B>
+</dt><dd>ditto
+</dd><dt><B>$*</B><I>key</I><B>{</B>...<B>}</B>
+</dt><dd>repeat bracketed text once for each of <I>key</I>'s multiple values
+</dd><dt><B>$*{</B><I>key</I><B>}{</B>...<B>}</B>
+</dt><dd>ditto
+</dd><dt><B>$#</B><I>key</I>
+</dt><dd>number of <I>key</I>'s values
+</dd><dt><B>$.</B>
+</dt><dd>count (i) during <B>$*</B>
+</dd><dt><B>$%{</B><I>e</I><B>}</B>
+</dt><dd>value of secondary expression <I>e</I>
+<br>(only if expression evaluation available)
+</dd><dt><B>$?%{</B><I>e</I><B>}{</B>...<B>}</B>
+</dt><dd>conditionally include bracketed text
+only if secondary expression <I>e</I> is true
+<br>(and only if expression evaluation is available)
+</dd></dl>
+</p><p>The
+<B>$</B><I>key</I><B>[</B><I>n</I><B>]</B>,
+<B>$#</B>, <B>$*</B>,
+and <B>$.</B> constructions
+again reflect the fact that
+it is possible for one record to have
+multiple values with the same key.
+</p><H2>SECONDARY EXPRESSIONS</H2>
+
+<p>The <B>-expr</B>, <B>-exprp</B>,
+<B>-ake</B>, and <B>-ske</B> operators,
+if available,
+and the report generation sequences
+<B>$%</B> and <B>$?%</B>
+support a simple arithmetic expression evaluator
+implementing the usual arithmetic operators
+plus a certain number of math and string functions.
+Briefly, the arithmetic operators are
+<TT>+</TT>, <TT>-</TT>, <TT>*</TT>, <TT>/</TT>, <TT>%</TT>, and <TT>**</TT>
+(where <TT>%</TT> is modulus and <TT>**</TT> is exponentiation),
+with the customary associativity and precedence.
+Parentheses may be used to override the default precedence.
+The relational and logical operators are
+<TT>&gt;=</TT>, <TT>&gt;</TT>, <TT>&lt;=</TT>, <TT>&lt;</TT>,
+<TT>==</TT>, <TT>!=</TT>, <TT>!</TT>, <TT>&amp;&amp;</TT>, and <TT>||</TT>
+(all as in C).
+</p><p>These mathematical functions are available:
+abs, acos, asin, atan, atan2, ceil, cos, cosh,
+floor, ln, log10, sin, sinh, sqrt, tan, and tanh.
+There are also some string functions:
+strcat, strlen, strmatch, strstr, and substr.
+(Briefly:
+strcat and strlen are more or less as in C;
+strmatch matches regular expressions;
+strstr and substr use 1-based character positions.)
+</p><p>The expression evaluator shares code with <a href="med.man.html"><I>med</I></a>;
+the man page for <a href="med.man.html"><I>med</I></a> (q.v.) contains
+further documentation
+on these operators and functions.
+</p><H2>EXAMPLES</H2>
+
+<pre>
+	dbgrep -k a b
+</pre>
+print records where field <I>a</I> contains <I>b</I>
+<pre>
+	dbgrep -kx a b
+</pre>
+print records where field <I>a</I> is exactly <I>b</I>
+<pre>
+	dbgrep -k a b -k c d
+</pre>
+print records where field <I>a</I> contains <I>b</I>
+and <I>c</I> contains <I>d</I>
+<pre>
+	dbgrep -k a b -o -k c d
+</pre>
+print records where field <I>a</I> contains <I>b</I>
+or <I>c</I> contains <I>d</I>
+<pre>
+	dbgrep -ke a
+</pre>
+print records where field <I>a</I> exists at all
+<pre>
+	dbgrep -expr 'a &gt; 5'
+</pre>
+print records where field <I>a</I>'s value is greater than 5
+<pre>
+	dbgrep -expr 'a + b &gt; 5'
+</pre>
+print records where the sum of fields <I>a</I> and <I>b</I>
+is greater than 5
+<pre>
+	dbgrep -c -k a b
+</pre>
+print a count of records where field <I>a</I> contains <I>b</I>
+<pre>
+	dbgrep -ek a
+</pre>
+print just the records with key <I>a</I>
+<pre>
+	dbgrep -ak a b
+</pre>
+append a new record with key <I>a</I> and value <I>b</I>
+<pre>
+	dbgrep -ake c 'a + b'
+</pre>
+append a new record with key <I>c</I>
+containing the sum of fields <I>a</I> and <I>b</I>
+<p>For dealing with mailbox files, typical invocations are
+<pre>
+	dbgrep -mail -k from <I>user</I>
+</pre>
+print all messages
+from <I>user</I>
+<pre>
+	dbgrep -mail -k subject '<I>blah blah</I>'
+</pre>
+print all messages
+with given subject
+<pre>
+	dbgrep -mail -kx message-id '<I>&lt;msgid&gt;</I>'
+</pre>
+extract message
+with given message-id
+<pre>
+	dbgrep -mail -e <I>word</I>
+</pre>
+print all messages containing
+<I>word</I> anywhere (header or body)
+<pre>
+	dbgrep -mail -dk received
+</pre>
+delete all Received:
+lines in header(s)
+</p><p>(Note that mail header keys are case-insensitive; <B>-mail</B> implies <B>-ki</B>.)
+</p><p>In <B>-mail</B> mode, the program is significantly less efficient if the 
+<B>-e</B> operator is used, because then it has to process the bodies of 
+messages as well as their headers.
+</p><H2>BUGS</H2>
+
+<p>If a record has no field <I>k</I>,
+<B>-pkv</B> <I>k</I> prints nothing;
+it should arguably print a blank line.
+</p><p>There's no <B>-ekn</B> option
+analogous to <B>-pkvn</B>.
+</p><p>The interaction between
+the <B>-m</B> and <B>-x</B> options
+and the
+<B>-k</B>, <B>-kr</B>, and <B>-e</B>
+operators
+can be confusing;
+it's not clear that
+<B>-m</B> and <B>-x</B> should exist
+given that <B>-km</B> and <B>-kx</B> also exist.
+The placement of the <B>-m</B> and <B>-x</B>
+options on the command line is significant;
+they modify the behavior of only the 
+<B>-k</B>, <B>-kr</B>, and <B>-e</B>
+options which follow.
+(That is, a <B>-m</B> or <B>-x</B>
+at the end of the option/expression list won't do anything,
+except perhaps to affect the behavior of an implicit, single-pattern search.)
+</p><p>The <B>-ka</B> operator performs simple substring matches
+(analogous to <B>-km</B>);
+it should perform regex matches like <B>-k</B>,
+and (as long as the rest do)
+be modified by
+the <B>-m</B> and <B>-x</B> options.
+</p><p>The distinction between the ``regular'' match expression
+on the command line,
+and the ``secondary'' expressions
+accepted by e.g. <B>-expr</B> and <B>-ske</B>
+is confusing.
+</p><p>The various <B>-ifmt</B> and <B>-ofmt</B>
+options have not been exhaustively tested.
+The `sql' format has been implemented only for input, not output.
+</p><p>Report generation
+(<B>-rgp</B> and <B>-rgf</B>)
+should probably be
+a separate program.
+</p><H2>SEE ALSO</H2>
+
+<p><a href="../cgi-bin/manredir.cgi?name=find&amp;sec=1"><I>find(1)</I></a>,
+<a href="med.man.html"><I>med</I></a>,
+<a href="dbparse.man.html"><I>dbparse</I></a>
+</p><H2>HISTORY</H2>
+
+<p>This documentation corresponds to version 2.9 of the program.
+</p><p>See
+<a href="index.html#dbgrep"><TT>http://www.eskimo.com/~scs/src/#dbgrep</TT></a>
+for possible updates.
+</p><H2>AUTHOR</H2>
+
+<p><a href="../index.html">Steve Summit</a>,
+<TT>scs@eskimo.com</TT>
+</p><hr>
+<hr>
+<p>
+</p>
+</body>
+</html>

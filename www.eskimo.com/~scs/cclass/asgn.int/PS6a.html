@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>Assignment #6 Answers</title>
+</head>
+<body>
+<H1>Assignment #6 Answers</H1>
+
+
+
+
+
+<B>Intermediate C Programming
+<br>
+<br>
+UW Experimental College
+</B><br>
+<br>
+<B>Assignment #6 ANSWERS
+</B><br>
+<br>
+<p>Exercise 2.
+<I>Modify <TT>io.c</TT> to recognize a new <TT>entrypoint</TT> line
+in the data file.
+</I><p>Here is the code I added to <TT>io.c</TT>.
+Rather than calling <TT>findroom</TT> right away,
+and face the possibility of the room not being defined yet,
+I chose to just stash the name of the room away
+(as a string),
+and then try looking it up after the data file had been
+completely read.
+I added this declaration at the beginning of
+<TT>parsedatafile</TT>:
+<pre>
+char *entryroom = NULL;
+</pre>
+I added this case to the main <TT>if</TT>/<TT>else</TT> chain
+in <TT>parsedatafile</TT>:
+<pre>
+	else if(strcmp(av[0], "entrypoint") == 0)
+		{
+		struct room *roomp;
+		if(ac &lt; 2)
+			{
+			fprintf(stderr, "missing entry room name\n");
+			continue;
+			}
+		/* don't bother to look up yet; just save name */
+		entryroom = chkstrdup(av[1]);
+		}
+</pre>
+I added this code at the end
+of <TT>parsedatafile</TT>:
+<pre>
+if(entryroom != NULL)
+	{
+	struct room *roomp = findroom(entryroom);
+	if(roomp != NULL)
+		setentryroom(roomp);
+	else	fprintf(stderr, "can't find entry room %s\n", entryroom);
+	}
+</pre>
+Finally, I added the new <TT>setentryroom</TT> function in <TT>rooms.c</TT>:
+<pre>
+void
+setentryroom(struct room *roomp)
+{
+entryroom = roomp;
+}
+</pre>
+<p>Exercise 3.
+<I>Think about what it would take
+to use the <TT>cmdtab</TT> structure,
+and the <TT>findcmd</TT> function,
+to streamline the code that processes lines in the data file.
+</I><p>It would initially seem straightforward to take each case in the
+<TT>if</TT>/<TT>else</TT> chain,
+break it out to a separate function,
+build a table
+(an array of <TT>struct cmdtab</TT>)
+linking the first words on lines in the data file
+to the new functions for parsing those lines,
+and finally call <TT>findcmd</TT>
+(after reading each line)
+to decide which function to call.
+<p>The first problem you might face, though,
+would be breaking up the old <TT>parsedatafile</TT> function.
+It contains a number of local variables
+(especially <TT>currentroom</TT> and <TT>currentobject</TT>)
+which several of the parsing cases need access to.
+Once you broke those parsing cases out into separate functions,
+they'd need access to the (formerly local) variables somehow.
+You'd probably have to make them global,
+although you could restrict them to the source file <TT>io.c</TT>
+by declaring them <TT>static</TT>.
+<p>The next problem you'd face would be deciding which information
+to pass to the broken-out functions.
+Most of them use the <TT>av</TT> array to inspect the various
+arguments and other words which appeared on the line they're parsing,
+but for at least one way I wrote the long description reading code,
+it needed to use the original
+copy of the complete data file input line
+(that is, the <TT>line</TT> array),
+the copy that hadn't been
+broken apart by <TT>getwords</TT>.
+The obvious information to pass to each parsing function is
+the <TT>ac</TT> count and the <TT>av</TT> array
+(which are, not coincidentally,
+quite similar to the <TT>argc</TT> and <TT>argv</TT> with which
+<TT>main</TT> is traditionally called).
+Would you have to pass along the unbroken <TT>line</TT> to all functions,
+for the benefit of just the one or two that needed it?
+(Remember, all the functions must accept the same argument list,
+because one function call, using the function pointer in the
+<TT>func</TT> field of the matching <TT>struct cmdtab</TT>
+entry, will be calling all of them.)
+<p>Finally, once you decided what information to pass to each
+individual line parsing function,
+you'd discover (if you've got strict prototype checking turned on
+in your compiler, and if you used <TT>cmdtab.c</TT> and
+<TT>cmdtab.h</TT> as they appeared in last week's handout),
+that the compiler doesn't want you to create an array of
+<TT>struct cmdtab</TT> with the <TT>func</TT> fields pointing
+at your shiny new functions,
+because the <TT>func</TT> field
+(again, as it appeared in last week's handout),
+is specifically a pointer to a function accepting
+a <TT>struct actor *</TT>,
+a <TT>struct object *</TT>,
+and a <TT>struct sentence *</TT>,
+which is almost certainly <em>not</em>
+the set of data
+you chose to pass to each data file parsing function.
+You'd either have to revert the declaration of the <TT>func</TT>
+field to
+<pre>
+	int (*func)();
+</pre>
+(as it was on the disk)
+and turn off strict prototype checking,
+or write a second whole version of <TT>struct cmdtab</TT> and
+a second whole version of <TT>findcmd</TT> that used
+<TT>func</TT> fields with a different prototype,
+or play some
+(fairly ugly)
+games with function pointer casts.
+<hr>
+<hr>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-9
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

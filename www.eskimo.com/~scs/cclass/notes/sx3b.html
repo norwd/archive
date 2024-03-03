@@ -1,0 +1,223 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>3.2 <TT>if</TT> Statements</title>
+<link href="sx3a.html" rev=precedes>
+<link href="sx3c.html" rel=precedes>
+<link href="sx3.html" rev=subdocument>
+</head>
+<body>
+<H2>3.2 <TT>if</TT> Statements</H2>
+
+<p>[This section corresponds to K&amp;R Sec. 3.2]
+</p><p>The simplest way to modify the control flow of a program is
+with an <TT>if</TT> statement,
+which in its simplest form looks
+like this:
+<pre>
+	if(x &gt; max)
+		max = x;
+</pre>
+Even if you didn't know any C,
+it would probably be pretty obvious
+that what happens here is that
+if <TT>x</TT> is greater than <TT>max</TT>,
+<TT>x</TT> gets assigned to <TT>max</TT>.
+(We'd use code like this to keep track of the maximum value of 
+<TT>x</TT> we'd seen--for each new <TT>x</TT>,
+we'd compare it to the old maximum value <TT>max</TT>,
+and if the new value was greater,
+we'd update <TT>max</TT>.)
+</p><p>More generally, we can say that
+the syntax of an <TT>if</TT> statement is:
+<pre>
+	if( <I>expression</I> )
+		<I>statement</I>
+</pre>
+where <I>expression</I> is any expression and <I>statement</I>
+is any statement.
+
+</p><p>What if you have a series of statements,
+all of which should be executed together or not at all
+depending on whether some condition is true?
+The answer is that you enclose them in braces:
+<pre>
+	if( <I>expression</I> )
+		{
+		<I>statement<sub>1<sub></I>
+		<I>statement<sub>2<sub></I>
+		<I>statement<sub>3<sub></I>
+		}
+</pre>
+As a general rule,
+anywhere the syntax of C calls for a statement,
+you may write a series of statements enclosed by braces.
+(You do not need to,
+and should not,
+put a semicolon after the closing brace,
+because
+the series of statements enclosed by braces
+is not itself a
+simple expression
+statement.)
+</p><p>An <TT>if</TT> statement may also optionally contain a second
+statement, the ``<TT>else</TT> clause,''
+which is to be executed if the condition is not met.
+Here is an example:
+<pre>
+	if(n &gt; 0)
+		average = sum / n;
+	else	{
+		printf("can't compute average\n");
+		average = 0;
+		}
+</pre>
+The first statement or block of statements is executed
+if the condition <em>is</em> true,
+and the second statement or block of statements
+(following the keyword <TT>else</TT>)
+is executed if the condition is <em>not</em> true.
+In this example,
+we can compute a meaningful average only if <TT>n</TT> is greater than 0;
+otherwise,
+we print a message saying that we cannot compute the average.
+The general syntax of an <TT>if</TT> statement is therefore
+<pre>
+	if( <I>expression</I> )
+		<I>statement<sub>1<sub></I>
+	else
+		<I>statement<sub>2<sub></I>
+</pre>
+(where both
+<I>statement<sub>1<sub></I> and <I>statement<sub>2<sub></I>
+may be lists of statements enclosed in braces).
+</p><p>It's also possible to nest one <TT>if</TT> statement inside another.
+(For that matter, it's in general possible to nest any kind of
+statement or control flow construct within another.)
+For example,
+here is a little piece of code which decides roughly which
+quadrant of the compass you're walking into,
+based on an <TT>x</TT> value which is positive if you're
+walking east, and a <TT>y</TT> value which is positive if
+you're walking north:
+<pre>
+	if(x &gt; 0)
+		{
+		if(y &gt; 0)
+			printf("Northeast.\n");
+		else	printf("Southeast.\n");
+		}
+	else	{
+		if(y &gt; 0)
+			printf("Northwest.\n");
+		else	printf("Southwest.\n");
+		}
+</pre>
+When you have one <TT>if</TT> statement (or loop) nested
+inside another,
+it's a very good idea to use explicit braces <TT>{}</TT>, as
+shown, to make it clear (both to you and to the compiler)
+how they're nested and which <TT>else</TT> goes with which
+<TT>if</TT>.
+It's also a good idea to indent the various levels,
+also as shown, to make the code more readable to humans.
+Why do both?
+You use indentation to make the code visually more readable
+to yourself and other humans,
+but the compiler doesn't pay attention to the indentation
+(since all whitespace is essentially equivalent and is essentially ignored).
+Therefore, you also have to make sure that the punctuation is right.
+</p><p>Here is an example of another common arrangement
+of <TT>if</TT> and <TT>else</TT>.
+Suppose we have a variable <TT>grade</TT>
+containing a student's numeric grade,
+and we want to print out the corresponding letter grade.
+Here is code that would do the job:
+<pre>
+	if(grade &gt;= 90)
+		printf("A");
+	else if(grade &gt;= 80)
+		printf("B");
+	else if(grade &gt;= 70)
+		printf("C");
+	else if(grade &gt;= 60)
+		printf("D");
+	else	printf("F");
+</pre>
+What happens here is that exactly one of the five
+<TT>printf</TT> calls
+is executed,
+depending on which of the conditions is true.
+Each condition is tested in turn, and if one is true,
+the corresponding statement is executed,
+and the rest are skipped.
+If none of the conditions is true,
+we fall through to the last one, printing ``F''.
+</p><p>In the cascaded
+<TT>if</TT>/<TT>else</TT>/<TT>if</TT>/<TT>else</TT>/... chain,
+each <TT>else</TT> clause is another <TT>if</TT> statement.
+This may be more obvious at first
+if we reformat the example,
+including every set of braces
+and indenting each <TT>if</TT> statement relative to the previous one:
+<pre>
+	if(grade &gt;= 90)
+		{
+		printf("A");
+		}
+	else	{
+		if(grade &gt;= 80)
+			{
+			printf("B");
+			}
+		else	{
+			if(grade &gt;= 70)
+				{
+				printf("C");
+				}
+			else	{
+				if(grade &gt;= 60)
+					{
+					printf("D");
+					}
+				else	{
+					printf("F");
+					}
+				}
+			}
+		}
+</pre>
+By examining the code this way,
+it should be obvious that
+exactly one of the <TT>printf</TT> calls is executed,
+and that whenever one of the conditions is found true,
+the remaining conditions do not need to be checked
+and none of the later statements within the chain will be executed.
+But once you've convinced yourself of this
+and learned to recognize the idiom,
+it's generally preferable to arrange the statements as in the first example,
+without trying to indent each successive <TT>if</TT> statement
+one tabstop further out.
+(Obviously, you'd run into the right margin very quickly if the
+chain had just a few more cases!)
+
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx3a.html" rev=precedes>prev</a>
+<a href="sx3c.html" rel=precedes>next</a>
+<a href="sx3.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

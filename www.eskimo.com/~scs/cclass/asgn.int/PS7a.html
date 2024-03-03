@@ -1,0 +1,255 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>Assignment #7 Answers</title>
+</head>
+<body>
+<H1>Assignment #7 Answers</H1>
+
+
+
+
+
+<B>Intermediate C Programming
+<br>
+<br>
+UW Experimental College
+</B><br>
+<br>
+<B>Assignment #7 ANSWERS
+</B><br>
+<br>
+<p>Exercise 2.
+<I>Rewrite the <TT>lockcmd</TT> and <TT>unlockcmd</TT> functions
+as object functions.
+</I><p>I stated this problem slightly incorrectly.
+You only need to write one function,
+which will recognize and implement
+both the verbs ``lock'' and ``unlock''.
+You can write the function in two ways,
+one way so that it can be attached to objects that can be locked and unlocked,
+and one way so that it can be attached to objects like keys
+that do the locking and unlocking.
+Here is the function written so as to be attachable to lockable objects:
+<pre>
+int lockfunc(struct actor *player, struct object *objp,
+					struct sentence *cmd)
+{
+	if(strcmp(cmd-&gt;verb, "lock") != 0 &amp;&amp; strcmp(cmd-&gt;verb, "unlock") != 0)
+		return CONTINUE;
+	if(objp != cmd-&gt;object)
+		return CONTINUE;
+	if(cmd-&gt;preposition == NULL || strcmp(cmd-&gt;preposition, "with") != 0 ||
+			cmd-&gt;xobject == NULL)
+		{
+		printf("You must tell me what to %s with.\n", cmd-&gt;verb);
+		return FAILURE;
+		}
+	if(!hasattr(cmd-&gt;object, "lock"))
+		{
+		printf("You can't lock the %s.\n", cmd-&gt;object-&gt;name);
+		return FAILURE;
+		}
+	if(Isopen(cmd-&gt;object))
+		{
+		printf("The %s is open.\n", cmd-&gt;object-&gt;name);
+		return FAILURE;
+		}
+	if(!contains(player-&gt;contents, cmd-&gt;xobject))
+		{
+		printf("You don't have the %s.\n", cmd-&gt;xobject-&gt;name);
+		return FAILURE;
+		}
+	if(!hasattr(cmd-&gt;xobject, "key"))
+		{
+		printf("The %s won't %s the %s.\n",
+				cmd-&gt;xobject-&gt;name, cmd-&gt;verb, objp-&gt;name);
+		return FAILURE;
+		}
+
+	if(strcmp(cmd-&gt;verb, "lock") == 0)
+		{
+		if(hasattr(cmd-&gt;object, "locked"))
+			{
+			printf("The %s is already locked.\n", cmd-&gt;object-&gt;name);
+			return FAILURE;
+			}
+
+		setattr(cmd-&gt;object, "locked");
+		printf("The %s is now locked.\n", cmd-&gt;object-&gt;name);
+		return SUCCESS;
+		}
+	else if(strcmp(cmd-&gt;verb, "unlock") == 0)
+		{
+		if(!hasattr(cmd-&gt;object, "locked"))
+			{
+			printf("The %s is already unlocked.\n", cmd-&gt;object-&gt;name);
+			return FAILURE;
+			}
+
+		unsetattr(cmd-&gt;object, "locked");
+		printf("The %s is now unlocked.\n", cmd-&gt;object-&gt;name);
+
+		return SUCCESS;
+		}
+
+	/* shouldn't get here */
+	return CONTINUE;
+}
+</pre>
+Here it is written so as to be attachable to keylike objects:
+<pre>
+int keyfunc(struct actor *player, struct object *objp,
+					struct sentence *cmd)
+{
+	if(strcmp(cmd-&gt;verb, "lock") != 0 &amp;&amp; strcmp(cmd-&gt;verb, "unlock") != 0)
+		return CONTINUE;
+	if(objp != cmd-&gt;xobject)
+		return CONTINUE;
+	if(cmd-&gt;object == NULL)
+		{
+		printf("You must tell me what to %s.\n", cmd-&gt;verb);
+		return FAILURE;
+		}
+	if(!hasattr(cmd-&gt;object, "lock"))
+		{
+		printf("You can't %s the %s.\n", cmd-&gt;verb, cmd-&gt;object-&gt;name);
+		return FAILURE;
+		}
+	if(Isopen(cmd-&gt;object))
+		{
+		printf("The %s is open.\n", cmd-&gt;object-&gt;name);
+		return FAILURE;
+		}
+	if(!contains(player-&gt;contents, cmd-&gt;xobject))
+		{
+		printf("You don't have the %s.\n", cmd-&gt;xobject-&gt;name);
+		return FAILURE;
+		}
+
+	if(strcmp(cmd-&gt;verb, "lock") == 0)
+		{
+		if(hasattr(cmd-&gt;object, "locked"))
+			{
+			printf("The %s is already locked.\n", cmd-&gt;object-&gt;name);
+			return FAILURE;
+			}
+
+		setattr(cmd-&gt;object, "locked");
+		printf("The %s is now locked.\n", cmd-&gt;object-&gt;name);
+		return SUCCESS;
+		}
+	else if(strcmp(cmd-&gt;verb, "unlock") == 0)
+		{
+		if(!hasattr(cmd-&gt;object, "locked"))
+			{
+			printf("The %s is already unlocked.\n", cmd-&gt;object-&gt;name);
+			return FAILURE;
+			}
+
+		unsetattr(cmd-&gt;object, "locked");
+		printf("The %s is now unlocked.\n", cmd-&gt;object-&gt;name);
+
+		return SUCCESS;
+		}
+
+	/* shouldn't get here */
+	return CONTINUE;
+}
+</pre>
+<p>Exercise 4.
+<I>Invent a (silly) shower object.
+</I><p><pre>
+int showerfunc(struct actor *player, struct object *objp,
+					struct sentence *cmd)
+{
+	if(strcmp(cmd-&gt;verb, "take") != 0)
+		return CONTINUE;
+	if(objp != cmd-&gt;object)
+		return CONTINUE;
+
+	printf("After spending 20 luxurious minutes in the shower,\n");
+	printf("singing three full-length show tunes, and using up\n");
+	printf("all the hot water, you emerge clean and refreshed.\n");
+
+	return SUCCESS;
+}
+</pre>
+<p>Exercise 5.
+<I>Implement a magic sword object.
+</I><p><pre>
+int swordfunc(struct actor *player, struct object *objp,
+					struct sentence *cmd)
+{
+	if(strcmp(cmd-&gt;verb, "take") != 0)
+		return CONTINUE;
+	if(objp != cmd-&gt;object)
+		return CONTINUE;
+	printf("As you pick it up, the sword briefly glows blue.\n");
+	return CONTINUE;
+}
+</pre>
+<p>Exercise 6.
+<I>Implement a container of radioactive waste.
+</I><p>Here are sample descriptions for <TT>dungeon.dat</TT>:
+<pre>
+object barrel
+desc It is a large yellow barrel with a funny symbol and
+     the word "HAZARDOUS" on it.
+func wastebarrelfunc
+object suit
+desc It is a hooded suit made out of some strange plasticlike yellow fabric.
+func hazmatsuitfunc
+</pre>
+Here is the waste barrel function:
+<pre>
+int wastebarrelfunc(struct actor *player, struct object *objp,
+					struct sentence *cmd)
+{
+	struct object *hazmatsuit;
+
+	if(strcmp(cmd-&gt;verb, "take") != 0)
+		return CONTINUE;
+	if(objp != cmd-&gt;object)
+		return CONTINUE;
+
+	hazmatsuit = findobject(player, "suit");
+	if(hazmatsuit == NULL || !contains(player-&gt;contents, hazmatsuit))
+		{
+		printf("The container is far too dangerous to pick up.\n");
+		return FAILURE;
+		}
+
+	return CONTINUE;
+}
+</pre>
+Here is a function so that you can wear the Hazmat suit:
+<pre>
+int hazmatsuitfunc(struct actor *player, struct object *objp,
+					struct sentence *cmd)
+{
+	if(strcmp(cmd-&gt;verb, "wear") != 0)
+		return CONTINUE;
+	if(objp != cmd-&gt;object)
+		return CONTINUE;
+	/* implicitly pick up, if necessary */
+	if(!contains(player-&gt;contents, cmd-&gt;object))
+		{
+		if(!takeobject(player, cmd-&gt;object))
+			return FAILURE;
+		}
+	printf("You feel much safer wearing the bright yellow Hazmat suit.\n");
+	return SUCCESS;
+}
+</pre>
+<hr>
+<hr>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-9
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

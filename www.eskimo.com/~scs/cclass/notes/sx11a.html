@@ -1,0 +1,225 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>11.1 Allocating Memory with <TT>malloc</TT></title>
+<link href="sx11.html" rev=precedes>
+<link href="sx11b.html" rel=precedes>
+<link href="sx11.html" rev=subdocument>
+</head>
+<body>
+<H2>11.1 Allocating Memory with <TT>malloc</TT></H2>
+
+<p>[This section corresponds to parts of K&amp;R Secs. 5.4, 5.6, 6.5, and 7.8.5]
+</p><p>A problem with many simple programs,
+including in particular
+little teaching programs
+such as we've been writing so far,
+is that they tend to use fixed-size arrays which may or may not be big enough.
+We have an array of 100 <TT>int</TT>s
+for the numbers which the user enters and wishes to find the average
+of--what
+if the user enters 101 numbers?
+We have an array of 100 <TT>char</TT>s
+which we pass to <TT>getline</TT> to receive the user's
+input--what
+if the user types a line of 200 characters?
+If we're lucky,
+the relevant parts of the program check how much of an array they've used,
+and print an error message or otherwise gracefully abort
+before overflowing the array.
+If we're not so lucky, a program may sail off the end of an array,
+overwriting other data and behaving quite badly.
+In either case, the user doesn't get his job done.
+How can we avoid the restrictions of fixed-size arrays?
+</p><p>The answers all involve the standard library function <TT>malloc</TT>.
+Very simply, <TT>malloc</TT> returns a pointer to <I>n</I> bytes of memory
+which we can do anything we want to with.
+If we didn't want to read a line of input into a fixed-size array,
+we could use <TT>malloc</TT>, instead.
+Here's the first step:
+<pre>
+	#include &lt;stdlib.h&gt;
+
+	char *line;
+	int linelen = 100;
+	line = malloc(linelen);
+	/* incomplete -- malloc's return value not checked */
+	getline(line, linelen);
+</pre>
+<TT>malloc</TT> is declared in <TT>&lt;stdlib.h&gt;</TT>,
+so we <TT>#include</TT> that header in any program that calls <TT>malloc</TT>.
+A ``byte'' in C is, by definition,
+an amount of storage suitable for storing one character,
+so the above invocation of <TT>malloc</TT>
+gives us exactly as many <TT>char</TT>s as we ask for.
+We could illustrate the resulting pointer like this:
+<br>
+<img src="fig11.1.gif">
+<br>
+The 100 bytes of memory (not all of which are shown)
+pointed to by <TT>line</TT> are those allocated by <TT>malloc</TT>.
+(They are brand-new memory,
+conceptually a bit different from
+the memory which the compiler arranges to have allocated automatically
+for our conventional variables.
+The 100 boxes in the figure
+don't have a name next to them,
+because they're not storage for a variable we've declared.)
+</p><p>As a second example,
+we might have occasion to
+allocate a piece of memory,
+and to copy a string into it with <TT>strcpy</TT>:
+<pre>
+	char *p = malloc(15);
+	/* incomplete -- malloc's return value not checked */
+	strcpy(p, "Hello, world!");
+</pre>
+</p><p>When copying strings,
+remember that all strings have a terminating <TT>\0</TT> character.
+If you use <TT>strlen</TT> to count the characters in a string for you,
+that count will <em>not</em> include the trailing <TT>\0</TT>,
+so you must add one before calling <TT>malloc</TT>:
+<pre>
+	char *somestring, *copy;
+	...
+	copy = malloc(strlen(somestring) + 1);		/* +1 for \0 */
+	/* incomplete -- malloc's return value not checked */
+	strcpy(copy, somestring);
+</pre>
+
+</p><p>What if we're not allocating characters, but integers?
+If we want to allocate 100 <TT>int</TT>s, how many bytes is that?
+If we know how big <TT>int</TT>s are on our machine
+(i.e. depending on whether we're using a 16- or 32-bit machine)
+we could try to compute it ourselves,
+but it's much safer and more portable to let C compute it for us.
+C has a <TT>sizeof</TT> operator,
+which
+computes
+the size, in bytes, of a variable or type.
+It's just what we need when calling <TT>malloc</TT>.
+To allocate space for 100 <TT>int</TT>s, we could call
+<pre>
+	int *ip = malloc(100 * sizeof(int));
+</pre>
+The use of the <TT>sizeof</TT> operator
+tends to look like a function call,
+but it's really an operator,
+and it does its work at compile time.
+</p><p>Since we can use array indexing syntax on pointers,
+we can treat a pointer variable after a call to <TT>malloc</TT>
+almost exactly as if it were an array.
+In particular,
+after the above call to <TT>malloc</TT>
+initializes <TT>ip</TT> to point at storage for 100 <TT>int</TT>s,
+we can access
+<TT>ip[0]</TT>, <TT>ip[1]</TT>, ... up to <TT>ip[99]</TT>.
+This way,
+we can get the effect of an array
+even if we don't know until run time how big the ``array'' should be.
+(In a later section we'll see how we might deal with the case
+where we're not even sure at the point we begin using it
+how big an ``array'' will eventually have to be.)
+</p><p>Our examples so far have all had a significant omission:
+they have not checked <TT>malloc</TT>'s return value.
+Obviously,
+no real computer has an infinite amount of memory available,
+so there is no guarantee that <TT>malloc</TT> will be able to
+give us as much memory as we ask for.
+If we call <TT>malloc(100000000)</TT>,
+or if we call <TT>malloc(10)</TT> 10,000,000 times,
+we're probably going to run out of memory.
+</p><p>When <TT>malloc</TT> is unable to allocate the requested memory,
+it returns a <dfn>null pointer</dfn>.
+A null pointer, remember, points definitively nowhere.
+It's a ``not a pointer'' marker;
+it's not a pointer you can use.
+(As we said in section
+
+9.4,
+a null pointer
+can be used as a failure return from a function that returns pointers,
+and <TT>malloc</TT> is a perfect example.)
+Therefore,
+whenever you call <TT>malloc</TT>,
+it's vital to check the returned pointer before using it!
+If you call <TT>malloc</TT>, and it returns a null pointer,
+and you go off and use that null pointer as if it pointed somewhere,
+your program probably won't last long.
+Instead, a program should immediately check for a null pointer,
+and if it receives one,
+it should at the very least
+print an error message and exit,
+or perhaps figure out some way of proceeding
+without the memory it asked for.
+But it cannot
+go on to use
+the null pointer it got back from <TT>malloc</TT>
+in any way,
+because that null pointer by definition points nowhere.
+
+(``It cannot use a null pointer in any way''
+means that
+the program
+cannot use
+the <TT>*</TT> or <TT>[]</TT> operators
+on such a pointer value,
+or pass it to any function that expects a valid pointer.)
+</p><p>A call to <TT>malloc</TT>,
+with an error check,
+typically looks something like this:
+<pre>
+	int *ip = malloc(100 * sizeof(int));
+	if(ip == NULL)
+		{
+		printf("out of memory\n");
+		<I>exit or return</I>
+		}
+</pre>
+
+After printing the error message,
+this code should return to its caller,
+or exit from the program entirely;
+it cannot proceed with the code that would have used <TT>ip</TT>.
+</p><p>Of course,
+in our examples so far,
+we've still limited ourselves to ``fixed size'' regions of memory,
+because we've been calling <TT>malloc</TT> with fixed arguments
+like 10 or 100.
+(Our call to <TT>getline</TT> is
+still limited to 100-character lines,
+or whatever number we set the <TT>linelen</TT> variable to;
+our <TT>ip</TT> variable still points at only 100 <TT>int</TT>s.)
+However, since
+the sizes are now values which
+can in principle be determined at run-time,
+we've at least moved beyond having to recompile the program
+(with a bigger array)
+to accommodate longer lines,
+and with a little more work,
+we could arrange that
+the ``arrays'' automatically grew to be as large as required.
+(For example,
+we could write something like <TT>getline</TT> which could
+read the longest input line actually seen.)
+We'll begin to explore this possibility in a later section.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx11.html" rev=precedes>prev</a>
+<a href="sx11b.html" rel=precedes>next</a>
+<a href="sx11.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-1997
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

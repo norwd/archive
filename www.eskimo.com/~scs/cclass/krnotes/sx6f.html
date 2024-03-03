@@ -1,0 +1,82 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>section 3.6: Loops -- Do-while</title>
+<link href="sx6e.html" rev=precedes>
+<link href="sx6g.html" rel=precedes>
+<link href="sx6.html" rev=subdocument>
+</head>
+<body>
+<H2>section 3.6: Loops -- Do-while</H2>
+
+page 63
+<p>Note the semicolon following the parenthesized expression
+in the <TT>do</TT>-<TT>while</TT> loop;
+it's a required part of the syntax.
+</p><p>Make sure you understand the difference between a 
+<TT>while</TT> loop and a <TT>do</TT>-<TT>while</TT> loop.
+A <TT>while</TT> loop executes strictly according to its 
+conditional expression:
+if the expression is never true,
+the loop executes zero times.
+The <TT>do</TT>-<TT>while</TT> loop,
+on the other hand,
+makes an initial ``no peek'' foray through the loop body no 
+matter what.
+</p><p>To see the difference,
+let's imagine three different ways of writing the loop in the 
+<TT>itoa</TT> function on page 64.
+Suppose we somehow forgot to use a termination condition at all,
+and wrote something like
+<pre>	for(;;) {
+		s[i++] = n % 10 + '0';
+		n /= 10;
+	}
+</pre>Eventually, <TT>n</TT> becomes zero, but we keep going around the loop,
+and we convert a number like 123 into a string like
+<TT>"0000000000123"</TT>, except with an infinite number of 
+leading zeroes.
+(Mathematically, this is correct, but it's not what we want here,
+especially if we want our program to use a finite amount of 
+time and space.)
+</p><p>Our next attempt might be
+<pre>	while(n &gt; 0) {
+		s[i++] = n % 10 + '0';
+		n /= 10;
+	}
+</pre>so that we stop creating digits when <TT>n</TT> reaches 0.
+This works fine for positive numbers,
+but for 0, it stops too soon:
+it would convert the number 0 to the empty string <TT>""</TT>.
+That's why the <TT>do</TT>-<TT>while</TT> loop is appropriate here;
+the fact that it always makes at least one pass through the loop
+makes sure that we always generate at least one digit,
+even it it's 0.
+</p><p>(It's also useful to look at the invariants in this loop:
+during each trip through the loop,
+<TT>n</TT> contains the rest of the number we have to convert,
+<TT>s[]</TT> contains the digits we've already converted,
+and <TT>i</TT> points at the next cell in <TT>s[]</TT> which is to receive a digit.
+Each trip through the loop converts one digit,
+increments <TT>i</TT>,
+and divides <TT>n</TT> by 10.)
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx6e.html" rev=precedes>prev</a>
+<a href="sx6g.html" rel=precedes>next</a>
+<a href="sx6.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

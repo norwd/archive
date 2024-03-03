@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>section 4.4: Scope Rules</title>
+<link href="sx7c.html" rev=precedes>
+<link href="sx7e.html" rel=precedes>
+<link href="sx7.html" rev=subdocument>
+</head>
+<body>
+<H2>section 4.4: Scope Rules</H2>
+
+page 80
+<p>With respect to the ``practical matter''
+of splitting the calculator program up into multiple source files,
+though it's certainly small enough
+to fit comfortably into a single source file,
+it's not so small that there's anything wrong
+with splitting it up into multiple source files,
+especially if we start adding functionality to it.
+</p><p>The <dfn>scope</dfn> of a name is what we have been calling its ``visibility.''
+When we say things like ``calling a function with a prototype in scope''
+we mean that a prototype is visible, that a declaration is in effect.
+</p><p>The variables <TT>sp</TT> and <TT>val</TT> can be used by the 
+<TT>push</TT> and <TT>pop</TT> routines because they're 
+defined in the same file
+(and the definitions appear before <TT>push</TT> and <TT>pop</TT>).
+They can't be used in <TT>main</TT> because no declaration for 
+them appears in <TT>main.c</TT>
+(nor in <TT>calc.h</TT>, which <TT>main.c</TT> <TT>#include</TT>s).
+If <TT>main</TT> attempted to refer to <TT>sp</TT> or <TT>val</TT>,
+they'd be flagged as undefined.
+(Don't worry about the visibility of
+``<TT>push</TT> and <TT>pop</TT> themselves.'')
+</p><p>The paragraph beginning ``On the other hand''
+is explaining how global (``external'') variables like <TT>sp</TT> 
+and <TT>val</TT> could be accessed in a file other than the file 
+where they are defined.
+In the examples we've been looking at,
+as we've said,
+<TT>sp</TT> and <TT>val</TT> can be used in <TT>push</TT> and <TT>pop</TT>
+because the variables are
+defined above the functions.
+If the variables were defined elsewhere
+(i.e. in some other file),
+we'd need a
+declaration above--and
+that's exactly what <TT>extern</TT> is for.
+(See page 81 for an example.)
+<br></p><p>page 81
+</p><p>A definition <em>creates</em> a variable,
+and
+for any given global variable,
+you only want to do that once.
+Anywhere
+
+else,
+you want to refer to an existing variable,
+created elsewhere,
+without creating a new, conflicting one.
+Referring to an existing variable or function
+is exactly
+what a
+declaration is for.
+</p><p>Note also that the definition may optionally initialize the variable.
+(Don't worry about why a declaration may optionally include an
+array dimension.)
+</p><p>``This same organization would also be needed
+if the definitions of <TT>sp</TT> and <TT>val</TT>
+followed their use in one file''
+means that we could conceivably have,
+in one file,
+<pre>		extern int sp;
+		extern double val[];
+<br>
+<br>
+		void push(double f) { ... }
+		double pop(void) { ... }
+<br>
+<br>
+		int sp = 0;
+		double val[MAXVAL];
+</pre>So ``<TT>extern</TT>'' just means ``somewhere else'';
+it doesn't <em>have</em> to mean ``in a different file,''
+though usually it does.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx7c.html" rev=precedes>prev</a>
+<a href="sx7e.html" rel=precedes>next</a>
+<a href="sx7.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

@@ -1,0 +1,239 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>7.2 Increment and Decrement Operators</title>
+<link href="sx7a.html" rev=precedes>
+<link href="sx7c.html" rel=precedes>
+<link href="sx7.html" rev=subdocument>
+</head>
+<body>
+<H2>7.2 Increment and Decrement Operators</H2>
+
+<p>[This section corresponds to K&amp;R Sec. 2.8]
+</p><p>The assignment operators
+of the previous section
+let us replace
+<I>v</I> <TT>=</TT> <I>v</I> <I>op</I> <I>e</I>
+with
+<I>v</I> <I>op</I><TT>=</TT> <I>e</I>,
+so that we didn't have to mention <I>v</I> twice.
+In the most common cases,
+namely
+when we're adding or subtracting the constant 1
+(that is, when <I>op</I> is <TT>+</TT> or <TT>-</TT> and <I>e</I> is 1),
+C provides another set of shortcuts:
+the <dfn>autoincrement</dfn> and <dfn>autodecrement</dfn> operators.
+In their simplest forms, they look like this:
+<pre>
+	++i		<I>add 1 to</I> i
+	--j		<I>subtract 1 from</I> j
+</pre>
+These correspond to the slightly longer <TT>i += 1</TT> 
+and <TT>j -= 1</TT>,
+respectively,
+
+and also to the fully
+``longhand'' forms <TT>i = i + 1</TT> 
+and
+<TT>j = j - 1</TT>.
+</p><p>The <TT>++</TT> and <TT>--</TT> operators apply to one operand
+(they're <dfn>unary</dfn> operators).
+The expression <TT>++i</TT> adds 1 to <TT>i</TT>,
+and stores the incremented result back in <TT>i</TT>.
+
+This means that these operators don't just compute new values;
+they also modify the value of some variable.
+(They share this property--modifying some variable--with
+the assignment operators;
+we can say that these operators all have <dfn>side effects</dfn>.
+That is, they have some effect, on the side,
+other than just computing a new value.)
+</p><p>The incremented
+(or decremented)
+result is also made available to the rest of
+the expression,
+so an expression like
+<pre>
+	k = 2 * ++i
+</pre>
+means
+``add one to <TT>i</TT>,
+store the result back in <TT>i</TT>,
+multiply it by 2,
+and store <em>that</em> result in <TT>k</TT>.''
+(This is a pretty meaningless expression;
+our actual uses of <TT>++</TT> later will make more sense.)
+</p><p>Both the <TT>++</TT> and <TT>--</TT> operators have an unusual property:
+they can be used in two ways,
+depending on whether they are written
+to the left or the right of
+the variable
+
+they're operating on.
+In either case,
+they increment or decrement the variable
+
+they're operating on;
+the difference concerns whether it's the old or the new value
+that's ``returned'' to the surrounding expression.
+The <dfn>prefix</dfn> form <TT>++i</TT>
+increments <TT>i</TT> and returns the incremented value.
+The <dfn>postfix</dfn> form <TT>i++</TT>
+increments <TT>i</TT>,
+but returns the <em>prior</em>, non-incremented value.
+Rewriting our previous example slightly,
+the expression
+<pre>
+	k = 2 * i++
+</pre>
+means
+``take <TT>i</TT>'s old value and multiply it by 2,
+increment <TT>i</TT>,
+store the result of the multiplication in <TT>k</TT>.''
+</p><p>The distinction between the prefix and postfix forms of 
+<TT>++</TT> and <TT>--</TT>
+will probably
+seem strained at first,
+but it will make more sense once we begin using these operators 
+in more realistic situations.
+</p><p>For example,
+our <TT>getline</TT> function
+of the previous chapter
+used the statements
+<pre>
+	line[nch] = c;
+	nch = nch + 1;
+</pre>
+as the body of its inner loop.
+Using the <TT>++</TT> operator,
+we could simplify this to
+<pre>
+	line[nch++] = c;
+</pre>
+We wanted to increment <TT>nch</TT> <em>after</em>
+deciding which element of the <TT>line</TT> array to store into,
+so the postfix form <TT>nch++</TT> is
+appropriate.
+</p><p>
+Notice that it only makes sense to apply the <TT>++</TT> and 
+<TT>--</TT> operators to variables
+(or to other ``containers,'' such as <TT>a[i]</TT>).
+It would be meaningless to say something like
+<pre>
+	1++
+</pre>
+or
+<pre>
+	(2+3)++
+</pre>
+The <TT>++</TT> operator doesn't just mean ``add one'';
+it means ``add one <em>to a variable</em>''
+or ``make a variable's value one more than it was before.''
+But <TT>(1+2)</TT> is not a variable,
+it's an expression;
+so there's no place for <TT>++</TT> to store the incremented result.
+</p><p>Another unfortunate
+example is
+<pre>
+	i = i++;
+</pre>
+which some confused programmers sometimes write,
+presumably because they want to
+be extra sure that
+<TT>i</TT> is incremented by 1.
+But <TT>i++</TT> all by itself is sufficient to increment <TT>i</TT> by 1;
+the extra
+(explicit)
+assignment to <TT>i</TT> is unnecessary
+and in fact counterproductive, meaningless, and incorrect.
+If you want to increment <TT>i</TT>
+(that is,
+add one to it,
+and store the result back in <TT>i</TT>),
+either use
+
+<pre>
+	i = i + 1;
+or
+	i += 1;
+or
+	++i;
+or
+	i++;
+</pre>
+Don't try to use some bizarre combination.
+</p><p>Did it matter whether we used
+<TT>++i</TT> or <TT>i++</TT> in this last example?
+Remember, the difference between
+the two forms
+is what value 
+(either the old or the new) is passed on to the surrounding expression.
+If there is no surrounding expression,
+if the <TT>++i</TT> or <TT>i++</TT> appears all by itself,
+to increment <TT>i</TT> and do nothing else,
+you can use either form;
+it makes no difference.
+(Two ways that an expression can appear ``all by itself,''
+with ``no surrounding expression,''
+are when it is an expression statement terminated by a semicolon, as above,
+or when it is one of the controlling expressions of a <TT>for</TT> loop.)
+For example, both the loops
+<pre>
+	for(i = 0; i &lt; 10; ++i)
+		printf("%d\n", i);
+</pre>
+and
+<pre>
+	for(i = 0; i &lt; 10; i++)
+		printf("%d\n", i);
+</pre>
+will behave exactly the same way and produce exactly the same results.
+(In real code,
+postfix increment is probably more common,
+though prefix definitely has its uses, too.)
+</p><p>In the preceding section,
+we simplified the expression
+<pre>
+	a[d1 + d2] = a[d1 + d2] + 1;
+</pre>
+from a previous chapter
+down to
+<pre>
+	a[d1 + d2] += 1;
+</pre>
+Using <TT>++</TT>,
+we could simplify it still further to
+<pre>
+	a[d1 + d2]++;
+</pre>
+or
+<pre>
+	++a[d1 + d2];
+</pre>
+(Again,
+in this case,
+both are equivalent.)
+</p><p>We'll see more examples of these operators
+in the next section
+and
+in the next chapter.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx7a.html" rev=precedes>prev</a>
+<a href="sx7c.html" rel=precedes>next</a>
+<a href="sx7.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-1997
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

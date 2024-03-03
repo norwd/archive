@@ -1,0 +1,223 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>4.2 Visibility and Lifetime (Global Variables, etc.)</title>
+<link href="sx4ba.html" rev=precedes>
+<link href="sx4c.html" rel=precedes>
+<link href="sx4.html" rev=subdocument>
+</head>
+<body>
+<H2>4.2 Visibility and Lifetime (Global Variables, etc.)</H2>
+
+<p>We haven't said so explicitly,
+but variables are channels of communication within a program.
+You set a variable to a value at one point in a program,
+and at another point (or points) you read the value out again.
+The two points may be in adjoining statements,
+or they may be in widely separated parts of the program.
+</p><p>How long does a variable last?
+How widely separated can the setting and fetching parts of the program be,
+and how long after a variable is set does it persist?
+Depending on the variable
+and how you're using it,
+you might want different answers to
+these questions.
+</p><p>The <dfn>visibility</dfn> of a variable determines how much of
+the rest of the program can access that variable.
+You can arrange that a variable is visible
+only within one part of one function,
+or in one function,
+or in one source file,
+or
+anywhere in the program.
+(We haven't really talked about source files yet; we'll be
+exploring them soon.)
+</p><p>Why would you want to limit the visibility of a variable?
+For maximum flexibility, wouldn't it be handy if all variables
+were potentially visible everywhere?
+As it happens, that arrangement would be <em>too</em> flexible:
+everywhere in the program, you would have to keep track of the
+names of all the variables declared anywhere else in the program,
+so that you didn't accidentally re-use one.
+Whenever a variable had the wrong value by mistake, you'd have
+to search the entire program for the bug, because any statement
+in the entire program could potentially have modified that variable.
+You would constantly be stepping all over yourself by using a
+common variable name like <TT>i</TT> in two parts of your program,
+and having one snippet of code accidentally overwrite the
+values being used by another part of the code.
+The communication would be sort of like an old party
+line--you'd always be accidentally interrupting other
+conversations, or having your conversations interrupted.
+</p><p>To avoid this confusion,
+we generally give variables the narrowest or smallest
+visibility they need.
+A variable declared within the braces <TT>{}</TT> of a function
+is visible only within that function;
+variables declared within functions are called <dfn>local variables</dfn>.
+If another function somewhere else declares a local variable
+with the same name, it's a different variable entirely,
+
+and the two don't
+clash
+
+with each other.
+</p><p>On the other hand, a variable declared outside of any function
+is a <dfn>global variable</dfn>, and it is potentially visible anywhere
+within the program.
+You use global variables when you <em>do</em> want the communications path
+to be able to travel to any part of the program.
+When you declare a global variable, you will usually give it a
+longer, more descriptive name
+(not something generic like <TT>i</TT>)
+so that whenever you use it you will remember that it's the
+same variable everywhere.
+
+</p><p>Another word for the visibility of variables is <dfn>scope</dfn>.
+</p><p>How long do variables last?
+By default, local variables
+(those declared within a function)
+have <dfn>automatic duration</dfn>:
+they spring into existence when the function is called,
+and they (and their values) disappear when the function returns.
+Global variables, on the other hand, have <dfn>static duration</dfn>:
+they last, and the values stored in them persist,
+for as long as the program does.
+(Of course, the values can in general still be overwritten,
+so they don't necessarily persist forever.)
+
+</p><p>Finally, it is possible to split a program up into several
+source files, for easier maintenance.
+When several source files are combined into one program
+(we'll be seeing how in the next chapter)
+the compiler must have a way of correlating the global
+variables which might be used to communicate between the
+several source files.
+
+Furthermore, if a global variable is going to be useful for communication,
+there must be exactly one of it:
+you wouldn't want one function in one source file
+to store a value in one global variable named <TT>globalvar</TT>,
+and then have another function in another source file
+read from a <em>different</em> global variable named <TT>globalvar</TT>.
+Therefore,
+a global variable should
+have exactly one <dfn>defining instance</dfn>,
+in one place in one source file.
+If the same variable is to be used anywhere else
+(i.e. in some other source file or files),
+the variable is declared
+in those other file(s)
+with an <dfn>external declaration</dfn>,
+which is not a defining instance.
+The external declaration says,
+``hey, compiler,
+here's the name and type of a global variable I'm going to use,
+but don't define it here,
+don't allocate space for it;
+it's one that's defined somewhere else,
+and I'm just referring to it here.''
+If you accidentally have two distinct defining instances for a
+variable of the same name,
+the compiler (or the linker) will complain that it is
+``multiply defined.''
+</p><p>It is also possible to have a variable which is global in the
+sense that it is declared outside of any function,
+but private to the one source file it's defined in.
+Such a variable is visible to the functions in that source file
+
+but not to any functions in any other source files,
+even if they try to issue a matching declaration.
+</p><p>You get any extra control you might need over visibility and
+lifetime, and you distinguish between defining instances and
+external declarations, by
+using
+<dfn>storage classes</dfn>.
+A storage class is an extra keyword
+at the beginning of
+a declaration
+which modifies the declaration in some way.
+Generally, the storage class
+(if any)
+is the first word in the declaration,
+preceding the type name.
+(Strictly speaking,
+this ordering has not traditionally been necessary,
+and you may see some code
+with the storage class, type name,
+and other parts of a declaration
+in an unusual order.)
+</p><p>We said that, by default, local variables had automatic duration.
+To give them static duration
+(so that, instead of coming and going as the function is
+called, they persist for as long as the function does),
+you precede their declaration with the <TT>static</TT> keyword:
+<pre>
+	static int i;
+</pre>
+</p><p>By default, a declaration of a global variable
+(especially if it specifies an initial value)
+is the defining instance.
+To make it an external declaration,
+of a variable which is defined somewhere else,
+you
+precede it with the keyword <TT>extern</TT>:
+<pre>
+	extern int j;
+</pre>
+
+</p><p>Finally, to arrange that a global variable is visible only
+within its containing source file,
+you
+precede it with the <TT>static</TT> keyword:
+<pre>
+	static int k;
+</pre>
+
+</p><p>Notice that the <TT>static</TT> keyword
+can do
+
+two different things:
+it adjusts the duration of a local variable from automatic to
+static, or it adjusts the visibility of a global variable from
+truly global to private-to-the-file.
+</p><p>To summarize, we've talked about two different attributes of a
+variable: visibility and duration.
+These are orthogonal,
+as shown in this table:
+<p>
+<table border>
+<tr><td><td colspan=2 align="center">duration:</tr>
+<tr><td>visibility:<td align="center">automatic<td align="center">static</tr>
+<tr><td>local<td>normal local variables<td><TT>static</TT> local variables</tr>
+<tr><td>global<td>N/A<td>normal global variables</tr>
+</table>
+<p>
+We can also distinguish between file-scope global
+variables and truly global variables, based on the presence or
+absence of the <TT>static</TT> keyword.
+</p><p>We can also distinguish between external declarations and
+defining instances of
+global variables, based on the presence or absence of the
+<TT>extern</TT> keyword.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx4ba.html" rev=precedes>prev</a>
+<a href="sx4c.html" rel=precedes>next</a>
+<a href="sx4.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-1997
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-03 per &lt;20001219223935.A2068@moni.msci.memphis.edu&gt; -->
+</p>
+</body>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>section 5.4: Address Arithmetic</title>
+<link href="sx8c.html" rev=precedes>
+<link href="sx8e.html" rel=precedes>
+<link href="sx8.html" rev=subdocument>
+</head>
+<body>
+<H2>section 5.4: Address Arithmetic</H2>
+
+<p>This section is going to get pretty hairy.
+Some of it talks about things we've already seen
+(adding integers to pointers);
+some of it talks about things we need to learn
+(comparing and subtracting pointers);
+and some of it talks about a rather sophisticated example
+(a storage allocator).
+Don't worry if you can't follow all the details of the storage allocator,
+but do read along so that you can pick up the other new points.
+(In other words,
+make sure you read from
+``Zero is the sole exception''
+in the middle of page 102
+to
+``that is, the string length''
+on page 103,
+and also the last paragraph on page 103.)
+</p><p>What is a storage allocator for?
+So far,
+we've used pointers to point to existing variables and arrays,
+which the compiler allocated for us.
+But eventually,
+we may want to allocate data structures
+(arrays, and others we haven't seen yet)
+of a size which we don't know at compile time.
+Earlier,
+we spoke briefly about a hypothetical inventory-management system,
+which recorded information about each part stored in a warehouse.
+How many different parts could there be?
+If we used fixed-size arrays,
+there would be a fixed upper limit
+on the number of parts we could enter into the system,
+and we'd be annoyed if that limit were reached.
+A better solution is not to allocate a fixed array at compile time,
+but rather to use a run-time storage allocator to allocate 
+memory for the data structures used to describe each part.
+That way, the number of parts which the system can hold
+is limited only by available memory,
+not on any static limit built into the program.
+Using a storage allocator to allocate memory at run time
+in this way
+is called <dfn>dynamic allocation</dfn>.
+</p><p>However,
+dynamic memory allocation is where C programming can really get tricky,
+because you the programmer are responsible for most aspects of it,
+and there are plenty of things you can do wrong
+(e.g. not allocate quite enough memory,
+accidentally keep using it after you deallocate it,
+have random invalid pointers pointing everywhere, etc.).
+Therefore,
+we won't be talking about dynamic allocation for a while,
+which is why you can skim over the storage allocator in this section for now.
+</p><p>page 102
+</p><p>The first new piece of information in this section
+(which you'll need to remember
+even if you're not following the details of the storage allocator example)
+is the introduction of the ``null pointer.''
+</p><p>So far, all of our pointers have pointed somewhere,
+and we've cautioned about pointers which don't.
+To help us distinguish between pointers which point somewhere
+and pointers which don't,
+there is a single, special pointer value
+we can use,
+which is guaranteed 
+not to point anywhere.
+When a pointer doesn't point anywhere,
+we can set it to this value,
+to make explicit the fact that it doesn't point anywhere.
+</p><p>This special pointer value is called the <dfn>null pointer</dfn>.
+The way to set a pointer to this value is to use a constant 0:
+<pre>	int *ip = 0;
+</pre>The 0 is just a shorthand;
+it does <em>not</em> necessarily mean machine address 0.
+To make it clear that we're talking about the null pointer
+and not the integer 0,
+we often use a macro definition like
+<pre>	#define NULL 0
+</pre>so that we can say things like
+<pre>	int *ip = NULL;
+</pre>(If you've used Pascal or LISP,
+the <TT>nil</TT> pointer in those languages is analogous.)
+</p><p>In fact,
+the above #definition of <TT>NULL</TT> has been placed in the 
+standard header file <TT>&lt;stdio.h&gt;</TT> for us
+(and in several other standard header files as well),
+so we don't even need to <TT>#define</TT> it.
+I agree completely with the authors
+that using <TT>NULL</TT> instead of 0
+makes it more clear that we're talking about a null pointer,
+so I'll always be using <TT>NULL</TT>, too.
+</p><p>Just as we can set a pointer to <TT>NULL</TT>,
+we can also test a pointer to see if it's <TT>NULL</TT>.
+The code
+<pre>	if(p != NULL)
+		*p = 0;
+	else	printf("p doesn't point anywhere\n");
+</pre>tests <TT>p</TT> to see if it's non-<TT>NULL</TT>.
+If it's not <TT>NULL</TT>,
+it assumes that it points somewhere valid,
+and writes a 0 there.
+Otherwise
+(i.e. if <TT>p</TT> is the null pointer)
+the code complains.
+</p><p>Though we can use null pointers as markers to remind ourselves 
+of which of our pointers don't point anywhere,
+it's up to us to do so.
+It is <em>not</em> guaranteed that all uninitialized pointer 
+variables
+(which obviously don't point anywhere)
+are initialized to <TT>NULL</TT>,
+so
+if we want to use the null pointer convention to remind ourselves,
+we'd best explicitly initialize all
+unused
+pointers to <TT>NULL</TT>.
+Furthermore,
+there is no general mechanism that automatically checks
+whether a pointer is non-null before we use it.
+If we think that a pointer might not point anywhere,
+and if we're using the convention that pointers that don't 
+point anywhere are set to <TT>NULL</TT>,
+it's up to us to compare the pointer to <TT>NULL</TT>
+to decide whether it's safe to
+use
+it.
+</p><p>The next new piece of information in this section
+(which we've already alluded to)
+is pointer comparison.
+You can compare two pointers for equality or inequality
+(<TT>==</TT> or <TT>!=</TT>):
+they're equal if they point to the same place or are both null pointers;
+they're unequal if they point to different places,
+or if one points somewhere and one is a null pointer.
+If
+two pointers point into the same array,
+the relational comparisons
+<TT>&lt;</TT>, <TT>&lt;=</TT>, <TT>&gt;</TT>, and <TT>&gt;=</TT>
+can also be used.
+</p><p>page 103
+</p><p>The sentences
+<blockquote>...<TT>n</TT> is scaled according to the size of the objects <TT>p</TT> points to,
+which is determined by the declaration of <TT>p</TT>.
+If an <TT>int</TT> is four bytes,
+for example,
+the <TT>int</TT> will be scaled by four.
+</blockquote>say something we've seen already,
+but may only confuse the issue.
+We've said informally that in the code
+<pre>	int a[10];
+	int *pa = &amp;a[0];
+	*(pa+1) = 1;
+</pre><TT>pa</TT> contains the ``address'' of the <TT>int</TT> object <TT>a[0]</TT>,
+but we've discouraged thinking about this address
+as an actual machine memory address.
+We've said that the expression <TT>pa+1</TT>
+moves to the next <TT>int</TT> in the array
+(in this case, <TT>a[1]</TT>).
+Thinking at this abstract level,
+we don't even need to worry about any
+``scaling by the size of the objects pointed to.''
+</p><p>If we do look at a lower, machine level of addressing,
+we may learn that an <TT>int</TT> occupies some number of bytes
+(usually two or four),
+such that when we add 1 to a pointer-to-<TT>int</TT>,
+the machine address is actually increased by 2 or 4.
+If you like to consider the situation from this angle,
+you're welcome to,
+but if you don't,
+you certainly don't have to.
+If you do start thinking about machine addresses and sizes,
+make extra sure that you remember that C <em>does</em> do the necessary 
+scaling for you.
+Don't write something like
+<pre>	int a[10];
+	int *pa = &amp;a[0];
+	*(pa+sizeof(int)) = 1;
+</pre>where <TT>sizeof(int)</TT> is the size of an <TT>int</TT> in bytes,
+and expect it to access <TT>a[1]</TT>.
+</p><p>Since adding an <TT>int</TT> to a pointer gives us another pointer:
+<pre>	int a[10];
+	int *pa1 = &amp;a[0];
+	int *pa2 = pa1 + 5;
+</pre>we might wonder if we can rearrange the expression
+<pre>	pa2 = pa1 + 5
+</pre>to get
+<pre>	pa2 - pa1 &#8799; 5
+</pre>(where this is no longer a C assignment,
+we're just wondering if we can subtract <TT>pa1</TT> from <TT>pa2</TT>,
+and what the result might be).
+The answer is yes:
+just as you can compare two pointers which point into the same array,
+you can subtract them,
+and the result is,
+naturally enough,
+the distance between them,
+in cells or elements.
+</p><p>(In the large parenthetical statement in the middle of the page,
+don't worry too much about
+<TT>ptrdiff_t</TT>, <TT>size_t</TT>, and <TT>sizeof</TT>.)
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx8c.html" rev=precedes>prev</a>
+<a href="sx8e.html" rel=precedes>next</a>
+<a href="sx8.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-03 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

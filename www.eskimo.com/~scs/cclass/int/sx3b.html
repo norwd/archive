@@ -1,0 +1,172 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>17.2: Binary Data Files</title>
+<link href="sx3a.html" rev=precedes>
+<link href="sx4.html" rel=precedes>
+<link href="sx3.html" rev=subdocument>
+</head>
+<body>
+<H2>17.2: Binary Data Files</H2>
+
+<p>Normally,
+when writing notes like these,
+I progress from the easy to the hard,
+or the boring to the interesting,
+or the deficient to the recommended.
+This chapter is the reverse;
+I heartily recommend
+that you use the text data files of the previous section
+whenever possible.
+This section on binary data files is included for completeness,
+and you're welcome to skip it
+if you're not interested in using binary data files
+or if it doesn't make sense.
+</p><p>We've already seen two examples
+of writing and reading binary data files,
+in section
+
+16.7
+of the previous chapter.
+To write out an array of integers,
+we called
+<pre>
+	fwrite(array, sizeof(int), na, fp);
+</pre>
+To read them back in,
+we called
+<pre>
+	na = fread(array, sizeof(int), 10, fp);
+</pre>
+To write out a structure,
+we called
+<pre>
+	fwrite(&amp;x, sizeof(struct s), 1, fp);
+</pre>
+To read it back in, we called
+<pre>
+	fread(&amp;x, sizeof(struct s), 1, fp);
+</pre>
+(which returns 1 if it succeeds).
+</p><p>These examples certainly seem attractive:
+they will result in compact data files,
+they will probably be quite efficient,
+and they are certainly simple for the programmer to write.
+However,
+data files created in this way fare quite badly
+when evaluated against our other criteria.
+They will not be human-readable;
+they will contain sets of inscrutable byte values
+which are exact copies of the memory regions
+used to contain the data structures.
+They will not be at all portable;
+they cannot be correctly read
+(at least, not with the simple calls to <TT>fread</TT>)
+on machines where basic types such as <TT>int</TT> have different sizes,
+or where the basic types are laid out differently in memory
+(e.g. ``big endian'' vs. ``little endian'',
+or different floating-point representations).
+
+They may not even be able to be read by the same code
+compiled under a different compiler on the same machine,
+since different compilers may
+use different sizes for integers,
+or
+lay out
+the fields of structures
+differently in memory.
+(The fields will always be in the order you expect,
+but different compilers may, for various reasons,
+leave different amounts of empty space or ``padding''
+between certain fields.)
+These binary files will have no provision whatsoever
+for backwards or forwards compatibility;
+any change to the structure definition
+will completely change the implied format of the data file,
+with no hope of reading older (or newer) files.
+The only other benefit these files have
+is that if the data is for any reason sensitive,
+it will certainly be a bit better concealed from prying eyes.
+</p><p>We can get around these disadvantages of binary data files,
+but in so doing we'll lose many of the advantages,
+such as blinding efficiency or programmer convenience.
+If we care about data file portability
+or backwards or forwards compatibility,
+we will have to write structures one field at a time,
+not in one fell swoop.
+Furthermore,
+if we have an <TT>int</TT> to write,
+we may choose not to write it using <TT>fwrite</TT>:
+<pre>
+	fwrite(&amp;i, sizeof(int), 1, fp);
+</pre>
+but rather a byte at a time, using <TT>putc</TT>:
+<pre>
+	putc(i / 256, fp);
+	putc(i % 256, fp);
+</pre>
+In this way,
+we'd have precise control over the order
+in which the two halves of the <TT>int</TT> are being written.
+(We're assuming here that there's no more than
+two bytes' worth of data in the <TT>int</TT>,
+which is a safe assumption
+if we're portably assuming
+that <TT>int</TT>s can only hold up to +-32767.)
+When it came time to read the <TT>int</TT> back in,
+we might do that a byte at a time, too:
+<pre>
+	i = getc(fp);
+	i = 256 * i + getc(fp);
+</pre>
+(We could <em>not</em> collapse this to
+<TT>i = 256 * getc(fp) + getc(fp)</TT>,
+because we wouldn't know which order
+the two calls to <TT>getc</TT> would occur in.)
+</p><p>We might also choose to use tags
+to mark the various ``fields'' within our binary data file;
+the fields would be more likely to be byte codes
+such as <TT>0x00</TT>, <TT>0x01</TT>, and <TT>0x02</TT>
+than the character or string codes
+we used in the tagged text data file of the previous section.
+</p><p>If you do choose to use binary data files,
+you <em>must</em> open them for writing with
+<TT>fopen</TT> mode <TT>"wb"</TT>
+and for reading with <TT>"rb"</TT>
+(or perhaps one of the <TT>+</TT> modes;
+the point is that you do need the <TT>b</TT>).
+Remember that,
+in the default mode,
+the standard I/O functions all assume text files,
+and translate between <TT>\n</TT>
+and the operating system's end-of-line representation.
+If you try to read or write a binary data file in text mode,
+whenever
+your internal data happens to contain a byte
+which matches the code for <TT>\n</TT>,
+or your external data happens to contain bytes
+which match the operating system's end-of-line representation,
+they may
+
+be translated out from under you,
+screwing up your data.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx3a.html" rev=precedes>prev</a>
+<a href="sx4.html" rel=precedes>next</a>
+<a href="sx3.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1996-1999
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

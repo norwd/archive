@@ -1,0 +1,158 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>18.1.6 Type Definitions (<TT>typedef</TT>)</title>
+<link href="sx4ea.html" rev=precedes>
+<link href="sx4ga.html" rel=precedes>
+<link href="sx4a.html" rev=subdocument>
+</head>
+<body>
+<H3>18.1.6 Type Definitions (<TT>typedef</TT>)</H3>
+
+<p>[This section corresponds to K&amp;R Sec. 6.7]
+</p><p>When the storage class is <TT>typedef</TT>,
+as in
+<pre>
+	typedef int count;
+</pre>
+a declaration means something completely different than it usually does.
+Instead of declaring a variable named <TT>count</TT>,
+we are declaring a <em>new type</em> named <TT>count</TT>.
+(Actually, we're just declaring a new name for an old type;
+you can think of typedef names as type aliases.)
+Having declared this new type <TT>count</TT>,
+we can now use it as a base type in other declarations,
+such as
+<pre>
+	count napples, noranges;
+</pre>
+</p><p>The types <TT>FILE</TT> and <TT>size_t</TT> which we've seen at
+various points along the way
+(which we've described as being ``new types defined by the
+header file <TT>&lt;stdio.h&gt;</TT>''
+[or also several other headers in the case of <TT>size_t</TT>])
+are
+typically
+both defined using <TT>typedef</TT>.
+</p><p>You can use <TT>typedef</TT> to define new names for complicated
+types, too.
+You could define
+<pre>
+	typedef char *string;
+	typedef struct listnode list, *nodeptr;
+</pre>
+after which you can declare several strings (<TT>char *</TT>'s)
+by saying
+<pre>
+	string string1, string2;
+</pre>
+or several lists (<TT>struct listnode</TT>)
+by saying
+<pre>
+	list list1, list2;
+</pre>
+or several pointers to list nodes by saying
+<pre>
+	nodeptr np1, np2;
+</pre>
+</p><p><TT>typedef</TT> provides a way to simplify structure declarations.
+In a previous section,
+we saw that we had to declare
+new variables of type <TT>struct complex</TT>
+using the syntax
+<pre>
+	struct complex c1, c2;
+</pre>
+Using <TT>typedef</TT>, however,
+we can introduce a single-word complex type, after all:
+<pre>
+	typedef struct complex complextype;
+	complextype c1, c2;
+</pre>
+It's also possible to define
+a structure and a typedef tag for it at the same time:
+<pre>
+	typedef struct complex
+		{
+		double real;
+		double imag;
+		} complextype;
+</pre>
+Furthermore,
+when using typedef names,
+you may not need the structure tag at all;
+you can also write
+<pre>
+	typedef struct
+		{
+		double real;
+		double imag;
+		} complextype;
+</pre>
+(At this point, of course,
+you could use the cleaner name ``<TT>complex</TT>''
+for the typedef, instead of ``<TT>complextype</TT>''.
+Actually, it turns out that you could have done this all along.
+Structure tags and typedef names share separate namespaces,
+so the declaration
+<pre>
+	typedef struct complex
+		{
+		double real;
+		double imag;
+		} complex;
+</pre>
+is legal,
+though possibly confusing.)
+</p><p>Defining new type names is done mostly for convenience, or to
+make the code more self-documenting, or to make it possible to
+change the actual base type used for a lot of variables without
+rewriting the declarations of all those variables.
+</p><p>A <TT>typedef</TT> declaration is a little bit like a
+preprocessor <TT>#define</TT> directive.
+We could imagine writing
+<pre>
+	#define count int
+	#define string char *
+</pre>
+in an attempt to accomplish the same thing.
+This won't work nearly as well, however:
+given the macro definition,
+the line
+<pre>
+	string string1, string2;
+</pre>
+would expand to
+<pre>
+	char * string1, string2;
+</pre>
+which would declare <TT>string1</TT> as a <TT>char *</TT>
+but <TT>string2</TT> as a plain <TT>char</TT>.
+The typedef declaration,
+however,
+would work correctly.
+</p><p>Some programmers capitalize typedef names to make them stand out
+a little better,
+and others use the convention of ending all typedef names with
+the characters ``<TT>_t</TT>''.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx4ea.html" rev=precedes>prev</a>
+<a href="sx4ga.html" rel=precedes>next</a>
+<a href="sx4a.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1996-1999
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-03 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

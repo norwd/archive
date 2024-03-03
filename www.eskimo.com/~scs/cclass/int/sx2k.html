@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>16.11: Redirection (<TT>freopen</TT>)</title>
+<link href="sx2j.html" rev=precedes>
+<link href="sx3.html" rel=precedes>
+<link href="sx2.html" rev=subdocument>
+</head>
+<body>
+<H2>16.11: Redirection (<TT>freopen</TT>)</H2>
+
+<p>For some programs,
+standard input and standard output are enough,
+and these programs can get by using just
+<TT>getchar</TT>, <TT>putchar</TT>, <TT>printf</TT>, etc.,
+and letting any input/output redirection be handled
+by the user and the operating system
+(perhaps using command-line redirection such as <TT>&lt;</TT> and <TT>&gt;</TT>).
+Other programs handle all file manipulation themselves,
+opening files with <TT>fopen</TT> and maintaining file pointer
+(<TT>FILE *</TT>) variables recording the streams to which all 
+input and output is done
+(with <TT>getc</TT>, <TT>putc</TT>, <TT>fprintf</TT>, etc.).
+</p><p>Occasionally,
+a program has to be rewritten in a hurry,
+to allow it to read or write a named file
+without manipulating file pointers and changing
+every call to <TT>getchar</TT> to <TT>getc</TT>,
+every call to <TT>printf</TT> to <TT>fprintf</TT>, etc.
+In these cases, the function <TT>freopen</TT> comes in handy:
+it reopens an existing stream on a new file.
+The prototype is
+<pre>
+	FILE *freopen(char *filename, char *mode, FILE *fp)
+</pre>
+<TT>freopen</TT> is about like <TT>fopen</TT>,
+except that rather than allocating a new stream,
+it uses
+(and returns)
+the caller-supplied stream <TT>fp</TT>.
+For example,
+to redirect a program's output to a file ``from within,''
+you could call
+<pre>
+	freopen(filename, "w", stdout);
+</pre>
+</p><p>A disadvantage of <TT>freopen</TT>
+is that there's generally no way to undo it;
+you can't
+change your mind later and
+make <TT>stdin</TT> or <TT>stdout</TT> go back to where they had been
+before you called <TT>freopen</TT>.
+In situations where you want to be able to swich back and forth between streams,
+it's much better if you <em>can</em> chase down and
+change
+every call to <TT>getchar</TT> to <TT>getc</TT>,
+every call to <TT>printf</TT> to <TT>fprintf</TT>, etc.,
+and then use some <TT>FILE *</TT> variable under your control
+(typically with a name like <TT>ifp</TT> or <TT>ofp</TT>)
+so that you can set it
+
+to point to a file by calling <TT>fopen</TT>,
+and later back to <TT>stdin</TT> or <TT>stdout</TT> by simply reassigning it.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx2j.html" rev=precedes>prev</a>
+<a href="sx3.html" rel=precedes>next</a>
+<a href="sx2.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1996-1999
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

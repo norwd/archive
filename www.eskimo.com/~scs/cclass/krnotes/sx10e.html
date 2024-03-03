@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>section 7.5: File Access</title>
+<link href="sx10d.html" rev=precedes>
+<link href="sx10f.html" rel=precedes>
+<link href="sx10.html" rev=subdocument>
+</head>
+<body>
+<H2>section 7.5: File Access</H2>
+
+page 160
+<p>We've come an amazingly long way without ever having to open a file
+(we've been relying exclusively
+on those predefined standard input and output streams)
+but now it's time to take the plunge.
+</p><p>The concept of a <dfn>file pointer</dfn> is an important one.
+It would theoretically be possible
+to mention the name of a file
+each time it was desired to read from or write to it.
+But such an approach would have a number of drawbacks.
+
+Instead,
+the usual approach
+(and the one taken in C's stdio library)
+is that you mention the name of the file once,
+at the time you <dfn>open</dfn> it.
+Thereafter, you use some little
+token--in
+this case,
+the file 
+pointer--which
+keeps track
+(both for your sake and the library's)
+of which file you're talking about.
+Whenever you want to
+read from or write to
+one of the files you're working with,
+you identify that file
+by using the file pointer
+you obtained from <TT>fopen</TT> when you opened the file.
+(It is possible to have several files open,
+as long as you use distinct variables to store the file pointers.)
+</p><p>Not only do you not need to know the details of a <TT>FILE</TT> structure,
+you don't even need to know what the ``buffer'' is
+that the structure contains the location of.
+</p><p>In general, the only declaration you need for a file pointer
+is the declaration of the file pointer:
+<pre>	FILE *fp;
+</pre>You should never need to type the line
+<pre>	FILE *fopen(char *name, char *mode);
+</pre>because it's provided for you in <TT>&lt;stdio.h&gt;</TT>.
+</p><p>If you skipped section 6.7, you don't know about <TT>typedef</TT>,
+but don't worry.
+Just assume that <TT>FILE</TT> is a type, like <TT>int</TT>,
+except one that is defined by <TT>&lt;stdio.h&gt;</TT> instead of 
+being built into the language.
+Furthermore,
+note that you will never be using variables of type <TT>FILE</TT>;
+you will always be using pointers to this type,
+or <TT>FILE *</TT>.
+</p><p>A ``binary file''
+is one which is treated as an arbitrary series of byte values,
+as opposed to a text file.
+We won't be working with binary files,
+but if you ever do, 
+remember to use <TT>fopen</TT> modes
+like <TT>"rb"</TT> and <TT>"wb"</TT> when opening them.
+</p><p>page 161
+</p><p>We won't worry too much about error handling for now,
+but if you start writing production programs,
+it's something you'll want to learn about.
+It's extremely annoying for a program to say
+``can't open file''
+without saying <em>why</em>.
+(Some particularly unhelpful programs
+don't even tell you which file they couldn't open.)
+</p><p>On this page we learn about four new functions,
+<TT>getc</TT>, <TT>putc</TT>,
+<TT>fprintf</TT>, and <TT>fscanf</TT>,
+which are just like functions that we've already been using
+except that they let you specify a file pointer
+to tell them which file
+(or other I/O stream)
+to read from or write to.
+(Note that for <TT>putc</TT>,
+the extra <TT>FILE *</TT> argument comes last,
+while for <TT>fprintf</TT> and <TT>fscanf</TT>,
+it comes first.)
+</p><p>page 162
+</p><p><TT>cat</TT> is about the most basic
+and important
+file-handling program there is
+(even if its name is a bit obscure).
+The <TT>cat</TT> program on page 162 is a bit like the 
+``hello, world'' program on page 6--it may seem trivial,
+but if you can get it
+to work,
+you're over the biggest first hurdle
+when it comes to handling files at all.
+</p><p>Compare the <TT>cat</TT> program
+(and especially its <TT>filecopy</TT> function)
+to the file copying program on page 16 of
+section 1.5.1--<TT>cat</TT> is essentially the same program,
+except that it accepts filenames on the command line.
+</p><p>Since
+the authors advise calling <TT>fclose</TT> 
+in part to
+``flush the buffer in which <TT>putc</TT> is collecting output,''
+you may wonder why 
+the program at the top of the 
+page does not call <TT>fclose</TT> on its output stream.
+The reason can be found in the next sentence:
+an implicit <TT>fclose</TT> happens automatically for any streams which 
+remain open when the program exits normally.
+</p><p>In general,
+it's a good idea to close any streams you open,
+but not to close the preopened streams
+such as <TT>stdin</TT> and <TT>stdout</TT>.
+(Since ``the system'' opened them for you
+as your program was starting up,
+it's appropriate to let it close them for you as your program exits.)
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx10d.html" rev=precedes>prev</a>
+<a href="sx10f.html" rel=precedes>next</a>
+<a href="sx10.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

@@ -1,0 +1,286 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>3.3 Boolean Expressions</title>
+<link href="sx3b.html" rev=precedes>
+<link href="sx3d.html" rel=precedes>
+<link href="sx3.html" rev=subdocument>
+</head>
+<body>
+<H2>3.3 Boolean Expressions</H2>
+
+<p>An <TT>if</TT> statement like
+<pre>
+	if(x &gt; max)
+		max = x;
+</pre>
+is perhaps deceptively simple.
+Conceptually, we say that it checks whether the condition
+<TT>x &gt; max</TT> is ``true'' or ``false''.
+The mechanics underlying C's conception of ``true''
+and ``false,'' however, deserve some explanation.
+We need to understand how true and false values are represented,
+and how they are interpreted by statements like <TT>if</TT>.
+</p><p>As far as C is concerned,
+a true/false condition can be represented as an integer.
+(An integer can represent many values;
+here we care about only two values:
+``true'' and ``false.''
+The study of mathematics involving only two values is called
+Boolean algebra, after George Boole, a mathematician who
+refined this study.)
+In C, ``false'' is represented by a value of 0 (zero),
+and ``true'' is represented by any value that is nonzero.
+Since there are many nonzero values (at least 65,534, for
+values of type <TT>int</TT>),
+when we have to pick a specific value for ``true,''
+we'll pick 1.
+</p><p>The <dfn>relational operators</dfn> such as
+<TT>&lt;</TT>, <TT>&lt;=</TT>, <TT>&gt;</TT>, and <TT>&gt;=</TT>
+are in fact operators, just like <TT>+</TT>, <TT>-</TT>, <TT>*</TT>,
+and <TT>/</TT>.
+The relational operators take two values, look at them, and
+``return'' a value of 1 or 0 depending on whether the
+tested relation was true or false.
+The complete set of relational operators in C is:
+<br>
+<br>
+<pre>
+	<TT>&lt;</TT>	less than
+	<TT>&lt;=</TT>	less than or equal
+	<TT>&gt;</TT>	greater than
+	<TT>&gt;=</TT>	greater than or equal
+	<TT>==</TT>	equal
+	<TT>!=</TT>	not equal
+</pre>
+<br>
+<br>
+For example,
+<TT>1 &lt; 2</TT> is 1,
+<TT>3 &gt; 4</TT> is 0,
+<TT>5 == 5</TT> is 1,
+and
+<TT>6 != 6</TT> is 0.
+</p><p>We've now encountered perhaps the most easy-to-stumble-on
+``gotcha!'' in C:
+the equality-testing operator is <TT>==</TT>,
+not a single <TT>=</TT>, which is assignment.
+If you accidentally write
+<pre>
+	if(a = 0)
+</pre>
+(and you probably will at some point;
+everybody
+makes this mistake),
+it will <em>not</em> test whether <TT>a</TT> is zero,
+as you probably intended.
+Instead, it will <em>assign</em> 0 to <TT>a</TT>,
+and then perform the ``true'' branch
+of the <TT>if</TT> statement if <TT>a</TT> is <em>non</em>zero.
+But <TT>a</TT> will have just been assigned the value 0,
+so the ``true'' branch will never be taken!
+(This could drive you crazy while debugging--you
+wanted to do something if <TT>a</TT> was 0,
+and after the test, <TT>a</TT> <em>is</em> 0,
+whether it was supposed to be or not,
+but the ``true'' branch is nevertheless not taken.)
+</p><p>The relational operators work with arbitrary numbers
+and generate true/false values.
+You can
+also
+combine true/false values by using the
+<dfn>Boolean operators</dfn>,
+which take true/false values as operands
+and compute new true/false values.
+The three Boolean operators are:
+<br>
+<br>
+<pre>
+	<TT>&amp;&amp;</TT>	and
+	<TT>||</TT>	or
+	<TT>!</TT>	not (takes one operand; ``<dfn>unary</dfn>'')
+</pre>
+<br>
+<br>
+The <TT>&amp;&amp;</TT> (``and'') operator
+takes two true/false values
+and produces a true (1) result if both operands are true
+(that is, if the left-hand side is true <B>and</B>
+the right-hand side is true).
+The <TT>||</TT> (``or'') operator
+takes two true/false values
+and produces a true (1) result if either operand is true.
+The <TT>!</TT> (``not'') operator
+takes a single true/false value and negates it,
+turning false to true and true to false
+(0 to 1 and nonzero to 0).
+</p><p>For example, to test whether the variable <TT>i</TT> lies
+between 1 and 10, you might use
+<pre>
+	if(1 &lt; i &amp;&amp; i &lt; 10)
+		...
+</pre>
+Here we're expressing the
+relation
+
+``<TT>i</TT> is between 1 and 10''
+as
+``1 is less than <TT>i</TT> <B>and</B>
+<TT>i</TT> is less than 10.''
+</p><p>It's important to understand why the more obvious
+expression
+
+<pre>
+	if(1 &lt; i &lt; 10)			/* WRONG */
+</pre>
+would not work.
+The expression
+<TT>1 &lt; i &lt; 10</TT>
+is parsed by the compiler analogously to
+<TT>1 + i + 10</TT>.
+The expression <TT>1 + i + 10</TT>
+is parsed as <TT>(1 + i) + 10</TT>
+and
+means ``add 1 to <TT>i</TT>, and then add the result to 10.''
+Similarly,
+the expression
+<TT>1 &lt; i &lt; 10</TT>
+is parsed as <TT>(1 &lt; i) &lt; 10</TT>
+and
+means ``see if 1 is less than <TT>i</TT>,
+and then see if the result is less than 10.''
+But in this case, ``the result'' is 1 or 0, depending
+on whether <TT>i</TT> is greater than 1.
+Since both 0 and 1 are less than 10, the expression
+<TT>1 &lt; i &lt; 10</TT>
+would <em>always</em> be true in C,
+regardless of the value of <TT>i</TT>!
+</p><p>Relational and Boolean expressions are usually used
+in contexts such as an <TT>if</TT> statement, where something is
+to be done or not done depending on some condition.
+In these cases
+what's actually checked is whether the expression representing
+the condition has a zero or nonzero value.
+As long as the expression is a relational or Boolean expression,
+the interpretation is just what we want.
+For example,
+when we wrote
+<pre>
+	if(x &gt; max)
+</pre>
+the <TT>&gt;</TT> operator produced a 1
+if <TT>x</TT> was greater than <TT>max</TT>,
+and a 0 otherwise.
+The <TT>if</TT> statement interprets 0 as false and 1
+(or any nonzero value)
+as true.
+</p><p>But what if the expression is not a relational or Boolean expression?
+As far as C is concerned,
+the controlling expression
+(of conditional statements like <TT>if</TT>)
+can
+in fact
+be <em>any</em> expression:
+it doesn't have to ``look like'' a Boolean expression;
+it doesn't have to contain relational or logical operators.
+All C looks at
+(when it's evaluating an <TT>if</TT> statement,
+or anywhere else where it needs a true/false value)
+is whether the expression evaluates to 0 or nonzero.
+For example,
+if you have
+a variable <TT>x</TT>,
+and you want to do something if <TT>x</TT> is nonzero,
+it's possible to write
+<pre>
+	if(x)
+		<I>statement</I>
+</pre>
+and the statement will be executed if <TT>x</TT> is nonzero
+(since nonzero means ``true'').
+</p><p>This possibility
+(that the controlling expression of an <TT>if</TT> statement
+doesn't have to ``look like'' a Boolean expression)
+is both useful and potentially confusing.
+It's useful when you have a variable or a function that is
+``conceptually Boolean,''
+that is,
+one
+that you consider to hold
+a true or false (actually nonzero or zero) value.
+For example, if you have a variable <TT>verbose</TT>
+which contains a nonzero value when your program should run in
+verbose mode and zero when it should be quiet,
+you can write things like
+<pre>
+	if(verbose)
+		printf("Starting first pass\n");
+</pre>
+and this code is both legal and readable,
+besides which it does what you want.
+
+The standard library contains a function <TT>isupper()</TT>
+which tests whether a character is an upper-case letter,
+so if <TT>c</TT> is a character,
+you might write
+<pre>
+	if(isupper(c))
+		...
+</pre>
+Both of these examples (<TT>verbose</TT> and <TT>isupper()</TT>)
+are useful and readable.
+</p><p>However, you will eventually come across code like
+<pre>
+	if(n)
+		average = sum / n;
+</pre>
+where <TT>n</TT> is just a number.
+Here, the programmer wants to compute the average only if
+<TT>n</TT> is nonzero
+(otherwise, of course, the code would divide by 0),
+and the code works,
+because, in the context of the <TT>if</TT> statement,
+the trivial expression <TT>n</TT> is
+(as always)
+interpreted as ``true'' if it is nonzero,
+and ``false'' if it is zero.
+</p><p>``Coding shortcuts''
+like these
+can
+seem cryptic,
+but they're also quite common,
+so you'll need to be able to recognize them
+even if you don't choose to write them in your own code.
+Whenever you see code like
+<pre>
+	if(x)
+</pre>
+or
+<pre>
+	if(f())
+</pre>
+where <TT>x</TT> or <TT>f()</TT>
+do not have obvious ``Boolean'' names,
+you can read them as ``if <TT>x</TT> is nonzero''
+or
+``if <TT>f()</TT> returns nonzero.''
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx3b.html" rev=precedes>prev</a>
+<a href="sx3d.html" rel=precedes>next</a>
+<a href="sx3.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

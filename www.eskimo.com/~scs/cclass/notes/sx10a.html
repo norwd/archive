@@ -1,0 +1,363 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>10.1 Basic Pointer Operations</title>
+<link href="sx10.html" rev=precedes>
+<link href="sx10b.html" rel=precedes>
+<link href="sx10.html" rev=subdocument>
+</head>
+<body>
+<H2>10.1 Basic Pointer Operations</H2>
+
+<p>[This section corresponds to K&amp;R Sec. 5.1]
+</p><p>The first things to do with pointers are to
+declare a pointer variable,
+set it to point somewhere,
+and finally manipulate the value that it points to.
+A simple pointer declaration looks like this:
+<pre>
+	int *ip;
+</pre>
+This declaration looks like our earlier declarations,
+with one obvious difference:
+that asterisk.
+The asterisk means that <TT>ip</TT>,
+the variable we're declaring,
+is not of type <TT>int</TT>,
+but rather of type pointer-to-<TT>int</TT>.
+(Another way of looking at it is that <TT>*ip</TT>,
+which as we'll see is the value pointed to by <TT>ip</TT>,
+will be an <TT>int</TT>.)
+</p><p>We may think of setting a pointer variable to point to another variable
+as a two-step process:
+first we generate a pointer to that other variable,
+then we assign this new pointer to the pointer variable.
+We can say
+(but we have to be careful when we're saying it)
+that a pointer variable has a value,
+and that its value is ``pointer to that other variable''.
+This
+
+will make more sense when we see how to generate pointer values.
+</p><p>Pointers
+(that is, pointer values)
+are generated with the ``address-of''
+operator <TT>&amp;</TT>,
+which we can also think of as the
+``pointer-to'' operator.
+We demonstrate this by declaring (and initializing)
+an <TT>int</TT> variable <TT>i</TT>,
+and then setting <TT>ip</TT> to point to it:
+<pre>
+	int i = 5;
+	ip = &amp;i;
+</pre>
+The assignment expression
+<TT>ip = &amp;i;</TT>
+contains both parts of the ``two-step process'':
+<TT>&amp;i</TT> generates a pointer to <TT>i</TT>,
+and the assignment operator assigns the new pointer to
+(that is, places it ``in'')
+the variable <TT>ip</TT>.
+Now <TT>ip</TT> ``points to'' <TT>i</TT>,
+which we can illustrate with this picture:
+<br>
+<center><img src="p1.gif"></center>
+<br>
+<TT>i</TT> is a variable of type <TT>int</TT>,
+so the value in its box is a number, 5.
+<TT>ip</TT> is a variable of type pointer-to-<TT>int</TT>,
+so the ``value'' in its box
+is an arrow pointing at another box.
+Referring once again back to the ``two-step process''
+for setting a pointer variable:
+the <TT>&amp;</TT> operator draws us the arrowhead
+pointing at <TT>i</TT>'s box,
+and the assignment operator <TT>=</TT>,
+with the pointer variable <TT>ip</TT> on its left,
+anchors the other end of the arrow in <TT>ip</TT>'s box.
+</p><p>We discover the value pointed to by a pointer using the
+``contents-of'' operator, <TT>*</TT>.
+Placed in front of a pointer,
+the <TT>*</TT> operator accesses the value pointed to by that pointer.
+In other words, if <TT>ip</TT> is a pointer,
+then the expression <TT>*ip</TT> gives us whatever it is
+that's in the variable or location pointed to by <TT>ip</TT>.
+For example,
+we could write something like
+<pre>
+	printf("%d\n", *ip);
+</pre>
+which would print 5,
+since <TT>ip</TT> points to <TT>i</TT>,
+and <TT>i</TT> is
+(at the moment)
+5.
+</p><p>(You may wonder how the asterisk <TT>*</TT> can be the pointer
+contents-of operator when it is also the multiplication operator.
+There is no ambiguity here:
+it is the multiplication operator
+when it sits between two variables,
+and it is the contents-of operator
+when it sits in front of a single variable.
+The situation is analogous to the minus sign:
+
+between two variables or expressions it's the subtraction operator,
+but in front of a single variable or expression it's the negation operator.
+Technical terms you may hear for these distinct roles are
+<dfn>unary</dfn> and <dfn>binary</dfn>:
+a <dfn>binary</dfn> operator applies to two operands,
+usually on either side of it,
+while a <dfn>unary</dfn> operator applies to a single operand.)
+</p><p>The contents-of operator <TT>*</TT> does not merely fetch values
+through pointers;
+it can also <em>set</em> values through pointers.
+We can write something like
+<pre>
+	*ip = 7;
+</pre>
+which means ``set whatever <TT>ip</TT> points to to 7.''
+Again, the <TT>*</TT> tells us to go to the location pointed 
+to by <TT>ip</TT>, but this time, the location isn't the one 
+to fetch from--we're on the left-hand side of an assignment 
+operator, so <TT>*ip</TT> tells us the location to store 
+<em>to</em>.
+(The situation is no different from array subscripting
+expressions such as <TT>a[3]</TT> which we've already seen
+appearing on both sides of assignments.)
+</p><p>The result
+of the assignment <TT>*ip = 7</TT>
+is that <TT>i</TT>'s value is changed to 7,
+and the picture changes to:
+<br>
+<center><img src="p2.gif"></center>
+<br>
+If we called
+<TT>printf("%d\n", *ip)</TT> again,
+it would now print 7.
+</p><p>At this point,
+you may be wondering why we're going through this
+rigamarole--if
+we wanted to set <TT>i</TT> to 7,
+why didn't we do it directly?
+We'll begin to explore that next,
+
+but first let's notice the difference between changing a pointer
+(that is, changing what variable it points to)
+and changing the value
+at the location
+it points to.
+When we wrote <TT>*ip = 7</TT>,
+we changed the value pointed to by <TT>ip</TT>,
+but if we declare another variable <TT>j</TT>:
+<pre>
+	int j = 3;
+</pre>
+and write
+<pre>
+	ip = &amp;j;
+</pre>
+we've changed <TT>ip</TT> itself.
+The picture now looks like this:
+<br>
+<center><img src="p3.gif"></center>
+<br>
+We have to be careful
+when we say that a pointer assignment
+changes ``what the pointer points to.''
+Our earlier assignment
+<pre>
+	*ip = 7;
+</pre>
+changed the value pointed to by <TT>ip</TT>,
+but this more recent assignment
+<pre>
+	ip = &amp;j;
+</pre>
+has changed what <em>variable</em> <TT>ip</TT> points to.
+It's true that ``what <TT>ip</TT> points to'' has changed,
+but this time,
+it has changed for a different reason.
+Neither <TT>i</TT> (which is still 7)
+nor <TT>j</TT> (which is still 3)
+has changed.
+(What has changed is <TT>ip</TT>'s value.)
+If we again call
+<pre>
+	printf("%d\n", *ip);
+</pre>
+this time it will print 3.
+</p><p>We can also assign pointer values to other pointer variables.
+If we declare a second pointer variable:
+<pre>
+	int *ip2;
+</pre>
+then we can say
+<pre>
+	ip2 = ip;
+</pre>
+Now <TT>ip2</TT> points where <TT>ip</TT> does;
+we've essentially made a ``copy'' of the arrow:
+<br>
+<center><img src="p4.gif"></center>
+<br>
+</p><p>Now,
+if we set <TT>ip</TT> to point back to <TT>i</TT> again:
+<pre>
+	ip = &amp;i;
+</pre>
+the two arrows point to different places:
+<br>
+<center><img src="p5.gif"></center>
+<br>
+</p><p>We can now see that the two assignments
+<pre>
+	ip2 = ip;
+</pre>
+and
+<pre>
+	*ip2 = *ip;
+</pre>
+do two very different things.
+The first would make <TT>ip2</TT>
+again point to where <TT>ip</TT> points
+(in other words, back to <TT>i</TT> again).
+The second would store,
+at the location pointed to by <TT>ip2</TT>,
+a copy of the value pointed to by <TT>ip</TT>;
+in other words
+(if <TT>ip</TT> and <TT>ip2</TT> still point to
+<TT>i</TT> and <TT>j</TT> respectively)
+it would set <TT>j</TT> to <TT>i</TT>'s value, or 7.
+</p><p>It's important to keep very clear in your mind
+the distinction between
+<em>a pointer</em> and <em>what it points to</em>.
+The two are like apples and oranges
+(or perhaps oil and water);
+you can't mix them.
+You can't ``set <TT>ip</TT> to 5'' by writing something like
+<pre>
+	ip = 5;			/* WRONG */
+</pre>
+5 is an integer, but <TT>ip</TT> is a pointer.
+You probably wanted to
+``set <em>the value pointed to by</em> <TT>ip</TT> to 5,''
+which you express by writing
+<pre>
+	*ip = 5;
+</pre>
+Similarly,
+you can't ``see what <TT>ip</TT> is'' by writing
+<pre>
+	printf("%d\n", ip);	/* WRONG */
+</pre>
+Again, <TT>ip</TT> is a pointer-to-<TT>int</TT>,
+but <TT>%d</TT> expects an <TT>int</TT>.
+To print <em>what</em> <TT>ip</TT> <em>points to</em>,
+use
+<pre>
+	printf("%d\n", *ip);
+</pre>
+</p><p>Finally,
+a few more notes about
+pointer declarations.
+The <TT>*</TT> in a pointer declaration is related to,
+but different from,
+the contents-of operator <TT>*</TT>.
+After we declare a pointer variable
+<pre>
+	int *ip;
+</pre>
+the expression
+<pre>
+	ip = &amp;i
+</pre>
+sets what <TT>ip</TT> points to
+(that is, which location it points to),
+while the expression
+<pre>
+	*ip = 5
+</pre>
+sets the value of the location pointed to by <TT>ip</TT>.
+On the other hand,
+if we declare a pointer variable and include an initializer:
+<pre>
+	int *ip3 = &amp;i;
+</pre>
+we're setting the initial value for <TT>ip3</TT>,
+which is where <TT>ip3</TT> will point,
+so that initial value is a pointer.
+(In other words, the <TT>*</TT> in the declaration
+<TT>int *ip3 = &amp;i;</TT>
+is not the contents-of operator,
+it's the indicator that <TT>ip3</TT> is a pointer.)
+</p><p>If you have a pointer declaration containing an initialization,
+and you ever have occasion to break it up into a simple 
+declaration and a conventional assignment,
+do it like this:
+<pre>
+	int *ip3;
+	ip3 = &amp;i;
+</pre>
+Don't write
+<pre>
+	int *ip3;
+	*ip3 = &amp;i;
+</pre>
+or you'll be trying to mix oil and water again.
+</p><p>Also,
+when we write
+<pre>
+	int *ip;
+</pre>
+although the asterisk affects <TT>ip</TT>'s type,
+it goes with the identifier name <TT>ip</TT>,
+not with the type <TT>int</TT> on the left.
+To declare two pointers at once,
+the declaration looks like
+<pre>
+	int *ip1, *ip2;
+</pre>
+Some people write pointer declarations like this:
+<pre>
+	int* ip;
+</pre>
+This works for one pointer,
+because C essentially ignores whitespace.
+But if you ever write
+<pre>
+	int* ip1, ip2;		/* PROBABLY WRONG */
+</pre>
+it will declare one pointer-to-<TT>int</TT> <TT>ip1</TT>
+and one <em>plain</em> <TT>int</TT> <TT>ip2</TT>,
+which is probably not what you meant.
+</p><p></p><p>What is all of this good for?
+If it was just for changing variables like <TT>i</TT> from 5 to 7,
+it would not be good for much.
+What it's good for,
+among other things,
+is when for various
+reasons we don't know exactly which variable we want to change,
+just like the bank didn't know
+exactly which club member it wanted to send the statement to.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx10.html" rev=precedes>prev</a>
+<a href="sx10b.html" rel=precedes>next</a>
+<a href="sx10.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-03 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

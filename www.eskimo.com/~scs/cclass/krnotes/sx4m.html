@@ -1,0 +1,197 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>section 1.9: Character Arrays</title>
+<link href="sx4l.html" rev=precedes>
+<link href="sx4n.html" rel=precedes>
+<link href="sx4.html" rev=subdocument>
+</head>
+<body>
+<H2>section 1.9: Character Arrays</H2>
+
+<p>Pay attention to the way this program is developed first in ``pseudocode,''
+and then refined into real C code.
+A clear pseudocode statement
+not only makes it easier to think about
+the structure of the eventual real code,
+but if you make the eventual real code mimic the pseudocode,
+the real code will be equally straightforward and easy to read.
+</p><p>The function <TT>getline</TT>,
+introduced here,
+is extremely useful,
+and we'll have as much use for it in our own programs as the 
+authors do in theirs.
+(In other words,
+they have succeeded in their goal of making it
+``useful in other contexts.''
+In fact,
+I've been using a <TT>getline</TT> function much like this one
+ever since I learned C from K&amp;R,
+and I generally find it preferable
+to the standard library's line-reading function.)
+</p><p>Pages 28 through 30 introduce quite a lot of material all at once;
+you'll probably want to read it several times,
+especially if arrays or character strings are new to you.
+</p><p>Earlier we said that C provided no particular built-in support 
+for composite objects such as character strings, and here we 
+begin to see the significance of that omission.
+A string is just an array of characters,
+and you can access the characters within a string exactly as easily
+(because you use exactly the same syntax)
+as you access the elements within any other array.
+</p><p>If you've used BASIC,
+you will probably wonder where C's SUBSTR function is.
+C doesn't have one, for two reasons.
+First of all, there's less of a need for one,
+because it's so easy the get at the individual characters 
+within a string in C.
+More importantly, a SUBSTR function implies that you take a 
+string and extract a substring as a new string.
+However, creating a new string
+(i.e. the extracted substring) involves allocating arbitrary 
+amounts of memory to hold the string,
+and C rarely if ever allocates memory implicitly for you.
+</p><p>If anything, it's too easy to access the individual characters 
+within strings in C.
+String handling illustrates one of the potentially frustrating 
+aspects of C we mentioned earlier:
+the language doesn't define
+any high-level string handling features for you,
+so you're free to do whatever low-level string processing you wish.
+The down side is that constantly manipulating strings down at
+the character level, 
+and always having to remember to allocate memory for new strings,
+can get tedious after a while.
+</p><p>The preceding paragraph is not meant to discourage you,
+but just to point out a reality:
+any C program which manipulates strings
+(and this includes most C programs)
+will find itself doing a certain amount of character-level fiddling
+and a certain amount of memory allocation.
+It
+will also find that it can do just about anything it wants to do
+(and that its programmer has the patience to do)
+with the strings it manipulates.
+</p><p>Since string processing,
+and at this relatively low level,
+is so common in C,
+you'll want to pay careful attention to the discussion
+on page 30
+of how strings are stored in character arrays,
+and particularly to the fact that a <TT>'\0'</TT> character
+is always present to mark the end of a string.
+(It's easy to forget to count the <TT>'\0'</TT> character when 
+allocating space for a string, for instance.)
+Notice the nice picture on page 30;
+this is a good way of thinking about data structures
+(and not just simple character arrays, either).
+</p><p>page 29
+</p><p>Note that the program explicitly allocates space for the two 
+strings it manipulates:
+the current line <TT>line</TT>,
+and the longest line <TT>longest</TT>.
+(It only needs these two strings at any one time,
+even though the input consists of arbitrarily many lines.)
+Note that it cannot simply assign one string to another
+(because C provides no built-in support 
+for composite objects such as character strings);
+the program
+calls the <TT>copy</TT> function to do so.
+(The authors write their own <TT>copy</TT> function for 
+explanatory purposes;
+the standard library contains a string-copying function which 
+would normally be used.)
+The only strings that aren't explicitly allocated are the 
+arrays in the <TT>getline</TT> and <TT>copy</TT> functions;
+as the discussion briefly mentions,
+these do not need to be allocated because they're already 
+allocated in the caller.
+(There are a number of subtleties about array parameters to functions;
+we'll have more to say about them later.)
+</p><p>The code on page 29 contains a number of examples
+of compressed assignments and tests;
+evidently the authors expect you to get used to this style in a hurry.
+The line
+<pre>	while ((len = getline(line, MAXLINE)) &gt; 0)
+</pre>is similar to the <TT>getchar</TT> loops earlier in this chapter;
+it calls <TT>getline</TT>,
+saves its return value in the variable <TT>len</TT>,
+and tests it against 0.
+</p><p>The comparison
+<pre>	i&lt;lim-1 &amp;&amp; (c=getchar())!=EOF &amp;&amp; c!='\n'
+</pre>in the <TT>for</TT> loop in the <TT>getline</TT> function does 
+several things:
+it makes sure there is room for another character in the array;
+it calls, assigns, and tests <TT>getchar</TT>'s return value 
+against EOF, as before;
+and it also tests the returned character against <TT>'\n'</TT>,
+to detect end of line.
+The surrounding code is mildly clumsy
+in that it has to check for <TT>\n</TT> a second time;
+later, when we learn more about loops,
+we may find a way of writing it more cleanly.
+You may also notice that the code deals correctly with the 
+possibility that EOF is seen without a <TT>\n</TT>.
+</p><p>The line
+<pre>	while ((to[i] = from[i]) != '\0')
+</pre>in the <TT>copy</TT> function does two things at once:
+it copies characters from the <TT>from</TT> array to the <TT>to</TT> array,
+and at the same time it compares the copied character against <TT>'\0'</TT>,
+so that it stops at the end of the string.
+(If you think this is cryptic,
+wait 'til we get to page 106 in chapter 5!)
+</p><p>We've also just learned another <TT>printf</TT> 
+conversion specifier: <TT>%s</TT> prints a string.
+</p><p>page 30
+</p><p>Deep sentence:
+<blockquote>There is no way for a user of <TT>getline</TT>
+to know in advance how long an input line might be,
+so <TT>getline</TT> checks for overflow.
+</blockquote>Because dynamically allocating memory for arbitrary-length 
+strings is mildly tedious in C,
+it's tempting to use fixed-size arrays.
+(It's so tempting, in fact,
+that that's what most programs do,
+and since fixed-size arrays are also considerably easier to 
+discuss, all of our early example programs will use them.)
+Using fixed-size arrays is fine,
+as long as some assurance is made that they don't overflow.
+Unfortunately, it's also tempting
+(and easy)
+to forget to guard against array overflow,
+perhaps by deluding yourself into thinking that too-long inputs 
+``can't happen.''
+Murphy's law says that they do happen,
+and the various corrolaries to Murphy's law say that they 
+happen in the most unpleasant way and at the least convenient 
+time.
+Don't be cavalier about arrays;
+do make sure that they're big enough <em>and</em> that you 
+guard against overflowing them.
+(In another mark of C's general insensitivity to beginning 
+programmers,
+most compilers do <em>not</em> check for array overflow;
+if you write more data to an array than it is declared to hold, 
+you quietly scribble on other parts of memory,
+usually with disastrous
+results.)
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx4l.html" rev=precedes>prev</a>
+<a href="sx4n.html" rel=precedes>next</a>
+<a href="sx4.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

@@ -1,0 +1,767 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+</head>
+<body>
+<B>Scientific Programming (in C)
+</B><br>
+<br>
+Steve Summit
+<br>
+<br>
+<p>C was not used very much for floating-point work at first
+(i.e. back
+when it was still being developed and refined),
+so its support for some aspects of floating-point
+and scientific work is a little weak.
+(On the other hand,
+C's support for string processing and other data structures
+can make up the difference
+in a program that does some of each.)
+
+There are two significant areas of concern.
+One is specific to C, and concerns the handling of 
+multidimensional arrays.
+The other is endemic in floating-point work done on computers,
+and concerns accuracy, precision, and round-off error.
+</p><p><a name="multidim"><B>Functions and Multi-dimensional Arrays</B>
+</p><p>We've seen that when a function receives a one-dimensional
+array as a parameter:
+<pre>
+	f(double a[])
+	{
+		...
+	}
+</pre>
+the size of the array need not be specified,
+because the function is not allocating the array
+and does not need to know how big it is.
+The array is actually allocated in the caller
+(and in fact,
+only a pointer
+to the beginning of the array
+is passed to a function like <TT>f</TT>).
+If, in the function,
+we need to know the number of elements in the array,
+we have to pass it as a second parameter:
+<pre>
+	f(double a[], int n)
+	{ ... }
+</pre>
+If we wish to emphasize that it is really a pointer which is being passed,
+we can write it like this:
+<pre>
+	f(double *a, int n)
+	{ ... }
+</pre>
+(In fact,
+if we declare the parameter as an array,
+the compiler pretends we declared it as a pointer,
+as in this last form.)
+</p><p>In the
+one-dimensional case,
+it is actually a bit of an advantage
+that we do not need to specify the size of the array.
+If <TT>f</TT> does something generic like
+&ldquo;find the average of the numbers in the array,&rdquo;
+it will clearly be useful to be able to call it with arrays of any size.
+(If we had to write things like
+<pre>
+	f(double a[10])
+	{ ... }
+</pre>
+then we might find it a real nuisance
+that <TT>f</TT> could only operate on arrays of size 10;
+we'd hate to have to write
+several
+different versions of <TT>f</TT>,
+one for each size.)
+</p><p>Unfortunately, the situation is not nearly so straightforward
+for multi-dimensional arrays.
+If you had an array
+<pre>
+	double a2[10][20];
+</pre>
+which you wanted to pass to a function <TT>g</TT>,
+what would <TT>g</TT> receive?
+We could declare <TT>g</TT> as
+<pre>
+	g(double a[10][20])
+	{ ... }
+</pre>
+and let the compiler worry about it--that is,
+let it ignore the dimensions it doesn't need,
+and pretend that <TT>g</TT> really receives a pointer.
+But what pointer does it receive?
+It's easy to imagine that <TT>g</TT> could also be declared as
+<pre>
+	g(double **a)		/* WRONG */
+	{ ... }
+</pre>
+but this is incorrect.
+Notice that the array <TT>a2</TT>
+that we're trying to pass to <TT>g</TT>
+is not really a multidimensional array;
+it is an array of arrays
+(more precisely,
+a one-dimensional array of one-dimensional arrays).
+So in fact,
+what <TT>g</TT> receives
+is a pointer to the first element of the array,
+but the first element of the array is itself an array!
+Therefore,
+<TT>g</TT> receives a <em>pointer to an array</em>.
+Its actual declaration looks like this:
+<pre>
+	g(double (*a)[20])
+	{ ... }
+</pre>
+(and this is what the compiler pretends we'd written if we 
+instead write <TT>a[10][20]</TT> or <TT>a[][20]</TT>).
+This says that the parameter <TT>a</TT>
+is a pointer to an array of 20 <TT>double</TT>s.
+We can still use normal-looking
+subscripts:
+<TT>a[i][j]</TT> is the <TT>j</TT>'th element
+in the <TT>i</TT>'th array pointed to by <TT>a</TT>.
+
+The problem is that no matter how we declare <TT>g</TT>
+and its array parameter <TT>a</TT>,
+we have to specify
+the
+second dimension.
+If we write
+<pre>
+	g(double a[][])
+</pre>
+the compiler complains that a needed dimension is missing.
+If we write
+<pre>
+	g(double (*a)[])
+</pre>
+the compiler complains that a needed dimension is missing.
+We have to specify the &ldquo;width&rdquo; of the array,
+and if we've got various sizes of arrays running around in our program,
+we're back with the problem
+of potentially needing different functions
+to deal with different sizes of arrays.
+</p><p>Why wouldn't 
+<pre>
+	g(double **a)		/* WRONG */
+</pre>
+work?
+That says that <TT>a</TT> is a pointer to a pointer,
+but since we're passing an array of arrays,
+
+the function will receive a pointer to an array.
+A pointer to an array is not compatible with a pointer to a pointer.
+(More on <TT>double **a</TT> below.)
+</p><p>A second problem arises if you
+
+need any temporary arrays inside a function.
+Often, a temporary array needs to be the same size
+as the passed-in arrays being worked on.
+Unfortunately,
+there's no way to declare an array
+and say &ldquo;just make it as big as the passed-in array.&rdquo;
+</p><p>It's easy to imagine a solution
+to all of the problems we've been discussing.
+To write a function accepting a multidimensional array
+with the size specified by the caller,
+you might want to write
+<pre>
+	g(double a[m][n], int m, int n)		/* won't work */
+</pre>
+where the array dimensions are taken from other function parameters.
+(This is, of course, just how you do it in FORTRAN.)
+To declare a temporary array,
+you might try things like
+<pre>
+	f(double a[n], int n)
+	{
+		double tmparray[n];		/* won't work */
+		...
+	}
+</pre>
+or
+<pre>
+	g(double a[m][n], int m, int n)
+	{
+		double tmparray[m][n];		/* won't work */
+		...
+	}
+</pre>
+But you can't do any of these things in standard C.
+Every array dimension must be a compile-time constant.
+Array parameters can't take their dimensions from other parameters,
+and local arrays can't take their dimensions from parameters.
+</p><p>(It is worth noting that at least one popular compiler,
+namely gcc,
+<em>does</em> let you do these things:
+parameter and local arrays <em>can</em> take their dimensions from parameters.
+If you make use of this extension,
+just be aware that your program won't work under other compilers.)
+</p><p>How can we work around these limitations?
+The most powerful and flexible solution involves abandoning 
+multidimensional arrays and using pointers to pointers instead.
+This approach has the advantage that all dimensions may be specified at 
+run time, though it also has a few disadvantages.
+(Namely:
+you may have to remember to free the arrays,
+especially if they're local;
+the intermediate pointers take up
+more space,
+and accessing &ldquo;array&rdquo; elements via pointers-to-pointers
+may be slightly less efficient than true subscript references.
+On the other hand, on some machines,
+pointer accesses are more efficient.
+Another disadvantage is that
+our treatise on scientific programming in C
+is about to digress into a treatise on memory allocation.)
+</p><p>To illustrate, here is a pair of functions for allocating
+simulated one-
+and two-dimensional arrays of <TT>double</TT>.
+(By &ldquo;simulated&rdquo;
+I mean that
+these are not true arrays as the compiler knows them,
+but because of the way arrays and pointers work in C,
+we are going to be able to treat these pointers 
+<em>as if</em> they were arrays,
+by using <TT>[]</TT> array subscript notation.)
+<pre>
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+double *alloc1d(int n)
+{
+	double *dp = (double *)malloc(n * sizeof(double));
+	if(dp == NULL) {
+		fprintf(stderr, "out of memory\n");
+		exit(1);
+	}
+	return dp;
+}
+
+double **alloc2d(int m, int n)
+{
+	int i;
+	double **dpp = (double **)malloc(m * sizeof(double *));
+	if(dpp == NULL) {
+		fprintf(stderr, "out of memory\n");
+		exit(1);
+	}
+	for(i = 0; i &lt; m; i++) {
+		if((dpp[i] = (double *)malloc(n * sizeof(double))) == NULL) {
+			fprintf(stderr, "out of memory\n");
+			exit(1);
+		}
+	}
+	return dpp;
+}
+</pre>
+</p><p>These routines print an error message and exit if they can't 
+allocate the requested memory.
+Another approach would be to have them return <TT>NULL</TT>,
+and have the caller check the return value
+and take appropriate action on failure.
+(In this case, <TT>alloc2d</TT> would want to &ldquo;back out&rdquo;
+by freeing any intermediate pointers it had successfully allocated.)
+</p><p>Note that these routines allocate arrays of type <TT>double</TT>.
+They could be trivially rewritten to allocate arrays of other types.
+(Note, however,
+that it is impossible in portable, standard C
+to write a routine which generically allocates
+a multidimensional array of arbitrary type,
+or with an arbitrary number of dimensions.)
+</p><p>When a one-dimensional array allocated by <TT>alloc1d</TT>
+is no longer needed,
+it can be freed
+by passing the pointer to the standard <TT>free</TT> routine.
+Freeing two-dimensional arrays allocated by <TT>alloc2d</TT>
+is a bit trickier, because all the intermediate pointers need 
+to be freed, too.
+Here is a function to do it:
+<pre>
+void free2d(double **dpp, int m)
+{
+	int i;
+	for(i = 0; i &lt; m; i++)
+		free((void *)dpp[i]);
+
+	free((void *)dpp);
+}
+</pre>
+(The casts in the <TT>malloc</TT> and <TT>free</TT> calls
+in these routines
+are not necessary under ANSI C,
+but are included to make it easier to port this code to a pre-ANSI compiler,
+if necessary.)
+</p><p>
+With these routines in place,
+we can dynamically allocate one- and two-dimensional arrays of 
+<TT>double</TT> to our heart's content.
+Here is an (artificial) example:
+<pre>
+	double *a1 = alloc1d(10);
+	double **a2 = alloc2d(10, 20);
+	a1[0] = 0;
+	a1[9] = 9;
+	a2[0][0] = 0.0;
+	a2[0][19] = 0.19;
+	a2[9][0] = 9.0;
+	a2[9][19] = 9.19;
+</pre>
+</p><p>Now,
+when
+we pass a two-dimensional array allocated by 
+<TT>alloc2d</TT> to a function,
+that function <em>will</em> be declared as accepting a 
+pointer-to-a-pointer:
+<pre>
+	g(double **a)		/* okay, for alloc2d "arrays" */
+</pre>
+When we need a temporary array within a function,
+we can allocate one with <TT>alloc1d</TT> or <TT>alloc2d</TT>;
+however,
+we must remember to free it before the function returns.
+(Remember that <TT>malloc</TT>'ed memory persists
+until explicitly <TT>free</TT>d,
+or until the program exits.
+Local variables disappear
+when the function they're local to returns,
+but in the case of
+pointers to <TT>malloc</TT>'ed memory,
+that just means that we lose the <em>pointer</em>,
+and not
+that the pointed-to memory has been freed.
+We have to explicitly free it,
+before we lose the pointer.)
+</p><p>One last note:
+since
+<pre>
+	g1(double a[10][20])
+</pre>
+is not compatible with
+<pre>
+	g2(double **a)
+</pre>
+we will have to maintain a segregation between arrays-of-arrays and 
+pointers-to-pointers.
+We can't write a single function that operates on either
+a true multidimensional array
+or
+one of
+our pointer-to-pointer, simulated multidimensional arrays.
+(Actually, there is one way,
+but it's
+more elaborate, and not strictly portable.)
+</p><p>That's about enough
+(for now, at least)
+about multidimensional arrays.
+We now turn to the subject of...
+</p><p><a name="precision"><B>Floating-Point Precision</B>
+</p><p>It's the essence of real numbers that there are infinitely many of them:
+not only infinitely large
+(in both the positive and negative direction),
+but infinitely small and infinitely fine.
+Between any two real numbers like 1.1 and 1.2
+there are infinitely many more numbers:
+1.11, 1.12, etc., and also
+1.101, 1.102, etc., and also
+1.1001, 1.1002, etc.;
+and etc.
+There is no way in a finite amount of space to represent the 
+infinite granularity of real numbers.
+Most computers use an approximation called <dfn>floating point</dfn>.
+In a floating point representation,
+we keep track of a
+base
+number
+or &ldquo;mantissa&rdquo;
+with some degree of precision,
+and a magnitude or exponent.
+The parallel here with scientific notation is close:
+The number actually represented is something like
+<I>mantissa</I> x 10<sup><I>exponent</I></sup>.
+(Actually, most computers use
+<I>mantissa</I> x 2<sup><I>exponent</I></sup>,
+and we'll soon see how this difference can be
+important.)
+</p><p>The advantage of a floating-point representation is that it 
+lets us devote a finite amount of space to each
+value
+but still do a decent job of approximating the real numbers 
+we're interested in.
+If we have six decimal digits of precision,
+we can represent numbers like 123.456 or 123456 or 0.123456 or 
+0.000000123456 or 123456000000.
+However, we can <em>not</em> accurately represent numbers which 
+require more than six significant digits: we can't talk about 
+numbers like 123456.123456
+or 0.1234567 or even 1234567.
+If we try to represent numbers like these
+(i.e. if they occur in our calculations),
+they'll be &ldquo;rounded off&rdquo; somehow.
+(&ldquo;Rounded off&rdquo; is in quotes
+because we don't always know
+whether the unrepresentable digits will be
+properly rounded up or down,
+or randomly rounded up or down,
+or simply discarded.
+High-quality floating-point processors and subroutine libraries
+will try to do a good job
+of rounding when a result cannot be exactly represented,
+but
+unfortunately there are some low-quality ones out there.)
+</p><p>In simple circumstances,
+the finite precision of floating-point numbers is not a problem.
+Real-world inputs (i.e. anything you measure)
+never have infinite precision;
+in fact they often have only two or three significant digits of precision.
+Almost everyone has a vague understanding that floating-point 
+representations have finite precision,
+so
+it's easy to shrug off slight inaccuracies as &ldquo;roundoff error.&rdquo;
+If these errors always stayed confined to the least-significant digit,
+they wouldn't be much of a problem.
+</p><p>The problem is that error can accumulate.
+In the worst case, you can lose one
+(or more than one)
+significant digit in each step of a calculation.
+If a calculation involves six steps,
+and you only have six significant digits to play with,
+by the end of the calculation,
+you've got nothing of significance left.
+As a wise programmer once said,
+&ldquo;Floating point numbers are like piles of sand.
+Every time you move them around, you lose a little sand.&rdquo;
+</p><p>How can an error grow to involve more than the least-significant digit?
+Here is one simple example.
+Suppose we are computing the sum 1+1+1+1+1+1+1+1+1+1+1000000,
+and we have only six significant digits to play with.
+Clearly the answer is 1000010,
+which has six significant digits,
+so we're okay.
+But suppose we compute it in the other order,
+as 1000000+1+1+1+1+1+1+1+1+1+1.
+In the first step, 1000000+1, the intermediate result is 1000001,
+which has seven significant digits and so cannot be represented.
+It will probably be rounded back down to 1000000.
+So 1000000+1+1+1+1+1+1+1+1+1+1 = 1000000,
+and 1+1+1+1+1+1+1+1+1+1+1000000 != 1000000+1+1+1+1+1+1+1+1+1+1.
+In other words,
+<em>the associative law does not hold for floating-point addition</em>.
+Elementary school students often wonder whether it makes a 
+difference which order you add the column of numbers up in
+(and 
+sometimes notice that it <em>does</em>,
+i.e. they sometimes make mistakes when they try it).
+But here we see that,
+on modern digital computers,
+the folklore and superstition is true:
+it really can make a difference which order you add the numbers up in.
+
+</p><p>If you don't believe the above,
+I invite you to try this little program:
+<pre>
+#include &lt;stdio.h&gt;
+
+#define BIG 1e8
+
+main()
+{
+	int i;
+	float f = 0;
+
+	for(i = 0; i &lt; 20; i++)
+		f += 1;
+	f += BIG;
+	printf("%f\n", f);
+
+	f = BIG;
+	for(i = 0; i &lt; 20; i++)
+		f += 1;
+	printf("%f\n", f);
+
+	return 0;
+}
+</pre>
+You may have to play with the value of <TT>BIG</TT>
+(other values to try are <TT>1e6</TT>, <TT>1e7</TT>, or <TT>1e9</TT>),
+but you should probably be able to get a surprising result.
+</p><p>Because of the finite precision of floating point numbers on computers,
+you also have to be careful when subtracting large numbers,
+as the result may not be significant at all.
+If we try to compute the difference 100000789 - 100000123
+(again using only six significant digits),
+we are not likely to get 666, because neither 100000789 nor 
+100000123 are representable in six digits
+in the first place.
+This may not seem surprising,
+but what if the difference we were really interested in,
+and thought was significant,
+was 789 - 123,
+with that bias of 100000000 being an artifact of the algorithm
+which we assumed would cancel out?
+In this case, it does not cancel out,
+and in general we cannot assume that
+<blockquote>(<I>a</I> + <I>b</I>) - (<I>c</I> + <I>b</I>) = <I>a</I> - <I>c</I>
+</blockquote><br>
+<br>
+</p><p>Another thing to know about floating point numbers on computers 
+is that, as mentioned above, they're usually
+represented internally in base 2.
+It's well known that in base 10, fractions like 1/3 have 
+infinitely-repeating decimal representations.
+(In fact, if you truncate them,
+you can easily find anomalies
+like the one we discussed in the previous paragraphs,
+such as that 0.333+0.333+0.333 is 0.999, not 1.)
+What's not so well known is that in base 2,
+the fraction one tenth is an infinitely-repeating binary 
+number: it's 0.00011001100110011<sub>2</sub>,
+where the 0011 part keeps repeating.
+This means that
+almost
+any number that you thought was a &ldquo;clean&rdquo; decimal fraction
+like 0.1 or 2.3
+is probably represented internally as a messy infinite binary fraction
+which has been truncated or rounded
+and hence is not quite the number you thought it was.
+(In fact,
+depending on how carefully routines
+like <TT>atof</TT> and <TT>printf</TT> have been written,
+it's possible to have something like
+<TT>printf("%f", atof("2.3"))</TT>
+print an ugly number like 2.299999.)
+Where you have to watch out for this is that if you multiply a 
+number by 0.1, it is not quite the same as dividing it by 10.
+Furthermore, if you multiply a number by 0.1 three times,
+it may be different than if you'd multiplied it by 0.001 
+<em>and</em> different than if you'd divided it by 1000.
+</p><p>My purpose in bringing up these anomalies is not to scare you 
+off of doing floating point work forever, but to drive home the 
+point that floating point inaccuracies can be significant, and 
+cannot be brushed off as simple uncertainty about the 
+least-significant digit.
+<em>With  care</em>,
+the inaccuracies can be confined to the least-significant digit,
+and the care involves making sure that errors do not proliferate 
+and compound themselves.
+(Also,
+I should again point out that none of these problems are
+specific
+to C;
+they arise any time floating-point work is done with finite precision.)
+</p><p>In practice,
+anomalies crop up when both large and small numbers participate 
+in the same calculation
+(as in the 1+1+1+1+1+1+1+1+1+1+1000000 example),
+and when large numbers are subtracted,
+and when calculations are iterated many times.
+One thing to 
+beware of is that many common algorithms magnify the effects of 
+these problems.
+For example, the definition of the standard deviation is
+the square root of the mean variance, namely
+<pre>
+	sqrt(sum(sqr(x[i] - mean)) / n)
+</pre>
+where <TT>sum()</TT> and <TT>sqr()</TT> are
+summing and squaring operators
+(neither of which are standard C library functions,
+of course)
+and
+where <TT>mean</TT> is
+<pre>
+	sum(x[i]) / n
+</pre>
+(The statisticians out there know that the denominator in the 
+first expression is not necessarily <TT>n</TT> but should 
+usually be <TT>n-1</TT>.)
+</p><p>Computing standard deviations from the definition
+can be a bit of a nuisance
+because
+you have to walk over the numbers twice:
+once to compute the mean,
+and a second time to subtract it from each input number,
+square the difference,
+and sum the squares.
+So it's quite popular to rearrange the expression to
+<pre>
+	sqrt((sum(sqr(x[i])) - sqr(sum(x))/n) / n)
+</pre>
+which involves only
+the sum of the <TT>x</TT>'s and
+the sum of the squares of the <TT>x</TT>'s,
+and hence can be completed in one pass.
+However,
+it turns out that this method can in practice be
+significantly less accurate.
+By squaring each individual <TT>x</TT>
+and accumulating <TT>sum(sqr(x[i]))</TT>,
+the big numbers get bigger and the small numbers get smaller,
+so the small numbers are more likely to get lost in the underflow.
+
+When you use the definition,
+it's only the differences that get squared,
+so less of significance gets lost.
+
+(However, even working from the definition,
+if the individual variances sum to near zero
+they can sometimes end up summing to a slightly negative number,
+due to accumulated error,
+which is a problem when you try to take the square root.)
+</p><p>Other standard mathematical manipulations to watch out for are:
+</p><p><I>The quadratic formula:
+</I></p><p>If <I>b</I><sup>2</sup> and 4<I>ac</I> are both large,
+there may be very few significant digits left
+in the determinant <I>b</I><sup>2</sup> - 4<I>ac</I>.
+</p><p><I>Solving systems of equations,
+inverting matrices,
+computing the determinant of matrices:
+</I></p><p>The standard mathematical techniques involve large numbers of 
+compounded operations which can
+lose a lot of
+accuracy.
+</p><p><I>Iterated simulations:
+</I></p><p>Obviously,
+any iteration is prone to compounded errors.
+</p><p><I>Trigonometric reductions
+</I></p><p>The only sane ways of computing trig functions numerically
+(i.e. the ways likely to be used by library functions such as 
+<TT>sin</TT>, <TT>cos</TT>, and <TT>tan</TT>)
+work only for the one period of the function near 0.
+These functions will of course work on
+arguments outside the interval (-pi, pi),
+but the function must first
+reduce the arguments by subtracting some multiple of 2*pi,
+and as we've seen,
+taking the difference
+of two large numbers
+(whether you do it or the library function does it)
+can lose all significance.
+</p><p><I>Compounded interest
+</I></p><p>The standard formula is something like
+<blockquote><I>principle</I> x (1 + <I>rate</I>)<sup><I>n</I></sup>
+</blockquote>but raising a number near 1 to a large power can be inaccurate.
+
+</p><p><I>Converting strings to numbers:
+</I></p><p>[okay, so this is a computer science problem,
+not a mathematical problem]
+If you handle digits to the right of the decimal by repeatedly 
+multiplying by 0.1, you'll lose accuracy.
+</p><p>For some of these problems,
+using double instead of single precision makes the difference,
+but for others,
+great care and rearrangement of the algorithms may be required
+for best accuracy.
+</p><p>Returning to C,
+you might like to know that
+type <TT>float</TT> is guaranteed to give you
+the equivalent of at least 6 decimal digits of significance,
+and <TT>double</TT>
+(which is essentially C's version of the &ldquo;double 
+precision&rdquo; mentioned in the preceding paragraph)
+is guaranteed to give you at least 10.
+Both <TT>float</TT> and <TT>double</TT>
+are guaranteed to handle exponents in at least the range -37 to +37.
+</p><p>One other point relating to numerical work and specific to C
+is that C does not have a built-in exponentiation operator.
+It does have the library function <TT>pow</TT>,
+which is the right thing to use for general exponents,
+but don't use it for simple squares or cubes.
+(Use simple multiplication instead.)
+<TT>pow</TT> is often implemented using the identity
+<blockquote>	<I>x<sup>y</sup></I> = <I>e</I><sup><I>y</I> ln(<I>x</I>)</sup>
+</blockquote>and the inevitable slight inaccuracies
+in the underlying natural log and <I>e</I><sup><I>x</I></sup> routines
+can foil you.
+For example,
+if you compute <TT>(int)pow(2., 3.)</TT>,
+on some machines the answer comes out 7,
+because <TT>pow</TT> returns a number like 7.99999,
+and C's floating-to-int conversion
+simply discards all of the fractional part.
+</p><p>The fact that
+a floating-to-int conversion truncates the fractional part
+has nothing to do,
+by the way,
+with the problem mentioned earlier
+of
+a poor-quality floating-point processor not rounding well.
+(Back there we were talking about
+rounding an intermediate result
+which was still trying to be represented as a floating-point number.)
+When you do want to round a number off to the nearest integer,
+the usual trick is
+<pre>
+	(int)(x + 0.5)
+</pre>
+By adding 0.5 before truncating the fractional part,
+you arrange that numbers with fractions of .5 or above get rounded up.
+(This trick obviously doesn't handle negative numbers correctly,
+nor does it do even/odd rounding.)
+<br>
+<br>
+*       *       *
+<br>
+<br>
+I am not a numerical analyst, so this presentation has been 
+somewhat superficial.
+On the other hand, I've tried to make it practical and accessible
+and to highlight the real-world problems which do come up in 
+practice but which too few programmers are aware of.
+You can learn much more
+(including the traditional notations for describing and 
+analyzing floating point accuracy, and some clever algorithms 
+for doing floating point arithmetic without losing so much 
+accuracy)
+in the following references.
+
+</p><p>David Goldberg,
+&ldquo;What Every Computer Scientist Should Know
+about Floating-Point Arithmetic,&rdquo;
+<I>ACM Computing Surveys</I>,
+Vol. 23 #1,
+March, 1991,
+pp. 5-48.
+</p><p>Brian W. Kernighan and P.J. Plauger,
+<I>The Elements of Programming Style</I>,
+Second Edition,
+McGraw-Hill,
+1978,
+ISBN 0-07-034207-5,
+pp. 115-118.
+</p><p>Donald E. Knuth,
+<I>The Art of Computer Programming</I>,
+Volume 2:
+<I>Seminumerical Algorithms</I>,
+second edition,
+Addison-Wesley,
+1981,
+ISBN 0-201-03822-6,
+chapter 4.
+</p><p>William H. Press,
+Saul A. Teukolsky,
+William T. Vetterling,
+and
+Brian P. Flannery,
+<I>Numerical Recipes in C</I>,
+2nd edition,
+Cambridge University Press,
+1992,
+ISBN 0-521-43108-5.
+</p>
+<hr>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-04 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

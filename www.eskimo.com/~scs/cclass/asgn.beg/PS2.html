@@ -1,0 +1,347 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>Assignment #2</title>
+</head>
+<body>
+<H1>Assignment #2</H1>
+
+
+
+
+
+<B>Introductory C Programming
+<br>
+<br>
+UW Experimental College
+</B><br>
+<br>
+<B>Assignment #2
+</B><p><B>Handouts:
+</B></p><p><a href="PS2.html">Assignment #2</a>
+<br><a href="PS1a.html">Assignment #1 Answers</a>
+<br><a href="../notes/sx2.html">Class Notes, Chapter 3</a>
+<p><B>Reading Assignment:
+</B></p><p><a href="../notes/sx2.html">Class Notes, Chapter 2</a>
+<br><a href="../notes/sx3.html">Class Notes, Chapter 3, Secs. 3.1-3.2</a>
+<br><a href="../notes/sx3c.html">Class Notes, Chapter 3, Secs. 3.3-3.6</a> (optional)
+<p><B>Review Questions:
+</B></p><OL><li>What are the two different kinds of division
+that the <TT>/</TT> operator can do?
+Under what circumstances does it perform each?
+<li>What are the definitions of the ``Boolean'' values
+<I>true</I> and <I>false</I> in C?
+<li>Name three uses for the semicolon in C.
+<li>What would the equivalent code, using a <TT>while</TT> loop, be for the
+example
+<pre>
+	for(i = 0; i &lt; 10; i = i + 1)
+		printf("i is %d\n", i);
+</pre>
+?
+<li>What is the
+numeric
+value of the expression <TT>3 &lt; 4</TT> ?
+<li>Under what conditions will this code print ``water''?
+<pre>
+	if(T &lt; 32)
+		printf("ice\n");
+	else if(T &lt; 212)
+		printf("water\n");
+	else	printf("steam\n");
+</pre>
+<li>What would this code print?
+<pre>
+	int x = 3;
+	if(x)
+		printf("yes\n");
+	else	printf("no\n");
+</pre>
+<li>(trick question)
+What would this code print?
+<pre>
+	int i;
+
+	for(i = 0; i &lt; 3; i = i + 1)
+		printf("a\n");
+		printf("b\n");
+
+	printf("c\n");
+</pre>
+</OL><p><B>Tutorial Section</B>
+</p><p>(This section presents a few small
+but complete programs
+and asks you to work with them.
+If you're comfortable doing
+at least some of the exercises
+later in this assignment,
+there's no reason for you to
+work through this ``tutorial section.''
+But if you're not ready to do the exercises yet,
+this section should give you some practice and get you started.)
+</p><OL><li>Type in and run this program,
+and compare its output to
+that of the original ``Hello, world!'' program
+(exercise 1 in assignment 1).
+<pre>
+#include &lt;stdio.h&gt;
+
+int main()
+{
+	printf("Hello, ");
+	printf("world!\n");
+	return 0;
+}
+</pre>
+You should notice that the output is identical to
+that of
+the original ``Hello, world!'' program.
+This shows that you can build up output
+using multiple calls to <TT>printf</TT>, if you like.
+You mark the end of a line of output
+(that is, you arrange that further output will begin on a new line)
+by printing the ``newline'' character, <TT>\n</TT>.
+<li>Type in and run this program:
+<pre>
+#include &lt;stdio.h&gt;
+
+int main()
+{
+	int i;
+
+	printf("statement 1\n");
+	printf("statement 2\n");
+	for(i = 0; i &lt; 10; i = i + 1)
+		{
+		printf("statement 3\n");
+		printf("statement 4\n");
+		}
+	printf("statement 5\n");
+
+	return 0;
+}
+</pre>
+This program doesn't do anything useful;
+it's just supposed to show you how <dfn>control flow</dfn>
+works--how statements are executed one after the other,
+except when a construction such as the <TT>for</TT> loop
+alters the flow
+by arranging that certain statements get executed over and over.
+In this program,
+each simple statement is just a call to the <TT>printf</TT> function.
+<br>
+<br>
+Now delete the braces <TT>{}</TT> around statements 3 and 4,
+and re-run the program.
+How does the output change?
+(See also question 8 above.)
+<li>Type in and run this program:
+<pre>
+#include &lt;stdio.h&gt;
+
+int main()
+{
+	int i, j;
+
+	printf("start of program\n");
+
+	for(i = 0; i &lt; 3; i = i + 1)
+		{
+		printf("i is %d\n", i);
+		for(j = 0; j &lt; 5; j = j + 1)
+			printf("i is %d, j is %d\n", i, j);
+		printf("end of i = %d loop\n", i);
+		}
+
+	printf("end of program\n");
+
+	return 0;
+}
+</pre>
+This program doesn't do much useful, either;
+it's just supposed to show you how loops work,
+and how loops can be nested.
+The outer loop runs <TT>i</TT> through the values 0, 1, and 2,
+and for each of these three values of <TT>i</TT>
+(that is, during each of the three trips through the outer loop)
+the inner loop runs, stepping the variable <TT>j</TT> through 5 values, 0 to 4.
+Experiment with changing the limits (initially 3 and 5) on the two loops.
+Experiment with interchanging the two loops, that is,
+by having the outer loop manipulate the variable <TT>j</TT>
+and the inner loop manipulate the variable <TT>i</TT>.
+Finally, compare this program to the triangle-printing program
+of Assignment 1 (exercise 4)
+and its answer as handed out this week.
+<li>Type in and run this program:
+<pre>
+#include &lt;stdio.h&gt;
+
+int main()
+{
+	int day, i;
+
+	for(day = 1; day &lt;= 3; day = day + 1)
+		{
+		printf("On the %d day of Christmas, ", day);
+		printf("my true love gave to me\n");
+		for(i = day; i &gt; 0; i = i - 1)
+			{
+			if(i == 1)
+				{
+				if(day == 1) printf("A ");
+				else	printf("And a ");
+				printf("partridge in a pear tree.\n");
+				}
+			else if(i == 2)
+				printf("Two turtledoves,\n");
+			else if(i == 3)
+				printf("Three French hens,\n");
+			}
+		printf("\n");
+		}
+
+	return 0;
+}
+</pre>
+The result
+(as you might guess)
+should be an approximation of the first three verses of a popular
+(if occasionally tiresome)
+song.
+<br>
+<br>
+a. Add a few more verses (calling birds, golden rings, geese a-laying, etc.).
+<br>
+<br>
+b. Here is a scrap of code to print words for the days instead of digits:
+<pre>
+	if(day == 1)
+		printf("first");
+	else if(day == 2)
+		printf("second");
+	else if(day == 3)
+		printf("third");
+</pre>
+Incorporate this code into the program.
+<br>
+<br>
+c. Here is another way of writing the inner part of the program:
+<pre>
+		printf("On the %d day of Christmas, ", day);
+		printf("my true love gave to me\n");
+		if(day &gt;= 3)
+			printf("Three French hens,\n");
+		if(day &gt;= 2)
+			printf("Two turtledoves,\n");
+		if(day &gt;= 1)
+			{
+			if(day == 1) printf("A ");
+			else	printf("And a ");
+			printf("partridge in a pear tree.\n");
+			}
+</pre>
+Study this alternate method and figure out how it works.
+Notice that there are no <TT>else</TT>'s between the <TT>if</TT>'s.
+</OL><p><B>Exercises:
+</B><br>(As before, these range from easy to harder.
+Do as many as you like, but at least two or three.)
+</p><OL><li>Write a program to find out
+(the hard way, by counting them)
+how many of the numbers from 1 to 10 are greater than 3.
+(The answer, of course, should be 7.)
+Your program should have a loop which steps a variable
+(probably named <TT>i</TT>)
+over the 10 numbers.
+Inside the loop,
+if <TT>i</TT> is greater than 3,
+add one to a second variable
+which keeps track of the count.
+At the end of the program,
+after the loop has finished,
+print out the count.
+<li>Write a program to compute the average of the ten numbers
+1, 4, 9, ..., 81, 100,
+that is, the average of the squares of the numbers from 1 to 10.
+(This will be a simple modification of Exercise 3 from last week:
+instead of printing each square as it is computed,
+add it in to a variable <TT>sum</TT>
+which keeps track of the sum of all the squares,
+and then at the end,
+divide the sum variable by
+the number of numbers summed.)
+<br>
+<br>
+If you keep track of the sum in a variable of type <TT>int</TT>,
+and divide by the integer 10,
+you'll get an integer-only approximation of the average
+(the answer should be 38).
+If you keep track of the sum
+in a variable of type <TT>float</TT> or <TT>double</TT>,
+on the other hand,
+you'll get the answer as a floating-point number,
+which you should print out
+using <TT>%f</TT> in the <TT>printf</TT> format string,
+<em>not</em> <TT>%d</TT>.
+(In a <TT>printf</TT> format string,
+<TT>%d</TT> prints only integers,
+and
+<TT>%f</TT> is one way to print floating-point numbers.
+In this case,
+the answer should be 38.5.)
+<li>Write a program to print the numbers between 1 and 10,
+along with an indication of whether each is even or odd,
+like this:
+<pre>
+	1 is odd
+	2 is even
+	3 is odd
+	...
+</pre>
+(Hint: use the <TT>%</TT> operator.)
+<li>On page 3 of chapter 3 of the notes
+
+is a scrap of code to print the words
+``Northeast'', ``Southwest'', etc. corresponding
+to the <TT>x</TT> and <TT>y</TT> components of a direction of travel.
+Modify the code to also print ``North'', ``East'',
+etc. if <TT>x</TT> or <TT>y</TT> is 0.
+<li>Write a program to print the first 7 positive integers
+and their factorials.
+(The factorial of 1 is 1,
+the factorial of 2 is 1 <TT>*</TT> 2 = 2,
+the factorial of 3 is 1 <TT>*</TT> 2 <TT>*</TT> 3 = 6,
+the factorial of 4 is
+1 <TT>*</TT> 2 <TT>*</TT> 3 <TT>*</TT> 4 = 24,
+etc.)
+[Extra credit:
+why did I only ask for the first 7?]
+<li>Write a program to print the first 10 Fibonacci numbers.
+Each Fibonacci number is the sum of the two preceding ones.
+The sequence starts out 1, 1, 2, 3, 5, 8, ...
+<li>Make some improvements to the prime number printing program
+in section
+
+3.6
+of the notes.
+Other than 2, no even numbers are prime,
+so have the program test only the <em>odd</em> numbers between 3 and 100.
+Rather than recomputing <TT>sqrt(i)</TT> each time through the inner loop,
+compute it just once for each new value of <TT>i</TT>
+(that is, compute it at the beginning of the body of the outer loop,
+just before the beginning of the inner loop)
+and assign its value to another variable.
+</OL><hr>
+<hr>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-9
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-04 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

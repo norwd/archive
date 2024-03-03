@@ -1,0 +1,391 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>Assignment #6</title>
+</head>
+<body>
+<H1>Assignment #6</H1>
+
+
+
+
+
+<B>Intermediate C Programming
+<br>
+<br>
+UW Experimental College
+</B><br>
+<br>
+<B>Assignment #6
+</B><p><B>Handouts:
+</B></p><p><a href="PS6.html">Assignment #6</a>
+<br><a href="PS5a.html">Assignment #5 Answers</a>
+<br><a href="../int/sx9.html">Class Notes, Chapter 23</a>
+<br><a href="../int/sx10.html">Class Notes, Chapter 24</a>
+<p><B>Exercises:
+</B></p><OL><li>In this exercise, we'll almost completely rewrite <TT>commands.c</TT>
+so that instead of having a giant <TT>if</TT>/<TT>else</TT> chain,
+with many calls to <TT>strcmp</TT>
+and the code for all the actions interspersed,
+there will be one function per command,
+a table relating command verbs to the corresponding functions,
+and some much simpler code
+which will look up a command verb in the table
+and decide which function to call.
+The functions in the table will,
+of course,
+be referred to by function pointers.
+<br>
+<br>
+In the <TT>week6</TT> subdirectory of the distribution materials
+are two new files, <TT>cmdtab.c</TT> and <TT>cmdtab.h</TT>,
+and a modified
+(though incomplete)
+copy of <TT>commands.c</TT>.
+<TT>cmdtab.h</TT> defines the command table structure,
+<TT>struct cmdtab</TT>:
+<pre>
+struct cmdtab
+	{
+	char *name;
+	int (*func)(struct actor *, struct object *, struct sentence *);
+	};
+
+extern struct cmdtab *findcmd(char *, struct cmdtab [], int);
+</pre>
+<br>
+<br>
+With this structure in hand, the first thing to do
+is to declare a bunch of functions,
+one for each command,
+and then build the ``command table,''
+which is an array of <TT>struct cmdtab</TT>.
+All of the command functions are going to take as arguments
+the actor (<TT>struct actor *</TT>),
+the object being acted upon (<TT>struct object *</TT>, if any),
+and the complete sentence structure (<TT>struct sentence *</TT>)
+describing the command we're trying to interpret/implement.
+(The object being acted upon is the direct object of the sentence
+and could also be pulled out of the sentence structure;
+we're passing it as a separate argument
+because that might make things more convenient
+for the command functions themselves.)
+Here, then, is the command table,
+incorporating all the commands we've ever used
+(your copy of the game might not include all of the commands referenced here):
+<pre>
+static int dircmd(struct actor *, struct object *, struct sentence *);
+static int takecmd(struct actor *, struct object *, struct sentence *);
+static int dropcmd(struct actor *, struct object *, struct sentence *);
+static int lookcmd(struct actor *, struct object *, struct sentence *);
+static int invcmd(struct actor *, struct object *, struct sentence *);
+static int examcmd(struct actor *, struct object *, struct sentence *);
+static int hitcmd(struct actor *, struct object *, struct sentence *);
+static int breakcmd(struct actor *, struct object *, struct sentence *);
+static int fixcmd(struct actor *, struct object *, struct sentence *);
+static int cutcmd(struct actor *, struct object *, struct sentence *);
+static int readcmd(struct actor *, struct object *, struct sentence *);
+static int opencmd(struct actor *, struct object *, struct sentence *);
+static int closecmd(struct actor *, struct object *, struct sentence *);
+static int lockcmd(struct actor *, struct object *, struct sentence *);
+static int unlockcmd(struct actor *, struct object *, struct sentence *);
+static int putcmd(struct actor *, struct object *, struct sentence *);
+static int helpcmd(struct actor *, struct object *, struct sentence *);
+static int quitcmd(struct actor *, struct object *, struct sentence *);
+
+static struct cmdtab commands[] =
+	{
+	"n",		dircmd,
+	"north",	dircmd,
+	"s",		dircmd,
+	"south",	dircmd,
+	"e",		dircmd,
+	"east",		dircmd,
+	"w",		dircmd,
+	"west",		dircmd,
+	"ne",		dircmd,
+	"northeast",	dircmd,
+	"se",		dircmd,
+	"southeast",	dircmd,
+	"nw",		dircmd,
+	"northwest",	dircmd,
+	"sw",		dircmd,
+	"southwest",	dircmd,
+	"up",		dircmd,
+	"down",		dircmd,
+	"take",		takecmd,
+	"drop",		dropcmd,
+	"look",		lookcmd,
+	"i",		invcmd,
+	"inventory",	invcmd,
+	"examine",	examcmd,
+	"hit",		hitcmd,
+	"break",	breakcmd,
+	"fix",		fixcmd,
+	"cut",		cutcmd,
+	"read",		readcmd,
+	"open",		opencmd,
+	"close",	closecmd,
+	"lock",		lockcmd,
+	"unlock",	unlockcmd,
+	"put",		putcmd,
+	"?",		helpcmd,
+	"help",		helpcmd,
+	"quit",		quitcmd,
+	};
+</pre>
+<br>
+<br>
+With this structure defined, the body of <TT>docommand</TT>
+is drastically simplified.
+In fact, since we'll break the searching of the command table
+out to a separate function,
+all the new <TT>docommand</TT> has to do is call that function,
+then (if the command is found)
+call the command function associated with the command:
+<pre>
+docommand(struct actor *player, struct sentence *cmd)
+{
+struct cmdtab *cmdtp;
+
+cmdtp = findcmd(cmd-&gt;verb, commands, Sizeofarray(commands));
+
+if(cmdtp != NULL)
+	{
+	(*cmdtp-&gt;func)(player, cmd-&gt;object, cmd);
+	return TRUE;
+	}
+else	{
+	printf("I don't know the word \"%s\".\n", cmd-&gt;verb);
+	return FALSE;
+	}
+}
+</pre>
+The new <TT>findcmd</TT> function wants to know
+(as its third argument)
+the number of entries in the command table.
+It would be a nuisance if we had to count them,
+and we'd have to keep updating our count each time
+we added an entry to the table.
+The built-in <TT>sizeof</TT> operator can tell us the size of the array,
+but it tells us the size in bytes,
+while we want to know the number of entries.
+But the number of entries is
+the size of the array in bytes divided by the size of one entry in bytes,
+or
+<pre>
+	sizeof(commands) / sizeof(commands[0])
+</pre>
+(here we get a handle on ``the size of one entry''
+by arbitrarily taking <TT>sizeof(commands[0])</TT>).
+Since this is a common operation,
+I like to define a function-like macro to encapsulate it:
+<pre>
+	#define Sizeofarray(a) (sizeof(a) / sizeof(a[0]))
+</pre>
+With that definition in place,
+the number of entries in the <TT>commands</TT> array is simply
+<TT>Sizeofarray(commands)</TT>.
+<br>
+<br>
+Here is the <TT>findcmd</TT> function, from <TT>cmdtab.c</TT>:
+<pre>
+#include &lt;string.h&gt;
+#include "cmdtab.h"
+
+struct cmdtab *
+findcmd(char *cmd, struct cmdtab cmdtab[], int ncmds)
+{
+int i;
+
+for(i = 0; i &lt; ncmds; i++)
+	{
+	if(strcmp(cmdtab[i].name, cmd) == 0)
+		return &amp;cmdtab[i];
+	}
+
+return NULL;
+}
+</pre>
+<br>
+<br>
+The ``only'' thing left to do
+is to write all of the individual command functions.
+The code for all of them
+will come from the corresponding <TT>if</TT> clause
+from the old, bulky version of <TT>docommand</TT>.
+For example, here is <TT>takecmd</TT>:
+<pre>
+
+static int
+takecmd(struct actor *player, struct object *objp,
+					struct sentence *cmd)
+{
+	if(objp == NULL)
+		{
+		printf("You must tell me what to take.\n");
+		return FALSE;
+		}
+	if(contains(player-&gt;contents, objp))
+		{
+		printf("You already have the %s.\n", objp-&gt;name);
+		return FALSE;
+		}
+	if(hasattr(objp, "immobile"))
+		{
+		printf("The %s cannot be picked up.\n", objp-&gt;name);
+		return FALSE;
+		}
+	if(!takeobject(player, objp))
+		{
+		/* shouldn't happen */
+		printf("You can't pick up the %s.\n", objp-&gt;name);
+		return FALSE;
+		}
+	printf("Taken.\n");
+
+return SUCCESS;
+}
+</pre>
+With one exception,
+all of the rest of the command functions are similar;
+they just have
+<pre>
+	static int
+	<I>xxx</I>cmd(struct actor *actor, struct object *objp,
+					struct sentence *cmd)
+	{
+	...
+	return SUCCESS;
+	}
+</pre>
+wrapped around the code that used to be in one of the
+<pre>
+	else if(strcmp(verb, "<I>xxx</I>") == 0)
+		{
+		...
+		}
+</pre>
+blocks.
+<br>
+<br>
+(Although the copy of <TT>commands.c</TT> in the <TT>week6</TT> subdirectory
+reflects this structure,
+you probably won't be able to use that file directly,
+because it does not reflect
+all of the many
+changes and additions
+we've been making to <TT>commands.c</TT> over the past several weeks.)
+<br>
+<br>
+The integer code <TT>SUCCESS</TT> that each of these functions is returning
+isn't really used yet, so you don't have to worry about what it's for.
+(Right now, <TT>docommand</TT> is ignoring the return value
+of the called command function.)
+<br>
+<br>
+The one command function that doesn't quite fit the pattern is <TT>dircmd</TT>,
+because it's called for any of the direction commands,
+and has to take another look at the command verb
+to see what direction it represents:
+<pre>
+static int
+dircmd(struct actor *player, struct object *objp,
+					struct sentence *cmd)
+{
+struct room *roomp = player-&gt;location;
+char *verb = cmd-&gt;verb;
+int dir;
+
+if(strcmp(verb, "n") == 0 || strcmp(verb, "north") == 0)
+	dir = NORTH;
+else if(strcmp(verb, "s") == 0 || strcmp(verb, "south") == 0)
+	dir = SOUTH;
+else if(strcmp(verb, "e") == 0 || strcmp(verb, "east") == 0)
+	dir = EAST;
+else if(strcmp(verb, "w") == 0 || strcmp(verb, "west") == 0)
+	dir = WEST;
+else if(strcmp(verb, "ne") == 0 || strcmp(verb, "northeast") == 0)
+	dir = NORTHEAST;
+else if(strcmp(verb, "se") == 0 || strcmp(verb, "southeast") == 0)
+	dir = SOUTHEAST;
+else if(strcmp(verb, "nw") == 0 || strcmp(verb, "northwest") == 0)
+	dir = NORTHWEST;
+else if(strcmp(verb, "sw") == 0 || strcmp(verb, "southwest") == 0)
+	dir = SOUTHWEST;
+else if(strcmp(verb, "up") == 0)
+	dir = UP;
+else if(strcmp(verb, "down") == 0)
+	dir = DOWN;
+else	return ERROR;
+
+if(roomp == NULL)
+	{
+	printf("Where are you?\n");
+	return ERROR;
+	}
+
+/* If the exit does not exist, or if gotoroom() fails,	*/
+/* the player can't go that way.			*/
+
+if(roomp-&gt;exits[dir] == NULL || !gotoroom(player, roomp-&gt;exits[dir]))
+	{
+	printf("You can't go that way.\n");
+	return ERROR;
+	}
+
+/* player now in new room */
+
+listroom(player);
+
+return SUCCESS;
+}
+</pre>
+This function also returns another status code, <TT>ERROR</TT>
+(which is also ignored, for now, by <TT>docommand</TT>).
+If your copy of <TT>game.h</TT> doesn't include them,
+you can put the lines
+<pre>
+	#define ERROR	0
+	#define SUCCESS	1
+</pre>
+in it to <TT>#define</TT> these values.
+<li>Modify <TT>io.c</TT> to recognize a new <TT>entrypoint</TT> line
+in the data file,
+which will list the name of the room
+which the actor should be placed in to start.
+What if the <TT>entrypoint</TT> line
+precedes the description of the room it names?
+How should the code in <TT>io.c</TT> record the entry-point room
+so that <TT>getentryroom</TT> in <TT>rooms.c</TT> can use it?
+(There are many answers to these questions;
+pick one, and implement it.)
+<li>Another part of the game
+that has the same sort of large,
+<TT>if</TT>/<TT>strcmp</TT>/<TT>else</TT> structure
+as did <TT>docommand</TT> in <TT>commands.c</TT>
+is
+<TT>parsedatafile</TT> in <TT>io.c</TT>.
+Think about what it would take
+to use the <TT>cmdtab</TT> structure,
+and the <TT>findcmd</TT> function,
+to streamline the code that processes lines in the data file.
+<br>
+<br>
+(If you try it, you'll probably run into some difficulties
+which will make it rather hard to finish,
+so save a copy of <TT>io.c</TT> before you start!
+In the answers handed out next week,
+I'll describe the difficulties,
+and outline how they might be circumvented.)
+</OL><hr>
+<hr>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-9
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

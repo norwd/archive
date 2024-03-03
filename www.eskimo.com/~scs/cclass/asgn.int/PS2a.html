@@ -1,0 +1,362 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>Assignment #2 Answers</title>
+</head>
+<body>
+<H1>Assignment #2 Answers</H1>
+
+
+
+
+
+<B>Intermediate C Programming
+<br>
+<br>
+UW Experimental College
+</B><br>
+<br>
+<B>Assignment #2 ANSWERS
+</B><br>
+<br>
+<p>Question 1.
+<I>List some differences between text and binary data files.
+</I><p>Text files store lines of characters,
+intended to be human-readable
+if printed,
+displayed to the screen,
+read into a text editor, etc.
+Binary files contain arbitrary byte values
+which make little or no sense if interpreted as characters.
+<p>Binary files may be smaller,
+and if read and written in a simpleminded way,
+they may be more efficient to read and write,
+and the code to do so may be easier to write.
+Text files tend to be larger,
+to take longer
+(than binary files)
+to read and write,
+and to require more elaborate code.
+(However, if binary files are read in safer ways,
+or written in more portable ways,
+the code to do so is as complicated as for text files,
+and will probably be intermediate in efficiency
+between text files and simpleminded binary files.)
+<p>Text files are quite portable.
+Binary files will not necessarily work if they are moved
+between machines having different word sizes or data formats,
+or between compilers which lay out data structures differently in memory.
+<p>It's easy to create, inspect, and modify text files using standard tools.
+Binary file maintenance generally requires specially-written tools.
+<p>Binary files must be written using <TT>fopen</TT> mode <TT>"wb"</TT>
+and read using mode <TT>"rb"</TT>
+<p>Exercise 2.
+<I>Devise and implement a way for
+long descriptions to be read from the data file.
+</I><p>There are many ways of doing this.
+All are a bit tricky,
+given certain constraints imposed by the existing code.
+<p>The most obvious way is to use lines of the form
+<pre>
+	desc You are in a dark and gloomy cave.
+</pre>
+in the data file.
+(Such lines could of course be used for objects as well.)
+The only problem with this approach
+is that in the existing data file reading code in <TT>io.c</TT>,
+each line read from the data file
+is immediately broken up into words by calling <TT>getwords</TT>,
+and this break-up happens
+before it's decided
+what keyword began the line
+and what's to be done with the rest of the information on the line.
+In the case of long descriptions,
+we want the rest of the text on the line
+(after the keyword <TT>desc</TT>)
+to be treated as a single string,
+not a series of individual words.
+<p>One way around this problem
+is to make a copy of the line read from the data file
+before breaking it up with <TT>getwords</TT>.
+I declared a second array
+<pre>
+	char line2[MAXLINE];
+</pre>
+at the top of <TT>parsedatafile</TT> in <TT>io.c</TT>,
+and changed the old line
+<pre>
+	ac = getwords(line, av, MAXARGS);
+</pre>
+to
+<pre>
+	strcpy(line2, line);
+	ac = getwords(line2, av, MAXARGS);
+</pre>
+Now <TT>line2</TT> is broken up by <TT>getwords</TT>
+(and <TT>av</TT> ends up containing pointers into <TT>line2</TT>),
+but the contents of <TT>line</TT> remain intact.
+<p>Then I added this case
+to the <TT>if</TT>/<TT>else</TT> chain
+that makes up the bulk of <TT>parsedatafile</TT>:
+<pre>
+	else if(strcmp(av[0], "desc") == 0)
+		{
+		char *p;
+		for(p = line; *p != '\0' &amp;&amp; !isspace(*p); p++)	/* skip "desc" */
+			;
+		for(; isspace(*p); p++)				/* skip whitespace */
+			;
+		if(currentobject != NULL)
+			currentobject-&gt;desc = chkstrdup(p);
+		else if(currentroom != NULL)
+			currentroom-&gt;desc = chkstrdup(p);
+		else	fprintf(stderr, "desc not in object or room\n");
+		}
+</pre>
+The code has two more troublesome spots:
+first,
+since the <TT>line</TT> array hasn't been broken into words
+(which was the point, so as not to break up the descriptive text),
+we have to manually skip over
+the keyword ``<TT>desc</TT>'' and the whitespace
+to find the beginning of the description itself.
+Second,
+since I've declared the long descriptions
+in the object and room structures
+as <TT>char *</TT>,
+I have to allocate memory
+to hold a copy of the description.
+I do that by calling the function <TT>chkstrdup</TT>,
+which makes a duplicate copy of a string in newly-allocated memory,
+checking the return value of the memory allocation for me
+so that I don't have to.
+(On another sheet you'll find
+the code for <TT>chkstrdup</TT>
+and another function <TT>chkmalloc</TT> which it calls.
+<TT>chkstrdup</TT> is declared in <TT>chkmalloc.h</TT>;
+both <TT>chkmalloc.c</TT> and <TT>chkmalloc.h</TT>
+can be found in the <TT>week5</TT> subdirectory of the source tree.)
+We'll have much more to say about dynamic memory allocation
+in upcoming weeks,
+so don't worry about the details of <TT>chkstrdup</TT> too much.
+<p>If you chose to use character arrays
+as the long description fields in the object and room structures,
+you don't have to worry about memory allocation,
+but can instead use something like
+<pre>
+	strcpy(currentobject-&gt;desc, p);
+</pre>
+to copy the long description to your array.
+Just make sure you understand why
+a single call to <TT>strcpy</TT> would <em>not</em> work
+if <TT>desc</TT> is declared as <TT>char *</TT>,
+and why the simple assignment
+<pre>
+	currentobject-&gt;desc = p;
+</pre>
+would not work
+if <TT>desc</TT> was an array <em>or</em> a pointer
+(for a different reason in each case).
+<p>In a real game,
+room descriptions are likely to be more like a paragraph in length,
+so cramming them all onto one <TT>desc</TT> line in the data file
+is quite cumbersome.
+How could we spread them across multiple lines in the data file?
+One way is by allowing multiple <TT>desc</TT> lines,
+and arranging that they all get concatenated together
+to form the complete description.
+Here's how I implemented that:
+<pre>
+	else if(strcmp(av[0], "desc") == 0)
+		{
+		char *p;
+		char *newstr;
+		for(p = line; *p != '\0' &amp;&amp; !isspace(*p); p++)	/* skip "desc" */
+			;
+		for(; isspace(*p); p++)				/* skip whitespace */
+			;
+		if(currentobject != NULL)
+			{
+			if(currentobject-&gt;desc == NULL)
+				currentobject-&gt;desc = chkstrdup(p);
+			else	{
+				newstr = chkmalloc(
+					strlen(currentobject-&gt;desc) + 1
+						+ strlen(p) + 1);
+				strcpy(newstr, currentobject-&gt;desc);
+				strcat(newstr, "\n");
+				strcat(newstr, p);
+				free(currentobject-&gt;desc);
+				currentobject-&gt;desc = newstr;
+				}
+			}
+		else if(currentroom != NULL)
+			{
+			if(currentroom-&gt;desc == NULL)
+				currentroom-&gt;desc = chkstrdup(p);
+			else	{
+				newstr = chkmalloc(
+					strlen(currentroom-&gt;desc) + 1
+						+ strlen(p) + 1);
+				strcpy(newstr, currentroom-&gt;desc);
+				strcat(newstr, "\n");
+				strcat(newstr, p);
+				free(currentroom-&gt;desc);
+				currentroom-&gt;desc = newstr;
+				}
+			}
+		else	fprintf(stderr, "desc not in object or room\n");
+		}
+</pre>
+Now the memory allocation is more complicated,
+because when we already have a (partial) long description string
+for a given room or object,
+we have to allocate a new, longer one and free the old one.
+(There's an easier way to do this,
+involving another standard library memory allocation function
+called <TT>realloc</TT>.
+We'll see it later.)
+<p>Another option would be to decide that
+long descriptions span many lines on the data file,
+followed by some terminator,
+without having each descriptive line preceded by any keyword.
+For example, we might have lines in the data file like this:
+<pre>
+	desc
+	You are in a dark and gloomy cave.
+	The air is stale and damp.
+	In the shadows you can hear various squeaking and chattering noises.
+	desc end
+</pre>
+Here, the word <TT>desc</TT> alone on a line
+indicates that a long description follows,
+up to the line containing <TT>desc end</TT>.
+<p>I implemented that option like this.
+Notice that the description-reading code
+therefore has to make more calls to <TT>fgetline</TT>
+(i.e. besides the main one
+at the top of the loop in <TT>parsedatafile</TT>).
+In this case,
+we don't have to worry about
+the allocation of <TT>line</TT> vs. <TT>line2</TT>,
+and we also don't have to skip over anything
+to find the start of each descriptive line.
+<pre>
+	else if(strcmp(av[0], "desc") == 0)
+		{
+		char *newstr;
+		while(fgetline(fp, line, MAXLINE) != EOF)
+			{
+			if(strcmp(line, "desc end") == 0)
+				break;
+
+			if(currentobject != NULL)
+				{
+				if(currentobject-&gt;desc == NULL)
+					currentobject-&gt;desc = chkstrdup(line);
+				else	{
+					newstr = chkmalloc(
+						strlen(currentobject-&gt;desc) + 1
+							+ strlen(line) + 1);
+					strcpy(newstr, currentobject-&gt;desc);
+					strcat(newstr, "\n");
+					strcat(newstr, line);
+					free(currentobject-&gt;desc);
+					currentobject-&gt;desc = newstr;
+					}
+				}
+			else if(currentroom != NULL)
+				{
+				if(currentroom-&gt;desc == NULL)
+					currentroom-&gt;desc = chkstrdup(line);
+				else	{
+					newstr = chkmalloc(
+						strlen(currentroom-&gt;desc) + 1
+							+ strlen(line) + 1);
+					strcpy(newstr, currentroom-&gt;desc);
+					strcat(newstr, "\n");
+					strcat(newstr, line);
+					free(currentroom-&gt;desc);
+					currentroom-&gt;desc = newstr;
+					}
+				}
+			}
+		}
+</pre>
+<p>Exercise 3.
+<I>Expand the set of allowable exits from rooms.
+</I><p>I modified the room structure in <TT>game.h</TT> like this:
+<pre>
+#define NEXITS 10
+
+struct room
+	{
+	char name[MAXNAME];
+	struct object *contents;
+	struct room *exits[NEXITS];
+	char *desc;			/* long description */
+	};
+
+/* direction indices in exits array: */
+
+#define NORTH		0
+#define SOUTH		1
+#define EAST		2
+#define WEST		3
+#define NORTHEAST	4
+#define SOUTHEAST	5
+#define NORTHWEST	6
+#define SOUTHWEST	7
+#define UP		8
+#define DOWN		9
+</pre>
+(By adding the new directions at the end of the array,
+rather than interspersing them with the original four,
+any array initializations
+such as we used to have in <TT>main.c</TT>
+would still work,
+since it's legal to supply fewer initializers for an array
+than the maximum number of elements in the array.)
+<p>I added this code to <TT>docommand</TT> in <TT>commands.c</TT>:
+<pre>
+else if(strcmp(verb, "ne") == 0 || strcmp(verb, "northeast") == 0)
+	dircommand(player, NORTHEAST);
+else if(strcmp(verb, "se") == 0 || strcmp(verb, "southeast") == 0)
+	dircommand(player, SOUTHEAST);
+else if(strcmp(verb, "nw") == 0 || strcmp(verb, "northwest") == 0)
+	dircommand(player, NORTHWEST);
+else if(strcmp(verb, "sw") == 0 || strcmp(verb, "southwest") == 0)
+	dircommand(player, SOUTHWEST);
+else if(strcmp(verb, "up") == 0)
+	dircommand(player, UP);
+else if(strcmp(verb, "down") == 0)
+	dircommand(player, DOWN);
+</pre>
+<p>I added this code to the <TT>roomexits</TT> case
+in <TT>parsedatafile</TT> in <TT>io.c</TT>:
+<pre>
+			else if(strcmp(av[i], "ne") == 0)
+				dir = NORTHEAST;
+			else if(strcmp(av[i], "se") == 0)
+				dir = SOUTHEAST;
+			else if(strcmp(av[i], "nw") == 0)
+				dir = NORTHWEST;
+			else if(strcmp(av[i], "sw") == 0)
+				dir = SOUTHWEST;
+			else if(strcmp(av[i], "u") == 0)
+				dir = UP;
+			else if(strcmp(av[i], "d") == 0)
+				dir = DOWN;
+</pre>
+<hr>
+<hr>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-9
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-04 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

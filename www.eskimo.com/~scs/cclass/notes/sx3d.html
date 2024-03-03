@@ -1,0 +1,124 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>3.4 <TT>while</TT> Loops</title>
+<link href="sx3c.html" rev=precedes>
+<link href="sx3e.html" rel=precedes>
+<link href="sx3.html" rev=subdocument>
+</head>
+<body>
+<H2>3.4 <TT>while</TT> Loops</H2>
+
+<p>[This section corresponds to half of K&amp;R Sec. 3.5]
+</p><p>Loops generally consist of two parts:
+one or more <dfn>control expressions</dfn> which
+(not surprisingly)
+control the execution of the loop,
+and the <dfn>body</dfn>,
+which is the statement or set of statements
+which is executed over and over.
+</p><p>The most basic <dfn>loop</dfn> in C is the
+<TT>while</TT> loop.
+A <TT>while</TT> loop
+has one control expression,
+and executes as long as
+that expression
+is true.
+This example repeatedly doubles the number 2
+(2, 4, 8, 16, ...)
+and prints the resulting numbers as long as they are less than 1000:
+<pre>
+	int x = 2;
+
+	while(x &lt; 1000)
+		{
+		printf("%d\n", x);
+		x = x * 2;
+		}
+</pre>
+(Once again,
+we've used braces <TT>{}</TT> to enclose the group of statements
+which are to be executed together as the body of the loop.)
+</p><p>The general syntax of a <TT>while</TT> loop is
+<pre>
+	while( <I>expression</I> )
+		<I>statement</I>
+</pre>
+A <TT>while</TT> loop starts out like an <TT>if</TT> statement:
+if the condition expressed by the <I>expression</I> is true,
+the <I>statement</I> is executed.
+However,
+after executing the statement,
+the condition is tested again,
+and if it's still true,
+the statement is executed again.
+(Presumably, the condition depends on some value which is
+changed in the body of the loop.)
+As long as the condition remains true,
+the body of the loop is executed over and over again.
+(If the condition is false right at the start,
+the body of the loop is not executed at all.)
+</p><p>As another
+example, if you wanted to print a number of blank lines,
+with the variable <TT>n</TT> holding the number of blank 
+lines to be printed, you might use code like this:
+<pre>
+	while(n &gt; 0)
+		{
+		printf("\n");
+		n = n - 1;
+		}
+</pre>
+After the loop finishes
+(when control ``falls out'' of it,
+due to the condition being false),
+<TT>n</TT> will have the value 0.
+
+</p><p>You use a <TT>while</TT> loop when
+you have a statement or group of statements which may have to
+be executed a number of times to complete their task.
+The controlling expression represents the condition ``the
+loop is not done'' or ``there's more work to do.''
+As long as the expression is true, the body of the loop is executed;
+presumably, it makes at least some progress at its task.
+When the expression becomes false, the task is done, and the
+rest of the program (beyond the loop) can proceed.
+When we think about a loop in this way,
+we can see an additional important property:
+if the expression evaluates to ``false'' 
+before the very first trip through the loop,
+we make <em>zero</em> trips through the loop.
+In other words,
+if the task is already done
+(if there's no work to do)
+the body of the loop is not executed at all.
+(It's always a good idea
+to think about the ``boundary conditions'' in a piece of code,
+and to make sure that the code will work correctly
+when there is no work to do,
+or when there is a trivial task to do,
+such as sorting an array of one number.
+Experience has shown that bugs at boundary conditions
+are quite common.)
+
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx3c.html" rev=precedes>prev</a>
+<a href="sx3e.html" rel=precedes>next</a>
+<a href="sx3.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-03 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

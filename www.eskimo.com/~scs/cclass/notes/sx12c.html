@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>12.3 Predefined Streams</title>
+<link href="sx12b.html" rev=precedes>
+<link href="sx12d.html" rel=precedes>
+<link href="sx12.html" rev=subdocument>
+</head>
+<body>
+<H2>12.3 Predefined Streams</H2>
+
+<p>Besides the file pointers which we explicitly open by calling <TT>fopen</TT>,
+there are also three predefined streams.
+<TT>stdin</TT> is a constant file pointer corresponding to standard input,
+and <TT>stdout</TT> is
+a constant file pointer corresponding to standard output.
+Both of these can be used anywhere a file pointer is called for;
+for example,
+<TT>getchar()</TT> is the same as <TT>getc(stdin)</TT>
+and <TT>putchar(c)</TT> is the same as <TT>putc(c, stdout)</TT>.
+The third predefined stream is <TT>stderr</TT>.
+Like <TT>stdout</TT>,
+<TT>stderr</TT> is typically connected to the screen by default.
+The difference is that <TT>stderr</TT> is not redirected
+when the standard output is redirected.
+For example,
+under Unix or MS-DOS,
+when you invoke
+<pre>
+	program &gt; filename
+</pre>
+anything printed to <TT>stdout</TT>
+is redirected to the file <TT>filename</TT>,
+but anything printed to <TT>stderr</TT> still goes to the screen.
+The intent behind <TT>stderr</TT> is
+that it is the ``standard error output'';
+error messages printed to it will not disappear into an output file.
+For example,
+a more realistic way to print an error message
+when a file can't be opened would be
+<pre>
+	if((ifp = fopen(filename, "r")) == NULL)
+		{
+		fprintf(stderr, "can't open file %s\n", filename);
+		<I>exit or return</I>
+		}
+</pre>
+where <TT>filename</TT> is a string variable
+indicating the file name to be opened.
+Not only is the error message printed to <TT>stderr</TT>,
+but it is also more informative
+in that it mentions the name of the file that couldn't be opened.
+(We'll see another example in the next chapter.)
+
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx12b.html" rev=precedes>prev</a>
+<a href="sx12d.html" rel=precedes>next</a>
+<a href="sx12.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-1997
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

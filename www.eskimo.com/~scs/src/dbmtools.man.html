@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- Referenced programs first written in 1998 or so; -->
+<!-- this documentation written 2001-05-27. -->
+<!-- These programs and their documentation may be freely redistributed. -->
+<!-- Steve Summit, scs@eskimo.com -->
+<!-- See http://www.eskimo.com/~scs/src/#dbmtools for possible updates. -->
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>DBMUTIL(1)</title>
+</head>
+<body>
+<H1>DBMUTIL(1)</H1>
+<H2>NAME</H2>
+
+dbm tools - shell access to dbm files
+<H2>INTRODUCTION</H2>
+
+<p>These tools provide shell-level access to Unix
+<a href="../cgi-bin/manredir.cgi?name=dbm&amp;sec=3"><I>dbm(3)</I></a> files,
+including <a href="../cgi-bin/manredir.cgi?name=ndbm&amp;sec=3"><I>ndbm(3)</I></a>
+and <a href="../cgi-bin/manredir.cgi?name=gdbm&amp;sec=3"><I>gdbm(3)</I></a> variants.
+The tools support storing, fetching, listing, and deleting
+the nodes in <I>dbm</I> databases.
+(There is a general presumption,
+however, that the keys and to some extent the data are printable text.
+These tools are of only limited utility for
+<I>dbm</I> files containing arbitrary binary data.)
+</p><p>There are five tools:
+<a href="dbmstore.man.html"><I>dbmstore</I></a>,
+<a href="dbmfetch.man.html"><I>dbmfetch</I></a>,
+<a href="dbmdump.man.html"><I>dbmdump</I></a>,
+<a href="dbmdelete.man.html"><I>dbmdelete</I></a>,
+and 
+<a href="dbmutil.man.html"><I>dbmutil</I></a>.
+The first four map to the basic <I>dbm</I> operations:
+store, fetch, first/next (i.e. ``list'' or ``dump'') and delete.
+<I>dbmutil</I> combines all these functions and adds a few others,
+and can be used in an interactive mode,
+or to process scripts of <I>dbm</I> commands.
+</p><p>The tools can be compiled in (at least) three different ways:
+for the old <a href="../cgi-bin/manredir.cgi?name=dbm&amp;sec=3"><I>dbm(3)</I></a> library,
+for the related Berkeley <a href="../cgi-bin/manredir.cgi?name=ndbm&amp;sec=3"><I>ndbm(3)</I></a> library,
+and for the GNU <a href="../cgi-bin/manredir.cgi?name=gdbm&amp;sec=3"><I>gdbm(3)</I></a> library.
+In the most general case,
+the tools when compiled with the <I>dbm</I> library have names beginning with ``dbm''
+(as mentioned in the previous paragraph),
+the tools when compiled with the <I>ndbm</I> library have names beginning with ``ndbm'',
+and when compiled with the <I>gdbm</I> library have names beginning with ``gdbm''.
+In practice,
+however,
+there is no difference in file formats between the <I>dbm</I> and <I>ndbm</I> libraries,
+so there is little point in compiling both the ``dbm...'' and ``ndbm...'' sets;
+the choice will be constrained only by which of the libraries is available.
+(Furthermore,
+the <I>gdbm</I> library can emulate the <I>dbm</I> and <I>ndbm</I> libraries
+at the function call level,
+but using its own file format underneath,
+so on systems without a true <I>dbm</I> or <I>ndbm</I> library,
+but with <I>gdbm</I> and its emulations standing in for both,
+all three sets of tools will end up using the same file format,
+and therefore only one of the three is strictly needed.)
+</p><p>Although these tools are, as mentioned,
+intended for use with <I>dbm</I> files containing plaintext keys and values,
+there is one consideration
+if the <I>dbm</I> files are also being accessed by other C programs, namely:
+do the keys and values as stored in the <I>dbm</I> files
+contain terminating `<TT>\0</TT>' characters?
+They need not have them
+(because the <I>dbm</I> machinery maintains explicit lengths for both),
+but storing the <TT>\0</TT> characters explicitly
+makes it easier for a C program to treat a fetched datum as a string.
+Therefore, these tools can be told
+to use or not use extra <TT>\0</TT> characters at the end of keys and values.
+By default, extra <TT>\0</TT> characters will not be used
+(that is, will not be appended to keys and values when storing data,
+and will not be appended to keys when looking up data),
+but each tool accepts a <B>-n</B> flag
+instructing it to append <TT>\0</TT> (``null'') characters
+in all of these situations.
+</p><p>(In a few cases,
+controlled either by command-line flags
+or conditional compilation options in the source code,
+the tools can intuit whether or not the extra <TT>\0</TT> characters are present,
+without having to be explicitly told.)
+</p><p>There are also a few provisions made for data values
+which are not so much text strings,
+but miniature text files,
+with trailing and perhaps internal newline characters.
+There are also a few provisions made for data values
+(but <em>not</em> keys)
+which contain arbitrary binary data.
+</p><p><I>dbm</I> and <I>ndbm</I> databases are stored as a pair of files,
+with names ending in ``.dir'' and ``.pag''.
+When naming the <I>dbm</I> file to be accessed by these tools,
+either suffix is optional.
+That is, for a <I>dbm</I> database stored in the files ``x.dir'' and ``x.pag'',
+the file name given to these tools may be either ``x'', ``x.dir'', or ``x.pag''.
+(What actually happens is that these tools strip off a .dir or .pag suffix,
+if present,
+before handing the name to the underlying
+<I>dbm</I> or <I>ndbm</I> database opening function;
+the underlying <I>dbm</I> or <I>ndbm</I> code then re-appends the suffixes, as required.)
+For <I>gdbm</I> databases, on the other hand, only one file is used,
+with no preordained suffix name,
+so for the <I>gdbm</I> versions of these tools,
+the file name handed to the tool much match the actual <I>gdbm</I> file name.
+</p><p>In most cases,
+the <I>dbm</I> file(s) are created automatically, if required
+(typically when attempting to store data into a <I>dbm</I> file
+which does not yet exist).
+</p><p>Here are individual man pages for each of the commands:
+<UL><li><a href="dbmstore.man.html">dbmstore</a>
+<li><a href="dbmfetch.man.html">dbmfetch</a>
+<li><a href="dbmdump.man.html">dbmdump</a>
+<li><a href="dbmdelete.man.html">dbmdelete</a>
+<li><a href="dbmutil.man.html">dbmutil</a>
+</UL></p></body>
+</html>

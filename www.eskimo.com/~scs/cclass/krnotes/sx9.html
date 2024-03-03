@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>Chapter 6: Structures</title>
+<link href="sx8j.html" rev=precedes>
+<link href="http://www.eskimo.com/~scs/cclass/krnotes/sx9a.html" rel=precedes>
+<link href="top.html" rev=subdocument>
+</head>
+<body>
+<H1>Chapter 6: Structures</H1>
+
+<p>page 127
+</p><p>There's one other piece of motivation behind structures
+that it's useful to discuss.
+Suppose we didn't have structures
+(or didn't know what they were or how to use them).
+Suppose we wanted to implement payroll records.
+We might set up a bunch of parallel arrays,
+holding the
+names, mailing addresses, social security numbers, and salaries
+of all of our employees:
+<pre>	char *name[100];
+	char *address[100];
+	long ssn[100];
+	float salary[100];
+</pre>The idea here is that
+<TT>name[0]</TT>, <TT>address[0]</TT>, <TT>ssn[0]</TT>, and <TT>salary[0]</TT>
+would describe one employee,
+array slots with subscript <TT>[1]</TT> would describe the second employee, etc.
+There are at least two problems with this scheme:
+first, if we someday want to handle more than 100 employees,
+we have to remember to change the size of several arrays.
+(Using a symbolic constant like
+<pre>	#define MAXEMPLOYEES 100
+</pre>would certainly help.)
+</p><p>More importantly,
+there would be no easy way
+to pass around all the information associated with a single employee.
+Suppose we wanted to write the function <TT>print_employee</TT>,
+which will print all the information associated with a particular employee.
+What arguments would this function take?
+We could pass it the index to use to retrieve the information from the arrays,
+but that would mean that all of the arrays would have to be global.
+We could pass the function an individual name, address, SSN, and salary,
+but that would mean that
+whenever we added a new piece of information to the database
+(perhaps next week we'll want to keep track of employee's shoe sizes),
+we would have to add another argument
+to the <TT>print_employee</TT> function,
+and change all of the calls.
+(Pretty soon,
+the number of arguments to the <TT>print_employee</TT> function
+would become unwieldy.)
+What we'd really like is a way to encapsulate all of the data
+about a single employee into a single data structure,
+so we could just pass that data structure around.
+</p><p>The right solution to this problem,
+in languages such as C which support the idea,
+is to define a structure describing an
+employee.
+We can make one array of these structures
+to describe all the employees,
+and we can pass around single instances of the structure where they're needed.
+</p><p><a href="http://www.eskimo.com/~scs/cclass/krnotes/sx9a.html" rel=subdocument>section 6.1: Basics of Structures</a></p>
+<p><a href="http://www.eskimo.com/~scs/cclass/krnotes/sx9b.html" rel=subdocument>section 6.2: Structures and Functions</a></p>
+<p><a href="http://www.eskimo.com/~scs/cclass/krnotes/sx9c.html" rel=subdocument>section 6.3: Arrays of Structures</a></p>
+<p><a href="http://www.eskimo.com/~scs/cclass/krnotes/sx9d.html" rel=subdocument>The <TT>sizeof</TT> operator</a></p>
+<p><a href="sx9e.html" rel=subdocument>section 6.4: Pointers to Structures</a></p>
+<p><a href="http://www.eskimo.com/~scs/cclass/krnotes/sx9f.html" rel=subdocument>section 6.5: Self-referential Structures</a></p>
+<hr>
+<p>
+Read sequentially:
+<a href="sx8j.html" rev=precedes>prev</a>
+<a href="http://www.eskimo.com/~scs/cclass/krnotes/sx9a.html" rel=precedes>next</a>
+<a href="top.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

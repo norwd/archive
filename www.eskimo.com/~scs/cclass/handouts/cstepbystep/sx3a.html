@@ -1,0 +1,223 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>3.1. Unix</title>
+<link href="sx3.html" rev=precedes>
+<link href="sx3b.html" rel=precedes>
+<link href="sx3.html" rev=subdocument>
+</head>
+<body>
+<H2>3.1. Unix</H2>
+
+<p>Since C is the programming language of Unix,
+it used to be the case that virtually all Unix machines had C compilers.
+That's less true today
+(alas!),
+but C compilers are still very common.
+One extremely popular Unix compiler,
+which happens to be of extremely high quality,
+and also happens to be free,
+is the Free Software Foundations's <TT>gcc</TT>, or GNU C Compiler.
+</p><p>Step 1: entering or editing your source code
+</p><p>The most popular Unix text editors are <TT>vi</TT> and <TT>emacs</TT>.
+I'm not going to provide tutorials on them here;
+if you've been using Unix for a while,
+there's a good chance that you've become familiar with
+one or the other of them.
+Like most text editors,
+you can invoke them in one of two slightly different ways:
+either with no command-line arguments,
+in which case you are given a blank screen in which to begin typing
+(following which you must save your work to a file,
+after selecting a filename);
+or with a filename as a command-line argument,
+in which case that file is read in
+so that you can make incremental changes to it
+(following which you must of course again save your work,
+which by definition will go back to the same file
+as you initially read in).
+Another popular text editor is <TT>pico</TT>,
+which is easy for beginners to use,
+particularly if you use the PINE e-mail handling program.
+(<TT>pico</TT> is PINE's ``composer'',
+made available as a standalone program.)
+See the ``University of Washington'' section below
+for more information about <TT>pico</TT>.
+</p><p>For example,
+for the first ``Hello, world!'' program,
+you might type one of the following four commands:
+<pre>
+	$ vi
+	$ emacs
+	$ vi hello.c
+	$ emacs hello.c
+</pre>
+(In these and the later examples,
+I'm using <TT>$</TT> as a generic Unix shell prompt.)
+In the first two cases, you'd be given a blank slate,
+and you'd save your work
+(with <TT>:w</TT> in <TT>vi</TT>
+or <TT>^X^W</TT> in <TT>emacs</TT>),
+specifying a filename of <TT>hello.c</TT>.
+In the second two cases,
+you'd be presented with <TT>hello.c</TT>
+(if it existed),
+and when you were finished,
+you'd save it back to that file
+(with <TT>:w</TT> again under <TT>vi</TT>,
+or <TT>^X^S</TT> under <TT>emacs</TT>).
+</p><p>In any case,
+whichever text editor you're using and however you choose to invoke it,
+make sure to type in the program
+(if it's
+an initial example from the class notes or from a book)
+<em>exactly</em> as shown,
+including all punctuation,
+and with the lines laid out
+just
+as they are in the code you're typing in.
+(Later, we'll learn what does and doesn't matter
+in terms of program layout:
+where your degrees of freedom are,
+what the compiler does and doesn't care so much about,
+which syntax you have to get exactly right
+and which parts allow you to express some creativity.
+For now,
+though,
+just
+type everything verbatim.)
+</p><p>Step 2: compiling the program
+</p><p>Most Unix C compilers use about the same command-line syntax.
+To compile our ``Hello, world!'' program,
+you'd type
+<pre>
+	$ cc -o hello hello.c
+</pre>
+The <TT>-o hello</TT> part says that the <B>o</B>utput,
+the executable program which the compiler will build,
+should be named <TT>hello</TT>
+(that is, placed in a file of that name in the current directory).
+The C source file to be read and compiled is obviously <TT>hello.c</TT>.
+</p><p>If you're using <TT>gcc</TT>, the command line is almost identical:
+<pre>
+	$ gcc -o hello hello.c
+</pre>
+If <TT>cc</TT> gives you strange syntax errors,
+it may be that it's an old-fashioned, pre-ANSI compiler,
+in which case it won't be able to compile
+most of the sample programs we'll be working with
+(unless you were to edit them slightly).
+For many systems where plain <TT>cc</TT> is obsolete,
+there is an ANSI C compiler available,
+often called <TT>acc</TT>.
+Again, the invocation is
+probably
+the same:
+<pre>
+	$ acc -o hello hello.c
+</pre>
+</p><p>For any of these invocations,
+if you leave out the <TT>-o hello</TT> part
+(i.e. if you just type <TT>cc hello.c</TT>),
+the default is usually to leave your executable program
+in a file named <TT>a.out</TT>,
+which is cryptic and somewhat less than perfectly useful.
+</p><p>If you're compiling a program
+which uses any of the math functions
+declared in the header file <TT>&lt;math.h&gt;</TT>,
+such as <TT>sqrt</TT>, <TT>sin</TT>, <TT>cos</TT>, or <TT>pow</TT>,
+you'll typically have to request explicitly
+that the compiler include the math library:
+<pre>
+	$ cc -o myprogram myprogram.c -lm
+</pre>
+Notice that,
+unlike most command-line options,
+the <TT>-lm</TT> option which requests the math library
+must be placed at the <em>end</em> of the command line.
+</p><p>It's also possible to use <TT>cc</TT>
+(or <TT>gcc</TT>, or <TT>acc</TT>, or any of the others)
+to compile multiple C source files,
+either at once or separately,
+and to link them all together into one program,
+but we'll cover those details later,
+when we start talking about separate compilation at all.
+
+</p><p>Step 3: running the program
+</p><p>Assuming you did use the <TT>-o</TT> option
+to specify the output filename <TT>hello</TT> when compiling,
+you can now attempt to run your program by just typing its name:
+<pre>
+	$ hello
+</pre>
+If you get a message like ``not found''
+or ``no such file or directory'',
+it probably indicates
+that your shell is not searching the current directory
+for commands that you type.
+You can either adjust your search path
+(the <TT>PATH</TT> environment variable),
+or else invoke
+<pre>
+	$ ./hello
+</pre>
+to explicitly indicate that the <TT>hello</TT> you're trying to run
+is in the current directory,
+known as dot (<TT>.</TT>).
+</p><p>If the program prints its output to the screen
+(as most programs do),
+and if you'd like to save it
+(for posterity,
+or to print out or mail to me for review),
+you can type something like
+<pre>
+	$ hello &gt; hello.out
+</pre>
+On the Unix command line,
+a greater-than symbol <TT>&gt;</TT>
+requests that the program's output be <dfn>redirected</dfn>
+to the named file,
+instead of going to the screen.
+(Later,
+when you begin writing programs that read input from the keyboard,
+you may be interested to know
+that it's possible to redirect a program's input as well,
+using the less-than symbol, <TT>&lt;</TT>.
+An invocation like
+<TT>program &lt; inputfile
+</TT>requests that the program read its input
+from the file named <TT>inputfile</TT> instead of from the keyboard.)
+</p><p>Finally, one last word on those text editors.
+I glossed over one detail,
+which may be troubling you:
+If you invoke a text editor with a filename as a command line argument,
+but the file does not exist,
+most editors assume that you're about to create it.
+You start out with a blank screen,
+almost as if you'd invoked the editor with no filename argument at all,
+but when it comes time to save or quit,
+the editor remembers the filename,
+so you don't have to type it in again.
+That's all.
+(In other words,
+you get to do a ``Save'' instead of ``Save As''.)
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx3.html" rev=precedes>prev</a>
+<a href="sx3b.html" rel=precedes>next</a>
+<a href="sx3.html" rev=subdocument>up</a>
+<a href="index.html">top</a>
+</p>
+<p>
+This page by <a href="../../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-9
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

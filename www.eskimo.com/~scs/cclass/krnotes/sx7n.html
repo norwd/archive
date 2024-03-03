@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>section 4.11.3: Conditional Inclusion</title>
+<link href="sx7m.html" rev=precedes>
+<link href="sx8.html" rel=precedes>
+<link href="sx7.html" rev=subdocument>
+</head>
+<body>
+<H2>section 4.11.3: Conditional Inclusion</H2>
+
+page 91
+<p>The <TT>#if !defined(HDR)</TT> trick is a bit esoteric to start out with.
+Let's look at a simpler example:
+in ANSI C,
+the <TT>remove</TT> function deletes a file.
+On some older Unix systems, however,
+the function to delete a file is instead named <TT>unlink</TT>.
+Therefore, when deleting a file,
+we might use code like this:
+<pre>	#if defined(unix)
+		unlink(filename);
+	#else
+		remove(filename);
+	#endif
+</pre>We would arrange to have the macro <TT>unix</TT>
+defined
+when we were compiling our program on a Unix machine,
+and not otherwise.
+</p><p>You may wonder what the difference is between the <TT>if()</TT> statement
+we've been using all along,
+and this new <TT>#if</TT> preprocessing directive.
+<TT>if()</TT> acts at run time;
+it selects whether or not a statement or group of statements is executed,
+based on a run-time condition.
+<TT>#if</TT>, on the other hand,
+acts at compile time;
+it determines whether certain parts of your program
+are even seen by the compiler or not.
+If for some reason
+you want to have two slightly different versions of your program,
+you can use <TT>#if</TT> to separate the different parts,
+leaving the bulk of the code common,
+such that you don't have
+to maintain two totally separate versions.
+</p><p><TT>#if</TT> can be used to conditionally compile anything:
+not just statements and expressions,
+but also declarations and entire functions.
+</p><p>Back to the <TT>HDR</TT> example
+(though this is somewhat of a tangent,
+and it's not vital for you to follow it):
+it's possible for the same header file
+to be <TT>#include</TT>d twice during one compilation,
+either because the same <TT>#include</TT> line appears twice 
+within the same source file,
+or because a source file contains something like
+<pre>	#include "a.h"
+	#include "b.h"
+</pre>but <TT>b.h</TT> also <TT>#include</TT>s <TT>a.h</TT>.
+Since some declarations
+which you might put in header files
+would cause errors
+if they were acted on twice,
+the <TT>#if !defined(HDR)</TT> trick
+arranges that the contents of a header file are only processed once.
+</p><p>Note that two different macros,
+both named <TT>HDR</TT>,
+are being used on page 91,
+for two entirely different purposes.
+At the top of the page,
+<TT>HDR</TT> is a simple
+on-off
+switch;
+it is <TT>#define</TT>d
+(with no replacement text)
+when <TT>hdr.h</TT> is <TT>#include</TT>d for the first time,
+and any subsequent #inclusion
+merely tests whether <TT>HDR</TT> is <TT>#define</TT>d.
+(Note that it is
+in fact
+quite
+possible to define a macro with no replacement text;
+a macro so defined
+is distinguishable from a macro which has not been <TT>#define</TT>d at all.
+One common use of a macro with no replacement text
+is precisely as a simple <TT>#if</TT> switch like this.)
+</p><p>At the bottom of the page,
+<TT>HDR</TT> ends up containing the name of a header file to be <TT>#include</TT>d;
+the name depends on the <TT>#if</TT> and <TT>#elif</TT> directives.
+The line
+<pre>	#include HDR
+</pre><TT>#include</TT>s one of them,
+depending on the final value of <TT>HDR</TT>.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx7m.html" rev=precedes>prev</a>
+<a href="sx8.html" rel=precedes>next</a>
+<a href="sx7.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

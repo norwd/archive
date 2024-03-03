@@ -1,0 +1,328 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>Assignment #5 Answers</title>
+</head>
+<body>
+<H1>Assignment #5 Answers</H1>
+
+
+
+
+
+<B>Introductory C Programming
+<br>
+<br>
+UW Experimental College
+<br>
+<br>
+Assignment #5 ANSWERS
+</B><br>
+<br>
+<p>Question 1.
+<I>What's wrong with
+<TT>#define N 10;
+</TT>?
+</I><p>The semicolon at the end of the line
+will become part of <TT>N</TT>'s definition,
+which is hardly ever what you want.
+<p>Question 2.
+<I>Suppose you had the definition
+<TT>#define SIX 2*3
+</TT>.
+What value would the declaration
+<TT>int x = 12 / SIX;
+</TT>initialize <TT>x</TT> to?
+</I><p>18.
+(18?
+How could it be 18?
+It sure looks like it should be 2, doesn't it?)
+<p>The preprocessor performs a simple textual substitution;
+it knows nothing about operator precedence,
+or even much about the syntax of C.
+After the preprocessor substitutes the value of the macro 
+<TT>SIX</TT>,
+the declaration looks like
+<pre>
+	int x = 12 / 2*3;
+</pre>
+Since multiplication and division ``group''
+(or ``associate'')
+from left to right,
+this is interpreted as
+<pre>
+	int x = (12 / 2) * 3;
+</pre>
+To guard against these ``surprises,''
+it's a very good idea to parenthesize the values of macros which 
+are not simple constants.
+In this case, a safer definition of the macro would have been
+<pre>
+	#define SIX (2*3)
+</pre>
+This way, when the preprocessor performs its simple textual substitution,
+the resulting expression is automatically parenthesized
+so that the compiler gives you the result you expect.
+(Of course,
+this hypothetical <TT>SIX</TT> macro is useless in any case,
+but the point is that whenever a macro's value is an expression
+of any kind,
+it needs extra parentheses
+to avoid surprises.)
+<p>Question 3.
+<I>If the header file <TT>x.h</TT> contains
+an external prototype declaration for a function <TT>q()</TT>,
+where should <TT>x.h</TT> be included?
+</I><p>It should be included in each source file where <TT>q()</TT>
+is called, so that the compiler will see the prototype declaration
+and be able to generate correct code.
+It should <em>also</em> be included
+in the source file where <TT>q()</TT> is <em>defined</em>,
+so that the compiler will be able to notice, and complain about, 
+any mismatches between the prototype declaration and the actual definition.
+(It's vital that the prototype
+which will be
+used where a function is called be accurate;
+an incorrect prototype is worse than useless.)
+<p>Question 4.
+<I>How many differences can you think of between <TT>i</TT> and <TT>J</TT></I>?
+<p>The line
+<pre>
+	int i = 10;
+</pre>
+declares a conventional run-time variable, named <TT>i</TT>,
+initially containing the value 10.
+It will be possible to change <TT>i</TT>'s value at run time.
+<TT>i</TT> may appear in expressions
+(i.e., its value may be fetched),
+but since it is not constant,
+it could not be used where C requires a constant,
+such as in the dimension of an array declaration.
+<p>The line
+<pre>
+	#define J 10
+</pre>
+on the other hand,
+defines a preprocessor macro named <TT>J</TT> having the value <TT>10</TT>.
+For the rest of the current source file, anywhere you write a single <TT>J</TT>,
+the preprocessor will replace it with <TT>10</TT>.
+An array declaration such as
+<pre>
+	int a[J];
+</pre>
+will be fine;
+it will be just as if you had written
+<pre>
+	int a[10];
+</pre>
+However, <TT>J</TT> exists only at compile time.
+It is not a run-time variable; if you tried to
+``change its value'' at run time by writing
+<pre>
+	J = 20;
+</pre>
+it would be just as if you had written
+<pre>
+	10 = 20;
+</pre>
+and the compiler would complain.
+<p>(One more little difference is that the line
+<TT>int i = 10;
+</TT>ends in a semicolon,
+while the line
+<TT>#define J 10
+</TT>does not.)
+<p>Exercise 2.
+<I>Write a program to read its input and write it out, double-spaced.
+</I><p>This is easy if we realize that
+all we have to do is
+read the input a character at a time,
+copying each input character through to the output,
+except that whenever we see a <TT>'\n'</TT> character,
+write a second one out, too.
+<pre>
+#include &lt;stdio.h&gt;
+
+int main()
+{
+	int c;
+
+	while((c = getchar()) != EOF)
+		{
+		putchar(c);
+		if(c == '\n')
+			putchar('\n');
+		}
+
+	return 0;
+}
+</pre>
+The program won't be too interesting if you type text at it interactively.
+If you're using a Unix or MS-DOS system,
+you can run it on a file by typing
+<pre>
+	doublespace &lt; filename
+</pre>
+The <TT>&lt;</TT> mechanism indicates that
+the program should be run
+with its ``standard input''
+(i.e. the stream of characters read by <TT>getchar</TT>)
+connected to the file with the given <TT>filename</TT>,
+rather than to the keyboard.
+<p>Exercise 3.
+<I>Write a function
+which counts the number of times a character appears in a string.
+</I><p>Here is the function.
+Notice that it is very similar to the <TT>mystrlen</TT> function in the notes,
+except that rather than counting all characters in the string,
+it only counts those matching the argument <TT>c</TT>.
+<pre>
+int countnchars(char string[], int ch)
+{
+	int i;
+	int count = 0;
+	for(i = 0; string[i] != '\0'; i++)
+		{
+		if(string[i] == ch)
+			count++;
+		}
+	return count;
+}
+</pre>
+Here is a tiny little main program, to test it out:
+<pre>
+#include &lt;stdio.h&gt;
+
+extern int countnchars(char string[], int ch);
+
+int main()
+{
+	char string[] = "Hello, world!";
+	char c = 'o';
+
+	printf("The letter %c appears in \"%s\" %d times.\n",
+		c, string, countnchars(string, c));
+	return 0;
+}
+</pre>
+<p>Exercise 4.
+<I>Write a short program to read two lines of text,
+and concatenate them using <TT>strcat</TT>.
+</I><br>
+<br>
+<pre>
+#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;	/* for strcpy and strcat */
+
+#define MAXLINE 100
+
+extern int getline(char [], int);
+
+int main()
+{
+	char string1[MAXLINE], string2[MAXLINE];
+	int len1, len2;
+	char newstring[MAXLINE*2];
+
+	printf("enter first string:\n");
+	len1 = getline(string1, MAXLINE);
+	printf("enter second string:\n");
+	len2 = getline(string2, MAXLINE);
+
+	if(len1 == EOF || len2 == EOF)
+		exit(1);
+
+	strcpy(newstring, string1);
+	strcat(newstring, string2);
+
+	printf("%s\n", newstring);
+
+	return 0;
+}</pre>
+<p>Exercise 5.
+<I>Write a function
+to find a substring in a larger string
+and replace it with a different substring.
+</I><p>Here is one way.
+(Since the function doesn't return anything,
+I've defined it with a return type of <TT>void</TT>.)
+<pre>
+void replace(char string[], char from[], char to[])
+{
+	int start, i1, i2;
+	for(start = 0; string[start] != '\0'; start++)
+		{
+		i1 = 0;
+		i2 = start;
+		while(from[i1] != '\0')
+			{
+			if(from[i1] != string[i2])
+				break;
+			i1++;
+			i2++;
+			}
+		if(from[i1] == '\0')
+			{
+			for(i1 = 0; to[i1] != '\0'; i1++)
+				string[start++] = to[i1];
+			return;
+			}
+		}
+}
+</pre>
+This code is very similar to
+the <TT>mystrstr</TT> 
+function
+in the notes, chapter 10, section 10.4, p. 8.
+(Since <TT>strstr</TT>'s job is to find one string within 
+another, it's a natural for the first half of <TT>replace</TT>.)
+<p><I>Extra credit:
+Think about what <TT>replace()</TT> should do
+if the <TT>from</TT> string appears multiple times
+in the input string.
+</I><p>Our first
+implementation
+replaced only the first occurrence
+(if any)
+of the <TT>from</TT> string.
+It happens, though, that it's trivial to rewrite our first version
+to make it replace all occurrences--just omit the 
+<TT>return</TT> after the first string has been replaced:
+<pre>
+void replace(char string[], char from[], char to[])
+{
+	int start, i1, i2;
+	for(start = 0; string[start] != '\0'; start++)
+		{
+		i1 = 0;
+		i2 = start;
+		while(from[i1] != '\0')
+			{
+			if(from[i1] != string[i2])
+				break;
+			i1++;
+			i2++;
+			}
+		if(from[i1] == '\0')
+			{
+			for(i1 = 0; to[i1] != '\0'; i1++)
+				string[start++] = to[i1];
+			}
+		}
+}
+</pre>
+<hr>
+<hr>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-9
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-04 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

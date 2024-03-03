@@ -1,0 +1,171 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>11.3 Reallocating Memory Blocks</title>
+<link href="sx11b.html" rev=precedes>
+<link href="sx11d.html" rel=precedes>
+<link href="sx11.html" rev=subdocument>
+</head>
+<body>
+<H2>11.3 Reallocating Memory Blocks</H2>
+
+<p>Sometimes you're not sure at first how much memory you'll need.
+For example,
+if you need to store a series of items you read from the user,
+and if the only way to know how many there are
+is to read them until the user types some ``end'' signal,
+you'll have no way of knowing,
+as you begin reading and storing the first few,
+how many you'll have seen
+by the time you do see that ``end'' marker.
+You might want to allocate room for, say, 100 items,
+and if the user enters a 101st item
+before entering the ``end'' marker,
+you might wish for a way to say
+``uh, <TT>malloc</TT>, remember those 100 items I asked for?
+Could I change my mind and have 200 instead?''
+</p><p>In fact, you can do exactly this,
+with the <TT>realloc</TT> function.
+You hand <TT>realloc</TT> an old pointer
+(such as you received from an initial call to <TT>malloc</TT>)
+and a new size,
+and <TT>realloc</TT> does what it can
+to give you a chunk of memory big enough
+to hold the new size.
+For example,
+if we wanted the <TT>ip</TT> variable from an earlier example
+to point at 200 <TT>ints</TT> instead of 100,
+we could try calling
+<pre>
+	ip = realloc(ip, 200 * sizeof(int));
+</pre>
+Since you always want each block of dynamically-allocated memory
+to be contiguous
+(so that you can treat it as if it were an array),
+you and <TT>realloc</TT> have to worry about the case
+where <TT>realloc</TT> can't make the old block of memory bigger
+``in place,''
+but rather has to relocate it elsewhere
+in order to find enough contiguous space for the new requested size.
+
+<TT>realloc</TT> does this by returning a new pointer.
+If <TT>realloc</TT> was able to make the old block of memory bigger,
+it returns the same pointer.
+If <TT>realloc</TT> has to go elsewhere to get enough contiguous memory,
+it returns a pointer to the new memory,
+after copying your old data there.
+(In this case, after it makes the copy, it frees the old block.)
+Finally, if <TT>realloc</TT> can't find enough memory
+to satisfy the new request at all,
+it returns a null pointer.
+Therefore,
+you usually don't want to overwrite your old pointer
+with <TT>realloc</TT>'s return value
+until you've tested it to make sure it's not a null pointer.
+You might use code like this:
+<pre>
+	int *newp;
+	newp = realloc(ip, 200 * sizeof(int));
+	if(newp != NULL)
+		ip = newp;
+	else	{
+		printf("out of memory\n");
+		/* exit or return */
+		/* but ip still points at 100 ints */
+		}
+</pre>
+If <TT>realloc</TT> returns something other than a null pointer,
+it succeeded, and we set <TT>ip</TT> to what it returned.
+(We've either set <TT>ip</TT> to what it used to be or to a new pointer,
+but in either case,
+it points to where our data is now.)
+If <TT>realloc</TT> returns a null pointer, however,
+we hang on to our old pointer in <TT>ip</TT>
+which still points at our
+original
+100 values.
+
+
+</p><p>Putting this all together,
+here is a piece of code which reads lines of text from the user,
+treats each line as an integer by calling <TT>atoi</TT>,
+and stores each integer in a dynamically-allocated ``array'':
+<pre>
+#define MAXLINE 100
+
+char line[MAXLINE];
+int *ip;
+int nalloc, nitems;
+
+nalloc = 100;
+ip = malloc(nalloc * sizeof(int));		/* initial allocation */
+if(ip == NULL)
+	{
+	printf("out of memory\n");
+	exit(1);
+	}
+
+nitems = 0;
+
+while(getline(line, MAXLINE) != EOF)
+	{
+	if(nitems &gt;= nalloc)
+		{				/* increase allocation */
+		int *newp;
+		nalloc += 100;
+		newp = realloc(ip, nalloc * sizeof(int));
+		if(newp == NULL)
+			{
+			printf("out of memory\n");
+			exit(1);
+			}
+		ip = newp;
+		}
+
+	ip[nitems++] = atoi(line);
+	}
+</pre>
+We use two different variables
+to keep track of the ``array'' pointed to by <TT>ip</TT>.
+<TT>nalloc</TT> is how many elements we've allocated,
+and <TT>nitems</TT> is how many of them are in use.
+Whenever we're about to store another item in the ``array,''
+if <TT>nitems &gt;= nalloc</TT>,
+the old ``array'' is full,
+and it's time to call <TT>realloc</TT> to make it bigger.
+</p><p>Finally, we might ask what the return type
+of <TT>malloc</TT> and <TT>realloc</TT> is,
+if they are able to return
+pointers to <TT>char</TT> or pointers to <TT>int</TT>
+or
+(though we haven't seen it yet)
+pointers to any other type.
+The answer is that both of these functions are declared
+(in <TT>&lt;stdlib.h&gt;</TT>)
+as returning a type we haven't seen, <TT>void *</TT>
+(that is, pointer to <TT>void</TT>).
+We haven't really seen type <TT>void</TT>, either,
+but what's going on here is that <TT>void *</TT>
+is specially defined as a ``generic'' pointer type,
+which may be used
+(strictly speaking, assigned to or from) any pointer type.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx11b.html" rev=precedes>prev</a>
+<a href="sx11d.html" rel=precedes>next</a>
+<a href="sx11.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-1997
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

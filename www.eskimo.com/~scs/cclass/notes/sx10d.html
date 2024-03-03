@@ -1,0 +1,197 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>10.4 Null Pointers</title>
+<link href="sx10c.html" rev=precedes>
+<link href="sx10e.html" rel=precedes>
+<link href="sx10.html" rev=subdocument>
+</head>
+<body>
+<H2>10.4 Null Pointers</H2>
+
+<p>We said that the value of a pointer variable
+is a pointer to some other variable.
+There is one other value a pointer may have:
+it may be set to a <dfn>null pointer</dfn>.
+A <dfn>null pointer</dfn> is
+a special pointer value that is known not to point anywhere.
+What this means is that no other valid pointer,
+to any other variable or array cell or anything else,
+will ever compare equal to a null pointer.
+</p><p>The most straightforward way
+
+to ``get'' a null pointer in your program
+is by using the predefined constant <TT>NULL</TT>,
+which is defined for you by several standard header files,
+including <TT>&lt;stdio.h&gt;</TT>, <TT>&lt;stdlib.h&gt;</TT>,
+and <TT>&lt;string.h&gt;</TT>.
+To initialize a pointer to a null pointer,
+you might use code like
+<pre>
+	#include &lt;stdio.h&gt;
+
+	int *ip = NULL;
+</pre>
+and to test it for a null pointer
+before inspecting the value pointed to,
+you might use code like
+<pre>
+	if(ip != NULL)
+		printf("%d\n", *ip);
+</pre>
+</p><p>
+It is also possible to refer to the null pointer
+by using a constant <TT>0</TT>,
+and you will see some code that sets null pointers
+by simply doing
+<pre>
+	int *ip = 0;
+</pre>
+(In fact, <TT>NULL</TT> is a preprocessor macro
+which typically has the value,
+or replacement text,
+<TT>0</TT>.)
+</p><p>Furthermore,
+since the definition of ``true'' in C
+is a value that is not equal to 0,
+you will see code that tests for non-null pointers
+with abbreviated code like
+<pre>
+	if(ip)
+		printf("%d\n", *ip);
+</pre>
+This has the same meaning as our previous example;
+<TT>if(ip)</TT> is equivalent to
+<TT>if(ip != 0)</TT>
+and to
+<TT>if(ip != NULL)</TT>.
+</p><p>All of these uses are legal,
+and although I recommend that you use the constant <TT>NULL</TT> for clarity,
+you will come across the other forms,
+so you should be able to recognize them.
+</p><p>You can use a null pointer as a placeholder
+to remind yourself
+(or, more importantly, to help your program remember)
+that a pointer variable does not point anywhere at the moment
+and that you should not use the ``contents of'' operator on it
+(that is, you should not try to inspect what it points to,
+since it doesn't point to anything).
+A function that returns pointer values
+can return a null pointer when it is unable to perform its task.
+(A null pointer used in this way
+is analogous to the <TT>EOF</TT> value
+that functions like <TT>getchar</TT> return.)
+</p><p>As an example, let us write our own version
+of the standard library function <TT>strstr</TT>,
+which looks for one string within another,
+returning a pointer to the string if it can,
+or a null pointer if it cannot.
+Here is the function, using the obvious brute-force algorithm:
+at every character of the input string,
+the code checks for
+a match there of the pattern string:
+<pre>
+#include &lt;stddef.h&gt;
+
+char *mystrstr(char input[], char pat[])
+{
+	char *start, *p1, *p2;
+	for(start = &amp;input[0]; *start != '\0'; start++)
+		{		/* for each position in input string... */
+		p1 = &pat[0];	/* prepare to check for pattern string there */
+		p2 = start;
+		while(*p1 != '\0')
+			{
+			if(*p1 != *p2)	/* characters differ */
+				break;
+			p1++;
+			p2++;
+			}
+		if(*p1 == '\0')		/* found match */
+			return start;
+		}
+
+	return NULL;
+}
+</pre>
+The <TT>start</TT> pointer steps over
+each character position in the <TT>input</TT> string.
+At each character,
+the inner loop checks for a match there,
+by using <TT>p1</TT> to step over the pattern string
+(<TT>pat</TT>),
+and <TT>p2</TT> to step over the input string
+(starting at <TT>start</TT>).
+We compare successive characters until either
+(a) we reach the end of the pattern string
+(<TT>*p1 == '\0'</TT>),
+or
+(b)
+we find two characters which differ.
+When we're done with the inner loop,
+if we reached the end of the pattern string
+(<TT>*p1 == '\0'</TT>),
+it means that all preceding characters matched,
+and we found a complete match for the pattern starting at <TT>start</TT>,
+so we return <TT>start</TT>.
+Otherwise, we go around the outer loop again,
+to try another starting position.
+If we run out of those
+(if <TT>*start == '\0'</TT>),
+without finding a match,
+we return a null pointer.
+</p><p>Notice that the function is declared as returning
+(and does in fact return)
+a pointer-to-<TT>char</TT>.
+</p><p>We can use <TT>mystrstr</TT>
+(or its standard library counterpart <TT>strstr</TT>)
+to determine whether one string contains another:
+<pre>
+	if(mystrstr("Hello, world!", "lo") == NULL)
+		printf("no\n");
+	else	printf("yes\n");
+</pre>
+</p><p>In general,
+C does not initialize pointers to null for you,
+and it never tests pointers to see if they are null before using them.
+If one of the pointers in your programs
+points somewhere some of the time but not all of the time,
+an excellent convention to use
+is to set it to a null pointer when it doesn't point anywhere valid,
+and to test to see if it's a null pointer before using it.
+But you must use explicit code to set it to <TT>NULL</TT>,
+and to test it against <TT>NULL</TT>.
+
+(In other words,
+just setting an unused pointer variable to <TT>NULL</TT>
+doesn't guarantee safety;
+you also have to check for
+the null value before using the pointer.)
+
+On the other hand,
+if you know that a particular pointer variable is always valid,
+you don't have
+to insert
+a paranoid test against <TT>NULL</TT> before using it.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx10c.html" rev=precedes>prev</a>
+<a href="sx10e.html" rel=precedes>next</a>
+<a href="sx10.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-03 per &lt;20001219223935.A2068@moni.msci.memphis.edu&gt; -->
+<!-- patched 2023-04-03 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

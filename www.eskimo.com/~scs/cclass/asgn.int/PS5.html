@@ -1,0 +1,544 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>Assignment #5</title>
+</head>
+<body>
+<H1>Assignment #5</H1>
+
+
+
+
+
+<B>Intermediate C Programming
+<br>
+<br>
+UW Experimental College
+</B><br>
+<br>
+<B>Assignment #5
+</B><p><B>Handouts:
+</B></p><p><a href="PS5.html">Assignment #5</a>
+<br><a href="PS4a.html">Assignment #4 Answers</a>
+<br><a href="../int/sx7.html">Class Notes, Chapter 21</a>
+<br><a href="../int/sx8.html">Class Notes, Chapter 22</a>
+<p><B>Exercises:
+</B></p><OL><li>Bit-masks
+(such as the <TT>attrs</TT> field
+we added to the object structure last time)
+are a perfectly reasonable data structure to use
+for keeping track of a relatively small,
+well-defined set of attributes.
+However,
+as we've already seen,
+once we start trying to keep track of
+the qualities and states of various objects in the game,
+we quickly find ourselves using a welter of attributes.
+There aren't enough bits in an <TT>int</TT>
+(or even a <TT>long int</TT>)
+to keep track of all the attributes we might eventually want.
+Furthermore,
+it becomes a nuisance
+to have to <TT>#define</TT> a new mask in <TT>game.h</TT>
+every time we invent a new attribute,
+and to add another <TT>if</TT> clause
+to <TT>parsedatafile</TT> in <TT>io.c</TT>
+to map the <TT>attribute</TT> line in the data file
+(a string)
+to the corresponding mask constant.
+<br>
+<br>
+Therefore, after using it for only a week or two,
+we're going to rip out the bitmask-based attribute scheme
+and replace it with something more open-ended and flexible.
+Any object may have a list of attributes,
+with each attribute represented by an arbitrary string.
+We'll write a few functions for
+setting, testing, and clearing these attributes,
+so that they'll be convenient
+for the rest of the program to manipulate.
+While we're at it,
+we'll get some
+more
+practice doing dynamic memory allocation
+and using linked lists.
+<br>
+<br>
+Since,
+under this new scheme,
+an object may have arbitrarily many attributes,
+and since each attribute will be an arbitrary-length string,
+we won't be able to use fixed-size data structures.
+We'll use dynamically-allocated ones, instead,
+which means that we'll be calling <TT>malloc</TT> a lot.
+A cardinal rule of using <TT>malloc</TT> is that you <em>must</em>
+check its return value to make sure that it did not return a null pointer.
+If the program ever runs out of memory,
+or some other problem causes <TT>malloc</TT> to return a null pointer,
+and if your program accidentally uses that null pointer
+as if it points to usable memory,
+your program can and will fail in mysterious ways.
+If, on the other hand,
+you check <TT>malloc</TT>'s return value,
+and print a distinct error message when it fails,
+you'll at least know more or less exactly what the problem is.
+<br>
+<br>
+If you have many places in your program
+where you're doing dynamic allocation,
+it may become a nuisance
+to have to check return values at all of those places.
+Therefore,
+a popular strategy is to implement
+a <dfn>wrapper function</dfn> around <TT>malloc</TT>.
+The one we'll be using looks like this:
+<pre>
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include "chkmalloc.h"
+
+void *
+chkmalloc(size_t sz)
+{
+void *ret = malloc(sz);
+if(ret == NULL)
+	{
+	fprintf(stderr, "Out of memory\n");
+	exit(EXIT_FAILURE);
+	}
+return ret;
+}
+</pre>
+All <TT>chkmalloc</TT> does is call <TT>malloc</TT>,
+check its return value,
+and return it if it's not <TT>NULL</TT>.
+(<TT>size_t</TT> is an ANSI C type for representing the sizes of objects,
+and <TT>void *</TT> is the generic pointer type
+which <TT>malloc</TT> and related functions return.)
+But since <TT>chkmalloc</TT> never returns a null pointer,
+its caller never has to check,
+but can begin using the pointer immediately.
+<TT>chkmalloc</TT> can guarantee never to return a null pointer
+not because it implements some kind of a magical infinite memory space,
+but rather
+
+because it simply exits,
+after printing an error message,
+if <TT>malloc</TT> fails.
+Thus, all tests for <TT>malloc</TT> failures
+(and our strategy for dealing with
+those failures)
+are centralized in <TT>chkmalloc()</TT>.
+<br>
+<br>
+The ``strategy'' of printing an error message and exiting
+when <TT>malloc</TT> fails is an expedient one,
+but it would not be ideal for all programs.
+It assumes that
+(a) an actual out-of-memory condition is unlikely, and
+(b) the program won't have any cleanup to do
+and won't mind if it's summarily terminated.
+This strategy would <em>not</em>,
+for example,
+be acceptable for a text editor:
+the editor might use arbitrary amounts of memory when editing a large file,
+and the user would certainly <em>not</em> appreciate being dumped out,
+without having the opportunity to save any work,
+after trying to add
+(say) the 1,000,001st character
+to a huge file
+which had just been typed in from scratch
+over many hours.
+However, for our little adventure game,
+this is a perfectly adequate strategy,
+for now at least.
+<br>
+<br>
+You might argue that,
+if out-of-memory conditions are unlikely,
+we might as well skip <TT>chkmalloc</TT>,
+call <TT>malloc</TT> directly,
+and not check its return value.
+This would be a bad idea,
+because while actual out-of-memory conditions may be rare,
+other kinds of <TT>malloc</TT> failures are not so rare,
+especially in a program under development.
+If you misuse the memory which <TT>malloc</TT> gives you,
+perhaps by asking for 16 bytes of memory
+and then writing 17 characters to it
+(and this is all too easy to do),
+<TT>malloc</TT> tends to notice,
+or at least to be broken by your carelessness,
+and will return a null pointer next time you call it.
+When <TT>malloc</TT> returns a null pointer for this reason,
+it can be difficult to track down the actual error
+(because it typically occurred
+somewhere in your code <em>before</em> the call to <TT>malloc</TT>
+that failed),
+but if we blindly used the null pointer which <TT>malloc</TT>
+returned to us,
+we'd only defer the eventual crash even farther,
+and it might be quite mysterious,
+much more so than a definitive ``out of memory'' message.
+Therefore,
+using a wrapper function like <TT>chkmalloc</TT> is a definite improvement,
+because we get error messages as soon as <TT>malloc</TT> fails,
+and we don't have to scatter tests all through our code to get them.
+<br>
+<br>
+All we do have to do,
+anywhere we call <TT>chkmalloc</TT>,
+is <TT>#include "chkmalloc.h"</TT>,
+which contains <TT>chkmalloc</TT>'s external function prototype declaration,
+as well as a second convenience function
+which we'll meet in a minute:
+<pre>
+extern void *chkmalloc(size_t);
+extern char *chkstrdup(char *);
+</pre>
+Both <TT>chkmalloc.c</TT> and <TT>chkmalloc.h</TT>
+are in the <TT>week5</TT> subdirectory of the source directories.
+<br>
+<br>
+With <TT>chkmalloc</TT> in hand,
+we can begin implementing the new attribute scheme.
+First, we define this list structure:
+<pre>
+struct list
+	{
+	char *item;
+	struct list *next;
+	};
+</pre>
+<br>
+<br>
+Then, we rewrite the object structure to use a list,
+instead of an <TT>unsigned int</TT>,
+for <TT>attrs</TT>:
+<pre>
+struct object
+	{
+	char name[MAXNAME];
+	struct list *attrs;
+	struct object *contents;	/* contents (if container) */
+	struct object *lnext;		/* next in list of contained objects */
+					/* (i.e. in this object's container) */
+	char *desc;			/* long description */
+	};
+#define Iscontainer(o) hasattr(o, "container")
+#define Isopen(o) hasattr(o, "open")
+</pre>
+Notice that we have also rewritten the
+<TT>Iscontainer()</TT> and <TT>Isopen()</TT>
+macros,
+to use the new <TT>hasattr</TT> function,
+which we'll see in a minute.
+(This suggests another benefit of having used those macros:
+none of the code that ``called''
+<TT>Iscontainer()</TT> or <TT>Isopen()</TT>
+will need rewriting.
+As we'll see,
+though,
+the code that has been using raw bit operations
+to test and set the other attributes
+will need rewriting.)
+The old attribute bits (<TT>CONTAINER</TT>, <TT>OPEN</TT>, etc.)
+are no longer needed.
+<br>
+<br>
+We rewrite the <TT>newobject</TT> function in <TT>object.c</TT>
+slightly,
+to initialize <TT>attrs</TT> to a null pointer:
+<pre>
+struct object *
+newobject(char *name)
+{
+struct object *objp;
+
+if(nobjects &gt;= MAXOBJECTS)
+	{
+	fprintf(stderr, "too many objects\n");
+	exit(1);
+	}
+
+objp = &amp;objects[nobjects++];
+
+strcpy(objp-&gt;name, name);
+objp-&gt;lnext = NULL;
+objp-&gt;attrs = NULL;
+objp-&gt;contents = NULL;
+objp-&gt;desc = NULL;
+
+return objp;
+}
+</pre>
+(Actually, we could have left it as <TT>objp-&gt;attrs = 0</TT>,
+because 0 is also an acceptable null pointer constant.)
+<br>
+<br>
+Now,
+here are the three new functions for testing, setting, and
+clearing (``unsetting'')
+attribute strings:
+<pre>
+/* see if the object has the attribute */
+
+int
+hasattr(struct object *objp, char *attr)
+{
+struct list *lp;
+
+for(lp = objp-&gt;attrs; lp != NULL; lp = lp-&gt;next)
+	{
+	if(strcmp(lp-&gt;item, attr) == 0)
+		return TRUE;
+	}
+
+return FALSE;
+}
+
+/* set an attribute of an object (if it's not set already) */
+
+void
+setattr(struct object *objp, char *attr)
+{
+struct list *lp;
+
+if(hasattr(objp, attr))
+	return;
+
+lp = chkmalloc(sizeof(struct list));
+
+lp-&gt;item = chkstrdup(attr);
+lp-&gt;next = objp-&gt;attrs;
+objp-&gt;attrs = lp;
+}
+
+/* clear an attribute of an object */
+
+void
+unsetattr(struct object *objp, char *attr)
+{
+struct list *lp;
+struct list *prevlp;
+
+for(lp = objp-&gt;attrs; lp != NULL; lp = lp-&gt;next)
+	{
+	if(strcmp(lp-&gt;item, attr) == 0)
+		{
+		if(lp == objp-&gt;attrs)
+			objp-&gt;attrs = lp-&gt;next;
+		else	prevlp-&gt;next = lp-&gt;next;
+		free(lp-&gt;item);
+		free(lp);
+		return;
+		}
+	prevlp = lp;
+	}
+}
+</pre>
+(These functions are in the file <TT>object.xc</TT>
+in the <TT>week5</TT> subdirectory.)
+<br>
+<br>
+<TT>hasattr</TT> returns <TT>TRUE</TT> if an object has a certain
+attribute;
+it simply searches through the object's attribute list
+looking for a matching string.
+<TT>setattr</TT> sets an attribute;
+if the object does not already have the attribute,
+<TT>setattr</TT> allocates a new list structure,
+by allocating a new list node,
+allocating and copying the string,
+and splicing the new node into the attribute list.
+<TT>unsetattr</TT> clears an attribute by finding it in the list
+and freeing both the list node structure and the string
+(if a matching attribute is found).
+<br>
+<br>
+To explain the call to <TT>chkstrdup</TT> in <TT>setattr</TT>,
+we must say and think a little more about memory allocation.
+It turns out that,
+to be on the safe side,
+<TT>setattr</TT> must allocate memory for the string defining the attribute.
+It cannot assume that the string which was passed to it
+was allocated in such a way
+that it would be guaranteed to persist
+for the life of this attribute on this object.
+For example,
+when we're reading a data file,
+the passed-in attribute string will be sitting
+in a buffer holding one line we've just read from the data file,
+and
+that buffer
+will be overwritten when we read the next line.
+Even if the passed-in string <em>were</em> allocated
+in such a way that it would stick around,
+<TT>setattr</TT> still couldn't use it directly,
+but would still have to make a copy,
+because <TT>unsetattr</TT> is always going to free the string,
+so <TT>setattr</TT> better have allocated it.
+Many times, the string passed to <TT>setattr</TT> will be
+a pointer to a string constant in the source code,
+and if <TT>setattr</TT> simply copied the pointer
+rather than allocating and copying the string,
+<TT>unsetattr</TT> might later try to free that pointer,
+an operation which would fail since the pointer wasn't originally
+obtained from <TT>malloc</TT>.
+<br>
+<br>
+<TT>setattr</TT> could call <TT>strlen</TT>
+to get the length of the string,
+add 1 for the terminating <TT>\0</TT>,
+call <TT>malloc</TT> or <TT>chkmalloc</TT>,
+and copy the string in,
+but since this is a common pattern
+(and since it's easy to forget to add 1),
+we encapsulate it in the function <TT>chkstrdup</TT>.
+<TT>chkstrdup</TT> accepts a string,
+and returns a pointer to <TT>malloc</TT>'ed memory
+holding a copy of the string.
+The ``<TT>chk</TT>'' in its name reflects the fact that,
+like <TT>chkmalloc</TT>,
+it never returns a null pointer,
+even when <TT>malloc</TT> fails.
+Here is <TT>chkstrdup</TT>'s definition:
+<pre>
+#include &lt;string.h&gt;
+
+char *
+chkstrdup(char *str)
+{
+char *ret = chkmalloc(strlen(str) + 1);
+strcpy(ret, str);
+return ret;
+}
+</pre>
+(<TT>chkstrdup</TT> is also in <TT>chkmalloc.c</TT>.)
+<br>
+<br>
+Now that we have the <TT>hasattr</TT>, <TT>setattr</TT>,
+and <TT>unsetattr</TT> functions,
+we unfortunately have quite a few changes to make.
+Everywhere we have the pattern
+<pre>
+	<I>object</I>-&gt;attrs &amp; <I>ATTRIBUTE</I>
+</pre>
+(where <I>object</I> is any <TT>struct object</TT> pointer
+and <I>ATTRIBUTE</I> is any attribute),
+we must replace it with
+<pre>
+	hasattr(<I>object</I>, "<I>attribute</I>")
+</pre>
+Everywhere we have the pattern
+<pre>
+	<I>object</I>-&gt;attrs |= <I>ATTRIBUTE</I>
+</pre>
+we must replace it with
+<pre>
+	setattr(<I>object</I>, "<I>attribute</I>")
+</pre>
+And everywhere we have the pattern
+<pre>
+	<I>object</I>-&gt;attrs &amp;= ~<I>ATTRIBUTE</I>
+</pre>
+we must replace it with
+<pre>
+	unsetattr(<I>object</I>, "<I>attribute</I>")
+</pre>
+(As we mentioned, though,
+anywhere we ``call''
+the <TT>Iscontainer()</TT> or <TT>Isopen()</TT> macros
+to test the <TT>CONTAINER</TT> or <TT>OPEN</TT> attributes,
+we won't have to change anything.)
+<br>
+<br>
+Finally,
+the attribute-reading code in <TT>io.c</TT> is considerably simplified.
+Here is the relevant code from <TT>parsedatafile</TT>:
+<pre>
+	else if(strcmp(av[0], "attribute") == 0)
+		{
+		if(currentobject == NULL)
+			continue;
+		setattr(currentobject, av[1]);
+		}
+</pre>
+<br>
+<br>
+So, exercise 1
+(which all of this text so far has been an elaborate prelude to)
+is to add the functions and source files mentioned so far,
+change all of the code that uses <TT>attrs</TT> to use the new
+<TT>hasattr</TT>, <TT>setattr</TT>,
+and <TT>unsetattr</TT> functions
+(the changes should be confined to <TT>commands.c</TT>,
+and to one line in <TT>object.c</TT>),
+and make sure that the program still works.
+<li>If you didn't use dynamically-allocated memory
+to hold long object and room descriptions,
+make that change now.
+<li>Rewrite <TT>newobject</TT> in <TT>object.c</TT>
+and <TT>newroom</TT> in <TT>rooms.c</TT>
+to dynamically allocate
+new structures,
+rather than parceling them out of
+the static <TT>objects</TT> and <TT>rooms</TT> arrays.
+(Eliminate those arrays.)
+<br>
+<br>
+Eliminating the <TT>rooms</TT> array has one unintended consequence.
+Although using arrays
+to hold the objects and rooms
+was generally a nuisance in the long run,
+we did take advantage of it in one situation:
+during the initial setup of the dungeon,
+while reading the data file,
+we hooked up named room exits to other rooms
+by calling the <TT>findroom</TT> function.
+<TT>findroom</TT> had to be able to find a named room anywhere in the dungeon,
+which meant that it needed a way to scan through the list of all rooms.
+When rooms were held in an array,
+scanning through the array was easy.
+When we move to dynamically allocated room structures,
+we must preserve this ability.
+<br>
+<br>
+The fact that what we need is the ability to
+``scan through the list of all rooms''
+suggests the solution:
+we'll keep a linked list of all the rooms.
+We don't need to define and implement a new list structure or anything;
+we can just add a ``next'' pointer to <TT>struct room</TT>.
+This next pointer won't be used for any purpose
+which the user playing the game will be able to see--as
+far as the user is concerned,
+the only connections
+(pointers)
+between rooms are the ones described by the room's explicit exits.
+This new <TT>next</TT> field for <TT>struct room</TT>
+will be for our own, internal, behind-the-scenes use,
+so that we can implement this list of all rooms.
+<li>Improve the code in <TT>io.c</TT>
+so that room exit lists can be placed directly in the room descriptions,
+rather than at the end.
+If an exit refers to a room you've already seen,
+you can hook up the exit immediately.
+But if the exit refers to a room you haven't seen yet,
+you'll have to allocate some temporary data structure
+to keep track of the source room, direction, and destination.
+Then, after you've read the entire data file,
+you can go back through that list of unresolved exits,
+since all of the destinations <em>should</em> exist by that point.
+(If any don't, you can print an error message.)
+</OL><hr>
+<hr>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-9
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

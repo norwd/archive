@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>23.1: Multidimensional Arrays and Functions</title>
+<link href="sx9.html" rev=precedes>
+<link href="sx9b.html" rel=precedes>
+<link href="sx9.html" rev=subdocument>
+</head>
+<body>
+<H2>23.1: Multidimensional Arrays and Functions</H2>
+
+<p>The most straightforward way of passing a multidimensional array to a function
+is to declare it in exactly the same way in the function as it
+was declared in the caller.
+If we were to call
+<pre>
+	func(a2);
+</pre>
+then we might declare
+<pre>
+	func(int a[5][7])
+	{
+	...
+	}
+</pre>
+and it's clear that the array type which the caller passes
+is the same as the type which the function <TT>func</TT> accepts.
+</p><p>If we remember what we learned about simple arrays and functions, however,
+two questions arise.
+First, in our earlier function definitions, we were able to
+leave out the (single) array dimension, with the understanding
+that since the array was really defined in the caller, we didn't
+have to say (or know) how big it is.
+The situation is
+the same
+for multidimensional arrays,
+although it may not seem so at first.
+The hypothetical function <TT>func</TT> above
+accepts a parameter <TT>a</TT>,
+where <TT>a</TT> is an array of 5 things,
+where each of the 5 things is itself an array.
+By the same argument that applies in the single-dimension case,
+the function does not have to know how big the array <TT>a</TT> is,
+overall.
+However, it certainly does need to know what <TT>a</TT> is an array <em>of</em>.
+It is not enough to know that <TT>a</TT> is an array of 
+``other arrays'';
+the function
+must know
+that <TT>a</TT> is an array of
+<em>arrays of 7 </em><TT>int</TT><em>s</em>.
+The upshot is that although it does not need to know
+how many ``rows'' the array has,
+it <em>does</em> need to know the number of columns.
+That is, if we want to leave out any dimensions, we can only
+leave out the first one:
+<pre>
+	func(int a[][7])
+	{
+	...
+	}
+</pre>
+The second dimension is still required.
+(For a three- or more dimensional array,
+all but the first dimension are required;
+again,
+only the first dimension
+may be omitted.)
+</p><p>The second question we might ask concerns the equivalence between
+pointers and arrays.
+We know that when we pass an array to a function,
+what really gets passed is a pointer to the array's first element.
+We know that when we declare a function that seems to accept an
+array as a parameter,
+the compiler quietly compiles the function as if that parameter
+were a pointer,
+since a pointer is what it will actually receive.
+What about multidimensional arrays?
+What kind of pointer is passed down to the function?
+</p><p>The answer is, a pointer to the array's first element.
+And, since the first element of a multidimensional array is
+another array,
+what gets passed to the function is a <em>pointer to an array</em>.
+If you want to declare the function <TT>func</TT> in a way that
+explicitly shows the type which it receives, the declaration
+would be
+<pre>
+	func(int (*a)[7])
+	{
+	...
+	}
+</pre>
+The declaration <TT>int (*a)[7]</TT> says that <TT>a</TT> is a
+pointer to an array of 7 <TT>int</TT>s.
+Since declarations like this are hard to write and hard to
+understand,
+and since pointers to arrays are generally confusing,
+I recommend that when you write functions which accept
+multidimensional arrays,
+you declare the parameters using array notation,
+not pointer notation.
+</p><p>What if you don't know what the dimensions of the array will be?
+What if you want to be able to call a function with arrays of
+different sizes and shapes?
+Can you say something like
+<pre>
+	func(int x, int y, int a[x][y])
+	{
+	...
+	}
+</pre>
+where the array dimensions are specified by other parameters to
+the function?
+Unfortunately, in C, you cannot.
+(You can do so in FORTRAN, and you can do so in the extended
+language implemented by <TT>gcc</TT>,
+and you will be able to do so in the new version of the C Standard
+(``C9X'')
+to be completed in 1999,
+but you cannot do so in standard, portable C,
+today.)
+</p><p>Finally, we might explicitly note that if we pass a
+multidimensional array to a function:
+<pre>
+	int a2[5][7];
+	func(a2);
+</pre>
+we can <em>not</em> declare that function as accepting a
+pointer-to-pointer:
+<pre>
+	func(int **a)			/* WRONG */
+	{
+	...
+	}
+</pre>
+As we said above, the function ends up receiving a pointer to an array,
+not a pointer to a pointer.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx9.html" rev=precedes>prev</a>
+<a href="sx9b.html" rel=precedes>next</a>
+<a href="sx9.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1996-1999
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

@@ -1,0 +1,404 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>Assignment #3</title>
+</head>
+<body>
+<H1>Assignment #3</H1>
+
+
+
+
+
+<B>Introductory C Programming
+<br>
+<br>
+UW Experimental College
+</B><br>
+<br>
+<B>Assignment #3
+</B><p><B>Handouts:
+</B></p><p><a href="PS3.html">Assignment #3</a>
+<br><a href="PS2a.html">Answers to Assignment #2</a>
+<br><a href="../notes/sx4.html">Class Notes, Chapter 4</a>
+<br><a href="../notes/sx5.html">Class Notes, Chapter 5</a>
+<p><B>Reading Assignment:
+</B></p><p><a href="../notes/sx3c.html">Class Notes, Chapter 3, Secs. 3.3-3.5</a>
+<br><a href="../notes/sx4.html">Class Notes, Chapter 4, Secs. 4.1-4.1.1, 4.3</a>
+<br><a href="../notes/sx5.html">Class Notes, Chapter 5, Secs. 5.1-5.3</a>
+<br>(optional)
+Class Notes,
+Secs. <a href="../notes/sx3f.html">3.6</a>,
+<a href="../notes/sx4ba.html">4.1.2-4.2</a>,
+<a href="../notes/sx4d.html">4.4</a>,
+<a href="../notes/sx5d.html">5.4</a>
+<p><B>Review Questions:
+</B></p><OL><li>How many elements does the array
+<pre>
+	int a[5];
+</pre>
+contain?
+Which is the first element?
+The last?
+<li>What's wrong with this scrap of code?
+<pre>
+	int a[5];
+	for(i = 1; i &lt;= 5; i = i + 1)
+		a[i] = 0;
+</pre>
+<li>How might you rewrite the dice-rolling program (from the notes,
+chapter 4, p. 2) without arrays?
+<li>What is the difference between a <dfn>defining instance</dfn>
+and an <dfn>external declaration</dfn>?
+<li>What are the four important parts of a function?
+Which three does a caller need to know?
+</OL><br>
+<br>
+<p><B>Tutorial Section
+</B><OL><li>Here is another nested-loop example,
+similar to exercise 4 of assignment 1,
+
+and to tutorial 3 of assignment 2.
+This one prints an addition table for sums from 1+1 to 10+10.
+<pre>
+/* print an addition table for 1+1 up to 10+10 */
+
+#include &lt;stdio.h&gt;
+
+int main()
+{
+	int i, j;
+	/* print header line: */
+	printf("  ");
+	for(j = 1; j &lt;= 10; j = j + 1)
+		printf(" %3d", j);
+	printf("\n");
+	/* print table: */
+	for(i = 1; i &lt;= 10; i = i + 1)
+		{
+		printf("%2d", i);
+		for(j = 1; j &lt;= 10; j = j + 1)
+			printf(" %3d", i + j);
+		printf("\n");
+		}
+	return 0;
+}
+</pre>
+The first <TT>j</TT> loop prints the top, header row of the table.
+(The initial <TT>printf("  ");</TT>
+is to make it line up with the rows beneath,
+which will all begin with a value of <TT>i</TT>.)
+Then, the <TT>i</TT> loop prints the rest of the table,
+one row per value of <TT>i</TT>.
+For each value of <TT>i</TT>, we print that value
+(on the left edge of the table),
+and then print the sums
+resulting from adding that value of <TT>i</TT>
+to ten different values of <TT>j</TT>
+(using a second, inner loop on <TT>j</TT>).
+<br>
+<br>
+Make a simple modification to the program to print a multiplication table,
+or a subtraction table.
+<li>Here is yet another nested-loop example.
+It is very similar to the one above,
+except that rather than printing the sum <TT>i+j</TT>,
+it determines whether the sum is even or odd,
+using the expression
+<TT>(i+j) % 2
+</TT>.
+The <TT>%</TT> operator, remember, gives the remainder when dividing,
+and
+an
+even number gives a remainder of 0 when dividing by 2.
+Depending on whether the sum is even or odd,
+the program prints an asterisk or a space.
+Type in and run the program, and look at the pattern that results.
+<pre>
+#include &lt;stdio.h&gt;
+
+int main()
+{
+	int i, j;
+	for(i = 1; i &lt;= 10; i = i + 1)
+		{
+		for(j = 1; j &lt;= 10; j = j + 1)
+			{
+			if((i + j) % 2 == 0)
+				printf("* ");
+			else	printf("  ");
+			}
+		printf("\n");
+		}
+	return 0;
+}
+</pre>
+(Why are there parentheses around
+<TT>i + j</TT>
+in the expression
+<TT>(i + j) % 2
+</TT>?
+What if they were left out?)
+<br>
+<br>
+Modify the program to print a pattern of <TT>.</TT> and <TT>#</TT> characters,
+or X's and O's.
+If you wish, experiment by taking the remainder
+when dividing by 3 or 4, instead.
+Since the remainder when dividing by 3 can be 0, 1, or 2,
+you could use a cascaded <TT>if</TT>/<TT>else</TT> statement
+to print one of three characters for each sum
+(or one of four if taking the remainder when dividing by 4).
+<li>Later in this assignment
+(exercise 3),
+you're asked to create a simple function to compute the squares of numbers.
+Sometimes,
+rather than writing a function
+which will compute a value each time it's called,
+it's useful to build an array
+containing all the values we might need.
+Here is a program which declares an array,
+then fills it with the squares of the numbers from 1 to 10:
+<pre>
+#include &lt;stdio.h&gt;
+
+int main()
+{
+	int i;
+	int squares[11];	/* [0..10]; [0] ignored */
+	/* fill array: */
+	for(i = 1; i &lt;= 10; i = i + 1)
+		squares[i] = i * i;
+	/* print table: */
+	printf("n\tsquare\n");
+	for(i = 1; i &lt;= 10; i = i + 1)
+		printf("%d\t%d\n", i, squares[i]);
+	return 0;
+}
+</pre>
+There's one slight trick in the declaration of the <TT>squares</TT> array.
+Remember that arrays in C are based at 0.
+So if we wanted an array to hold the squares of 10 numbers,
+and if we declared it as
+<TT>int squares[10];
+</TT>the array's 10 elements would range from
+<TT>squares[0]</TT> to <TT>squares[9]</TT>.
+This program wants to use elements
+from <TT>squares[1]</TT> to <TT>squares[10]</TT>,
+so it simply declares the array as having size 11,
+and wastes the 0th element.
+<br>
+<br>
+The program also uses the tab character, <TT>\t</TT>,
+in its printouts,
+to make the columns line up.
+<br>
+<br>
+Modify the program so that it also declares and fills in
+a <TT>cubes</TT> array containing the cubes
+(third powers)
+of the numbers 1-10,
+and prints them out in a third column.
+<li>We're going to write a simple
+(<em>very</em> simple!)
+graphics program.
+We'll write a function <TT>printsquare</TT>
+which prints a square
+(made out of asterisks)
+of a certain size.
+Then we'll use our favorite for-<TT>i</TT>-equals-1-to-10 loop
+to call the function 10 times,
+printing squares of size 1 to 10.
+<pre>
+#include &lt;stdio.h&gt;
+
+int printsquare(int);
+
+int main()
+{
+	int i;
+	for(i = 1; i &lt;= 10; i = i + 1)
+		{
+		printsquare(i);
+		printf("\n");
+		}
+	return 0;
+}
+
+int printsquare(int n)
+{
+	int i, j;
+	for(i = 0; i &lt; n; i = i + 1)
+		{
+		for(j = 0; j &lt; n; j = j + 1)
+			printf("*");
+		printf("\n");
+		}
+	return 0;
+}
+</pre>
+Type the program in and run it.
+Then
+see
+if you can modify
+it
+to print ``open'' squares,
+like this:
+<pre>
+****
+*  *
+*  *
+****
+</pre>
+instead of filled squares.
+You'll have to print the box in three parts:
+first the top row,
+then a number of ``<TT>*  *</TT>'' rows,
+and finally the bottom row.
+There's obviously no way to print ``open'' boxes of size 1 or 2,
+so don't worry about those cases.
+(That is,
+you can
+change the loop in the top-level <TT>main</TT> function to
+<TT>for(i = 3; i &lt;= 10; i = i + 1)
+</TT>.)
+</OL><br>
+<br>
+</p><p><B>Exercises
+</B>(pick three or four):
+</p><OL><li>Write code to sum the elements of an array of <TT>int</TT>.
+(Write it as a function, if you like.)
+Use it to sum the array
+<pre>
+	int a[] = {1, 2, 3, 4, 5, 6};
+</pre>
+(The answer, of course, should be 21).
+<li>Write a loop to call the <TT>multbytwo()</TT> function (chapter
+5, section 5.1, p. 1) on the numbers 1-10.
+For extra credit,
+compile your <TT>main</TT> function and
+the <TT>multbytwo()</TT> function
+as two source files, one function per file.
+<li>Write a <TT>square()</TT> function and use it to print the squares
+of the numbers 1-10:
+<pre>
+1  1
+2  4
+3  9
+4  16
+...
+9  81
+10 100
+</pre>
+<li>Write the function
+<pre>
+	void printnchars(int ch, int n)
+</pre>
+which is supposed to print the character <TT>ch</TT>, <TT>n</TT> times.
+(Remember
+that <TT>%c</TT> is the <TT>printf</TT> format to use for printing characters.)
+For example, the call <TT>printnchars('x', 5)</TT> would print 5 <TT>x</TT>'s.  Use
+this function to rewrite the triangle-printing program of assignment
+1 (exercise 4).
+<li>Write a function to compute the factorial of a number, and use
+it to print the factorials of the numbers 1-7.
+(Extra credit:
+print the factorials of the numbers 1-10.)
+<li>(Kernighan and Ritchie)
+Write a function <TT>celsius()</TT> to convert
+degrees Fahrenheit to degrees Celsius.
+(The conversion formula
+is &#176;C = 5/9 <TT>*</TT> (&#176;F - 32).)
+Use it to print a Fahrenheit-to-Centigrade table
+for -40 to 220 degrees Fahrenheit, in increments of 10 degrees.
+(Remember that <TT>%f</TT> is the <TT>printf</TT> format to use for printing floating-point
+numbers.
+Also, remember
+that the integer expression <TT>5/9</TT> gives 0,
+so you <em>won't</em> want to use integer division.)
+<li>Modify the dice-rolling program
+(Sec. 4.1)
+so that it computes the average
+of all the rolls of the pair of dice.
+Remember that integer division
+truncates, so you'll have to declare some of your variables as
+<TT>float</TT> or <TT>double</TT>.
+<br>
+<br>
+For extra credit, also compute the standard deviation, which can
+be expressed as
+<blockquote>sqrt((sum(x*x) - sum(x)*sum(x)/n) / (n - 1))
+</blockquote>(where the notation sum(x) indicates summing all values of x,
+as usually expressed with the Greek letter sigma;
+there is <em>not</em> such a sum() function in C!)
+If you put the line
+<pre>
+	#include &lt;math.h&gt;
+</pre>
+at the top of the file, you'll be able to call <TT>sqrt()</TT>.
+<br>
+<br>
+(See the note in Assignment #2, Exercise 5, about compiling with
+the math library under Unix.
+There are better ways of computing
+the standard deviation, but the above expression will suffice
+for our purposes.)
+<li>Write either the function
+<pre>
+	randrange(int n)
+</pre>
+which returns random integers from 1 to <TT>n</TT>, or the function
+<pre>
+	int randrange2(int m, int n)
+</pre>
+which returns random integers in the range <TT>m</TT> to <TT>n</TT>.  Use your function
+to streamline the dice-rolling program a bit.
+<br>
+<br>
+The header file <TT>&lt;stdlib.h&gt;</TT> defines a constant, <TT>RAND_MAX</TT>, which
+is the maximum number returned by the <TT>rand()</TT> function.
+A better
+way of reducing the range of the <TT>rand()</TT> function is like this:
+<pre>
+	rand() / (RAND_MAX / N + 1)
+</pre>
+(where <TT>N</TT> is the range of numbers you want).
+<br>
+<br>
+Extra credit: investigate the behavior of <TT>randrange(2)</TT>, both using
+the ``obvious'' range-reduction technique (the modulus operator <TT>%</TT>,
+as shown in the notes) and this improved method.  If your library's
+implementation of <TT>rand()</TT> is a good one, you won't see a difference.
+But if you're not so lucky, you may see something very surprising.
+<li>Rewrite the dice-rolling program to also print a histogram.
+For example, if there are 21 rolls of 7, the output line ``<TT>7: 21</TT>''
+should also contain a horizontal row of 21 asterisks.
+(Use the <TT>printnchars</TT> function from exercise 4, if you wish.)
+The output might look like this:
+<pre>
+2: 2    **
+3: 5    *****
+4: 4    ****
+5: 10   **********
+6: 15   ***************
+7: 28   ****************************
+8: 12   ************
+9: 9    *********
+10: 7   *******
+11: 5   *****
+12: 3   ***
+</pre>
+</OL><hr>
+<hr>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-9
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>section 4.10: Recursion</title>
+<link href="sx7i.html" rev=precedes>
+<link href="sx7k.html" rel=precedes>
+<link href="sx7.html" rev=subdocument>
+</head>
+<body>
+<H2>section 4.10: Recursion</H2>
+
+page 86
+<p>Recursion is a simple but deep concept
+which is occasionally presented somewhat bewilderingly.
+Please don't be put off by it.
+If this section stops making sense,
+don't worry about it;
+we'll revisit recursion in chapter 6.
+</p><p>Earlier we said that a function is
+(or ought to be)
+a ``black box''
+which does some job and does it well.
+Whenever you need to get that job done,
+you're supposed to be able to call that function.
+You're not supposed to have to worry about any reasons why the 
+function might not be able to do that job for you just now.
+</p><p>It turns out that some functions
+are naturally written in such a way
+that they can do their job
+by <em>calling themselves</em> to do part of their job.
+This seems like a crazy idea at first,
+but based on a strict interpretation of our observation about
+functions--that
+we ought to be able to call them whenever we need their job
+done--calling
+a function from within itself ought not to be illegal,
+and in fact in C it is legal.
+Such a call is called a <dfn>recursive</dfn> call,
+and it works because it's possible
+to have several instances of a function active simultaneously.
+They don't interfere with each other,
+because each instance has its own copies of its parameters and local variables.
+(However,
+if a function accesses any static or global data,
+it must be written carefully if it is to be called recursively,
+because then different instances of it
+<em>could</em> interfere with each other.)
+</p><p>Let's consider the <TT>printd</TT> example rather carefully.
+First,
+remind yourself about the reverse-order problem from the 
+<TT>itoa</TT> example on page 64 in section 3.6.
+The ``obvious'' algorithm for determining the digits in a number,
+which involves successively dividing it by 10 and looking at 
+the remainders,
+generates digits in right-to-left order,
+but we'd usually like them in left-to-right order,
+especially if we're printing them out as we go.
+Let's see if we can figure out another way to do it.
+</p><p>It's easy to find the lowest (rightmost) digit;
+that's <TT>n % 10</TT>.
+It's easy to compute
+all but
+the lowest digit;
+that's <TT>n / 10</TT>.
+So we could print a number left-to-right,
+directly,
+without any explicit reversal step,
+if we had a routine to print all but the last digit.
+We could call that routine,
+then print the last digit ourselves.
+</p><p>But--here's the surprise--the routine to
+``print all but the last digit''
+is <TT>printd</TT>,
+the routine we're writing,
+if we call it with an argument of <TT>n / 10</TT>.
+</p><p>Recursion seems like cheating--it seems that if you're 
+writing a routine to do something
+(in this case,
+to print digits)
+and instead of writing code to print digits
+you just punt and call a routine for printing digits
+and which is in fact the very routine you're supposed to 
+write--it seems like you haven't done the job you came to do.
+A recursive function seems like circular reasoning;
+it seems to beg the question of how it does its job.
+</p><p>But if you're writing a recursive function,
+as long as you do a little bit of work yourself,
+and only pass on a portion of the job to another instance of yourself,
+you haven't completely reneged on your responsibilities.
+Furthermore,
+if you're ever called with such a small job to do
+that the little bit you're willing to do encompasses the whole job,
+you don't have to call yourself again
+(there's no remaining portion that you can't do).
+Finally,
+since each recursive call does some work,
+passing on smaller and smaller portions to succeeding recursive calls,
+and since the last call
+(where the remaining portion is empty)
+doesn't generate any more recursive calls,
+the recursion is broken
+and doesn't constitute an infinite loop.
+</p><p>Don't worry about the quicksort example
+if it seems impenetrable--quicksort is an important algorithm,
+but it
+is not easy
+to understand completely at first.
+<br></p><p>Note that the <TT>qsort</TT> routine described here is very different 
+from the standard library <TT>qsort</TT>
+(in fact, it probably shouldn't even have the same name).
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx7i.html" rev=precedes>prev</a>
+<a href="sx7k.html" rel=precedes>next</a>
+<a href="sx7.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

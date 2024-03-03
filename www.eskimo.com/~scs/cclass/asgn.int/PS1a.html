@@ -1,0 +1,184 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>Assignment #1 Answers</title>
+</head>
+<body>
+<H1>Assignment #1 Answers</H1>
+
+
+
+
+
+<B>Intermediate C Programming
+<br>
+<br>
+UW Experimental College
+</B><br>
+<br>
+<B>Assignment #1 ANSWERS
+</B><br>
+<br>
+<p>Question 1.
+<I>What are the four parts of a structure definition?
+</I><p>The keyword <TT>struct</TT>,
+the structure tag (optional),
+the brace-enclosed list of member declarations (optional),
+and a list of variables of this structure type to be declared (optional).
+<p>Exercise 2.
+<I>Add a ``help'' command.
+</I><p>Here is the code I added
+to the big <TT>if</TT>/<TT>else</TT> chain
+in <TT>commands.c</TT>:
+<pre>
+else if(strcmp(verb, "help") == 0)
+	{
+	printf("Here are some useful commands:\n");
+	printf("n, north\tgo north\n");
+	printf("s, south\tgo south\n");
+	printf("e, east\t\tgo east\n");
+	printf("w, west\t\tgo west\n");
+	printf("look\t\tdescribe current room\n");
+	printf("examine obj\tdescribe an object\n");
+	printf("take obj\tpick up an object\n");
+	printf("drop obj\tdrop an object\n");
+	printf("i, inventory\tlist your current possessions\n");
+	printf("There may be other commands, too!\n");
+	}
+</pre>
+(This help text also contains a description
+of the new ``examine'' command, below.)
+<p>Exercise 3.
+<I>Add a ``long description'' field
+to the <TT>object</TT> and <TT>room</TT> structures.
+</I><p>I added the line
+<pre>
+	char *desc;
+</pre>
+at the end of the definition of <TT>struct object</TT> in <TT>game.h</TT>,
+and also
+at the end of <TT>struct room</TT>.
+I modified the initializations of the <TT>objects</TT> and 
+<TT>rooms</TT> arrays in <TT>main.c</TT> to give most of the objects 
+and rooms descriptions:
+<pre>
+static struct object objects[] =
+	  {
+/* [0] */ {"bed", NULL, "It is an old, four-poster bed with a lace coverlet."},
+/* [1] */ {"diamond", NULL,
+		"The diamond twinkles majestically as you hold it in the light."},
+/* [2] */ {"kettle", NULL,
+		"It is a dented old kettle.  You're not sure it would even hold water."},
+/* [3] */ {"hammer", NULL},
+/* [4] */ {"pliers", &amp;objects[3]},
+/* [5] */ {"doormat", NULL, "It says, \"Welcome\", in big, friendly letters."},
+/* [6] */ {"pick", NULL, "It is an old miner's pick."},
+/* [7] */ {"shovel", &amp;objects[6]},
+	  };
+</pre>
+<pre>
+static struct room rooms[] =
+	   {
+/* [0]  */ {"field", NULL, {&amp;rooms[1], NULL, NULL, NULL},
+		"You are in an open field, with a house to the north."},
+/* [1]  */ {"house", NULL, {&amp;rooms[2], &amp;rooms[0], NULL, NULL},
+		"You are standing just to the south of a plain, white house."},
+/* [2]  */ {"entry", NULL, {&amp;rooms[3], &amp;rooms[2], &amp;rooms[5], NULL},
+		"You are in the entryway of the house.\n\
+A hall leads north, and there are doors to the south and east."},
+/* [3]  */ {"hall", NULL, {&amp;rooms[6], &amp;rooms[2], NULL, &amp;rooms[4]},
+		"You are in a north-south hallway, with a door to the west."},
+/* [4]  */ {"bedroom", &amp;objects[0], {NULL, NULL, &amp;rooms[3], NULL},
+		"You are in what looks like a bedroom.  The exit is to the east."},
+/* [5]  */ {"closet", &amp;objects[1], {NULL, NULL, NULL, &amp;rooms[2]}},
+/* [6]  */ {"kitchen", &amp;objects[2], {&amp;rooms[9], &amp;rooms[3], &amp;rooms[7], NULL},
+		"You are in the kitchen of the house.\n\
+Doorways lead north and south, and there is a stairwell to the east."},
+/* [7]  */ {"stairway", NULL, {NULL, NULL, &amp;rooms[6], &amp;rooms[8]},
+		"You are in a stairway twisting down beneath the kitchen."},
+/* [8]  */ {"basement", &amp;objects[4], {NULL, NULL, &amp;rooms[7], &amp;rooms[10]},
+		"You are in a dank basement.  There is a stairway to the east.\n\
+It looks like someone has been digging at the west end!"},
+/* [9]  */ {"porch", &amp;objects[5], {NULL, &amp;rooms[6], NULL, NULL},
+		"You are on the back porth of the house.\n"
+		"There is a doorway to the south."},
+/* [10] */ {"tunnel", &amp;objects[7], {NULL, NULL, &amp;rooms[8], NULL},
+		"You are in a low east-west tunnel, recently dug.\n"
+		"The earth seems soft; you wonder how safe the ceiling is."},
+	   };
+</pre>
+(Initializing long descriptions in this way is <em>not</em> convenient,
+because the strings are, well, too long.
+I even embedded <TT>\n</TT> within some of the strings,
+to make them print on several lines,
+and I continued some of them over two lines in the source code,
+just to make them fit on the page.
+You will notice that there are two ways of doing this:
+The descriptions of the entry, kitchen, and basement
+are extended onto the next line
+using <TT>\</TT> as a continuation character.
+The descriptions of the porch and tunnel are split into two strings,
+on two separate lines but with no comma or other punctuation between them;
+this means that the strings are automatically spliced together at compile time,
+to form the equivalent of a single string.
+But if you don't use either of these methods,
+if you break a string constant across two lines
+without using <TT>\</TT> or splitting it into two strings to be concatenated,
+the compiler complains.)
+<p>I added this code
+to the big <TT>if</TT>/<TT>else</TT> chain
+in <TT>commands.c</TT>,
+to implement an ``examine'' command:
+<pre>
+else if(strcmp(verb, "examine") == 0)
+	{
+	if(object == NULL)
+		{
+		printf("You must tell me what to examine.\n");
+		return FALSE;
+		}
+	objp = findobject(player, object);
+	if(objp == NULL)
+		{
+		printf("I see no %s here.\n", object);
+		return FALSE;
+		}
+	if(objp-&gt;desc == NULL || *objp-&gt;desc == '\0')
+		printf("You see nothing special about the %s.\n", object);
+	else	printf("%s\n", objp-&gt;desc);
+	}
+</pre>
+Finally, I rewrote the <TT>listroom</TT> function in 
+<TT>rooms.c</TT> to look like this:
+<pre>
+void
+listroom(struct actor *actor)
+{
+struct room *roomp = actor-&gt;location;
+if(roomp == NULL)
+	{
+	printf("Where are you?\n");
+	return;
+	}
+printf("%s\n", roomp-&gt;name);
+if(roomp-&gt;desc != NULL &amp;&amp; *roomp-&gt;desc != '\0')
+	printf("%s\n", roomp-&gt;desc);
+if(roomp-&gt;contents != NULL)
+	{
+	printf("room contains:\n");
+	listobjects(roomp-&gt;contents);
+	}
+}
+</pre>
+<hr>
+<hr>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-9
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-04 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

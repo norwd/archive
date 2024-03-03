@@ -1,0 +1,181 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>25.3 Special Issues with Varargs Functions</title>
+<link href="sx11b.html" rev=precedes>
+<link href="sx11.html" rev=subdocument>
+</head>
+<body>
+<H2>25.3 Special Issues with Varargs Functions</H2>
+
+<p>When a function with a variable-length argument list is called,
+the variable arguments are passed
+using C's old ``default argument promotions.''
+These say that types <TT>char</TT> and <TT>short int</TT>
+are automatically promoted to <TT>int</TT>,
+and type <TT>float</TT> is automatically promoted to <TT>double</TT>.
+Therefore, varargs functions will <em>never</em> receive
+arguments of type <TT>char</TT>, <TT>short int</TT>, or <TT>float</TT>.
+Furthermore, it's an error to ``pass'' the type names
+<TT>char</TT>, <TT>short int</TT>, or <TT>float</TT>
+as the second argument to the <TT>va_arg()</TT> macro.
+Finally, for vaguely related reasons,
+the last fixed argument
+(the one whose name is passed as
+the second argument to the <TT>va_start()</TT> macro)
+should not be of type <TT>char</TT>, <TT>short int</TT>,
+or <TT>float</TT>,
+either.
+</p><p>A frequently-asked question is,
+``How can I determine how many arguments
+my function was actually called with?''
+The answer,
+as discussed above,
+is that <em>you</em> (or your code) must figure it out somehow,
+generally by looking at the arguments themselves
+(or, in the case of <TT>printf</TT>,
+by using clues which are designed into the first, fixed arguments).
+There is no Standard way of asking
+the compiler or run-time system
+how many arguments were actually passed,
+or what their types are.
+</p><p>The macros <TT>va_start()</TT> and <TT>va_arg()</TT>
+are referred to as macros because they can't possibly be functions.
+<TT>va_start()</TT> initializes
+(that is, sets the value of)
+its first argument,
+and it
+uses its second argument not as a value but as a location.
+
+Even more unusually,
+<TT>va_arg()</TT> accepts a type name as its second argument,
+which no function in C,
+indeed no <em>anything</em> in C other than <TT>sizeof</TT>,
+can ever do.
+Finally,
+<TT>va_arg()</TT> has no one return type
+(as it would have to if it were a function);
+the type it ``returns'' is determined by its second argument.
+</p><p>The <TT>va_list</TT> type, whatever it is, is a mostly normal type.
+In particular, you can pass it on to other functions,
+and it is frequently quite useful to do so.
+For example, suppose that you want to write an <TT>error</TT> function,
+which will print nicely annotated error messages
+complete with filenames, line numbers, severity indicators, and the like.
+Furthermore, suppose that the rest of your program will find it useful,
+when calling this <TT>error</TT> function,
+to embed <TT>%</TT> sequences in the string to be printed,
+requesting that extra arguments be interpolated,
+just like <TT>printf</TT>.
+The obvious question is,
+will the <TT>error</TT> function have to duplicate
+all of <TT>printf</TT>'s code
+for parsing format strings and formatting variable arguments
+(which isn't impossible, as we've seen),
+or can it somehow call on <TT>printf</TT> or a related function
+to do most of the work?
+</p><p>To be precise, here's the outline of the <TT>error</TT> function
+we'd like to write:
+<pre>
+	extern char *filename;		/* current input file name */
+	extern int lineno;		/* current line number */
+
+	void error(char *msg, ...)
+	{
+		fprintf(stderr, "%s, line %d: error:", filename, lineno);
+		fprintf(stderr, msg, <I>what goes here?</I> );
+		fprintf(stderr, "\n");
+	}
+</pre>
+The tricky line is the second call to <TT>fprintf</TT>.
+We have the string, <TT>msg</TT>,
+we want
+
+to print,
+possibly containing <TT>%</TT> characters.
+How do we pass down to <TT>fprintf</TT>
+the extra arguments which our caller passed to us?
+</p><p>The answer is that we don't;
+there's no way to say
+``call this function with the same arguments I got,
+however many of them there are.''
+(The run-time system simply doesn't have enough information
+to do this sort of thing,
+which is why it can't tell you
+how many arguments you got called with, either.)
+However, there's a variant version of <TT>fprintf</TT>
+which is designed
+for just this sort of situation.
+The variant is called <TT>vfprintf</TT>
+(where
+the <TT>v</TT>
+stands for ``varargs''),
+and a call to it looks something like this:
+<pre>
+	void error(char *msg, ...)
+	{
+		va_list argp;
+
+		fprintf(stderr, "%s, line %d: error:", filename, lineno);
+		va_start(argp, msg);
+		vfprintf(stderr, msg, argp);
+		va_end(argp);
+		fprintf(stderr, "\n");
+	}
+</pre>
+We declare a local variable of type <TT>va_list</TT>
+and call <TT>va_start()</TT>,
+as before.
+However, all we do with our <TT>argp</TT> variable
+is pass it to <TT>vfprintf</TT> as its third argument.
+<TT>vfprintf</TT> then does all the work--if
+we could look inside it,
+it would look a lot like our version of <TT>printf</TT> above,
+except that <TT>vfprintf</TT> does <em>not</em> call
+<TT>va_start()</TT>,
+because its caller already has.
+Notice that <TT>vfprintf</TT> does <em>not</em> accept
+a variable number of arguments;
+it accepts exactly three arguments,
+the third of which is essentially a ``pointer''
+to the extra arguments it will need.
+</p><p>There are also ``varargs'' versions of
+<TT>printf</TT> and <TT>sprintf</TT>,
+namely <TT>vprintf</TT> and <TT>vsprintf</TT>.
+These follow the same pattern,
+accepting a single last argument of type <TT>va_list</TT>
+in lieu of an actual variable-length argument list.
+</p><p>(Notice that the <TT>error</TT> function above
+also called <TT>va_end()</TT>.
+This makes sense,
+since <TT>error</TT> was the one who called <TT>va_start()</TT>.
+The above pattern works,
+but more complicated ones may not.
+For example,
+it's not guaranteed that you can
+pick a few arguments off of a <TT>va_list</TT>,
+pass the <TT>va_list</TT> to a subfunction to pick a few more off,
+and then pick the last ones off yourself.
+Also, there's no direct way to ``rewind'' a <TT>va_list</TT>,
+although it's permissible to call <TT>va_end()</TT>
+and then <TT>va_start()</TT> again,
+to start over again.)
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx11b.html" rev=precedes>prev</a>
+<a href="sx11.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1996-1999
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

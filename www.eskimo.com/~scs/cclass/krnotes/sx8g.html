@@ -1,0 +1,240 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>section 5.7: Multi-dimensional Arrays</title>
+<link href="sx8f.html" rev=precedes>
+<link href="sx8h.html" rel=precedes>
+<link href="sx8.html" rev=subdocument>
+</head>
+<body>
+<H2>section 5.7: Multi-dimensional Arrays</H2>
+
+page 111
+<p>The <TT>month_day</TT> function is another example of a 
+function which simulates having multiple return values by using 
+pointer parameters.
+<TT>month_day</TT> is declared as <TT>void</TT>,
+so it has no formal return value,
+but two of its parameters,
+<TT>pmonth</TT> and <TT>pday</TT>,
+are pointers,
+and it fills in the locations
+pointed to by these two pointers
+with the two values it wants to ``return.''
+One line of the definition of <TT>month_day</TT> on page 111 
+is cut off in all printings I have seen:
+it should read
+<pre>	void month_day(int year, int yearday, int *pmonth, int *pday)
+</pre></p><p>As we've said,
+although any nonzero value is considered ``true'' in C,
+the built-in relational and Boolean operators
+always ``return'' 0 or 1.
+Therefore,
+the line
+<pre>	int leap = year%4 == 0 &amp;&amp; year%100 != 0 || year%400 == 0;
+</pre>sets <TT>leap</TT> to 1 or 0
+(``true'' or ``false'')
+depending on the condition
+<pre>	year%4 == 0 &amp;&amp; year%100 != 0 || year%400 == 0
+</pre>which is the condition for leap years in the Gregorian calendar.
+
+(It's a little-known fact that century years are not leap years 
+unless they are also divisible by 400.
+Thus, 2000 <em>will</em> be a leap year.)
+The 1/0 value that <TT>leap</TT> receives
+is what
+the authors are referring to
+when they say that
+``the arithmetic value of a logical expression... can
+be used as a subscript of the array <TT>daytab</TT>.''
+This line could also have been written
+<pre>	int leap;
+	if (year%4 == 0 &amp;&amp; year%100 != 0 || year%400 == 0)
+		leap = 1;
+	else
+		leap = 0;
+</pre>or
+<pre>	int leap = (year%4 == 0 &amp;&amp; year%100 != 0 || year%400 == 0) ? 1 : 0;
+</pre></p><p>page 112
+</p><p>The <TT>daytab</TT> array holds small integers (in the range 0-31),
+so it can legally be made an array of <TT>char</TT>,
+though whether this is a legitimate use is a question of style.
+</p><p>Deep sentence:
+<blockquote>In C,
+a two-dimensional array is really a one-dimensional array,
+each of whose elements is an array.
+</blockquote>Earlier we said that ``array-of-<I>type</I> is another type,''
+and here we must believe it:
+since array-of-<I>type</I> is a type,
+array-of-(array-of-<I>type</I>) is yet another type.
+</p><p>The statement that
+``Elements are stored by rows,
+so the rightmost subscript, or column,
+varies fastest as elements are accessed in storage order''
+probably won't make much sense
+unless you've done a lot of work with other languages,
+such as FORTRAN,
+which do have true multi-dimensional arrays.
+It's pretty arbitrary what you call a ``row'' and what you call a ``column'';
+the most important thing to know is which subscript goes with which dimension.
+If you have
+<pre>	int a[10][20];
+</pre>then in the reference <TT>a[i][j]</TT>,
+<TT>i</TT> can range from 0 to 9
+and <TT>j</TT> can range from 0 to 19.
+In other words, you might write
+<pre>	for (i = 0; i &lt; 10; i++)
+		for (j = 0; j &lt; 20; j++)
+			<I>do something with</I> a[i][j]
+</pre></p><p>We also want to know what <TT>a</TT> actually is.
+Is it an array of 10 arrays, each of size 20,
+or is it an array of 20 arrays, each of size 10?
+There are other ways of convincing ourselves of the answer,
+but for now let's just say that the ``closer'' dimensions are 
+closer to what <TT>a</TT> is.
+Therefore, <TT>a</TT> is first an array of size 10,
+and what it's an array of is arrays of 20 <TT>int</TT>s.
+This also tells us that if we ever refer to <TT>a[i]</TT>
+(without a second subscript),
+then we're referring to just one of those 10 arrays
+(of size 20)
+in its entirety.
+</p><p>When we look back
+at the initialization of the <TT>daytab</TT> array on page 111,
+everything lines up.
+<TT>daytab</TT> is defined as
+<pre>	char daytab[2][13]
+</pre>and we can see from the initializer that there are two (sub)arrays,
+each of size 13.
+(We can also see that there is some justification
+for saying that the first subscript refers to ``rows''
+and the second to ``columns.'')
+</p><p>The authors illustrate one way of dealing with C's 0-based 
+arrays when you have an algorithm that really wants to treat an 
+array as if it were 1-based.
+Here, rather than remembering
+to subtract one from the 1-based month number each time,
+they chose to waste a ``column'' of the array,
+and declare it one larger than necessary,
+so that they could refer to subscripts from [1] to [12].
+</p><p>One last note about the initialization of <TT>daytab</TT>:
+you may have seen code in other programming books that kept an 
+array of the cumulative days of all the months:
+<pre>	{0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365}
+</pre>Precomputing an array like that
+might make things a tiny bit easier on the computer
+(it wouldn't have to loop through the entire array each time,
+as it does in the <TT>day_of_year</TT> function),
+but it makes it considerably harder to see what the numbers mean,
+and to verify that they are correct.
+The simple table of individual month lengths is much clearer,
+and if the computer has to do a bit more grunge work,
+well, that's what computers are for.
+As explained in another book co-authored by Brian Kernighan:
+
+<blockquote>A cumulative table of days must be calculated by someone
+and checked by someone else.
+Since few people are familiar
+with the number of days up to the end of a particular month,
+neither writing nor checking is easy.
+But if instead we use a table of days per month,
+we can let the computer count them for us.
+(``Let the machine do the dirty work.'')
+</blockquote></p><p>The bottom of page 112 begins to get confusing.
+The ``number of rows'' of an array like <TT>daytab</TT>
+``is irrelevant'' when passed to a function such as the 
+hypothetical <TT>f</TT> because the compiler doesn't need to 
+know the number of rows when calculating subscripts.
+It does need to know the number of columns or ``width,''
+because that's how it knows that the second element on the 
+second row of a 10-column array is actually 12 cells past the 
+beginning of the array, which is essentially what it needs to 
+know when it goes off and actually accesses the array in memory.
+But it doesn't need to know how long the overall array is,
+as long as we promise not to run off the end of it,
+and that's always up to us.
+(This is why we haven't specified the array sizes
+in the definitions of functions such as
+<TT>getline</TT> on pages 29 and 69,
+or <TT>atoi</TT> on pages 43, 61, and 73,
+or <TT>readlines</TT> on page 109,
+although we did carry the array size as a separate argument
+to <TT>getline</TT> and <TT>readlines</TT>,
+to assist us in our promise not to run off the end.)
+</p><p>The third version
+of <TT>f</TT>
+on page 112
+comes about because of the ``gentle fiction''
+involving array parameters.
+We learned on page 99
+that functions don't really receive arrays as parameters;
+they receive pointers
+(since any array passed by the caller decayed immediately to a pointer).
+On page 39 we wrote a <TT>strlen</TT> function as
+<pre>	int strlen(char s[])
+</pre>but on page 99 we rewrote it as 
+<pre>	int strlen(char *s)
+</pre>which is closer to the way the compiler sees the situation.
+(In fact, when we write <TT>int strlen(char s[])</TT>,
+the compiler essentially rewrites it as
+<TT>int strlen(char *s)</TT> for us.)
+In the same way,
+a function declared as
+<pre>	f(int daytab[][13])
+</pre>can be rewritten by us
+(or if not, is rewritten by the compiler)
+to
+<pre>	f(int (*daytab)[13])
+</pre>which declares the <TT>daytab</TT> parameter as a 
+pointer-to-array-of-13-<TT>int</TT>s.
+Here we see two things:
+(1)
+the rewrite
+which changes an array parameter to a pointer parameter
+happens only once
+(we end up with a pointer to an array,
+not a pointer to a pointer),
+and
+(2)
+the syntax for pointers to arrays is a bit messy,
+because of some required extra parentheses,
+as explained in the text.
+</p><p>If this seems obscure, don't worry about it too much;
+just declare functions with array parameters matching the 
+arrays you call them with,
+like
+<pre>	f(int daytab[2][13])
+</pre>and let the compiler worry about the rewriting.
+</p><p>Deep sentence:
+<blockquote>More generally,
+only the first dimension (subscript) of an array is free;
+all the others have to be specified.
+</blockquote>This just says what we said already:
+when declaring an array as a function parameter,
+you can leave off the first dimension
+because it is the overall length
+and not knowing it causes no immediate problems
+(unless you accidentally go off the end).
+But the compiler always needs to know the other dimensions,
+so that it knows how the rows and columns line up.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx8f.html" rev=precedes>prev</a>
+<a href="sx8h.html" rel=precedes>next</a>
+<a href="sx8.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-03 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>15.3: Operations on Structures</title>
+<link href="sx1b.html" rev=precedes>
+<link href="sx1d.html" rel=precedes>
+<link href="sx1.html" rev=subdocument>
+</head>
+<body>
+<H2>15.3: Operations on Structures</H2>
+
+<p>[This section corresponds roughly to K&amp;R Sec. 6.2]
+</p><p>There is a relatively small number of operations
+which C directly supports on structures.
+As we've seen, we can define structures,
+declare variables of structure type,
+and select the members of structures.
+We can also assign entire structures:
+the expression
+<pre>
+	c1 = c2
+</pre>
+would assign <em>all</em> of <TT>c2</TT> to <TT>c1</TT>
+(both the real and imaginary parts,
+assuming the preceding declarations).
+We can also pass structures as arguments to functions,
+and declare and define functions which return structures.
+But to do anything else,
+we typically have to write our own code
+(often as functions).
+For example, we could write a function to add two complex numbers:
+<pre>
+	struct complex
+	cpx_add(struct complex c1, struct complex c2)
+	{
+	struct complex sum;
+	sum.real = c1.real + c2.real;
+	sum.imag = c1.imag + c2.imag;
+	return sum;
+	}
+</pre>
+We could then say things like
+<pre>
+	c1 = cpx_add(c2, c3)
+</pre>
+(Two footnotes:
+Typically,
+you do need a temporary variable like <TT>sum</TT>
+in a function like <TT>cpx_add</TT> above that returns a structure.
+
+In C++,
+it's possible to couple your own functions to the built-in operators,
+so that you could write <TT>c1 = c2 + c2</TT>
+and have it call your complex add function.)
+</p><p>One more thing you can do with a structure is
+initialize a structure variable while declaring it.
+As for array initializations,
+
+the initializer consists of
+a comma-separated list of values enclosed in braces <TT>{}</TT>:
+<pre>
+	struct complex c1 = {1, 2};
+	struct complex c2 = {3, 4};
+</pre>
+Of course,
+the type of each initializer in the list
+must be compatible with the type of the corresponding structure member.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx1b.html" rev=precedes>prev</a>
+<a href="sx1d.html" rel=precedes>next</a>
+<a href="sx1.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1996-1999
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

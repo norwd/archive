@@ -1,0 +1,547 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>section 6.5: Self-referential Structures</title>
+<link href="https://www.eskimo.com/~scs/cclass/krnotes/sx9e.html" rev=precedes>
+<link href="https://www.eskimo.com/~scs/cclass/krnotes/sx10.html" rel=precedes>
+<link href="https://www.eskimo.com/~scs/cclass/krnotes/sx9.html" rev=subdocument>
+</head>
+<body>
+<H2>section 6.5: Self-referential Structures</H2>
+
+page 139
+<p>In section 4.10, we met recursive functions.
+Now, we're going to meet recursively-defined data structures.
+Don't throw up your hands:
+the two should be easier to understand in combination.
+</p><p>The mention of ``quadratic running time'' is tangential,
+but it's a useful-enough concept that it might be worth a bit of explanation.
+If we were keeping a simple list
+(``linear array'')
+in order,
+each time we had a new word to install,
+we'd have to scan over the old list.
+On average, we'd have to scan over half the old list.
+(Even if we used binary search to find the position,
+we'd still have to move some part of the list to insert it.)
+Therefore, the more words that were in the list,
+the longer it would take to install each new word.
+It turns out that the running time of this linear insertion 
+algorithm would grow as the square of the number of items in the list
+(that's what ``quadratically'' means).
+If you doubled the size of the list,
+the running time would be four times longer.
+An algorithm like this may seem to work fine
+when you run it on small test inputs,
+but then when you run it on a real problem
+consisting of a thousand or ten thousand or a million words,
+it bogs down hopelessly.
+</p><p>A binary tree is a great way to keep a set of words
+(or other values)
+in sorted order.
+The definition of a binary tree is simply that,
+at each node,
+all items in the left subtree are less than the item at that node,
+and all items in the right subtree are greater.
+(Note that the top item in the left subtree
+is not necessarily <em>immediately</em> less than the item at that node
+or anything;
+the immediately-preceding item is merely down in the left subtree somewhere,
+along with all the rest of the preceding items.
+In the ``now is the time'' example,
+the word ``now'' is neither the first, last, nor middle word in the sorted list;
+it's merely the word that happened to be installed first.
+The word preceding it is ``men'';
+the word following it is ``of.''
+The first word in the sorted list is ``aid,''
+and the last word is ``to.'')
+</p><p>The binary tree may not immediately seem like much of an
+improvement over the linear array--we still have to scan over 
+part of the existing tree in order to insert each new word,
+and the time to add each new word will get longer as there are 
+more words in the tree.
+But, if you do the math,
+it turns out
+that on average you have to scan over a much smaller part of the tree,
+and
+it's not a simple fraction
+like half
+or one quarter,
+but rather the log (base two) of the number of items already in the tree.
+Furthermore,
+inserting a new node doesn't involve reshuffling any old data.
+For these reasons,
+the running time of binary tree insertion doesn't slow down
+nearly as badly as linear insertion does.
+</p><p>By the way,
+the reason that the word ``binary'' comes up so often
+is because it simply means ``two.''
+The binary number system has two digits
+(0 and 1);
+a binary operator has two operands;
+binary search eliminates half
+(one over two)
+of the possibilities at each step;
+a binary tree has two subtrees at each node.
+</p><p>One other bit of nomenclature:
+the word ``node'' simply refers to
+one of the structures in a set of structures
+that is linked together in some way,
+and as we're about to see,
+we're going to use a set of linked structures to implement a binary tree.
+Just as we talk about a ``cell'' or ``element'' of an array,
+we talk about a ``node'' in a tree or linked list.
+</p><p>When we look at the description
+of the algorithm for finding out whether a word is already in the tree,
+we may begin to see why the binary tree is more efficient than the linear list.
+When searching through a linear list,
+each time we discard a value that's not the one we're looking for,
+we've only discarded that one value;
+we still have the entire rest of the list to search.
+In a binary tree, however,
+whenever we move down the tree,
+we've just eliminated half of the tree.
+(We might say that a binary tree is a data structure
+which makes binary search automatic.)
+Consider guessing a number between one and a hundred by asking
+``Is it 1?  Is it 2?  Is it 3?'' etc.,
+versus asking
+``Is it less than 50?
+Is it greater than 25?
+Is it less than 12?''
+</p><p>page 140
+</p><p>Make sure you're comfortable with the idea of a structure
+which contains pointers to other instances of itself.
+If you draw some little box-and-arrow diagrams for a binary tree,
+the idea should fall into place easily.
+(As the authors point out,
+what would be impossible
+would be for a structure to contain
+not a pointer
+but rather another entire instance of itself,
+because
+that instance would contain another,
+and another,
+and the structure
+would be infinitely big.)
+</p><p>page 141
+</p><p>Note that <TT>addtree</TT> accepts as an argument the tree to 
+be added to,
+and returns a pointer to a tree,
+because it may have to modify the tree in the process of 
+adding a new node to it.
+If it doesn't have to modify the tree
+(more precisely,
+if it doesn't have to modify the top or <dfn>root</dfn> of the tree)
+it returns the same pointer it was handed.
+</p><p>Another thing to note
+is the technique used to mark the edges or ``leaves'' of the tree.
+We said that a null pointer was a special pointer value 
+guaranteed not to point anywhere,
+and it is therefore an excellent marker to use
+when a left or right subtree does not exist.
+Whenever a new node is built,
+<TT>addtree</TT> initializes both subtree pointers
+(``children'')
+to null pointers.
+Later,
+another chain of calls to <TT>addtree</TT>
+may replace one or the other of these with a new subtree.
+(Eventually, both might be replaced.)
+</p><p>If you don't completely see how <TT>addtree</TT> works,
+leave it for a moment and look at <TT>treeprint</TT>
+on the next page
+first.
+</p><p>The bottom of page 141 discusses a tremendously important issue:
+memory allocation.
+Although we only have one copy of the <TT>addtree</TT> function
+(which may call itself recursively many times),
+by the time we're done,
+we'll have many instances of the <TT>tnode</TT> structure
+(one for each unique word in the input).
+Therefore,
+we have to arrange somehow
+that memory for these multiple instances is properly allocated.
+We can't use a local variable
+of type <TT>struct tnode</TT> in <TT>addtree</TT>,
+because local variables disappear when their containing function returns.
+We can't use a <TT>static</TT> variable
+of type <TT>struct tnode</TT> in <TT>addtree</TT>,
+or a global variable of type <TT>struct tnode</TT>,
+because then we'd have only one node in the whole program,
+and we need many.
+</p><p>What we need is some brand-new memory.
+Furthermore,
+we have to arrange it
+so that each time <TT>addtree</TT> builds a brand-new node,
+it does so in another new piece of brand-new memory.
+Since each node contains a pointer (<TT>char *</TT>)
+to a string, the memory for that string has to be dynamically allocated, too.
+(If we didn't allocate memory for each new string,
+all the strings would end up being stored
+in the <TT>word</TT> array in <TT>main</TT> on page 140,
+and they'd step all over each other,
+and we'd only be able to see the last word we read.)
+</p><p>For the moment,
+we defer the questions of exactly where this brand-new memory is to come from
+by defining two functions to do it.
+<TT>talloc</TT> is going to return a
+(pointer to a)
+brand-new piece of memory suitable for holding a <TT>struct tnode</TT>,
+and <TT>strdup</TT> is going to return a
+(pointer to a)
+brand-new piece of memory
+containing a copy of
+a string.
+</p><p>page 142
+</p><p><TT>treeprint</TT> is probably
+the cleanest, simplest recursive function there is.
+If you've been putting off getting comfortable with recursive functions,
+now is the time.
+</p><p>Suppose it's our job to print a binary tree:
+we've just been handed a pointer to the base (root) of the tree.
+What do we do?
+The only node we've got easy access to is the root node,
+but as we saw,
+that's not the first or the last element to print or anything;
+it's generally a random node
+somewhere in the middle of the eventual sorted list
+(distinguished only by the fact that it happened to be inserted first).
+The node that needs to be printed first 
+is buried somewhere down in the left subtree,
+and the node to print just before the node we've got easy access to
+is buried somewhere else down in the left subtree,
+and the node to print next
+(after the one we've got)
+is buried somewhere down in the right subtree.
+In fact,
+everything down in the left subtree is to be printed before the node we've got,
+and everything down in the right subtree is to be printed after.
+A pseudocode description of our task, therefore, might be
+<pre><I>	print the left subtree (in order)
+	print the node we're at
+	print the right subtree (in order)
+</I></pre>How can we print the left subtree,
+in order?
+The left subtree is,
+in general,
+another tree,
+so printing it out sounds about as hard as printing an entire tree,
+which is what we were supposed to do.
+In fact, it's exactly as hard:
+it's the same problem.
+Are we going in circles?
+Are we getting anywhere?
+Yes, we are:
+the left subtree,
+even though it is still a tree,
+is at least <em>smaller</em> than the full tree we started with.
+The same is true of the right subtree.
+Therefore,
+we can use a recursive call to do the hard work
+of printing the subtrees,
+and all we have to do is the easy part: print the node we're at.
+The fact that the subtrees are smaller
+gives us the leverage
+we need
+to make a recursive algorithm work.
+</p><p>In any recursive function,
+it is (obviously) important to terminate the recursion,
+that is,
+to make sure that the function doesn't recursively call itself forever.
+In the case of binary trees,
+when you reach a ``leaf'' of the tree
+(more precisely, when the left or right subtree is a null pointer),
+there's nothing more to visit,
+so the recursion can stop.
+We can test for this in two different ways,
+either before or after we make the ``last'' recursive call:
+<pre>	void treeprint(struct tnode *p)
+	{
+		if(p-&gt;left != NULL)
+			treeprint(p-&gt;left);
+		printf("%4d %s\n", p-&gt;count, p-&gt;word);
+		if(p-&gt;right != NULL)
+			treeprint(p-&gt;right);
+	}
+</pre>or
+<pre>	void treeprint(struct tnode *p)
+	{
+		if(p == NULL)
+			return;
+<br>
+<br>
+		treeprint(p-&gt;left);
+		printf("%4d %s\n", p-&gt;count, p-&gt;word);
+		treeprint(p-&gt;right);
+	}
+</pre>Sometimes,
+there's little difference between one approach and the other.
+Here, though, the second approach
+(which is equivalent to the code on page 142)
+has a distinct advantage:
+it will work even if the very first call is on an empty tree
+(in this case, if there were no words in the input).
+As we mentioned earlier,
+it's extremely nice if programs work well at their boundary conditions,
+even if we don't think those conditions are likely to occur.
+</p><p>(One more thing to notice
+is that it's quite possible
+for a node to have a left subtree but not a right,
+or vice versa;
+one example is the node labeled ``of''
+in the tree on page 139.)
+</p><p>Another impressive thing about a recursive <TT>treeprint</TT> 
+function is that it's not just <em>a</em> way of writing it,
+or a nifty way of writing it;
+it's really the <em>only</em> way of writing it.
+You might try to figure out how to write a nonrecursive version.
+Once you've printed something down in the left subtree,
+how do you know where to go back up to?
+Our <TT>struct tnode</TT> only has pointers down the tree,
+there aren't any pointers back to the ``parent'' of each node.
+If you write a nonrecursive version,
+you have to keep track of how you got to where you are,
+and it's not enough to keep track of the parent of the node you're at;
+you have to keep a stack of <em>all</em> the nodes you've passed down through.
+When you write a recursive version,
+on the other hand,
+the normal function-call stack
+essentially keeps track of all this for you.
+</p><p>We now return to the problem of dynamic memory allocation.
+The basic approach builds on something we've been seeing 
+glimpses of for a few chapters now:
+we use
+a general-purpose function
+which returns a pointer to a block of <TT>n</TT> bytes of memory.
+(The authors presented a primitive version of such a function in section 5.4,
+and we used it in the sorting program in section 5.6.)
+Our problem is then reduced to
+(1) remembering to call this allocation function when we need to,
+and
+(2) figuring out how many bytes we need.
+Problem 1 is stubborn,
+but problem 2 is solved by the <TT>sizeof</TT> operator we met in section 6.3.
+</p><p>You don't need to worry about all the details of the 
+``digression on a problem related to storage allocators.''
+The vast majority of the time,
+this problem is taken care of for you,
+because you use
+the system library function <TT>malloc</TT>.
+</p><p>The problem of <TT>malloc</TT>'s return type
+is not quite as bad as the authors make it out to be.
+In ANSI C, the <TT>void *</TT> type is a ``generic'' pointer type,
+specifically intended to be used
+where you need a pointer which can be a pointer to any data type.
+Since <TT>void *</TT> is never a pointer to anything by itself,
+but is always intended to be converted (``coerced'') into some other type,
+it turns out that a cast is not strictly required:
+in code like
+<pre>	struct tnode *tp = malloc(sizeof(struct tnode));
+or
+	return malloc(sizeof(struct tnode));
+</pre>the compiler is willing to convert the pointer types implicitly,
+without warning you
+and without requiring you to insert explicit casts.
+(If you feel more comfortable with the casts, though,
+you're welcome to leave them in.)
+</p><p>page 143
+</p><p><TT>strdup</TT> is a handy little function that does two things:
+it allocates enough memory for one of your strings,
+and it copies your string to the new memory,
+returning a pointer to it.
+(It encapsulates a pattern which we first saw
+in the <TT>readlines</TT> function on page 109 in section 5.6.)
+Note the <TT>+1</TT> in the call to <TT>malloc</TT>!
+Accidentally calling <TT>malloc(strlen(s))</TT>
+is an easy but serious mistake.
+</p><p>As we mentioned at the beginning of chapter 5,
+memory allocation can be hard to get right,
+and is at the root of many difficulties and bugs in many C programs.
+Here are some rules and other things to remember:
+<OL><li>Make sure you know where things are allocated,
+either by the compiler or by you.
+Watch out for things like
+the local <TT>line</TT> array we've been tending to use with <TT>getline</TT>,
+and the local <TT>word</TT> array on page 140.
+When a function writes to an array or a pointer supplied by the caller,
+it
+depends on the caller to have allocated storage correctly.
+When you're the caller,
+make sure you pass a valid pointer!
+Make sure you understand why
+<pre>	char *ptr;
+	getline(ptr, 100);
+</pre>is wrong and can't work.
+(For one thing:
+what does that 100 mean?
+If <TT>getline</TT> is only allowed to read at most 100 characters,
+where have we allocated those 100 characters
+that <TT>getline</TT> is not allowed to write to more of than?)
+<li>Be aware of any situations
+where a single array or data structure
+is used to store multiple different things,
+in succession.
+Think again about
+the local <TT>line</TT> array we've been tending to use with <TT>getline</TT>,
+and the local <TT>word</TT> array on page 140.
+These arrays are overwritten with each new line, word, etc.,
+so if you need to keep all of the lines or words around,
+you must copy them immediately to allocated memory
+(as the line-sorting program on pages 108-9 in section 5.6 did, 
+but as the
+longest line program on page 29 in section 1.9
+and the
+pattern-matching programs on page 69 in section 4.1
+and pages 116-7 in section 5.10
+did <em>not</em> have to do).
+<li>Make sure you allocate enough memory!
+If you allocate memory for an array of 10 things,
+don't accidentally store 11 things in it.
+If you have a string that's 10 characters long,
+make sure you always allocate 11 characters for it
+(including one for the terminating <TT>'\0'</TT>).
+<li>When you free (deallocate) memory,
+make sure that you don't have any pointers lying around
+which still point to it
+(or if you do, make sure not to use
+them
+any more).
+<li>Always check the return value from memory-allocation functions.
+Memory is never infinite:
+sooner or later,
+you will run out of memory,
+and allocation functions generally return a null pointer when this happens.
+
+<li>When you're not using dynamically-allocated memory any more,
+do try to free it,
+if it's convenient to do so and the program's not just about to exit.
+Otherwise, you may eventually have so much memory allocated
+to stuff you're not using any more
+that there's no more memory left for new stuff you need to allocate.
+(However,
+on all but a few broken systems,
+all memory is automatically and definitively returned
+to the operating system when your program exits,
+so if one of your programs doesn't free some memory,
+you
+shouldn't
+have to worry that it's wasted forever.)
+</OL>Unfortunately,
+checking the return values from memory allocation functions
+(point 5
+
+above)
+requires a few more lines of code,
+so it is often left out of sample code in textbooks,
+including this one.
+Here are versions of <TT>main</TT> and <TT>addtree</TT>
+for the word-counting program
+(pages 140-1 in the text)
+which do check for out-of-memory conditions:
+<pre>/* word frequency count */
+main()
+{
+	struct tnode *root;
+	char word[MAXWORD];
+<br>
+<br>
+	root = NULL;
+	while (getword(word, MAXWORD) != EOF) {
+		if (isalpha(word[0])) {
+			root = addtree(root, word);
+			if(root == NULL) {
+				printf("out of memory\n");
+				return 1;
+			}
+		}
+	}
+<br>
+<br>
+	treeprint(root);
+<br>
+<br>
+	return 0;
+}
+</pre><pre>struct tnode *addtree(struct tnode *p, char *w)
+{
+	int cond;
+<br>
+<br>
+	if (p == NULL) {	/* a new word has arrived */
+		p = talloc();	/* make a new node */
+		if (p == NULL)
+			return NULL;
+		p-&gt;word = strdup(w);
+		if (p-&gt;word == NULL) {
+			free(p);
+			return NULL;
+		}
+		p-&gt;count = 1;
+		p-&gt;left = p-&gt;right = NULL;
+	} else if ((cond = strcmp(w, p-&gt;word)) == 0)
+		p-&gt;count++;	/* repeated word */
+	else if (cond &lt; 0) {	/* less than: into left subtree */
+		p-&gt;left = addtree(p-&gt;left, w);
+		if(p-&gt;left == NULL)
+			return NULL;
+	}
+	else {		/* greater than: into right subtree */
+		p-&gt;right = addtree(p-&gt;right, w);
+		if(p-&gt;right == NULL)
+			return NULL;
+	}
+<br>
+<br>
+	return p;
+}
+</pre>In practice,
+many programmers would collapse the calls and tests:
+<pre>struct tnode *addtree(struct tnode *p, char *w)
+{
+	int cond;
+<br>
+<br>
+	if (p == NULL) {	/* a new word has arrived */
+		if ((p = talloc()) == NULL)
+			return NULL;
+		if ((p-&gt;word = strdup(w)) == NULL) {
+			free(p);
+			return NULL;
+		}
+		p-&gt;count = 1;
+		p-&gt;left = p-&gt;right = NULL;
+	} else if ((cond = strcmp(w, p-&gt;word)) == 0)
+		p-&gt;count++;	/* repeated word */
+	else if (cond &lt; 0) {	/* less than: into left subtree */
+		if ((p-&gt;left = addtree(p-&gt;left, w)) == NULL)
+			return NULL;
+	}
+	else {		/* greater than: into right subtree */
+		if ((p-&gt;right = addtree(p-&gt;right, w)) == NULL)
+			return NULL;
+	}
+<br>
+<br>
+	return p;
+}
+</pre></p><hr>
+<p>
+Read sequentially:
+<a href="https://www.eskimo.com/~scs/cclass/krnotes/sx9e.html" rev=precedes>prev</a>
+<a href="https://www.eskimo.com/~scs/cclass/krnotes/sx10.html" rel=precedes>next</a>
+<a href="https://www.eskimo.com/~scs/cclass/krnotes/sx9.html" rev=subdocument>up</a>
+<a href="https://www.eskimo.com/~scs/cclass/krnotes/top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="https://www.eskimo.com/~scs/cclass/krnotes/copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

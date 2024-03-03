@@ -1,0 +1,681 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>Assignment #8</title>
+</head>
+<body>
+<H1>Assignment #8</H1>
+
+
+
+
+
+<B>Intermediate C Programming
+<br>
+<br>
+UW Experimental College
+</B><br>
+<br>
+<B>Assignment #8
+</B><p>This handout presents
+several more
+potential
+additions and
+improvements to the game,
+not couched
+so much
+in terms of an assignment,
+but more as food for thought.
+</p><OL><li>Last week we added a <TT>func</TT> field to <TT>struct object</TT>,
+so that an object could contain a pointer to a function
+implementing actions specific to that object.
+Another ability
+this
+
+gives us is to write new, object-specific code
+which is intended to be fired up not directly,
+in response to a user's typed command,
+but rather, indirectly,
+at other spots in the game where we're working with objects.
+We'll do this by letting objects optionally define special ``verbs''
+(with names beginning with periods, by convention)
+which we'll ``call'' when we need to.
+<br>
+<br>
+Suppose we wanted the name or description of an object
+(printed in the listing of a room's contents or the actor's possessions,
+or in response to the ``examine'' command)
+to vary, depending on the state of the object.
+(We've already done that, in a crude way,
+by having the ``examine'' command
+look at a few of the object attributes we've defined.)
+For example,
+we might want the player to be able to find an object
+which is described only as
+<pre>
+	a wad of rubberized fabric
+</pre>
+until the player also finds the ``air pump'' object,
+and thinks to type
+<pre>
+	inflate wad with pump
+</pre>
+at which point the object will be described as
+<pre>
+	an inflatable boat
+</pre>
+To do this,
+we'll let an object define a pseudoverb ``.list''.
+Then, any time we would have
+printed the object's <TT>name</TT> field in a list of objects,
+we'll let it print its own name,
+if it wants to.
+For example,
+the hypothetical rubber boat
+might have object-specific code like this:
+<pre>
+int boatfunc(struct actor *actp, struct object *objp,
+					struct sentence *cmd)
+{
+	if(strcmp(cmd-&gt;verb, ".list") == 0)
+		{
+		if(hasattr(objp, "inflated"))
+			printf("an inflatable boat");
+		else	printf("a wad of rubberized fabric");
+		return SUCCESS;
+		}
+
+	return CONTINUE;
+}
+</pre>
+When we're printing a list of objects,
+we'll have to ``call'' the ``.list'' command
+(more specifically,
+call the object's <TT>func</TT>,
+if it has one,
+passing a command verb of ``.list'').
+Setting up one of these special-purpose commands
+as if it were a ``sentence'' the user typed
+will be a tiny bit of a nuisance,
+so we'll write an intermediate function to do it:
+<pre>
+int objcall(struct actor *actp, struct object *objp, char *command)
+{
+	struct sentence cmd;
+	if(objp-&gt;func == NULL)
+		return ERROR;
+	cmd.verb = command;
+	cmd.object = objp;
+	cmd.preposition = NULL;
+	cmd.xobject = NULL;
+	return (*objp-&gt;func)(actp, objp, &amp;cmd);
+}
+</pre>
+Now we can rewrite the object-listing code
+in <TT>object.c</TT>.
+Where it used to say
+something like
+<pre>
+	printf("%s\n", lp-&gt;name);
+</pre>
+it can now say
+<pre>
+	/* if obj has a function, try letting it list itself */
+	if(lp-&gt;func != NULL &amp;&amp; objcall(actp, lp, ".list") == SUCCESS)
+		printf("\n");
+	else	printf("%s\n", lp-&gt;name);
+</pre>
+If <TT>objcall</TT> returns SUCCESS,
+the object has printed itself,
+and all we have to do is append the trailing newline.
+Otherwise, we print the object's name, as before.
+<br>
+<br>
+(This modification to the object-listing code has one problem.
+If the <TT>listobjects</TT> function in <TT>object.c</TT>
+is going to call <TT>objcall</TT> in this way,
+it needs a pointer to the actor,
+but it doesn't have it.
+So we're going to have to rewrite the <TT>listobjects</TT> function,
+and each of the places it's called,
+to pass the actor pointer as an additional argument.
+As it happens,
+two of
+the other improvements suggested in this assignment
+end up requiring exactly the same change.
+It turns out that <TT>listobjects</TT>
+probably should have been accepting the actor pointer
+as an extra argument all along,
+if there are so many good reasons why it ends up needing it.)
+<br>
+<br>
+There are several other situations where we can use
+custom, ``internal'' functions like these.
+We can arrange that an object also be able to print
+its long description,
+by interpreting a ``.describe'' verb.
+(We'd rewrite the ``examine'' command
+to print an object's <TT>desc</TT> field
+only if the object didn't succeed
+at performing the ``.describe'' verb.)
+We could also implement customized ``hooks''
+into the action of picking up an object.
+In last week's assignment
+(exercise
+
+5),
+we implemented an object with a custom ``take'' command
+which printed some text
+but then returned <TT>CONTINUE</TT>,
+so that the rest of the default ``take'' machinery
+would handle the actual picking up of the object.
+But we might want the custom ``take'' action
+(and any messages it prints)
+to happen <em>after</em> the default machinery
+has performed most of the picking up of the object.
+To do this, we could define a new special verb ``.take2'',
+and rewrite the ``take'' code in <TT>commands.c</TT>
+to call .take2 at the very end,
+after the call to <TT>takeobject</TT>.
+<li>When we started writing object-specific functions last week,
+we placed them in a file called <TT>objfuncs.c</TT>.
+Although
+(as we've begun to see)
+it can be a fantastically powerful ability
+to allow objects to ``point at''
+arbitrarily-complicated functions written just for them,
+in practice,
+writing these functions will still be a nuisance.
+Suppose
+we've just been playing with the data file,
+and we've come up with a fun new object to put in the dungeon for
+the player to play with,
+and the object needs some new, special-purpose code to make it do its stuff.
+We'd have to write that code
+(in C, of course),
+and then
+recompile the
+whole game,
+before we could
+hook the new function
+up to the new object.
+The whole point of the data file is that the information about
+objects (and the rest of the dungeon)
+can be read out of it;
+we stopped editing the source files to change the dungeon
+way back during the first week,
+when we introduced the data file in the first place.
+<br>
+<br>
+So, another major leap will be
+to put actual code
+(not just a pointer to a function)
+<em>in</em> objects.
+This code will, however, not be written in C,
+for a variety of reasons.
+(A sufficient reason is
+that there's no easy way to get the C
+compiler to compile scraps of source code we're reading from a data file
+and to attach the resultant object code to some data structures
+in the already-running program.)
+So, we'll take the (seemingly big, but it's not that bad) step
+of defining our own little miniature language for describing
+what objects can do,
+writing an interpreter (not a compiler)
+which reads and implements this language,
+and then writing the code scraps for objects in the little language.
+<br>
+<br>
+Therefore, we'll add
+another field
+to <TT>struct object</TT>,
+right next to the <TT>func</TT> field we added last week:
+<pre>
+	char *script;
+</pre>
+For objects which contain these new, ``scripted'' functions,
+<TT>func</TT> will be a pointer to
+the script-interpreting function
+(one function, the same function, for all objects which are scripted),
+and
+the <TT>script</TT> field
+will contain
+the text of the script to be
+interpreted.
+<br>
+<br>
+First, a description of the little language.
+It is optimized for the kinds of things that we want our object
+functions
+(at least the simple ones) to be able to do:
+check attributes of the tool or direct object,
+set attributes of the tool or direct object,
+and print messages.
+Here is a sample script:
+<pre>
+	entry "break"
+	chktoolqual "heavy"
+	csetobjstate "broken"
+	message "It is broken."
+	return 1
+</pre>
+This is some code which might be suitable for the hammer object.
+The <TT>entry</TT> line says that this is code for the verb ``break''.
+(There can potentially be many <TT>entry</TT> lines,
+if a tool can be used in multiple ways.)
+The <TT>chktoolqual</TT> line makes sure that the tool has
+the given attribute,
+and prints an appropriate message (and fails) if it does not.
+The <TT>csetobjstate</TT> <B>c</B>onditionally sets the state of
+the direct object,
+unless the object already has that state,
+in which case it prints a message like ``The <I>x</I> is
+already broken'', and fails.
+Finally, the <TT>message</TT> line prints a message,
+and the <TT>return</TT> line returns.
+<br>
+<br>
+The code for the interpreter which will execute these little
+scripts is too large to print out,
+but it's in the <TT>week8</TT> subdirectory of the distributed
+source code.
+It interfaces with the rest of the game in two places.
+We must arrange for the interpreter to be called at the right time(s),
+but that's done already:
+if an object's <TT>func</TT> pointer points to the new interpreter function,
+the code we added to <TT>docommand</TT> last week
+will call it.
+But we must also
+be able to read in a script
+(from the data file)
+along with the rest
+of a description of an object.
+Here is a new case for <TT>parsedatafile</TT>:
+<pre>
+	else if(strcmp(av[0], "script") == 0)
+		{
+		/* XXX cumbersome un-getwords required */
+		int i, l = 0;
+		if(currentobject == NULL)
+			continue;
+		for(i = 1; i &lt; ac; i++)
+			l += strlen(av[i]) + 1;
+		currentobject-&gt;script = chkmalloc(l);
+		*currentobject-&gt;script = '\0';
+		for(i = 1; i &lt; ac; i++)
+			{
+			if(i &gt; 1)
+				strcat(currentobject-&gt;script, " ");
+			strcat(currentobject-&gt;script, av[i]);
+			}
+
+		currentobject-&gt;func = interp;
+		}
+</pre>
+The script is read all from one line
+(which is a nuisance, but this is a preliminary implementation).
+The long description reading code faced the same problem;
+this code uses a different solution,
+by un-doing the action of <TT>getwords</TT> and rebuilding a
+single string
+(in <TT>malloc</TT>'ed memory)
+which the <TT>script</TT> field can point to.
+<br>
+<br>
+Integrating the interpreter code requires paying attention to
+a few other details.
+You'll need
+to add the prototype
+<pre>
+	extern int interp(struct actor *, struct object *, struct sentence *);
+</pre>
+to <TT>game.h</TT> if it's not there already,
+and the line
+<pre>
+	objp-&gt;script = NULL;
+</pre>
+to the <TT>newobject</TT> function in <TT>object.c</TT>.
+Also,
+for the moment,
+we'll have to pay attention to the numeric values
+of the status codes
+(<TT>SUCCESS</TT>, <TT>FAILURE</TT>, <TT>CONTINUE</TT>, <TT>ERROR</TT>)
+we defined last week,
+because the simple interpreter doesn't know how to handle
+the symbolic names.
+Instead, we'll
+have to say <TT>return 1</TT> for <TT>SUCCESS</TT>, etc.
+<li>This game
+is a prime candidate for moving from C to C++.
+Actors and rooms are really special cases of objects:
+Rooms contain objects,
+just like actors and container objects do,
+and rooms also contain actors.
+Rather than having separate structures for rooms, actors, and objects,
+we'd like to say things like ``a room is just like an object,
+but it also has exits.''
+If we rigged it up right
+(and cleaned up a number of messes which we've perpetrated
+along the way because of the fact that we hadn't been using this
+structure)
+
+we could have a single piece of code
+which would transfer objects between rooms and actors (``take''),
+between actors and rooms (``drop''),
+between actors and (container) objects (``put in'')
+and which would even transfer actors between rooms
+(when the actor moved from one room to another).
+This function (and much of the rest of the game)
+could operate on generic ``objects,''
+without worrying about whether they were simple objects, actors,
+or rooms.
+Only those portions of the game specific to operating on actors
+or rooms would look at the additional fields differentiating an
+actor or room from an object.
+<br>
+<br>
+The notion that some data structures are extensions of others,
+that an ``x'' is just like a ``y'' except for
+some extra stuff,
+is another cornerstone (perhaps <em>the</em> cornerstone)
+of Object-Oriented Programming.
+The formal term for this idea is <dfn>inheritance</dfn>,
+and the data structures are usually spoken of as being
+<dfn>objects</dfn>, which is precisely what the word
+``object'' is doing in ``Object-Oriented
+Programming.''
+(It's again more than an coincidence,
+but rather an indication that our game is a perfect application of C++ or
+another object-oriented language,
+that we were already calling our fundamental data structures
+``objects.'')
+<br>
+<br>
+The changes to the game to let it use C++ are extensive,
+and I'm not going to try to present them all here.
+(I've completed many of the changes, however,
+and you can find them in
+subdirectories of the
+<a href="https://www.eskimo.com/~scs/cclass/asgn.int/sources//week8/">week8</a>
+directory
+associated with
+the on-line web pages
+for this class.)
+The basic idea is that our old <TT>struct object</TT>
+is no longer just a structure;
+it is a <dfn>class</dfn>:
+<pre>
+class object
+	{
+public:
+	object(const char *);
+	~object(void);
+
+	char name[MAXNAME];
+	struct list *attrs;
+	object *contents;
+	object *container;
+	object *lnext;			/* next in list of contained objects */
+					/* (i.e. in this object's container) */
+	char *desc;			/* long description */
+	};
+</pre>
+(Among other things,
+all objects now contain pointers back to their containers,
+analogous to the way <TT>struct actor</TT> used to contain
+a pointer back to its location.)
+<br>
+<br>
+We write a <dfn>constructor</dfn> for new instances of this class,
+replacing our old <TT>newobject</TT> function in <TT>object.c</TT>:
+<pre>
+object::object(const char *newname)
+{
+strcpy(name, newname);
+lnext = NULL;
+attrs = NULL;
+contents = NULL;
+container = NULL;
+desc = NULL;
+}
+</pre>
+Wherever we used to write
+something like
+<pre>
+	objp = newobject(name);
+</pre>
+we instead use the C++ <TT>new</TT> operator:
+<pre>
+	objp = new object(name);
+</pre>
+(Actually, the only place we called <TT>newobject</TT>
+was in <TT>readdatafile</TT> in <TT>io.c</TT>,
+when setting <TT>currentobject</TT>.
+It is entirely a coincidence,
+though not a surprising one,
+that the use of the C++ <TT>new</TT> operator here
+looks so eerily similar to the old <TT>newobject</TT> call.)
+<br>
+<br>
+Going back to <TT>game.h</TT>,
+we define the <TT>actor</TT> and <TT>room</TT> classes
+as being derived from <TT>class object</TT>:
+<pre>
+class actor : public object
+	{
+public:
+	actor();
+	};
+
+class room : public object
+	{
+public:
+	room(const char *);
+
+	room *exits[NEXITS];
+	struct room *next;		/* list of all rooms */
+	};
+</pre>
+These say that an actor is just like an object
+(we don't actually have any actor-specific information at the moment),
+and that a room is just like an object
+except that it has an exits array
+and an extra next pointer so that we can construct a list of all rooms.
+<br>
+<br>
+Here is the new,
+general-purpose object-transferring function, for <TT>object.c</TT>:
+<pre>
+/* transfer object from one general container to another */
+
+transferobject(object *objp, object *newcontainer)
+{
+object *lp;
+object *prevlp = NULL;
+
+if(objp-&gt;container != NULL)
+	{
+	object *oldc = objp-&gt;container;
+	for(lp = oldc-&gt;contents; lp != NULL; lp = lp-&gt;lnext)
+		{
+		if(lp == objp)				/* found it */
+			{
+			/* splice out of old container's list */
+			if(lp == oldc-&gt;contents)	/* head of list */
+				oldc-&gt;contents = lp-&gt;lnext;
+			else	prevlp-&gt;lnext = lp-&gt;lnext;
+			break;
+			}
+		prevlp = lp;
+		}
+	}
+
+/* splice into new container's list */
+
+if(newcontainer != NULL)
+	{
+	objp-&gt;lnext = newcontainer-&gt;contents;
+	newcontainer-&gt;contents = objp;
+	}
+
+objp-&gt;container = newcontainer;
+
+return TRUE;
+}
+</pre>
+Notice that the parameters are declared
+as being of type ``<TT>object *</TT>''.
+In C++,
+every structure and class you declare
+has its tag name implicitly defined as a typedef,
+so that the keyword <TT>struct</TT> or <TT>class</TT>
+is no longer needed in later declarations.
+(Theoretically, we should seek out every instance
+of <TT>struct object</TT> in the game
+and replace
+
+them with <TT>object</TT> or perhaps <TT>class object</TT>,
+and similarly for every <TT>struct actor</TT> and <TT>struct room</TT>.
+The compiler I'm using,
+the C++ version of the GNU C Compiler,
+namely <TT>g++</TT>,
+doesn't seem to be complaining about stray <TT>struct</TT> keywords
+referring to what I've actually redefined as classes,
+but I'm not sure what the formal rules of C++ say.)
+<br>
+<br>
+In any case,
+even though <TT>transferobject</TT> looks like it's defined
+only for use on objects,
+since actors and rooms are now also objects,
+we can also use <TT>transferobject</TT>
+to move objects to and from the actor,
+and even to move the actor between rooms.
+That is,
+we can rewrite the other transfer functions from
+<TT>object.c</TT> and <TT>rooms.c</TT>
+very simply:
+<pre>
+takeobject(actor *actp, object *objp)
+{
+return transferobject(objp, actp);
+}
+
+dropobject(actor *actp, object *objp)
+{
+return transferobject(objp, actp-&gt;container);
+}
+
+putobject(actor *actp, object *objp, object *container)
+{
+return transferobject(objp, container);
+}
+
+int
+gotoroom(actor *actor, room *room)
+{
+return transferobject(actor, room);
+}
+</pre>
+<li>Another improvement which you might be interested in
+(and another sweeping one)
+would be to rewrite the game so that several people could play it at once,
+over the network.
+Instead of one instance of <TT>struct actor</TT>,
+representing one player sitting at one keyboard
+and viewing output on one screen,
+we could have arbitrarily many <TT>actor</TT> structures
+(just as we now have arbitrarily many objects and rooms),
+with each actor representing a player
+sitting somewhere on the network,
+typing input and receiving output over a network connection.
+<br>
+<br>
+The changes to make a multiplayer version of the game
+are actually rather straightforward and self-contained,
+with the glaring exception of the fact that
+<em>everywhere</em> we
+used to
+call <TT>printf</TT> to print some text to the user's screen,
+we must instead call some special output function of our own
+which knows how to send the text
+to the network connection of the appropriate player.
+<br>
+<br>
+To represent the network connection,
+we'll add a file descriptor to the <TT>actor</TT> structure.
+If we're using Unix-style networking,
+the file descriptor will just be an integer:
+<pre>
+	int remotefd;
+</pre>
+If we've gone over to the C++ style of doing things,
+this means that <TT>class actor</TT> now does have something
+to distinguish it from a plain object:
+<pre>
+class actor : public object
+	{
+public:
+	actor();
+	int remotefd;
+	struct actor *next;		/* list of all actors */
+	};
+</pre>
+(It turns out we're also going to need a list of all players,
+just like we need a list of all rooms.)
+<br>
+<br>
+Then, using what we learned about variable-length argument lists
+in
+
+chapter 25 of the class notes,
+we can write an <TT>output</TT> function
+which is like <TT>printf</TT>
+except that it writes the message
+to a particular player's network connection:
+<pre>
+void output(struct actor *actp, char *msg, ...)
+{
+char tmpbuf[200];	/* XXX */
+va_list argp;
+va_start(argp, msg);
+vsprintf(tmpbuf, msg, argp);
+va_end(argp);
+write(actp-&gt;remotefd, tmpbuf, strlen(tmpbuf));
+}
+</pre>
+We call <TT>vsprintf</TT> to ``print''
+the <TT>printf</TT>-style message
+to a temporary string buffer,
+then use the low-level Unix <TT>write</TT> function
+to write the string to the network connection.
+(This function has a significant limitation as written:
+if a single message is ever more than 200 characters long,
+the <TT>tmpbuf</TT> array will overflow,
+with results which might range from annoying to catastrophic.
+It's unfortunately tricky to this sort of thing right;
+the comment <TT>/* XXX */</TT> is a reminder
+that the <TT>tmpbuf</TT> array with its fixed size of 200
+is a weakness in the program.)
+<br>
+<br>
+The rest of the code for the multiplayer version of the game
+is too bulky to include here,
+but I've placed it in
+subdirectories of the
+<a href="https://www.eskimo.com/~scs/cclass/asgn.int/sources//week8/">week8</a>
+directory, too.
+See the
+<a href="sources/week8/multiplayer/README">README</a>
+file there for more information.
+</OL><hr>
+<hr>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-9
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

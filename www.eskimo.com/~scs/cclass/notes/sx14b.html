@@ -1,0 +1,168 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>Operators</title>
+<link href="sx14a.html" rev=precedes>
+<link href="sx14c.html" rel=precedes>
+<link href="sx14.html" rev=subdocument>
+</head>
+<body>
+<H2>Operators</H2>
+
+<p>The <dfn>bitwise operators</dfn>
+<TT>&amp;</TT>, <TT>|</TT>, <TT>^</TT>, and <TT>~</TT>
+operate on integers thought of as binary numbers or strings of bits.
+The <TT>&amp;</TT> operator is bitwise AND,
+the <TT>|</TT> operator is bitwise OR,
+the <TT>^</TT> operator is bitwise exclusive-OR (XOR),
+and the <TT>~</TT> operator is a bitwise negation or complement.
+(<TT>&amp;</TT>, <TT>|</TT>, and <TT>^</TT> are ``binary''
+in that they take two operands;
+<TT>~</TT> is unary.)
+These operators let you work with the individual bits of a variable;
+one common use is to treat an integer as a set of single-bit
+<dfn>flags</dfn>.
+You might define the 3rd
+(2<sup>2</sup>)
+bit as the ``verbose'' flag
+bit by defining
+<pre>
+	#define VERBOSE 4
+</pre>
+Then you can ``turn the verbose bit on''
+in an integer variable <TT>flags</TT>
+by executing
+<pre>
+	flags = flags | VERBOSE;
+or
+	flags |= VERBOSE;
+</pre>
+and turn it off with
+<pre>
+	flags = flags &amp; ~VERBOSE;
+or
+	flags &amp;= ~VERBOSE;
+</pre>
+and test whether it's set with
+<pre>
+	if(flags &amp; VERBOSE)
+</pre>
+</p><p>The left-shift and right-shift operators
+<TT>&lt;&lt;</TT> and <TT>&gt;&gt;</TT>
+let you shift an integer left or right by some number of bit positions;
+for example,
+<TT>value &lt;&lt; 2</TT>
+shifts <TT>value</TT> left by two bits.
+</p><p>The <TT>?:</TT> or <dfn>conditional</dfn> operator
+(also called the ``ternary operator'')
+essentially lets you embed an <TT>if</TT>/<TT>then</TT> statement
+in an expression.
+The assignment
+<pre>
+	a = expr ? b : c;
+</pre>
+is roughly equivalent to
+<pre>
+	if(expr)
+		a = b;
+	else	a = c;
+</pre>
+Since you can use <TT>?:</TT> anywhere in an expression,
+it can do things that <TT>if</TT>/<TT>then</TT> can't,
+or that would be cumbersome with <TT>if</TT>/<TT>then</TT>.
+For example, the function call
+<pre>
+	f(a, b, c ? d : e);
+</pre>
+is roughly equivalent to
+<pre>
+	if(c)
+		f(a, b, d);
+	else	f(a, b, e);
+</pre>
+(Exercise: what would the call
+<pre>
+	g(a, b, c ? d : e, h ? i : j, k);
+</pre>
+be equivalent to?)
+</p><p>The comma operator lets you put two separate expressions where
+one is required;
+the expressions are executed one after the other.
+The most common use for comma operators is when you want
+multiple variables controlling a <TT>for</TT> loop,
+for example:
+<pre>
+	for(i = 0, j = 10; i &lt; j; i++, j--)
+</pre>
+</p><p>A <dfn>cast operator</dfn> allows you to explicitly force
+conversion of a value from one type to another.
+A cast consists of a type name in parentheses.
+For example, you could convert an <TT>int</TT> to a <TT>double</TT>
+by typing
+<pre>
+	int i = 10;
+	double d;
+	d = (double)i;
+</pre>
+(In this case, though, the cast is redundant, since this is a
+conversion that C would have performed for you automatically,
+i.e. if you'd just said <TT>d = i</TT>
+.)
+You use explicit casts in those circumstances
+where C does not do a needed conversion automatically.
+One example is division:
+if you're dividing two integers and you want a floating-point result,
+you must explicitly force at least one of the operands to floating-point,
+otherwise C will perform an integer division and will discard the remainder.
+The code
+<pre>
+	int i = 1, j = 2;
+	double d = i / j;
+</pre>
+will set <TT>d</TT> to 0,
+but
+<pre>
+	d = (double)i / j;
+</pre>
+will set <TT>d</TT> to 0.5.
+You can also ``cast to <TT>void</TT>''
+to explicitly indicate that you're ignoring a function's return value,
+as in
+<pre>
+	(void)fclose(fp);
+</pre>
+or
+<pre>
+	(void)printf("Hello, world!\n");
+</pre>
+(Usually, it's a bad idea to ignore return values,
+but in some cases it's essentially inevitable,
+and the <TT>(void)</TT> cast keeps some compilers from
+issuing warnings every time you ignore a value.)
+</p><p>There's a precise,
+mildly elaborate
+set of rules which C uses for converting values automatically,
+in the absence of explicit casts.
+</p><p>The <TT>.</TT> and <TT>-&gt;</TT> operators
+let you access the members (components) of structures and unions.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx14a.html" rev=precedes>prev</a>
+<a href="sx14c.html" rel=precedes>next</a>
+<a href="sx14.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-1997
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-03 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

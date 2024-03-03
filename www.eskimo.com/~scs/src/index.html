@@ -1,0 +1,399 @@
+<html>
+<head>
+<title>Source Code</title>
+</head>
+<body>
+<H1>Source Code</H1>
+<p>
+Here is the source code
+to a few of
+the things I've written.
+Most of these are utilities,
+useful in the context of Unix-style ``toolbox'' programming.
+Several of them have become indispensible in my own work;
+I use them daily.
+<p>
+A few of these packages are also candidate answers to a
+<!-- ref, now that I can write it -->
+frequently-asked
+but difficult-to-answer question:
+``Where is some C code I can study and learn from?''
+The packages I can especially recommend for this purpose
+are marked with a red asterisk, like this:
+<font color=red size="+1"><b>*</b></font>.
+<p>
+A couple of the packages exist in two versions:
+a ``simple'' version which is presentable as a single <TT>.c</TT> file,
+and a more full-featured one
+which ends up requiring a whole set of source files and a Makefile.
+Digital signatures for all packages are available,
+though not (yet) explicitly linked to from here --
+see 
+<a href="ftp://ftp.eskimo.com/home/scs/src/">the ftp directory</a>
+for details.
+<p>
+Most of these source files are Copyright &copy; by me,
+but I am publishing them with few restrictions:
+you're free to use them for just about any purpose,
+so long as you leave my name attached,
+mark any changes you make as yours,
+and don't otherwise try to pass these works off as your own.
+(And I've placed several of these source files explicitly in the public domain.)
+<p>
+<font color=red size="+1"><b>*</b></font>
+<a href="index.html#count">count</a> - generate integer sequences
+<br>
+<font color=red size="+1"><b>*</b></font>
+<a href="index.html#line">line</a> - extract lines from a file
+<br>
+<a href="index.html#column">column</a> - extract columns from a file
+<br>
+<a href="index.html#dateexpr">dateexpr</a> - perform date and time calculations
+<br>
+<a href="index.html#bsearch">bsearch</a> - find line(s) in sorted file
+<br>
+<a href="index.html#dbgrep">dbgrep</a> - extract and process records from simple text databases
+<br>
+<a href="index.html#med">med</a> - (stream) math editor
+<br>
+<a href="index.html#sleep">sleep</a> - delay for (or until) a time
+<br>
+<font color=red size="+1"><b>*</b></font>
+<a href="index.html#randline">randline</a> - deliver random line(s)
+<br>
+<a href="index.html#shuffle">shuffle</a> - rearrange lines in random order
+<br>
+<a href="index.html#extract">extract</a> - extract byte ranges from file or stream
+<br>
+<a href="index.html#stat">stat</a> - print file's stat(2) information
+<br>
+<a href="index.html#filter">filter</a> - run a filter over several files, in-place
+<br>
+<a href="index.html#dbmtools">dbm tools</a> - manipulate Unix dbm (also gdbm) files
+<!-- XXX fti was here -->
+<br>
+<font color=red size="+1"><b>*</b></font>
+<a href="index.html#strftime">strftime</a> - format time (struct tm) information
+<br>
+<a href="index.html#stdio">stdio</a> - a reimplementation of the C <cw>&lt;stdio.h&gt;</> library
+<p>
+<a name="count">
+<h2>
+count
+</h2>
+<p>
+A tool for generating sequences of numbers,
+useful among other things for writing shell loops:
+<pre>
+	for I in `count 10`; do ...; done
+</pre>
+<p>
+<a href="count.man.html">documentation</a>
+&nbsp;
+<a href="count.c">simple source code <font color=red size="+1"><b>*</b></font></a>
+&nbsp;
+<a href="ftp://ftp.eskimo.com/home/scs/src/count.tar.gz">source code (<TT>.tar.gz</TT>)</a>
+&nbsp;
+<a href="ftp://ftp.eskimo.com/home/scs/src/count.zip">source code (<TT>.zip</TT>)</a>
+&nbsp;
+<a href="count.bin.html">precompiled binaries</a>
+<p>
+<a name="line">
+<h2>
+line
+</h2>
+<p>
+A tool for extracting selected lines
+(by line number)
+from text files.
+<p>
+<a href="line.man.html">documentation</a>
+&nbsp;
+<a href="line.c">simple source code <font color=red size="+1"><b>*</b></font></a>
+&nbsp;
+<a href="ftp://ftp.eskimo.com/home/scs/src/line.tar.gz">source code (<TT>.tar.gz</TT>)</a>
+&nbsp;
+<a href="ftp://ftp.eskimo.com/home/scs/src/line.zip">source code (<TT>.zip</TT>)</a>
+&nbsp;
+<a href="line.bin.html">precompiled binaries</a>
+<p>
+<a name="column">
+<h2>
+column
+</h2>
+<p>
+A tool for extracting selected columns
+from text files
+(&agrave; la the standard
+``<a href="../cgi-bin/manredir.cgi?name=cut&amp;sec=1">cut</a>''
+program).
+<p>
+<a href="column.man.html">documentation</a>
+&nbsp;
+<a href="ftp://ftp.eskimo.com/home/scs/src/column.tar.gz">source code (<TT>.tar.gz</TT>)</a>
+&nbsp;
+<a href="ftp://ftp.eskimo.com/home/scs/src/column.zip">source code (<TT>.zip</TT>)</a>
+&nbsp;
+<a href="column.bin.html">precompiled binaries</a>
+<p>
+<a name="dateexpr">
+<h2>
+dateexpr
+</h2>
+<p>
+Date and time calculations are notoriously awkward,
+and there's no good way of performing them from within a shell script.
+(An acquaintance once wrote a script that invoked
+<a href="../cgi-bin/manredir.cgi?name=cal&amp;sec=1">cal(1)</a>
+and parsed its output in order to do date calculations.)
+<TT>dateexpr</TT> is a general-purpose command,
+along the lines of
+<a href="../cgi-bin/manredir.cgi?name=expr&amp;sec=1">expr(1)</a>,
+that lets you add and subtract
+(and perform several more operations on)
+dates and times:
+computing the difference between two times,
+adding N days to a date,
+comparing dates and times,
+etc.
+<p>
+<a href="dateexpr.man.html">documentation</a>
+&nbsp;
+<a href="ftp://ftp.eskimo.com/home/scs/src/dateexpr.tar.gz">source code (<TT>.tar.gz</TT>)</a>
+&nbsp;
+<a href="dateexpr.bin.html">precompiled binaries</a>
+<p>
+<a name="bsearch">
+<h2>
+bsearch
+</h2>
+<p>
+When you have sorted data,
+an efficient way of finding an item in it
+(or determining that an item is not there)
+is binary search.
+This program does so for sorted text files.
+It is a companion to the standard Unix
+<a href="../cgi-bin/manredir.cgi?name=sort&amp;sec=1">sort(1)</a>
+utility,
+accepting most of the same options.
+(The idea is that you can give bsearch the same options
+you gave sort when creating the sorted file to be searched.)
+This program is,
+in some sense,
+a descendant of the bsd Unix
+<a href="../cgi-bin/manredir.cgi?name=look&amp;sec=1">``look''</a>
+utility,
+and in fact can be invoked as a compatible replacement.
+<p>
+<a href="bsearch.man.html">documentation</a>
+&nbsp;
+<a href="ftp://ftp.eskimo.com/home/scs/src/bsearch.tar.gz">source code (<TT>.tar.gz</TT>)</a>
+&nbsp;
+<a href="ftp://ftp.eskimo.com/home/scs/src/bsearch.zip">source code (<TT>.zip</TT>)</a>
+&nbsp;
+<a href="bsearch.bin.html">precompiled binaries</a>
+<p>
+<a name="dbgrep">
+<h2>
+dbgrep
+</h2>
+<p>
+Stated simply,
+a tool to
+``extract and process records from simple text databases''.
+Stated another way, a tool to use when the standard Unix model of
+``everything's a text file, and a text file consists of lines of text''
+isn't quite enough.
+Specifically,
+when you have a text file
+where lines are keyword/value pairs
+clumped together into ``records''
+which
+should be treated together as a unit,
+like this:
+<pre>
+	name: cat
+	genus: felis
+	species: domesticus
+	young: kitten
+
+	name: dog
+	genus: canis
+	species: familiaris
+	young: puppy
+
+	name: horse
+	genus: equus
+	species: caballus
+	young: foal
+</pre>
+how can you manipulate the file,
+without writing programs
+(or awk or perl scripts)?
+dbgrep is a general-purpose tool for manipulating such files.
+<p>
+<a href="dbgrep.man.html">documentation</a>
+&nbsp;
+<a href="ftp://ftp.eskimo.com/home/scs/src/dbgrep.tar.gz">source code (<TT>.tar.gz</TT>)</a>
+&nbsp;
+<a href="ftp://ftp.eskimo.com/home/scs/src/dbgrep.zip">source code (<TT>.zip</TT>)</a>
+&nbsp;
+<a href="dbgrep.bin.html">precompiled binaries</a>
+<p>
+<a name="med">
+<h2>
+med
+</h2>
+<p>
+The ``math editor'',
+a filter for processing columns of numbers
+and performing arithmetic manipulations on them.
+<p>
+<a href="med.man.html">documentation</a>
+&nbsp;
+<a href="ftp://ftp.eskimo.com/home/scs/src/med.tar.gz">source code (<TT>.tar.gz</TT>)</a>
+&nbsp;
+<a href="ftp://ftp.eskimo.com/home/scs/src/med.zip">source code (<TT>.zip</TT>)</a>
+&nbsp;
+<a href="med.bin.html">precompiled binaries</a>
+<p>
+<a name="sleep">
+<h2>
+sleep
+</h2>
+<p>
+A reimplementation of the standard Unix
+<a href="../cgi-bin/manredir.cgi?name=sleep&amp;sec=1">`sleep'</a>
+utility,
+with a number of creeping feat... er, ``extensions''.
+(Among other things:
+an optional HH:MM:SS format,
+and subsecond resolution.)
+<p>
+<a href="sleep.man.html">documentation</a>
+&nbsp;
+<a href="sleep.c">source code</a>
+&nbsp;
+<a href="sleep.bin.html">precompiled binaries</a>
+<p>
+<a name="randline">
+<h2>
+randline
+</h2>
+<p>
+A filter for selecting random lines from text files,
+using the classic one-pass algorithm described in Knuth.
+<!-- XXX need ref -->
+<p>
+<a href="randline.man.html">documentation</a>
+&nbsp;
+<a href="randline.c">simple source code <font color=red size="+1"><b>*</b></font></a>
+&nbsp;
+<a href="ftp://ftp.eskimo.com/home/scs/src/randline.tar.gz">source code (<TT>.tar.gz</TT>)</a>
+&nbsp;
+<a href="randline.bin.html">precompiled binaries</a>
+<p>
+<a name="shuffle">
+<h2>
+shuffle
+</h2>
+<p>
+A filter for shuffling lines in a text file into random order,
+basically the opposite of
+<a href="../cgi-bin/manredir.cgi?name=sort&amp;sec=1">sort(1)</a>.
+<p>
+(randline and shuffle are related, in a way:
+for example, <TT>randline -n</TT> could be implemented
+as <TT>shuffle | head -n</TT>.)
+<p>
+<a href="shuffle.man.html">documentation</a>
+&nbsp;
+<a href="ftp://ftp.eskimo.com/home/scs/src/shuffle.tar.gz">source code (<TT>.tar.gz</TT>)</a>
+&nbsp;
+<a href="shuffle.bin.html">precompiled binaries</a>
+<p>
+<a name="extract">
+<h2>
+extract
+</h2>
+<p>
+A tool for extracting selected byte ranges
+from files or streams.
+<br>
+(Part of the same package as <a href="index.html#line">line</a>,
+which is why it shares the same source files.)
+<p>
+<a href="extract.man.html">documentation</a>
+&nbsp;
+<a href="ftp://ftp.eskimo.com/home/scs/src/line.tar.gz">source code (<TT>.tar.gz</TT>)</a>
+&nbsp;
+<a href="ftp://ftp.eskimo.com/home/scs/src/line.zip">source code (<TT>.zip</TT>)</a>
+&nbsp;
+<a href="extract.bin.html">precompiled binaries</a>
+<p>
+<a name="stat">
+<h2>
+stat
+</h2>
+<p>
+A simple tool for printing a file's ``stat'' (or inode) information;
+a ``chapter 1 interface to a chapter 2 system call''.
+<p>
+<a href="stat.man.html">documentation</a>
+&nbsp;
+<a href="stat.c">source code</a>
+&nbsp;
+<a href="stat.bin.html">precompiled binaries</a>
+<p>
+<a name="filter">
+<h2>
+filter
+</h2>
+<p>
+A shell script for running a filter program on a number of input
+files and replacing each file with the filtered output.
+<p>
+<a href="filter.man.html">documentation</a>
+&nbsp;
+<a href="filter.sh">program</a> (sh script)
+&nbsp;
+<a href="ftp://ftp.eskimo.com/home/scs/src/filter.tar.gz">package</a>
+(<TT>.tar.gz</TT>)
+<p>
+<a name="dbmtools">
+<h2>
+dbm tools
+</h2>
+<p>
+A set of command line tools for manipulating Unix dbm files.
+<p>
+<a href="dbmtools.man.html">documentation</a>
+&nbsp;
+<a href="ftp://ftp.eskimo.com/home/scs/src/dbmtools.tar.gz">source code (<TT>.tar.gz</TT>)</a>
+&nbsp;
+<a href="dbmtools.bin.html">precompiled binaries</a>
+<!-- XXX fti was here -->
+<p>
+<a name="strftime">
+<h2>
+strftime
+</h2>
+<p>
+An implementation of the ANSI C time-formatting function
+(along with a command-line callable version).
+<p>
+<a href="strftime.c">source code <font color=red size="+1"><b>*</b></font></a>
+<p>
+<a name="stdio">
+<h2>
+stdio
+</h2>
+<p>
+A reimplementation of C's stdio library.
+<p>
+<a href="ftp://ftp.eskimo.com/home/scs/src/stdio/doc.tar.gz">documentation (<TT>.tar.gz</TT>)</a>
+&nbsp;
+<a href="ftp://ftp.eskimo.com/home/scs/src/stdio/stdio.tar.gz">source code (<TT>.tar.gz</TT>)</a>
+</body>
+</html>

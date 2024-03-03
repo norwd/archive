@@ -1,0 +1,193 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>section 7.4: Formatted Input -- Scanf</title>
+<link href="sx10c.html" rev=precedes>
+<link href="sx10e.html" rel=precedes>
+<link href="sx10.html" rev=subdocument>
+</head>
+<body>
+<H2>section 7.4: Formatted Input -- Scanf</H2>
+
+page 157
+<p>Somehow we've managed to make it through six chapters
+without meeting <TT>scanf</TT>,
+which it turns out is just as well.
+</p><p>In the examples in this book so far,
+all input
+(from the user, or otherwise)
+has been done with <TT>getchar</TT> or <TT>getline</TT>.
+If we needed to input a number, we did things like
+<pre>	char line[MAXLINE];
+	int number;
+	getline(line, MAXLINE);
+	number = atoi(line);
+</pre>Using <TT>scanf</TT>,
+we could ``simplify'' this to
+<pre>	int number;
+	scanf("%d", &amp;number);
+</pre>This simplification is convenient and superficially attractive,
+and it works, as far as it goes.
+The problem is that <TT>scanf</TT> does not work well in more 
+complicated situations.
+In section 7.1,
+we said that
+calls to <TT>putchar</TT> and <TT>printf</TT> could be interleaved.
+The same is <em>not</em> always true of <TT>scanf</TT>:
+you can have baffling problems
+if you try to intermix calls to <TT>scanf</TT>
+with calls to <TT>getchar</TT> or <TT>getline</TT>.
+Worse,
+it turns out that <TT>scanf</TT>'s error handling
+is inadequate for many purposes.
+It tells you whether a conversion succeeded or not
+(more precisely, it tells you how many conversions succeeded),
+but it doesn't tell you anything more than that
+(unless you ask very carefully).
+Like <TT>atoi</TT> and <TT>atof</TT>,
+<TT>scanf</TT> stops reading characters
+when it's processing a <TT>%d</TT> or <TT>%f</TT> input
+and it finds a non-numeric character.
+Suppose you've prompted the user to enter a number,
+and the user accidentally types the letter `x'.
+<TT>scanf</TT> might return 0, indicating that it couldn't 
+convert a number,
+but the unconvertable text (the `x')
+remains on the input stream
+unless you figure out some other way to remove it.
+</p><p>For these reasons
+(and several others, which I won't bother to mention)
+it's generally recommended that <TT>scanf</TT> not be used
+for unstructured input such as user prompts.
+It's much better to read entire lines with something like 
+<TT>getline</TT>
+(as we've been doing all along)
+and then process the line somehow.
+If the line is supposed to be a single number,
+you can use <TT>atoi</TT> or <TT>atof</TT> to convert it.
+If the line has more complicated structure,
+you can use <TT>sscanf</TT>
+(which we'll meet in a minute)
+to parse it.
+(It's better to use <TT>sscanf</TT> than <TT>scanf</TT>
+because when <TT>sscanf</TT> fails,
+you have complete control over what you do next.
+When <TT>scanf</TT> fails,
+on the other hand,
+you're at the mercy of where in the input stream it has left you.)
+</p><p>With that little diatribe against <TT>scanf</TT> out of the way,
+here are a few comments on individual points made in section 7.4.
+</p><p>We've met a few functions
+(e.g. <TT>getline</TT>,
+<TT>month_day</TT> in section 5.7 on page 111)
+which return more than one value;
+the way they do so is to accept a pointer argument that tells them where
+(in the caller)
+to write the returned value.
+<TT>scanf</TT> is the epitome of such functions:
+it returns potentially many values
+(one for each <TT>%</TT>-specifier in its format string),
+and for each value converted and returned,
+it needs a pointer argument.
+</p><p>The statement on page 157 that
+``blanks or tabs'' in the format string ``are ignored''
+(which is repeated on page 159)
+is a simplification:
+in actuality,
+a blank or tab
+(or newline; actually any whitespace)
+in the format string causes <TT>scanf</TT> to skip whitespace
+(blanks, tabs, etc.)
+in the input stream.
+</p><p>A <TT>*</TT> character in a <TT>scanf</TT> conversion specifier
+means something completely different than it does for <TT>printf</TT>:
+for <TT>scanf</TT>,
+it means to suppress assignment
+(i.e. for that conversion specifier,
+there isn't a pointer in the argument list to receive the converted value,
+so the converted value is discarded).
+With <TT>scanf</TT>,
+there is no direct way of taking a field width from the argument list,
+as <TT>*</TT> does for <TT>printf</TT>.
+</p><p>Conversion specifiers like <TT>%d</TT> and <TT>%f</TT>
+automatically skip leading whitespace
+while looking for something to convert.
+This means that the format strings <TT>"%d&nbsp;%d"</TT> and <TT>"%d%d"</TT>
+act exactly the same--the
+whitespace in the first format string
+causes whitespace to be skipped before the second <TT>%d</TT>,
+but the second <TT>%d</TT> would have skipped that whitespace anyway.
+(Yet another <TT>scanf</TT> foible
+is that the innocuous-looking format string <TT>"%d\n"</TT>
+converts a number and then skips whitespace,
+which means that it will gobble up
+not only a newline following the number it converts,
+but any number of newlines or whitespace,
+and
+in fact
+it will <em>keep</em> reading
+until it finds a non-whitespace character,
+which it then won't read.
+This sounds confusing,
+but so is <TT>scanf</TT>'s behavior
+when given a format string like <TT>"%d\n"</TT>.
+The moral is simple:
+don't use trailing <TT>\n</TT>'s in <TT>scanf</TT> format strings.)
+</p><p>page 158
+</p><p>Notice that,
+for <TT>scanf</TT>,
+the <TT>%e</TT>, <TT>%f</TT>, and <TT>%g</TT> formats
+are all the same,
+and signify conversion of a <TT>float</TT> value
+(they accept a pointer argument of type <TT>float *</TT>).
+To convert a <TT>double</TT>,
+you need to use <TT>%le</TT>, <TT>%lf</TT>, or <TT>%lg</TT>.
+(This is quite different from the <TT>printf</TT> family,
+which uses <TT>%e</TT>, <TT>%f</TT>, and <TT>%g</TT>
+for <TT>float</TT>s <em>and</em> <TT>double</TT>s,
+though all three request different formats.
+Furthermore,
+<TT>%le</TT>, <TT>%lf</TT>, and <TT>%lg</TT>
+are technically incorrect for <TT>printf</TT>,
+though most compilers
+
+probably accept them.)
+</p><p>page 159
+</p><p>More precisely,
+the reason that you don't need to use a <TT>&amp;</TT> with <TT>monthname</TT>
+is that an array,
+when it appears in an expression like this,
+is automatically converted to a pointer.
+</p><p>The dual-format date conversion example in the middle of page 159
+is a nice example of the advantages of calling 
+<TT>getline</TT> and then <TT>sscanf</TT>.
+At the beginning of this section,
+I said that
+``when <TT>sscanf</TT> fails,
+you have complete control over what you do next.''
+Here, ``what you do next''
+is try calling <TT>sscanf</TT> again,
+on the very same input string
+(thus effectively backing up to the very beginning of it),
+using a different format string,
+to try parsing the input a different way.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx10c.html" rev=precedes>prev</a>
+<a href="sx10e.html" rel=precedes>next</a>
+<a href="sx10.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

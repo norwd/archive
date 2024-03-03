@@ -1,0 +1,207 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>section 5.2: Pointers and Function Arguments</title>
+<link href="sx8a.html" rev=precedes>
+<link href="sx8c.html" rel=precedes>
+<link href="sx8.html" rev=subdocument>
+</head>
+<body>
+<H2>section 5.2: Pointers and Function Arguments</H2>
+
+page 95
+<p>This section discusses a very common use of pointers:
+setting things up so that a function can modify values in its caller,
+or return values,
+via its arguments.
+Remember that,
+normally,
+C passes arguments by value,
+and that if a function modifies one of its arguments,
+it modifies only its local copy,
+not the value in the caller.
+(Normally,
+this is a good thing;
+having a function which inadvertently assigns to its arguments
+and hence inadvertently modifies a value in its caller
+
+can be a source of obscure bugs in languages which don't use call-by-value.)
+However,
+what happens if a function wants to modify a value in its caller,
+and its caller wants to let it?
+How can a function return two values?
+(A function's formal return value is always a single value.)
+</p><p>The answer to both questions
+is that a function can declare a parameter which is a pointer.
+The caller then passes a pointer to
+(that is, the ``address of'')
+a variable in the caller which is to be modified
+or which is to receive the second return value.
+In fact,
+we've seen examples of this already:
+<TT>getline</TT> returns the length of the line it reads
+as well as the line itself,
+and
+the <TT>getop</TT> routine in the calculator example
+in section 4.3
+returned both a code for an operator
+and a string representing the full text of the operator.
+(We needed
+that string
+when the operator was <TT>'0'</TT> indicating numeric input,
+so that the string could return
+the full numeric input.)
+Though we didn't say so at the time,
+we were actually using pointers
+in these examples.
+(We'll explore the relationship between arrays and pointers,
+which made this possible,
+in section 5.3.)
+</p><p>With all of this in mind,
+make sure that you understand why the swap example on page 95 
+would not work,
+and how and why the swap example on page 96 <em>does</em> work,
+and what the figure on page 96 shows.
+</p><p>The <TT>swap</TT> example demonstrated a function
+which modified some variables
+(<TT>a</TT> and <TT>b</TT>)
+in its caller.
+The <TT>getint</TT> example demonstrates
+how to return two values from a function
+by returning one value as the normal function return value
+and the other one by writing to a pointer.
+(There
+is no fundamental difference,
+though,
+between
+``modifying a variable in the caller''
+and
+``returning a value by writing to a pointer'';
+these are just two applications of pointer parameters.)
+</p><p>The version of <TT>getint</TT> on page 97
+is somewhat complicated because it
+allows free-form input,
+that is,
+the values need only be separated by whitespace or punctuation;
+they are not restricted to being one per line or anything.
+(C source code is also free-form in this regard;
+see page 4 of chapter 1 of these notes.)
+To see more clearly
+the essence of what <TT>getint</TT> is supposed to do,
+imagine for a moment that
+the input <em>is</em> restricted to one value per line,
+as in the ``primitive calculator'' example on page 72 of section 4.2.
+In that case,
+we might use the following simpler
+(i.e. more primitive)
+code:
+<pre>	int getint(int *pn)
+	{
+		char line[20];
+		if (getline(line, 20) &lt;= 0)
+			return EOF;
+		*pn = atoi(line);
+		return 1;
+	}
+</pre>The <TT>getint</TT> function on page 97 is 
+documented as returning nonzero for a valid number and 0 for 
+something other than a number.
+Our stripped-down version does not,
+and as it happens,
+the example code at the bottom of page 96 does not make use of 
+the valid/invalid distinction.
+Can you see a way to rewrite the code at the bottom of page 96
+to fill in the cells of the <TT>array</TT> with only valid numbers?
+</p><p>You might also notice,
+again from the code at the bottom of page 96,
+that <TT>&amp;</TT> need not be restricted to single, simple variables;
+it can take the address of any data object,
+in this case,
+one cell of the <TT>array</TT>.
+Just as for all of C's other operators,
+<TT>&amp;</TT> can be applied to arbitrary expressions,
+although it is restricted to expressions which represent 
+addressable objects.
+Expressions like
+<TT>&amp;1</TT> or <TT>&amp;(2+3)</TT>
+are meaningless and illegal.
+</p><p>You may remember a discussion from section 1.5.1 on page 16
+of how C's <TT>getchar</TT> routine is able to return all possible characters,
+plus an end-of-file indication,
+in its single return value.
+Why does <TT>getint</TT> need two return values?
+Why can't it use the same trick that <TT>getchar</TT> does?
+</p><p>The examples in this section are again relatively safe.
+The pointers have all been parameters,
+and the callers have passed pointers
+(that is, the ``addresses'' of)
+their own, properly-allocated variables.
+That is,
+code like
+<pre>	int a = 1, b = 2;
+	swap(&amp;a, &amp;b);
+</pre>and
+<pre>	int a;
+	getint(&amp;a);
+</pre>is correct and quite safe.
+</p><p>Something to beware of,
+though,
+is the temptation to inadvertently pass an uninitialized pointer variable
+(rather than the ``address'' of some other
+variable)
+to a routine which expects a pointer.
+We know that the <TT>getint</TT> routine expects
+as its argument
+a pointer to an <TT>int</TT> in which it is to store the integer it gets.
+Suppose we took that description literally,
+and wrote
+<pre>	int *ip;	/* a pointer to an int */
+	getint(ip);
+</pre>Here we have in fact passed a pointer-to-<TT>int</TT> to <TT>getint</TT>,
+but the pointer we passed doesn't point anywhere!
+When <TT>getint</TT> writes to (``dereferences'')
+the pointer, in an expression like <TT>*pn = 0</TT>,
+it will scribble on some random part of memory,
+and the program may crash.
+When people get caught in this trap,
+they often think that to fix it they need to use the <TT>&amp;</TT> operator:
+<pre>	getint(&amp;ip);	/* WRONG */
+</pre>or maybe the <TT>*</TT> operator:
+<pre>	getint(*ip);	/* WRONG */
+</pre>but these go from bad to worse.
+(If you think about them carefully,
+<TT>&amp;ip</TT> is a pointer-to-pointer-to-<TT>int</TT>,
+and <TT>*ip</TT> is an <TT>int</TT>,
+and neither of these types matches the pointer-to-<TT>int</TT>
+which <TT>getint</TT> expects.)
+The correct usage for now,
+as we showed already,
+is something like
+<pre>	int a;
+	getint(&amp;a);
+</pre>In this case,
+<TT>a</TT> is an honest-to-goodness, allocated <TT>int</TT>,
+so when we generate a pointer to it
+(with <TT>&amp;a</TT>)
+and call <TT>getint</TT>,
+<TT>getint</TT> receives a pointer that does point somewhere.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx8a.html" rev=precedes>prev</a>
+<a href="sx8c.html" rel=precedes>next</a>
+<a href="sx8.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>
