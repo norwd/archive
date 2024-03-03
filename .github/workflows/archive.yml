@@ -70,10 +70,6 @@ jobs:
         env:
           URL: ${{ steps.target.outputs.url }}
 
-      # See also https://gist.github.com/vpadhariya/90ab71c2a6a1203f5f9aa75ad5c5f32a
-      - name: Clean up query strings
-        run: for i in `find $1 -type f -name "*\?*"`; do mv $i `echo $i | cut -d? -f1`; done
-
       - name: Push Downloaded Directory
         id: auto-commit
         uses: stefanzweifel/git-auto-commit-action@v4
@@ -92,8 +88,31 @@ jobs:
 
             **NOTE:** This is an automatic commit. See the archive workflow.
 
+      # See also https://gist.github.com/vpadhariya/90ab71c2a6a1203f5f9aa75ad5c5f32a
+      - name: Clean up query strings
+        continue-on-error: true # Don't worry if files could not be converted, just get it pushed
+        run: for i in `find $1 -type f -name "*\?*"`; do mv $i `echo $i | cut -d? -f1`; done
+
+      - name: Push Downloaded Directory
+        id: auto-commit-cleanup
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          file_pattern: .
+          create_branch: true
+          branch: ${{ steps.target.outputs.branch }}
+          commit_author: norwd <106889957+norwd@users.noreply.github.com>
+          commit_user_name: norwd
+          commit_user_email: 106889957+norwd@users.noreply.github.com
+          commit_options: -s -S
+          commit_message: |
+            Clean up ${{ steps.target.outputs.directory }}
+
+            Original source: ${{ steps.target.outputs.url }}
+
+            **NOTE:** This is an automatic commit. See the archive workflow.
+
       - name: Create Pull Request
-        if: ${{ steps.auto-commit.outputs.changes_detected == 'true' }}
+        if: ${{ steps.auto-commit.outputs.changes_detected == 'true' || steps.auto-commit-cleanup.outputs.changes_detected == 'true' }}
         run: gh --repo "${{ github.repository }}" pr create --title "${TITLE}" --body "${BODY}" --head "${HEAD}" | tee -a "${GITHUB_STEP_SUMMARY}" | tee -a pr.txt
         env:
           HEAD: ${{ steps.target.outputs.branch }}
