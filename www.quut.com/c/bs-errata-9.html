@@ -1,0 +1,170 @@
+<html><head><title>
+Bjarne Stroustrup: The C++ Programming Language (2nd edition) (errata, 9th printing)
+</title>
+<link rel="made" rev="made" href="mailto:jutta@pobox.com">
+</head>
+<body>
+Printing 9 and up.&#160;<tt> </tt>There are also errata for printings
+<a href="bs-errata-1.html">1</a> and 
+<a href="bs-errata-6.html">6</a>, and for the 
+<a href="bs-errata-2.html">first year</a>.
+<hr>
+Errata for
+<h1>
+Bjarne Stroustrup:<br>
+The C++ Programming Language (2nd edition)</h1>
+Addison-Wesley, 1991, ISBN0-201-53992-6, printing 9 and up.
+<hr>
+I do not mention corrections of spelling mistakes, indentation style, etc.
+
+<dl>
+<dt><i>pg54</i>:&#160;<tt> </tt>	s/char* q = p;/<b>const</b> char* q = p;/<dd><p>
+
+<dt><i>pg55</i>:&#160;<tt> </tt>	s/sec7.10/sec7.<b>11</b>/<dd><p>
+
+<dt><i>pg80</i>:&#160;<tt> </tt>	s/look(const char*)/look(const char*<b>, int =0</b>)/<dd><p>
+
+<dt><i>pg113</i>:&#160;<tt> </tt>	s/#define &quot;myheade.h&quot;/#<b>include</b> &quot;myheade.h&quot;/<dd><p>
+
+<dt><i>pp154-155</i>:&#160;<tt> </tt>look() and insert() take const char* arguments.<dd><p>
+
+<dt><i>pg156</i>:&#160;<tt> </tt>	s/delete n-&gt;string;/delete<b>[]</b> n-&gt;string;/<dd>
+	s/delete tbl;/delete<b>[]</b> tbl;/<br>
+	s/char* pp = p;/<b>const</b> char* pp = p;/<br>
+<p>
+<dt><i>pg158</i>:&#160;<tt> </tt>	s/ok(int&amp;/ok(<b>const</b> int&amp;/<dd><p>
+
+<dt><i>pg194</i>:&#160;<tt> </tt>	s/#include&lt;iostream.h&gt;//<dd>
+	s/#include&lt;stream.h&gt;/#include&lt;<b>iostream.h</b>&gt;/<p>
+
+<dt><i>pg227</i>:&#160;<tt> </tt>	fourth line from bottom: s/increment/<b>decrement</b>/<dd><p>
+
+<dt><i>pg230</i>:&#160;<tt> </tt>	+= and *= should return complex&amp;<dd><p>
+
+<dt><i>pg254</i>:&#160;<tt> </tt>	s/sec5.3/sec<b>7.14.3</b>/<dd><p>
+
+<dt><i>pg265</i>:&#160;<tt> </tt>	top line: add template&lt;class T&gt;<dd><p>
+
+
+<dt><i>pg279</i>:&#160;<tt> </tt>The 2nd sentence of sec8.6 should read:<dd>
+	``In addition to type arguments,
+	variable names, function names, and constant expressions can be used.''
+<p>
+<dt><i>pg286</i>:&#160;<tt> </tt>the definition of Map should read:
+<dd><pre>template&lt;class K, class V&gt; class Map {
+    friend class Mapiter&lt;K,V&gt;;
+    Link&lt;K,V&gt;* head;
+    Link&lt;K,V&gt;* current;
+    V def_val;
+    K def_key;
+    int sz;
+
+    static K kdef(); // default K value 
+    static V vdef(); // default V value
+
+    void find(const K&amp;);
+    void init() { sz = 0; head = 0; current = 0; }
+public:
+
+    Map() : def_key(kdef()), def_val(vdef())
+	{ init(); }
+    Map(const K&amp; k, const V&amp; d) : def_key(k), def_val(d)
+	{ init(); }
+    ~Map() { delete head; } // delete all links recursively
+
+    Map(const Map&amp;);
+    Map&amp; operator= (const Map&amp;);
+
+    V&amp; operator[] (const K&amp;);
+
+    int size() const { return sz; }
+    void clear() { delete head; init(); }
+    void remove(const K&amp; k);
+
+	// iteration functions:
+
+    Mapiter&lt;K,V&gt; element(const K&amp; k)
+    {
+	(void) operator[](k);  // move current to k
+	return Mapiter&lt;K,V&gt;(this,current);
+    }
+    Mapiter&lt;K,V&gt; first() { return Mapiter&lt;K,V&gt;(this,head); }
+    Mapiter&lt;K,V&gt; last();
+};
+
+template&lt;class K, class V&gt; K Map&lt;K,V&gt;::kdef()
+    { static K k; return k; }
+template&lt;class K, class V&gt; V Map&lt;K,V&gt;::vdef()
+    { static V v; return v; }</pre>
+
+<dt><i>pg287</i>:&#160;<tt> </tt>	s/8.10 [2]/8.9 [4]/<dd>
+<p>
+<dt><i>pg289</i>:&#160;<tt> </tt>	add template&lt;class T&gt; before each of the iterator functions.<dd>
+<p>
+<dt><i>pg305</i>:&#160;<tt> </tt>	s/MININT -/MININT <b>+</b>/<dd><p>
+
+<dt><i>pg316</i>:&#160;<tt> </tt>	delete comment on get()<dd><p>
+
+<dt><i>pg354</i>:&#160;<tt> </tt>	s/char alloc;/<b>short</b> alloc;/<dd><p>
+
+<dt><i>pg409</i>:&#160;<tt> </tt>	s/X::a/<b>C</b>::a/<dd><p>
+
+<dt><i>pg418</i>:&#160;<tt> </tt>	s/i&lt;sz/i&lt;<b>=</b>sz/<dd><p>
+
+<dt><i>pg438</i>:&#160;<tt> </tt>	s/stream_iter/<b>input</b>_iter/<dd><p>
+
+<dt><i>pg445</i>:&#160;<tt> </tt>	s/Base_iterator/<b>base</b>_iterator/<dd><p>
+
+<dt><i>pg447</i>:&#160;<tt> </tt>add to the declaration of base_iterator:
+<dd><pre>
+    base_iterator(const base_iterator&amp;);
+    base_iterator&amp; operator=(const base_iterator&amp;);
+</pre>replace base_iterator::base_iterator() definition with:
+<pre>base_iterator::base_iterator(const Type_info* bb, int direct)
+{
+    i = 0;
+
+    if (direct) { // use list of direct bases 
+	b = bb;
+	alloc = 0;
+	return;
+    }
+
+    // create list of all bases:
+
+    // int n = number of bases
+    b = new (Type_info*)[n+1];
+    alloc = 1;
+    // put bases into b
+}
+</pre>
+<dt><i>pg448</i>:&#160;<tt> </tt>	replace definition of ptr_cast() and ref_cast() with:
+<dd>
+<pre>#define ptr_cast(T,p) \
+    (T::info().get_type_info()-&gt;can_cast((p)) ? (T*)(p) : 0)
+#define ref_cast(T,r) \
+    (T::info().get_type_info()-&gt;can_cast((r)) ? 0 : \
+      throw Bad_cast(T::info().get_type_info()-&gt;name()), (T&amp;)(r))
+</pre>
+<dt><i>pg449</i>:&#160;<tt> </tt>	s/dynamic_type()/info()/<dd>
+	s/static_type()/get_info()/
+<p>
+<dt><i>pg467</i>:&#160;<tt> </tt>	s/(*pf)()/(*pf)(<b>void*</b>)/<dd><p>
+
+<dt><i>pg472</i>:&#160;<tt> </tt>	s/r.count/r.<b>pcount</b>/<dd><p>
+
+<dt><i>pg474</i>:&#160;<tt> </tt>	s/(chunk_size<b>-esize</b>)/chunk_size/<dd>
+</dl>
+<hr>
+To track new developments, both the Annotated Reference Manual and
+Bjarne Stroustrup's book have an identical ``extra'' chapter that is
+updated a couple of times a
+year.&#160;<tt> </tt><a href="ftp://ftp.std.com/AW/stroustrup2e/iso.ps">Its most
+recent version</a> and the most recent errata sheet are available from
+Software, Tool &amp; Die's ftp server in
+directory <a href="ftp://ftp.std.com/AW/stroustrup2e">AW/stroustrup2e</a>.
+<hr>
+Thanks to Bjarne Stroustrup (bs@research.att.com) for errata and pointer.<br>
+Markup, etc. by jutta@pobox.com, corrections and comments welcomed.
+</body>
+</html>

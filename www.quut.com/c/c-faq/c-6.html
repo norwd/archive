@@ -1,0 +1,226 @@
+<html><head>
+<link rel="made" rev="made" href="mailto:jutta@cs.tu-berlin.de">
+<title>C Preprocessor</title></head>
+<body>
+<a href="c-5.html"><img SRC="prev.xbm" ALT="[prev]"></a>
+<a href="index.html#comp-lang-c-faq"><img SRC="up.xbm" ALT="[up]"></a>
+<a href="c-faq-toc.html#c-6"><img SRC="overview.xbm" alt="[overview]"></a>
+<a href="c-7.html"><img SRC="next.xbm" ALT="[next]"></a>
+<hr>
+
+<h2>Section 6. C Preprocessor</h2>
+<p>
+<h3>
+<a name="6-1">
+6.1:	How can I write a generic macro to swap two values?
+</a></h3><p>
+  	There is no good answer to this question.&#160;<tt> </tt>If the values are
+	integers, a well-known trick using exclusive-OR could perhaps be
+	used, but it will not work for floating-point values or
+	pointers, or if the two values are the same variable (and the
+	&quot;obvious&quot; supercompressed implementation for integral types
+	<code>a^=b^=a^=b</code> is in fact illegal due to multiple side-effects; see
+	questions <a href="c-4.html#4-1">4.1</a> and <a href="c-4.html#4-2">4.2</a>).&#160;<tt> </tt>If the macro is intended to be used on values of
+	arbitrary type (the usual goal), it cannot use a temporary,
+	since it does not know what type of temporary it needs, and
+	standard C does not provide a<code> typeof </code>operator.
+<p>
+	The best all-around solution is probably to forget about using a
+	macro, unless you're willing to pass in the type as a third
+	argument.
+<p>
+
+<h3>
+<a name="6-2">
+6.2:	I have some old code that tries to construct identifiers with a
+	macro like
+</a></h3><p>
+<pre>
+	#define Paste(a, b) a/**/b
+</pre>
+<p><h3>
+	but it doesn't work any more.
+</h3><p>
+  	That comments disappeared entirely and could therefore be used
+	for token pasting was an undocumented feature of some early
+	preprocessor implementations, notably Reiser's.&#160;<tt> </tt><a href="index.html#ANSI">ANSI</a> affirms
+	(as did K&amp;R) that comments are replaced with white space.
+	However, since the need for pasting tokens was demonstrated and
+	real, <a href="index.html#ANSI">ANSI</a> introduced a well-defined token-pasting operator, <code>##</code>,
+	which can be used like this:
+<p>
+<pre>
+	#define Paste(a, b) a##b
+</pre>
+<p>
+	(See also <a href="c-5.html#5-4">question 5.4</a>.)
+<p>
+	References: <a href="index.html#ANSI">ANSI</a> Sec. 3.8.3.3 p. 91,
+	<a href="../rat/c8.html#3-8-3-3">Rationale pp. 66-7</a>.
+<p>
+
+<h3>
+<a name="6-3">
+6.3:	What's the best way to write a multi-statement cpp macro?
+</a></h3><p>
+  	The usual goal is to write a macro that can be invoked as if it
+	were a single function-call statement.&#160;<tt> </tt>This means that the
+	&quot;caller&quot; will be supplying the final semicolon, so the macro
+	body should not.&#160;<tt> </tt>The macro body cannot be a simple brace-
+	delineated compound statement, because syntax errors would
+	result if it were invoked (apparently as a single statement, but
+	with a resultant extra semicolon) as the if branch of an if/else
+	statement with an explicit else clause.
+<p>
+	The traditional solution is to use
+<p>
+<pre>
+	#define Func() do { \
+		/* declarations */ \
+		stmt1; \
+		stmt2; \
+		/* ... */ \
+		} while(0)	/* (no trailing ; ) */
+</pre>
+<p>
+	When the &quot;caller&quot; appends a semicolon, this expansion becomes a
+	single statement regardless of context.&#160;<tt> </tt>(An optimizing compiler
+	will remove any &quot;dead&quot; tests or branches on the constant
+	condition 0, although lint may complain.)
+<p>
+	If all of the statements in the intended macro are simple
+	expressions, with no declarations or loops, another technique is
+	to write a single, parenthesized expression using one or more
+	comma operators.&#160;<tt> </tt>(See the example under <a href="c-6.html#6-10">question 6.10</a> below.
+	This technique also allows a value to be &quot;returned.&quot;)
+<p>
+	References: <a href="index.html#CT-amp-P">CT&amp;P</a> Sec. 6.3 pp. 82-3.
+<p>
+
+<h3>
+<a name="6-4">
+6.4:	Is it acceptable for one header file to #include another?
+</a></h3><p>
+  	It's a question of style, and thus receives considerable debate.
+	Many people believe that &quot;nested #include files&quot; are to be
+	avoided: the prestigious Indian Hill Style Guide (see <a href="c-14.html#14-3">question
+	14.3</a>) disparages them; they can make it harder to find relevant
+	definitions; they can lead to multiple-declaration errors if a
+	file is #included twice; and they make manual Makefile
+	maintenance very difficult.&#160;<tt> </tt>On the other hand, they make it
+	possible to use header files in a modular way (a header file
+	#includes what it needs itself, rather than requiring each
+	#includer to do so, a requirement that can lead to intractable
+	headaches); a tool like grep (or a tags file) makes it easy to
+	find definitions no matter where they are; a popular trick:
+<p>
+<pre>
+	#ifndef HEADERUSED
+	#define HEADERUSED
+	...header file contents...
+	#endif
+</pre>
+<p>
+	makes a header file &quot;idempotent&quot; so that it can safely be
+	#included multiple times; and automated Makefile maintenance
+	tools (which are a virtual necessity in large projects anyway)
+	handle dependency generation in the face of nested #include
+	files easily.&#160;<tt> </tt>See also <a href="c-14.html">section 14</a>.
+<p>
+<h3>
+<a name="6-5">
+6.5:	Does the</a><code> sizeof </code>operator work in preprocessor #if directives?
+</h3><p>
+  	No.&#160;<tt> </tt>Preprocessing happens during an earlier pass of
+	compilation, before type names have been parsed.&#160;<tt> </tt>Consider using
+	the predefined constants in <a href="index.html#ANSI">ANSI</a>'s &lt;limits.h&gt;, if applicable, or
+	a &quot;configure&quot; script, instead.&#160;<tt> </tt>(Better yet, try to write code
+	which is inherently insensitive to type sizes.)
+<p>
+	References: <a href="index.html#ANSI">ANSI</a> Sec. 2.1.1.2 pp. 6-7, Sec. 3.8.1 p. 87
+	footnote 83.
+<p>
+
+<h3>
+<a name="6-6">
+6.6:	How can I use a preprocessor #if expression to tell if a machine
+	is big-endian or little-endian?
+</a></h3><p>
+  	You probably can't.&#160;<tt> </tt>(Preprocessor arithmetic uses only long
+	ints, and there is no concept of addressing.)&#160;<tt> </tt>Are you sure you
+	need to know the machine's endianness explicitly?&#160;<tt> </tt>Usually it's
+	better to write code which doesn't care.
+<p>
+
+<h3>
+<a name="6-7">
+6.7:	I've got this tricky processing I want to do at compile time and
+	I can't figure out a way to get cpp to do it.
+</a></h3><p>
+  	cpp is not intended as a general-purpose preprocessor.&#160;<tt> </tt>Rather
+	than forcing it to do something inappropriate, consider writing
+	your own little special-purpose preprocessing tool, instead.
+	You can easily get a utility like make(1) to run it for you
+	automatically.
+<p>
+	If you are trying to preprocess something other than C, consider
+	using a general-purpose preprocessor (such as m4).
+<p>
+
+<h3>
+<a name="6-8">
+6.8:	I inherited some code which contains far too many </a><code>#ifdef</code>'s for
+	my taste.&#160;<tt> </tt>How can I preprocess the code to leave only one
+	conditional compilation set, without running it through cpp and
+	expanding all of the <code>#include</code>'s and <code>#define</code>'s as well?
+</h3><p>
+  	There are programs floating around called unifdef, rmifdef, and
+        scpp which do exactly this.  (See question <a href="c-17.html#17-12">17.12</a>.)
+<p>
+
+<h3>
+<a name="6-9">
+6.9:	How can I list all of the pre#defined identifiers?
+</a></h3><p>
+        There's no standard way, although it is a frequent need.&#160;<tt> </tt>If the
+        compiler documentation is unhelpful, the most expedient way is
+        probably to extract printable strings from the compiler or
+        preprocessor executable with something like the Unix strings(1)
+        utility.&#160;<tt> </tt>Beware that many traditional system-selective
+        pre#defined identifiers (e.g. "<code>unix</code>") are non-Standard
+	(because they clash with the user's namespace) and are being removed
+	or renamed.
+<p>
+<h3>
+<a name="6-10">
+6.10:	How can I write a cpp macro which takes a variable number of
+	arguments?
+</a></h3><p>
+  	One popular trick is to define the macro with a single argument,
+	and call it with a double set of parentheses, which appear to
+	the preprocessor to indicate a single argument:
+<p>
+<pre>
+	#define DEBUG(args) (printf(&quot;DEBUG: &quot;), printf args)
+
+	if(n != 0) DEBUG((&quot;n is %d\n&quot;, n));
+</pre>
+<p>
+	The obvious disadvantage is that the caller must always remember
+	to use the extra parentheses.&#160;<tt> </tt>Other solutions are to use
+        different macros (<code>DEBUG1</code>,<code> DEBUG2</code>, etc.) depending on the number
+        of arguments, or to play games with commas:
+<pre>
+        #define DEBUG(args) (printf(&quot;DEBUG: &quot;), printf(args))
+        #define _ ,
+        DEBUG(&quot;i = %d&quot; _ i)
+</pre>
+	It is often better to use a bona-fide function,
+	which can take a variable number of arguments in a well-defined
+	way.&#160;<tt> </tt>See questions <a href="c-7.html#7-1">7.1</a> and <a href="c-7.html#7-2">7.2</a>.
+<p>
+<hr>
+<a href="c-5.html"><img SRC="prev.xbm" ALT="[prev]"></a>
+<a href="index.html#comp-lang-c-faq"><img SRC="up.xbm" ALT="[up]"></a>
+<a href="c-faq-toc.html#c-6"><img SRC="overview.xbm" alt="[overview]"></a>
+<a href="c-7.html"><img SRC="next.xbm" ALT="[next]"></a></body></html>

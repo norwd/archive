@@ -1,0 +1,341 @@
+<html>
+<head>
+<title>Stroustrup: The Design and Evolution of C++ (errata)</title>
+<link rel="made" rev="made" href="mailto:jutta@pobox.com">
+</head>
+<body>
+Errata for
+<h1>
+        Bjarne Stroustrup:<br>
+        The Design and Evolution of C++
+</h1>
+Addison&#173;Wesley 1995, ISBN 0-201-54330-3
+<p>
+<hr>
+<p>
+You find the printing number as the first number on the last line
+of the copyright page.
+<p>
+I only list things that can affect understanding. Spelling mistakes
+you can fix yourself if you spot them.
+I very much appreciate reports of errors and constructive comments
+on the contents in general.
+<p>
+I will make this errata available via ftp somewhere in <a href="ftp://ftp.std.com/AW">AW on ftp.std.com</a>.
+<p>
+For brevity, I use the old replacement syntax: s/old/new/
+<p>
+<address>
+        - Bjarne
+</address>
+
+
+<h2><a name="first">Errata to the first printing</a></h2>
+
+<dl compact>
+<dt><i>pg32</i>&#160;<tt> </tt>s/(_temp.impl.rest_)/(sec15.11.3)/<dd>
+<p>
+<dt><i>pg64</i>&#160;<tt> </tt>s/Stra<b>t</b>chey/Strachey/<dd>
+<p>
+<dt><i>pg67</i>&#160;<tt> </tt>s/McClusky/McClusk<b>e</b>y/<dd>
+<p>
+<dt><i>pg78</i>&#160;<tt> </tt>at the end of sec3.5.3 add<dd>
+<p>
+        See sec17.5.2 for a way to explicitly request overloading
+        of base and derived class functions.
+<p>
+<dt><i>pg99</i>&#160;<tt> </tt>replace the last paragraph of 3.11.5.1 with<dd>
+<p>
+        This rule was the subject of much discussion and was eventually
+        revised to match the rule for declarations in conditions (sec3.11.5.2).
+        That is, a name introduced in a for&#173;statement initializer goes out
+         of scope at the end of the  for&#173;statement.
+<p>
+<dt><i>pg164</i>&#160;<tt> </tt>s/Sing/Sing<b>h</b>/<dd>
+<p>
+<dt><i>pg190</i>&#160;<tt> </tt>s/Erat<b>h</b>ostenes/Eratost<b>h</b>enes/<dd>
+<p>
+<dt><i>pg228</i>&#160;<tt> </tt>s/and surprising/and <b>less</b> surprising/<dd>
+<p>
+<dt><i>pg 255</i>&#160;<tt> </tt>change the definitions of true and TRUE to<dd>
+
+<pre><tt>const true = 1;
+#define TRUE 1
+</tt></pre>
+
+<dt><i>pg343</i>&#160;<tt> </tt>add after sec15.3.1<dd>
+<p>
+        Class templates as template arguments were approved at the March
+        1994 meeting in San Diego.
+<p>
+<dt><i>pg 349</i>&#160;<tt> </tt>s/lookup&lt;Buffer/lookup<b>(</b>Buffer/<dd>
+<p>
+<dt><i>pg 359</i>&#160;<tt> </tt>replace body of compare function with<dd>
+<pre><tt>for(int i=0; i&lt;str1.length() &amp;&amp; i&lt;str2.length(); i++)
+        if (!C::eq(str1[i],str2[i]))
+                return C::lt(str1[i],str2[i]);
+return str2.length()-str1.length();
+</tt></pre>
+<dt><i>pg360</i>&#160;<tt> </tt>s/compare(swede1,swede2,LITERATE)/<dd>
+	&#160;<tt> </tt>&#160;<tt> </tt>compare<b>&lt;char,LITERATE&gt;</b>(swede1,swede2)/<br>
+        s/compare(s1,s2,NOCASE)/compare<b>&lt;char,NOCASE&gt;</b>(s1,s2)/
+<p>
+<dt><i>pg362</i>&#160;<tt> </tt>replace the last sentense of 15.9.1 by<dd>
+<p>
+        Member templates are described in sec15.9.3.
+<p>
+<dt><i>pg364 first line</i>&#160;<tt> </tt>s/aren't allowed/<b>weren't</b> allowed/<dd>
+<p>
+        <i>third line from bottom:</i> s/I hope to see member templates in C++.//
+<p>
+<dt><i>pg375</i>&#160;<tt> </tt>write should be defined like this:<dd>
+
+<pre><tt>void write(int vv) { v=vv; }
+</tt></pre>
+<dt><i>pg389</i>&#160;<tt> </tt>in comment s/close/<b>open</b>/<dd>
+<p>
+<dt><i>pg426</i>&#160;<tt> </tt>s/syntactically correct/syntactically correct <b>and type check</b>/<dd>
+</dl>
+<h2><a name="second">Errata to the second printing</a></h2>
+
+<dl>
+<dt><i>pg5</i>&#160;<tt> </tt>change<dd>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>1994&#160;<tt> </tt>Sep&#160;<tt> </tt>Draft ANSI/ISO
+                        standard due<br>
+        to<br>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+                1994&#160;<tt> </tt>Aug&#160;<tt> </tt>ANSI/ISO
+                        Committee Draft registered
+<p>
+<dt><i>pg6</i>&#160;<tt> </tt>move CLOS to 1988<dd>
+<p>
+<dt><i>pg80 at the end of 3.6.1</i>&#160;<tt> </tt> add<dd>
+<p>
+        Naturally, I realized that not all constructors defined
+        meaningful and unsurprising implicit conversions. For example, a
+        vector type usually has a constructor taking an integer argument
+        indicating the number of elements. It was an unfortunate
+	side&#173;effect
+        to have v=7 construct a vector of seven elements and assign it to
+        v . I didn't consider this problem urgent, though. Several members
+         of the C++ standards committee (sec6.2), notably Nathan Myers,
+        suggested that a solution was necessary. In 1995, the problem was
+        solved by allowing the prefix<code> explicit </code>to be
+	added to the declaration
+        of a constructor.  A constructor declared explicit is used for explicit
+        construction only and not for implicit conversions. For example,
+        declaring vector's constructor ``explicit vector(int);'' makes v=7
+        an error while the more explicit v=vector(7) as ever constructs and
+        assigns a vector .
+<p>
+<dt><i>pg129</i>&#160;<tt> </tt>add footnote<dd>
+<p>
+        In July 1994, the committee voted for ``CD registration'' as the
+        first step of the completion of the ISO process is now called.
+        Scheduling a standard isn't easy. In particular, ``details'' such
+        as what a standard is and how you must make one aren't standardized
+        and seem to change every year.
+<p>
+<dt><i>pg131</i>&#160;<tt> </tt>add and modify list entries<dd>
+<p><ul>
+        <li> Declarations in conditions (sec3.11.5.2)
+        <li> Mutable (sec13.3.3)
+        <li> Member templates (sec15.8.2)
+        <li> Class templates as template arguments (sec15.3.1)
+        <li> A const static member of integral type can be initialized by a
+          constant&#173;expression within a class declaration.
+        <li> Explicit constructors (sec3.6.1)
+        <li> Static checking of exception specifications (sec16.9).
+</ul><p>
+
+<dt><i>pg150-152</i>&#160;<tt> </tt>replace sec6.4.2 with<dd>
+<p>
+        So how is the committee doing? We won't really know until the
+        standard appears because there is no way of knowing how new proposals
+        will fare. This summary is based on the state of affairs after the
+        November 1994 meeting in Valley Forge.
+<p>
+        Proposing extensions for C++ seems to be popular. For example:
+<p><ul>
+        <li> Extended (international) character sets (sec6.5.3.2)
+        <li> Various template extensions (sec15.4, sec15.9.3)
+        <li> Garbage collection (sec10.7)
+        <li> NCEG proposals (for example, sec6.5.2)
+        <li> Discriminated unions
+        <li> User&#173;defined operators (sec11.6.2)
+        <li> Evolvable/indirect classes
+        <li> Enumerations with predefined ++ , &lt;&lt; , etc., operators
+        <li> Overloading based on return type
+        <li> Composite Operators (sec11.6.3)
+        <li> Keyword for the null pointer (NULL , nil, etc.) (sec11.2.3)
+        <li> Pre&#173; and post&#173;conditions
+        <li> Improvements to the Cpp macros
+        <li> Rebinding of references
+        <li> Continuations
+        <li> Currying.
+</ul><p>
+        There is some hope of restraint and that accepted features will be
+        properly integrated into e language. Only a few new features have
+        been accepted so far:
+<p>
+<ul>
+        <li> Exception handling (``mandated'') (sec16)
+        <li> Templates (``mandated'') (sec15)
+        <li> European character set representation of C++ (sec6.5.3.1)
+        <li> Relaxing rule for return types for overriding functions (sec13.7)
+        <li> Run&#173;time type identification (sec14.2)
+        <li> Declarations in conditions (sec3.11.5.2)
+        <li> Overloading based on enumerations (sec11.7.1)
+        <li> User&#173;defined allocation and deallocation operators for
+                arrays (sec10.3)
+        <li> Forward declaration of nested classes (sec13.5)
+        <li> Namespaces (sec17)
+        <li> Mutable (sec13.3.3)
+        <li> Boolean type (sec11.7.2)
+        <li> A new syntax for type conversion (sec14.3)
+        <li> An explicit template instantiation operator (sec15.10.4)
+        <li> Explicit template arguments in template function calls (sec15.6.2)
+        <li> Member templates (sec15.9.3)
+        <li> Class templates as template arguments (sec15.3.1)
+        <li> A const static member of integral type can be initialized by a
+          constant&#173;expression within a class declaration
+        <li> Explicit constructors (sec3.6.1)
+        <li> Static checking of exception specifications (sec16.9).
+</ul>
+<p>
+
+        Exceptions and templates stand out among the extensions as being
+        mandated by the original proposal and described in the ARM, and also
+        by being a couple of orders of magnitudes more difficult to define
+        and to implement than any of the other proposals.
+<p>
+        To contrast, the committee has rejected many proposals. For example:
+
+<p>
+<ul>
+        <li> Several proposals for direct support for concurrency
+        <li> Renaming of inherited names (sec12.8)
+        <li> Keyword arguments (sec6.5.1)
+        <li> Several proposals for slight modifications of the data hiding rules
+        <li> Restricted pointers (``son of noalias'') (sec6.5.2)
+        <li> Exponentiation operator (sec11.5.2)
+        <li> Automatically generated composite operators
+        <li> User&#173;defined operator.() (sec11.5.2)
+        <li> Nested functions
+        <li> Binary literals
+        <li> General initialization of members within a class declaration.
+</ul>
+<p>
+
+        Please note that a rejection doesn't imply that the proposal was
+        deemed bad or even useless. In fact, most proposals that reach the
+        committee are technically sound and would help at least some subset
+        of the C++ user community. The reason is that most ideas never make
+        it through the initial scrutiny and effort to make it into a proposal.
+<p>
+
+<dt><i>pg157</i>&#160;<tt> </tt>s/color(green)/<b>C</b>olor(green)/<dd>
+<p>
+<dt><i>pg194</i>&#160;<tt> </tt>add footnote<dd>
+<p>
+        Here, I have the great pleasure of eating my words!
+        The committee did raise to the occasion and approved a splendid
+        library of containers, iterators, and fundamental algorithms
+        designed by Alex Stepanov. This library, often called the STL,
+        is an elegant, efficient, formally sound, and well&#173;tested framework
+        for containers and their use (Alexander Stepanov and Meng Lee:
+        The Standard Template Library, HP Labs Technical Report HPL-94-34
+        (R. 1), August, 1994. Mike Vilot: An Introduction to the STL Library.
+        The C++ Report, October 94). Naturally, the STL includes map and
+        list classes, and subsumes the dynarray, bits, and bitstring
+        classes mentioned above. In addition, the committee approved vector
+        classes to support numeric/scientific computation based on a proposal
+        from Ken Budge from Sandia Labs.
+<p>
+<dt><i>pg239</i>&#160;<tt> </tt>s/struct {/struct <b>Y</b> {/<dd>
+<p>
+<dt><i>pg241</i>&#160;<tt> </tt>s/someone sitting on my right/Jim Howard/<dd>
+        delete sentence beginning /Unfortunately, I have forgotten/
+<p>
+<dt><i>pg244</i>&#160;<tt> </tt>the last code fragment should be<dd>
+
+<pre><tt>        void h(RefNum r, Num&amp; x)
+{
+        r.bind(x);     // error: no Num::bind
+        (&amp;r)-&gt;bind(x); // ok: call RefNum::bind
+}
+</tt></pre>
+<dt><i>pg245</i>&#160;<tt> </tt>s/RefX/Ref<b>Num</b>/<dd>
+<p>
+<dt><i>pg246 in example 1,2,3, and 5</i>&#160;<tt> </tt> swap X and X&amp; in the return types.<dd>
+        <i>in example 4</i>&#160;<tt> </tt>swap postfix and prefix in the comments.
+<p>
+<dt><i>pg263</i>&#160;<tt> </tt>s/D { g }/D { g<b>()</b> }/<dd>
+<p>
+<dt><i>pg265</i>&#160;<tt> </tt>s/f(2)/f(2)<b>;</b>/<dd>
+<p>
+<dt><i>pg274</i>&#160;<tt> </tt>s/int go_draw/<b>void</b> go_draw/<dd>
+<p>
+<dt><i>pg278 end of paragraph near middle of page:</i>&#160;<tt> </tt><dd>
+<p>
+        s/this simple notion/this simple notion <b>directly</b>/
+<p>
+<dt><i>pg283</i>&#160;<tt> </tt>declare members of B and C public.<dd>
+<p>
+<dt><i>pg304</i>&#160;<tt> </tt>s/S::f/S::<b>m</b>f/<dd>
+        s/p-&gt;*pf/p-&gt;*p<b>m</b>f/
+<p>
+<dt><i>pg332</i>&#160;<tt> </tt>Replace sentense near the middle by<dd>
+<p>
+        pd2 will point to the start of the D object passed, whereas<br>
+        pd1 will point to the start of D 's B sub&#173;object.
+<p>
+<dt><i>pg333</i>&#160;<tt> </tt>replace example by<dd>
+
+<pre>const char cc = 'a';
+const char* pcc = &amp;cc;
+const char** ppcc = &amp;pcc;
+void* pv = ppcc; // no cast needed:
+		 // ppcc isn't a const, it only points to one,
+		 // but const vanished!
+char** ppc = (char**)pv; // points to pcc
+
+void f()
+{
+	**ppc = 'x'; // Zap!
+}
+</pre>
+<dt><i>pg352</i>&#160;<tt> </tt>s/(B&lt;int&gt;*)d/(B&lt;int&gt;*)<b>pd</b>/<dd>
+<p>
+<dt><i>pg359</i>&#160;<tt> </tt>s/lt()/lt(<b>char a, char b</b>)/<dd>
+<p>
+<dt><i>pg389 at the end of the declaration of FilePtr:</i>&#160;<tt> </tt>s/}/}<b>;</b>/<dd>
+<p>
+<dt><i>pg396</i>&#160;<tt> </tt>add to just before the start of sec16.9.1<dd>
+<p>
+        In 1995, we found a scheme that allows some static checking of
+        exception specifications and improved code generation without
+        causing the problems described above. Consequently, exception
+        specifications are now checked so that pointer to function assignments,
+        initializations, and virtual function overriding cannot lead to
+        violations. Some unexpected exceptions can still occur, and those
+        are caught at run time as ever.
+</dl>
+
+<hr>
+<p>
+        D&amp;E was awarded one of ``Software Development'' Magazine's
+        Productivity awards.
+<p>
+        You can find reviews in
+<ul><li>
+                Dr. Dobbs Journal, August 1994 (by Al Stevens)
+<li>
+                The C++ Report, October 1994 (by Keith Gorlen)
+</ul>
+<hr>
+<p>
+Thanks to Bjarne Stroustrup (bs@research.att.com) for the errata.<br>
+Markup, etc. by jutta@pobox.com, corrections and comments welcome.
+</body>
+</html>
