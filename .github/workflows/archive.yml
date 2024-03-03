@@ -66,10 +66,9 @@ jobs:
 
       - name: Mirror Directory
         continue-on-error: true # Don't worry if it could not be mirrored, some individual files may fail but can be manually recovered later
-        run: wget --no-verbose --header="${HEADER}" --recursive -level=inf --no-parent --convert-links --page-requisites --content-on-error --content-disposition "${URL}"
+        run: wget --no-verbose --recursive -level=inf --no-parent --convert-links --page-requisites --content-on-error --content-disposition "${URL}"
         env:
           URL: ${{ steps.target.outputs.url }}
-          HEADER: 'Accept-Encoding: gzip,deflate'
 
       # See also https://gist.github.com/vpadhariya/90ab71c2a6a1203f5f9aa75ad5c5f32a
       - name: Clean up query strings
@@ -164,11 +163,10 @@ jobs:
 
       - name: Download File
         working-directory: ${{ steps.target.outputs.directory }}
-        run: wget --no-verbose --header="${HEADER}" --output-document "${FILE}" "${URL}"
+        run: wget --no-verbose --output-document "${FILE}" "${URL}"
         env:
           URL: ${{ steps.target.outputs.url }}
           FILE: ${{ steps.target.outputs.file }}
-          HEADER: 'Accept-Encoding: gzip,deflate'
 
       - name: Push Downloaded File
         id: auto-commit
