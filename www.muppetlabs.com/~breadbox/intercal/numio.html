@@ -1,0 +1,186 @@
+<!DOCUMENT html>
+<html>
+<head>
+<title>Documentation for numio.i</title>
+<style>
+body {
+    font-size: 100%;
+    margin: 1em;
+    max-width: 64em;
+}
+h1 {
+    margin: 1em auto;
+    text-align: center;
+}
+table {
+    margin: 1em;
+    border-spacing: 1em 0.2em;
+}
+td { vertical-align: text-top; }
+</style>
+</head>
+<body>
+<p>
+<a href="../pub/intercal/numio.tar.gz"
+>Download numio.tar.gz</a>
+<h1>numio.i</h1>
+<p>
+The numio library is a short collection of routines to help one with
+doing the short of input and output that other languages have
+mistakenly caused the average programmer to take for granted. When
+tracking the state of INTERCAL's Turing-tape feels too uninterestingly
+annoying to be worth managing, or when you just really need to output
+numbers without being insulted by your standard error stream, this
+collection of routines is available to let you off the hook you
+deserve to remain upon.
+<p>
+Here is the complete summary of routines provided by numio.i:
+<p>
+<table>
+<tr>
+<td><code>(3000)</code></td>
+<td><code>.1 &lt;-</code> character from input</td>
+<tr>
+<td><code>(3001)</code></td>
+<td>Prints <code>.2</code> as a character</td>
+<tr>
+<td><code>(3010)</code></td>
+<td><code>,1 &lt;-</code> a string of input from the user, no longer than <code>.1</code>, and<br>
+    excluding the terminating newline.<br>
+    <code>.2 &lt;-</code> the real length of the user input.<br>
+    <code>.3 &lt;- #1</code> if <code>.2</code> &leq; <code>.1</code> (i.e., no characters were lost).<br>
+    Otherwise, <code>.3 &lt;- #2.</code></td>
+
+<tr>
+<td><code>(3020)</code></td>
+<td><code>,1 &lt;-</code> a string of input from the user, no longer than <code>.1</code>,<br>
+    translated (where possible) into indices into <code>,2</code><br>
+    <code>.3 &lt;-</code> the real length of the user input.<br>
+    <code>.4 &lt;- #1</code> if <code>.3</code> &leq; <code>.1</code> and all characters in the input are<br>
+    listed in <code>,2</code>. Otherwise, <code>.4 &lt;- #2</code>.</td>
+<tr>
+<td><code>(3080)</code></td>
+<td><code>.1 &lt;-</code> a 16-bit number from the user</td>
+<tr>
+<td><code>(3089)</code></td>
+<td><code>.1 &lt;-</code> a 16-bit number from the user, with an error message if<br>
+    non-digits are encountered</td>
+<tr>
+<td><code>(3090)</code></td>
+<td>Displays the value in <code>.1</code></td>
+<tr>
+<td><code>(3099)</code></td>
+<td>Displays the value in <code>.1</code> and prints a newline</td>
+<tr>
+<td><code>(3180)</code></td>
+<td><code>:1 &lt;-</code> a 32-bit number from the user</td>
+<tr>
+<td><code>(3189)</code></td>
+<td><code>:1 &lt;-</code> a 32-bit number from the user, with an error message if<br>
+    non-digits are encountered</td>
+<tr>
+<td><code>(3190)</code></td>
+<td>Displays the value in <code>:1</code></td>
+<tr>
+<td><code>(3199)</code></td>
+<td>Displays the value in <code>:1</code> and prints a newline</td>
+<tr>
+<td><code>(3990)</code></td>
+<td>Initializes internal arrays.</td>
+</table>
+<p>
+numio.i reserves the use of two arrays &mdash; <code>,3000</code>
+and <code>,3001</code> &mdash; for input and output respectively. Each
+array has one dimension of one element, and they are used to provide
+a <i>getchar</i> routine, at <code>(3000)</code>, and a <i>putchar</i>
+routine, <code>(3001)</code>. Note that <code>(3001)</code> expects
+that the character values have already been bit-reversed. The arrays
+are initialized by routine <code>(3990)</code>; this should be called
+before using any other routines in this library.
+<p>
+Routines <code>(3010)</code> and <code>(3020)</code> provide line
+input capabilities. The routines write in characters until they see a
+newline (or end-of-file), and store them in <code>,1</code>. They are
+called with <code>.1</code> being the number of characters to save;
+any input after that is thrown away. (Already they're better than C's
+<code>gets()</code>!)
+<p>
+<code>(3010)</code> returns the actual number of characters that were
+input in <code>.2</code>, and <code>.3</code> is set
+to <code>#2</code> if characters were lost (i.e., if <code>.2</code>
+is longer than <code>.1</code>). I decided to add <code>.3</code>,
+even though the caller could check for this themselves, as inequal
+comparisons are a bit painful in INTERCAL. Or, to be accurate, they're
+more painful than equal comparisons. Note also that if <code>.1</code>
+is <code>#0</code>, the routine becomes a press-Enter-to-continue type
+of function, and <code>,1</code> need not actually be defined.
+<p>
+<code>(3020)</code> is a filtering, or translating, input routine.
+When called, the array <code>,2</code> should contain a set of
+"approved" characters that are expected to be in the input,
+and <code>.2</code> should contain the number of characters
+in <code>,2</code>. As input is retrieved, the routine looks up each
+character in <code>,2</code>. If the character is approved, the
+routine stores in <code>,1</code> the index of the character instead.
+(Otherwise the actual character number is stored, as
+with <code>(3010)</code>.) Upon return, <code>.3</code> has the number
+of characters that were input, and <code>.4</code> is set
+to <code>#2</code> if characters were lost <em>or</em> if any
+characters in the input were not in the set of approved characters.
+<p>
+The remaining routines are for doing "wimpmode"-style I/O - or in
+other words, the C-INTERCAL equivalent of <i>atoi</i>
+and <i>itoa</i>. <code>(3080)</code> and <code>(3090)</code> translate
+the ASCII input as a number (yes, a number as in <code>[0-9]*</code>),
+and <code>(3090)</code> and <code>(3190)</code> do the same for
+displaying numbers in ASCII. (By the way, the routines can also be
+made to support EBCDIC: simply replace <code>#3</code>
+with <code>#15</code> on lines 41, 81, and 107.)
+<p>
+Each routine also has a "niner" variation.
+For <i>itoa</i>, <code>(3099)</code> and <code>(3190)</code> print a
+newline at the end of the number. In the case
+of <i>atoi</i>, <code>(3089)</code> and <code>(3189)</code> make sure
+that the number ends with a newline. In other words, they ensure there
+are no other non-numeric characters in the input line. If there are, a
+typically snide INTERCAL error message is displayed. (The regular
+versions work like C's <code>atoi()</code> in that they return as soon
+as they see any non-digit.)
+<p>
+There's not too much else to note about these routines.
+The <i>atoi</i> routines use the shift-and-add trick to avoid
+multiplying by 10, so they should be pretty efficient
+(snort). <i>itoa</i> has no such shortcuts, and the routines use the
+modified division routine which also returns the remainder. The 16-bit
+version is at <code>(2030)</code>, and is the familiar one created by
+Louis Howell, copied from syslib2.i. The 32-bit version is
+at <code>(2530)</code>, and is just a copy of the standard library
+routine without the lines that throw away the remainder at the end.
+<p>
+Note also that for these routines to work properly, they must be used
+more or less exclusively in regards to other array I/O. Otherwise, the
+<i>getchar</i> and <i>putchar</i> subroutines will get out of synch
+with the Turing-text character loop. If you do want to do other I/O
+while using these routines, you can use <code>(3000)</code>
+and <code>(3001)</code> as a <i>getchar</i> and <i>putchar</i>. Or,
+you can simply re-initialize the <code>,3000</code>
+and/or <code>,3001</code> values after you are done, by storing in
+them the ASCII value of the last character that you wrote in and/or
+read out. For example, if you have displayed some strings and the last
+thing to be printed was a newline, then:
+<p>
+<pre>	DO ,3001SUB#1 <- #80</pre>
+<p>
+would allow you to safely call the <i>itoa</i> routines, since 80 is the
+bit-reversal of 10.
+<p>
+<br>
+<small><a href="index.html">
+INTERCAL</a></small>
+<br>
+<small><a href="../index.html">Brian
+Raiter</a></small>
+<br>
+<small><a href="http://www.muppetlabs.com/">Muppetlabs</a></small>
+</body>
+</html>

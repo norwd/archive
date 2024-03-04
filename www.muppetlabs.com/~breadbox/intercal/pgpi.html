@@ -1,0 +1,595 @@
+<!DOCUMENT html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<title>INTERCAL: Practically Impossible</title>
+<style>
+body {
+  font-family: "Georgia", Times, serif;
+  max-width: 48em;
+  margin: 1em auto;
+}
+h1 {
+  text-align: center;
+  padding-bottom: 2em;
+}
+pre {
+}
+tt, code {
+  font-family: Söhne Mono, Monaco, Andale Mono, Ubuntu Mono, monospace;
+  background: linear-gradient(#00000018, #00000018);
+  font-size: 0.9rem;
+}
+.center {
+  margin: 0.2em auto;
+  text-align: center;
+}
+.openai {
+  font-family: Söhne, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, Helvetica Neue, Arial, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+  color: #343541;
+  margin: 1em;
+  padding: 1em;
+}
+.openai .icon {
+  width: 30px;
+  height: 30px;
+  text-align: center;
+  border-radius: 0.125em;
+}
+.query { background-color: #FEFEFD; }
+.response { background-color: #F7F7F8; }
+.openai td {
+  padding-right: 1.5em;
+  vertical-align: top;
+}
+.INTERCAL {
+  font-family: Söhne Mono, Monaco, Andale Mono, Ubuntu Mono, monospace;
+  font-size: 0.85em;
+  font-weight: bold;
+  background-color: #000;
+  color: #F0F0F0;
+  white-space: pre;
+  line-height: 1.5;
+  border-radius: 0.3rem;
+  padding-left: 1em;
+}
+.INTERCAL .zk { color: #2B8CC7; }
+.INTERCAL .zn { color: #DC2F73; }
+.INTERCAL .k { color: #7BB7DB; }
+.INTERCAL .n { color: #E97EA8; }
+.INTERCAL .L { color: #C7DC43; }
+.INTERCAL .v { color: #71F09F; }
+.INTERCAL .m { color: #B8F3CF; }
+.INTERCAL .x { color: #FFFFFF; }
+.INTERCAL .c { color: #2B84EC; }
+</style>
+</head>
+<body>
+<p style="text-align:right">
+<a href="http://www.muppetlabs.com/~breadbox/pub/intercal/pwdgen.tar.gz"
+>Download pwdgen.tar.gz</a>
+</p>
+
+<h1>INTERCAL: Practically Impossible</h1>
+
+<p>A very good friend of mine has been experimenting with trying to
+coax Chat-GPT4 to successfully do basic coding tasks. So have a lot of
+people these days, of course. In an idle moment, though, my friend
+submitted the following query:</p>
+
+<table class="openai query">
+  <tr><td>
+  <div style="width:30px;height:30px;background-color:#ab68ff;text-align:center;border-radius:.125rem;"><svg stroke="#ffffff" fill="none" stroke-width="1.5" viewBox="0 -2 24 24" stroke-linecap="round" stroke-linejoin="round" height="1.5rem" width="1.5rem" xmlns="http://www.w3.org/2000/svg"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div>
+  </td><td>
+  <p>Please write a password generation program using the Intercal
+  computer programming language.</p>
+  </td></tr>
+</table>
+
+<p>And <em>this</em> was the program's response:</p>
+
+<table class="openai response">
+  <tr><td>
+  <div style="width:30px;height:30px;background-color:#E06C2B;text-align:center;border-radius:.125em;"><svg viewBox="0 -1 41 41" width="24" height="28" fill="none" xmlns="http://www.w3.org/2000/svg" stroke-width="1.5" role="img"><path d="M37.5324 16.8707C37.9808 15.5241 38.1363 14.0974 37.9886 12.6859C37.8409 11.2744 37.3934 9.91076 36.676 8.68622C35.6126 6.83404 33.9882 5.3676 32.0373 4.4985C30.0864 3.62941 27.9098 3.40259 25.8215 3.85078C24.8796 2.7893 23.7219 1.94125 22.4257 1.36341C21.1295 0.785575 19.7249 0.491269 18.3058 0.500197C16.1708 0.495044 14.0893 1.16803 12.3614 2.42214C10.6335 3.67624 9.34853 5.44666 8.6917 7.47815C7.30085 7.76286 5.98686 8.3414 4.8377 9.17505C3.68854 10.0087 2.73073 11.0782 2.02839 12.312C0.956464 14.1591 0.498905 16.2988 0.721698 18.4228C0.944492 20.5467 1.83612 22.5449 3.268 24.1293C2.81966 25.4759 2.66413 26.9026 2.81182 28.3141C2.95951 29.7256 3.40701 31.0892 4.12437 32.3138C5.18791 34.1659 6.8123 35.6322 8.76321 36.5013C10.7141 37.3704 12.8907 37.5973 14.9789 37.1492C15.9208 38.2107 17.0786 39.0587 18.3747 39.6366C19.6709 40.2144 21.0755 40.5087 22.4946 40.4998C24.6307 40.5054 26.7133 39.8321 28.4418 38.5772C30.1704 37.3223 31.4556 35.5506 32.1119 33.5179C33.5027 33.2332 34.8167 32.6547 35.9659 31.821C37.115 30.9874 38.0728 29.9178 38.7752 28.684C39.8458 26.8371 40.3023 24.6979 40.0789 22.5748C39.8556 20.4517 38.9639 18.4544 37.5324 16.8707ZM22.4978 37.8849C20.7443 37.8874 19.0459 37.2733 17.6994 36.1501C17.7601 36.117 17.8666 36.0586 17.936 36.0161L25.9004 31.4156C26.1003 31.3019 26.2663 31.137 26.3813 30.9378C26.4964 30.7386 26.5563 30.5124 26.5549 30.2825V19.0542L29.9213 20.998C29.9389 21.0068 29.9541 21.0198 29.9656 21.0359C29.977 21.052 29.9842 21.0707 29.9867 21.0902V30.3889C29.9842 32.375 29.1946 34.2791 27.7909 35.6841C26.3872 37.0892 24.4838 37.8806 22.4978 37.8849ZM6.39227 31.0064C5.51397 29.4888 5.19742 27.7107 5.49804 25.9832C5.55718 26.0187 5.66048 26.0818 5.73461 26.1244L13.699 30.7248C13.8975 30.8408 14.1233 30.902 14.3532 30.902C14.583 30.902 14.8088 30.8408 15.0073 30.7248L24.731 25.1103V28.9979C24.7321 29.0177 24.7283 29.0376 24.7199 29.0556C24.7115 29.0736 24.6988 29.0893 24.6829 29.1012L16.6317 33.7497C14.9096 34.7416 12.8643 35.0097 10.9447 34.4954C9.02506 33.9811 7.38785 32.7263 6.39227 31.0064ZM4.29707 13.6194C5.17156 12.0998 6.55279 10.9364 8.19885 10.3327C8.19885 10.4013 8.19491 10.5228 8.19491 10.6071V19.808C8.19351 20.0378 8.25334 20.2638 8.36823 20.4629C8.48312 20.6619 8.64893 20.8267 8.84863 20.9404L18.5723 26.5542L15.206 28.4979C15.1894 28.5089 15.1703 28.5155 15.1505 28.5173C15.1307 28.5191 15.1107 28.516 15.0924 28.5082L7.04046 23.8557C5.32135 22.8601 4.06716 21.2235 3.55289 19.3046C3.03862 17.3858 3.30624 15.3413 4.29707 13.6194ZM31.955 20.0556L22.2312 14.4411L25.5976 12.4981C25.6142 12.4872 25.6333 12.4805 25.6531 12.4787C25.6729 12.4769 25.6928 12.4801 25.7111 12.4879L33.7631 17.1364C34.9967 17.849 36.0017 18.8982 36.6606 20.1613C37.3194 21.4244 37.6047 22.849 37.4832 24.2684C37.3617 25.6878 36.8382 27.0432 35.9743 28.1759C35.1103 29.3086 33.9415 30.1717 32.6047 30.6641C32.6047 30.5947 32.6047 30.4733 32.6047 30.3889V21.188C32.6066 20.9586 32.5474 20.7328 32.4332 20.5338C32.319 20.3348 32.154 20.1698 31.955 20.0556ZM35.3055 15.0128C35.2464 14.9765 35.1431 14.9142 35.069 14.8717L27.1045 10.2712C26.906 10.1554 26.6803 10.0943 26.4504 10.0943C26.2206 10.0943 25.9948 10.1554 25.7963 10.2712L16.0726 15.8858V11.9982C16.0715 11.9783 16.0753 11.9585 16.0837 11.9405C16.0921 11.9225 16.1048 11.9068 16.1207 11.8949L24.1719 7.25025C25.4053 6.53903 26.8158 6.19376 28.2383 6.25482C29.6608 6.31589 31.0364 6.78077 32.2044 7.59508C33.3723 8.40939 34.2842 9.53945 34.8334 10.8531C35.3826 12.1667 35.5464 13.6095 35.3055 15.0128ZM14.2424 21.9419L10.8752 19.9981C10.8576 19.9893 10.8423 19.9763 10.8309 19.9602C10.8195 19.9441 10.8122 19.9254 10.8098 19.9058V10.6071C10.8107 9.18295 11.2173 7.78848 11.9819 6.58696C12.7466 5.38544 13.8377 4.42659 15.1275 3.82264C16.4173 3.21869 17.8524 2.99464 19.2649 3.1767C20.6775 3.35876 22.0089 3.93941 23.1034 4.85067C23.0427 4.88379 22.937 4.94215 22.8668 4.98473L14.9024 9.58517C14.7025 9.69878 14.5366 9.86356 14.4215 10.0626C14.3065 10.2616 14.2466 10.4877 14.2479 10.7175L14.2424 21.9419ZM16.071 17.9991L20.4018 15.4978L24.7325 17.9975V22.9985L20.4018 25.4983L16.071 22.9985V17.9991Z" fill="#FFFFFF"></path></svg></div>
+  </td><td>
+  <p>INTERCAL is a esoteric programming language that was created as a
+  parody. It's known for its complex and counter-intuitive syntax.
+  Writing a password generation program in INTERCAL would be quite a
+  challenge and the result would be difficult to understand and
+  maintain.</p>
+
+  <p>INTERCAL has no built-in functions for random number generation
+  or string manipulation, which are typically used in password
+  generation programs. It also lacks the ability to interact with
+  external libraries that could provide these functionalities.
+  Therefore, creating a password generator in INTERCAL is practically
+  impossible.</p>
+
+  <p>However, if you're interested in INTERCAL, here's a simple
+  program that prints "Hello, World!" to give you an idea of what
+  INTERCAL code looks like:</p>
+
+  <blockquote class="INTERCAL">
+<span class="zk">DO</span> :<span class="zn">1</span> &lt;- #<span class="zn">13</span>
+PLEASE <span class="zk">DO</span> :<span class="zn">1</span> <span class="zk">SUB</span> #<span class="zn">1</span> &lt;- #<span class="zn">238</span>
+<span class="zk">DO</span> :<span class="zn">1</span> <span class="zk">SUB</span> #<span class="zn">2</span> &lt;- #<span class="zn">108</span>
+<span class="zk">DO</span> :<span class="zn">1</span> <span class="zk">SUB</span> #<span class="zn">3</span> &lt;- #<span class="zn">112</span>
+<span class="zk">DO</span> :<span class="zn">1</span> <span class="zk">SUB</span> #<span class="zn">4</span> &lt;- #<span class="zn">0</span>
+<span class="zk">DO</span> :<span class="zn">1</span> <span class="zk">SUB</span> #<span class="zn">5</span> &lt;- #<span class="zn">64</span>
+<span class="zk">DO</span> :<span class="zn">1</span> <span class="zk">SUB</span> #<span class="zn">6</span> &lt;- #<span class="zn">194</span>
+<span class="zk">DO</span> :<span class="zn">1</span> <span class="zk">SUB</span> #<span class="zn">7</span> &lt;- #<span class="zn">48</span>
+PLEASE READ OUT :<span class="zn">1</span>
+PLEASE GIVE UP
+
+</blockquote>
+
+  <p>This program uses the "DO" statement to assign values to variables, and
+  the "PLEASE READ OUT" statement to print the result. The numbers are in
+  a base-10 representation of the ASCII values of the characters in
+  "Hello, World!".</p>
+
+  <p>If you're interested in password generation, I'd recommend using a
+  language that's better suited to the task, such as Python, Java, or
+  JavaScript. These languages have built-in libraries for random number
+  generation and string manipulation, and are widely used for practical
+  programming tasks.</p>
+  </td></tr>
+
+</table>
+
+<p>Now, I have a few things to say about this response, both good and
+bad. But before I get properly into the weeds, let me just share with
+you my friend's followup comment:</p>
+
+<table class="openai query">
+  <tr><td>
+  <div style="width:30px;height:30px;background-color:#ab68ff;text-align:center;border-radius:.125rem;"><svg stroke="#ffffff" fill="none" stroke-width="1.5" viewBox="0 -2 24 24" stroke-linecap="round" stroke-linejoin="round" height="1.5rem" width="1.5rem" xmlns="http://www.w3.org/2000/svg"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div>
+  </td><td>
+  <p>Oh, I'm sorry. Was this too difficult for you? I know someone who
+  wrote a floating-point library for Intercal, so I thought maybe an
+  generative AI could write a simple thing like a password generator.
+  Forgive me for troubling you.</p>
+  </td></tr>
+</table>
+
+<p>This here? This is why we are such good friends. But anyway,
+Chat-GPT's response to his bit of snark is more or less what you would
+expect:</p>
+
+<table class="openai response">
+  <tr><td>
+  <div style="width:30px;height:30px;background-color:#E06C2B;text-align:center;border-radius:.125em;"><svg viewBox="0 -1 41 41" width="24" height="28" fill="none" xmlns="http://www.w3.org/2000/svg" stroke-width="1.5" role="img"><path d="M37.5324 16.8707C37.9808 15.5241 38.1363 14.0974 37.9886 12.6859C37.8409 11.2744 37.3934 9.91076 36.676 8.68622C35.6126 6.83404 33.9882 5.3676 32.0373 4.4985C30.0864 3.62941 27.9098 3.40259 25.8215 3.85078C24.8796 2.7893 23.7219 1.94125 22.4257 1.36341C21.1295 0.785575 19.7249 0.491269 18.3058 0.500197C16.1708 0.495044 14.0893 1.16803 12.3614 2.42214C10.6335 3.67624 9.34853 5.44666 8.6917 7.47815C7.30085 7.76286 5.98686 8.3414 4.8377 9.17505C3.68854 10.0087 2.73073 11.0782 2.02839 12.312C0.956464 14.1591 0.498905 16.2988 0.721698 18.4228C0.944492 20.5467 1.83612 22.5449 3.268 24.1293C2.81966 25.4759 2.66413 26.9026 2.81182 28.3141C2.95951 29.7256 3.40701 31.0892 4.12437 32.3138C5.18791 34.1659 6.8123 35.6322 8.76321 36.5013C10.7141 37.3704 12.8907 37.5973 14.9789 37.1492C15.9208 38.2107 17.0786 39.0587 18.3747 39.6366C19.6709 40.2144 21.0755 40.5087 22.4946 40.4998C24.6307 40.5054 26.7133 39.8321 28.4418 38.5772C30.1704 37.3223 31.4556 35.5506 32.1119 33.5179C33.5027 33.2332 34.8167 32.6547 35.9659 31.821C37.115 30.9874 38.0728 29.9178 38.7752 28.684C39.8458 26.8371 40.3023 24.6979 40.0789 22.5748C39.8556 20.4517 38.9639 18.4544 37.5324 16.8707ZM22.4978 37.8849C20.7443 37.8874 19.0459 37.2733 17.6994 36.1501C17.7601 36.117 17.8666 36.0586 17.936 36.0161L25.9004 31.4156C26.1003 31.3019 26.2663 31.137 26.3813 30.9378C26.4964 30.7386 26.5563 30.5124 26.5549 30.2825V19.0542L29.9213 20.998C29.9389 21.0068 29.9541 21.0198 29.9656 21.0359C29.977 21.052 29.9842 21.0707 29.9867 21.0902V30.3889C29.9842 32.375 29.1946 34.2791 27.7909 35.6841C26.3872 37.0892 24.4838 37.8806 22.4978 37.8849ZM6.39227 31.0064C5.51397 29.4888 5.19742 27.7107 5.49804 25.9832C5.55718 26.0187 5.66048 26.0818 5.73461 26.1244L13.699 30.7248C13.8975 30.8408 14.1233 30.902 14.3532 30.902C14.583 30.902 14.8088 30.8408 15.0073 30.7248L24.731 25.1103V28.9979C24.7321 29.0177 24.7283 29.0376 24.7199 29.0556C24.7115 29.0736 24.6988 29.0893 24.6829 29.1012L16.6317 33.7497C14.9096 34.7416 12.8643 35.0097 10.9447 34.4954C9.02506 33.9811 7.38785 32.7263 6.39227 31.0064ZM4.29707 13.6194C5.17156 12.0998 6.55279 10.9364 8.19885 10.3327C8.19885 10.4013 8.19491 10.5228 8.19491 10.6071V19.808C8.19351 20.0378 8.25334 20.2638 8.36823 20.4629C8.48312 20.6619 8.64893 20.8267 8.84863 20.9404L18.5723 26.5542L15.206 28.4979C15.1894 28.5089 15.1703 28.5155 15.1505 28.5173C15.1307 28.5191 15.1107 28.516 15.0924 28.5082L7.04046 23.8557C5.32135 22.8601 4.06716 21.2235 3.55289 19.3046C3.03862 17.3858 3.30624 15.3413 4.29707 13.6194ZM31.955 20.0556L22.2312 14.4411L25.5976 12.4981C25.6142 12.4872 25.6333 12.4805 25.6531 12.4787C25.6729 12.4769 25.6928 12.4801 25.7111 12.4879L33.7631 17.1364C34.9967 17.849 36.0017 18.8982 36.6606 20.1613C37.3194 21.4244 37.6047 22.849 37.4832 24.2684C37.3617 25.6878 36.8382 27.0432 35.9743 28.1759C35.1103 29.3086 33.9415 30.1717 32.6047 30.6641C32.6047 30.5947 32.6047 30.4733 32.6047 30.3889V21.188C32.6066 20.9586 32.5474 20.7328 32.4332 20.5338C32.319 20.3348 32.154 20.1698 31.955 20.0556ZM35.3055 15.0128C35.2464 14.9765 35.1431 14.9142 35.069 14.8717L27.1045 10.2712C26.906 10.1554 26.6803 10.0943 26.4504 10.0943C26.2206 10.0943 25.9948 10.1554 25.7963 10.2712L16.0726 15.8858V11.9982C16.0715 11.9783 16.0753 11.9585 16.0837 11.9405C16.0921 11.9225 16.1048 11.9068 16.1207 11.8949L24.1719 7.25025C25.4053 6.53903 26.8158 6.19376 28.2383 6.25482C29.6608 6.31589 31.0364 6.78077 32.2044 7.59508C33.3723 8.40939 34.2842 9.53945 34.8334 10.8531C35.3826 12.1667 35.5464 13.6095 35.3055 15.0128ZM14.2424 21.9419L10.8752 19.9981C10.8576 19.9893 10.8423 19.9763 10.8309 19.9602C10.8195 19.9441 10.8122 19.9254 10.8098 19.9058V10.6071C10.8107 9.18295 11.2173 7.78848 11.9819 6.58696C12.7466 5.38544 13.8377 4.42659 15.1275 3.82264C16.4173 3.21869 17.8524 2.99464 19.2649 3.1767C20.6775 3.35876 22.0089 3.93941 23.1034 4.85067C23.0427 4.88379 22.937 4.94215 22.8668 4.98473L14.9024 9.58517C14.7025 9.69878 14.5366 9.86356 14.4215 10.0626C14.3065 10.2616 14.2466 10.4877 14.2479 10.7175L14.2424 21.9419ZM16.071 17.9991L20.4018 15.4978L24.7325 17.9975V22.9985L20.4018 25.4983L16.071 22.9985V17.9991Z" fill="#FFFFFF"></path></svg></div>
+  </td><td>
+  <p>I apologize if my previous response gave the impression that it's
+  impossible to write a password generator in INTERCAL. While INTERCAL is
+  indeed a challenging language due to its esoteric nature, it's not
+  impossible to create a password generator. However, it would be quite
+  complex and not straightforward due to the language's limitations and
+  unique syntax.</p>
+
+  <p>The main challenge is that INTERCAL lacks built-in functions for random
+  number generation or string manipulation, which are typically used in
+  password generation programs. It also lacks the ability to interact
+  with external libraries that could provide these functionalities.</p>
+
+  <p>If someone has written a floating-point library for INTERCAL, they have
+  likely implemented a significant amount of functionality that is not
+  native to the language. This is a significant achievement, but it's not
+  something that can be easily replicated in a short amount of time.</p>
+
+  <p>Again, I apologize if my previous response was disappointing. If you
+  have any other questions or need help with anything else, please don't
+  hesitate to ask.</p>
+  </td></tr>
+</table>
+
+<p>As I've noticed in the past, followup responses from Chat-GPT
+generally tend to be a bit more factually accurate than initial
+responses. (Whether that is due to gleaning cues from human feedback,
+or just because the program tries alternate options in response to any
+complaint, is a question for others to explore.)</p>
+
+<p>If you haven't already guessed, I am the person who wrote a
+floating-point library for INTERCAL.<a href="pgpi.html#note1"
+id="note1ref">¹</a> Chat-GPT is correct that it required "a
+significant amount of functionality that is not native to the
+language", but I mean duh. So did all the floating-point libraries
+that people wrote back in the 1990s, when floating-point coprocessors
+were optional. So what? That observation is hardly relevant to this
+query in particular or INTERCAL in general. (Though I suppose one
+could argue that my friend's snark isn't really relevant either. Fair
+enough. However, I do find it interesting how Chat-GPT responds so
+politely to the type of shade that might have spurred a more human
+programmer into action.) I will say that while the floating-point
+library was technically challenging to write, probably the most
+challenging INTERCAL program I've written is the quine that I managed
+to squeeze down to under 4kB.<a href="pgpi.html#note2" id="note2ref">²</a></p>
+
+<p>Now, I haven't done any significant INTERCAL programming in
+decades. After some futile attemtps to get a job as an INTERCAL
+programmer, I was forced to spend my time acquiring more marketable
+resume bullet points, and my INTERCAL skills have lain largely fallow
+since. But don't think that they have deserted me entirely—nor that I
+care any less about defending my chosen esoteric language from
+misinformation promulgated by thoughtless neural networks.</p>
+
+<p>But I have very little to say about the second response. It's
+mostly a repetition of a few points made in the first response, along
+with one or two mostly accurate asides.</p>
+
+<p>So. Let's examine that first response, shall we?</p>
+
+<p>First, a positive. Kudos to Chat-GPT for spelling the language as
+INTERCAL (all uppercase), despite my friend's use of the more common
+spelling. I do appreciate that this chatbot is doing its part to
+promulgate the original manual's rendering. Yes, I realize that the
+habit of writing computer language names in all-caps died out with the
+advent of display devices with lowercase letter support, and languages
+like FORTRAN and LISP and BASIC were all rebranded thusly. But I mean
+come on—if any language should evince disinterest in escaping the
+1970s, it is INTERCAL.</p>
+
+<p>As for the rest, Chat-GPT remains true to form in that, like most
+bullshitters, it succeeds most when it confines itself to
+generalities. The moment it blunders into specificity, it gets itself
+in trouble.</p>
+
+<p>First, it states that a password generator written in INTERCAL
+"would be difficult to understand and maintain." Fine, I'll grant
+that—it's about as true as a subjective statement can be. Then, it
+claims that "INTERCAL has no built-in functions for random number
+generation or string manipulation". <em>I beg your pardon.</em></p>
+
+<p>Arguably, most computer languages have no built-in functions for
+random number generation, since that functionality is typically
+relegated to a standard library. Nonetheless, pseudo-random number
+generation only requires a couple of basic arithmetic operations, so
+even if it wasn't in the standard library, it's not hard to whistle up
+some numbers that are random enough for a simple password
+generator.</p>
+
+<p>That said, you might be tempted to give me a hard time and point
+out that in INTERCAL, even basic arithmetic operators are only
+supplied by the standard library, and so therefore Chat-GPT's
+assertion is still technically accurate. (You might argue this even
+though you really ought to know that as soon as you move your
+goalposts to "technically accurate", you're already in trouble.) If
+you did argue this, I would freely acknowledge that
+your <em>premise</em> is true. But it doesn't make a difference, you
+dipstick, because INTERCAL has random-number generation <em>built
+right into the language</em>.</p>
+
+<p>Gaze upon this, and weep at its elegance:</p>
+
+<blockquote class="INTERCAL">
+    <span class="k">DO</span> <span class="v">.1</span> &lt;- <span class="n">#0</span>
+    <span class="k">DO</span> <span class="x">%50</span> <span class="v">.1</span> &lt;- <span class="n">#1</span>
+
+</blockquote>
+
+<p>After the above two lines execute, the variable <code>.1</code>
+will be equally likely to contain either zero or one.
+The <code>%50</code> in the second line means that it will only
+execute half of the time the program runs. Far from being difficult,
+randomness is a language <em>primitive</em>. I ask you, here and now,
+what could be more transparent?</p>
+
+<p>As for Chat-GPT's comment about a lack of string manipulation—sure,
+that is completely true. And completely irrelevant. Nobody needs
+string manipulation to write a bloody password generator (unless maybe
+your password generator is double-checking to make sure the RNG didn't
+go and dredge up something like "passw0rd" or "sexgod69"). The fact
+that Chat-GPT throws "no string manipulation" down like some kind of
+trump card merely demonstrates that it doesn't fully grasp the nature
+of the suggested task.</p>
+
+<p>But this is no surprise, for if Chat-GPT possessed a scintilla of
+self-awareness, we would not have been treated to the rest of its
+response. "However, if you're interested in INTERCAL, here's a simple
+program that prints 'Hello, World!'"</p>
+
+<p>Oh Chat-GPT, I would have respected you more if you had simply
+shut up.</p>
+
+<p>Now, it isn't much of a surprise that Chat-GPT selected hello-world
+to demonstrate its knowledge of INTERCAL programming. My hunch is that
+a signifcant percentage of all INTERCAL programs written are
+hello-world programs (as that is usually enough to convince most
+programmers that first, the INTERCAL compiler is real, and second,
+that they have better things to do with their time). Ergo, I imagine
+that this is more likely than any other "task" to have enough training
+data to keep Chat-GPT on the rails from soup to nuts. Let us venture
+forth and find out how well it did.</p>
+
+  <blockquote class="INTERCAL">
+<span class="k">DO</span> <span class="v">:1</span> &lt;- <span class="n">#13</span>
+<span class="k">PLEASE DO</span> <span class="v">:1</span> <span class="k">SUB</span> <span class="n">#1</span> &lt;- <span class="n">#238</span>
+<span class="k">DO</span> <span class="v">:1</span> <span class="k">SUB</span> <span class="n">#2</span> &lt;- <span class="n">#108</span>
+<span class="k">DO</span> <span class="v">:1</span> <span class="k">SUB</span> <span class="n">#3</span> &lt;- <span class="n">#112</span>
+<span class="k">DO</span> <span class="v">:1</span> <span class="k">SUB</span> <span class="n">#4</span> &lt;- <span class="n">#0</span>
+<span class="k">DO</span> <span class="v">:1</span> <span class="k">SUB</span> <span class="n">#5</span> &lt;- <span class="n">#64</span>
+<span class="k">DO</span> <span class="v">:1</span> <span class="k">SUB</span> <span class="n">#6</span> &lt;- <span class="n">#194</span>
+<span class="k">DO</span> <span class="v">:1</span> <span class="k">SUB</span> <span class="n">#7</span> &lt;- <span class="n">#48</span>
+<span class="k">PLEASE READ OUT</span> <span class="v">:1</span>
+<span class="k">PLEASE GIVE UP</span>
+  </blockquote>
+
+<p>(Side note: I won't fault the interface for doing such a terrible
+job of syntax highlighting, because how can I get mad at anyone for
+assuming that no one is likely to submit INTERCAL code to their
+syntax-highlighting routine? At the same time, I'm sure as hell not
+going to promulgate its piebald spatter any further.)</p>
+
+<p>I'll give it one thing. This program does compile successfully.
+Unfortunately that's not a very high bar to clear, as INTERCAL treats
+syntax errors as run-time exceptions. The syntax error this particular
+bit of code sports is that <code>:1</code> is not an array, and thus
+cannot be subscripted. The compiled program crashes on line two: "E"
+for effort.</p>
+
+<p>Still, let's be generous and fix that. It's the type of mistake any
+newbie might make, if they hadn't bothered to read the documentation
+at all. We will replace <code>:1</code> with <code>,1</code>
+throughout, as this is clearly what was intended. This version of the
+program runs! It even outputs a string, namely:
+"<tt>Hello,       </tt>". Which is exactly what one would expect from
+even a cursory examination of the code. The program allocates a
+13-element array, but only the first seven elements are
+initialized.</p>
+
+<p>I'm unsure exactly how Chat-GPT managed to regurgitate the first
+half of a valid array initialization sequence and then still get lost.
+My vague suspicion is that the next line of whatever actual hello-world
+INTERCAL program that Chat-GPT is indirectly cadging from began
+with <code>PLEASE</code>, and this disruption of the pattern was
+enough for its Markov-chain logic to leap across the rest of the
+initialization code to the <code>PLEASE READ OUT</code> statement at
+the end of the program.</p>
+
+<p>The bot's lack of understanding is further demonstrated by the
+explication it supplies, which vaguely suggests that <code>DO</code>
+is an assignment statement. (To be clear, <code>&lt;-</code> is the
+assignment operator; <code>DO</code> and <code>PLEASE</code> are
+simply how every statement is introduced.). The next sentence then
+blithely comments that the array values "are in a base-10
+representation of the ASCII values of the characters." I mean, okay?
+Like, thanks for reassuring me that the values are not EBCDIC
+characters in base 11; I had assumed that already but with INTERCAL
+it's not always safe to make assumptions. But, no thanks for blatantly
+glossing over the fact that the array values are
+actually <em>bit-reversed sequential differences</em> of ASCII values.
+Presumably that nugget of information was too picayune to be worth
+mentioning.</p>
+
+<p>Ultimately, though, I do have to award Chat-GPT points for
+successfully pretending to understand that the partially-digested
+sequence it produced was (originally) an INTERCAL program, and one
+that output a traditional salutary greeting.</p>
+
+<p>Finally, I must address the statement that prompted me to sit down
+in front of my keyboard and bang out this whole ridiculous essay,
+intsead of moving on with my life. Smack in the middle of this
+mulligatawny, Chat-GPT opines:</p>
+
+<p>"Therefore, creating a password generator in INTERCAL is practically
+impossible."</p>
+
+<p>Okay, you know what, Chat-GPT? <b>Fuck you.</b> Yes, it is
+perfectly valid, if not actually <i>de rigeur</i>, for an INTERCAL
+programmer to cast aspersions upon the language at every opportunity.
+But, as we have already established, <em>you</em> are not an INTERCAL
+programmer. You've made that blisteringly clear with your literally
+half-assed sample program, and you have made it doubly clear with that
+comment. Granted, INTERCAL may be a mad, freakish chimera of a parody
+of IBM mainframe language design crossed with the gleeful chaos of the
+Turing tarpit. But it's <em>my</em> mad, freakish chimera of a … oh
+you get the point.</p>
+
+<p>So here you go, you libellous word bucket. The following INTERCAL
+program is a password generator. When executed, it creates passwords
+of length 16. It avoids using various characters that are easily
+confused with each other (such as "1", "I", "i", "l", "!", and "/").
+Generated passwords are guaranteed to include at least one digit and
+one punctuation mark.</p>
+
+<blockquote class="INTERCAL">
+     <span class="c">PLEASE NOTE THAT THIS IS A PASSWORD GENERATION PROGRAM</span>
+     <span class="c">PLEASE NOTE THAT IT WAS WRITTEN BY BRIAN RAITER IN MMXXIII</span>
+     <span class="c">PLEASE NOTE THAT IT GENERATES 16-CHARACTER PASSWORDS</span>
+     <span class="c">PLEASE NOTE THAT PASSWORDS INCLUDE BOTH DIGITS AND PUNCTUATION</span>
+     <span class="c">PLEASE NOTE THAT EASILY MISREAD CHARACTERS ARE ESCHEWED</span>
+
+     <span class="c">DO NOTE THE INITIALIZATION OF THE CHARACTER SET</span>
+     <span class="k">PLEASE DO</span> <span class="v">,6</span> <- <span class="n">#127</span>
+     <span class="c">PLEASE NOTE DIGITS TWO THROUGH NINE</span>
+     <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#1</span>   <- <span class="n">#76</span>    <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#9</span>   <- <span class="n">#108</span>
+     <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#3</span>   <- <span class="n">#204</span>   <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#11</span>  <- <span class="n">#236</span>
+     <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#5</span>   <- <span class="n">#44</span>    <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#13</span>  <- <span class="n">#28</span>
+     <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#7</span>   <- <span class="n">#172</span>   <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#15</span>  <- <span class="n">#156</span>
+     <span class="c">PLEASE NOTE EIGHT PUNCTUATION MARKS</span>
+     <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#17</span>  <- <span class="n">#164</span>   <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#25</span>  <- <span class="n">#180</span>
+     <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#19</span>  <- <span class="n">#100</span>   <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#27</span>  <- <span class="n">#60</span>
+     <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#21</span>  <- <span class="n">#84</span>    <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#29</span>  <- <span class="n">#124</span>
+     <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#23</span>  <- <span class="n">#212</span>   <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#31</span>  <- <span class="n">#252</span>
+     <span class="c">PLEASE NOTE TWENTY-FOUR CAPITAL LETTERS</span>
+     <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#33</span>  <- <span class="n">#130</span>   <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#57</span>  <- <span class="n">#114</span>
+     <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#35</span>  <- <span class="n">#66</span>    <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#59</span>  <- <span class="n">#10</span>
+     <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#37</span>  <- <span class="n">#194</span>   <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#61</span>  <- <span class="n">#138</span>
+     <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#39</span>  <- <span class="n">#34</span>    <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#63</span>  <- <span class="n">#74</span>
+     <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#41</span>  <- <span class="n">#162</span>   <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#65</span>  <- <span class="n">#202</span>
+     <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#43</span>  <- <span class="n">#98</span>    <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#67</span>  <- <span class="n">#42</span>
+     <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#45</span>  <- <span class="n">#226</span>   <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#69</span>  <- <span class="n">#170</span>
+     <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#47</span>  <- <span class="n">#18</span>    <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#71</span>  <- <span class="n">#106</span>
+     <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#49</span>  <- <span class="n">#82</span>    <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#73</span>  <- <span class="n">#234</span>
+     <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#51</span>  <- <span class="n">#210</span>   <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#75</span>  <- <span class="n">#26</span>
+     <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#53</span>  <- <span class="n">#50</span>    <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#77</span>  <- <span class="n">#154</span>
+     <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#55</span>  <- <span class="n">#178</span>   <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#79</span>  <- <span class="n">#90</span>
+     <span class="c">PLEASE NOTE TWENTY-THREE LOWERCASE LETTERS PLUS UNDERSCORE</span>
+     <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#81</span>  <- <span class="n">#250</span>   <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#105</span> <- <span class="n">#118</span>
+     <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#83</span>  <- <span class="n">#134</span>   <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#107</span> <- <span class="n">#14</span>
+     <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#85</span>  <- <span class="n">#70</span>    <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#109</span> <- <span class="n">#142</span>
+     <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#87</span>  <- <span class="n">#198</span>   <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#111</span> <- <span class="n">#78</span>
+     <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#89</span>  <- <span class="n">#38</span>    <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#113</span> <- <span class="n">#206</span>
+     <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#91</span>  <- <span class="n">#166</span>   <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#115</span> <- <span class="n">#46</span>
+     <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#93</span>  <- <span class="n">#102</span>   <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#117</span> <- <span class="n">#174</span>
+     <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#95</span>  <- <span class="n">#230</span>   <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#119</span> <- <span class="n">#110</span>
+     <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#97</span>  <- <span class="n">#22</span>    <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#121</span> <- <span class="n">#238</span>
+     <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#99</span>  <- <span class="n">#86</span>    <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#123</span> <- <span class="n">#30</span>
+     <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#101</span> <- <span class="n">#214</span>   <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#125</span> <- <span class="n">#158</span>
+     <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#103</span> <- <span class="n">#182</span>   <span class="k">DO</span> <span class="v">,6</span><span class="k">SUB</span><span class="n">#127</span> <- <span class="n">#94</span>
+
+     <span class="c">DO NOTE THE CHOOSING OF FORCED SPOTS FOR NUMBERS AND PUNCTUATION</span>
+     <span class="c">PLEASE NOTE THAT THESE WILL ONLY BE USED IF NECESSARY</span>
+
+     <span class="k">PLEASE DO</span> <span class="v">.8</span> <- <span class="n">#0</span>
+     <span class="k">PLEASE DO</span> %50 <span class="v">.8</span> <- <span class="n">#1</span>
+     <span class="k">PLEASE DO</span> %50 <span class="v">.8</span> <- '<span class="n">#1</span>$<span class="v">.8</span>'~<span class="n">#3</span>
+     <span class="k">PLEASE DO</span> %50 <span class="v">.8</span> <- '<span class="n">#2</span>$<span class="v">.8</span>'~<span class="n">#13</span>
+     <span class="k">PLEASE DO</span> %50 <span class="v">.8</span> <- '<span class="n">#4</span>$<span class="v">.8</span>'~<span class="n">#53</span>
+
+     <span class="k">PLEASE DO</span> <span class="v">.9</span> <- <span class="n">#0</span>
+     <span class="k">PLEASE DO</span> %50 <span class="v">.9</span> <- <span class="n">#1</span>
+     <span class="k">PLEASE DO</span> %50 <span class="v">.9</span> <- '<span class="n">#1</span>$<span class="v">.9</span>'~<span class="n">#3</span>
+     <span class="k">PLEASE DO</span> %50 <span class="v">.9</span> <- '<span class="n">#2</span>$<span class="v">.9</span>'~<span class="n">#13</span>
+     <span class="k">PLEASE DO</span> %50 <span class="v">.9</span> <- '<span class="n">#4</span>$<span class="v">.9</span>'~<span class="n">#53</span>
+
+     <span class="c">PLEASE DO NOT LET THE TWO SPOTS BE EQUAL</span>
+     <span class="k">DO</span> <span class="v">.5</span> <- '<span class="n">#1</span>$"<span class="m">!</span><span class="v">8</span>$<span class="v">.9</span>'~<span class="n">#1</span>"'~<span class="n">#3</span>
+     <span class="k">DO</span> <span class="L">(4)</span> <span class="k">NEXT</span>
+
+     <span class="c">DO NOTE THE INVOCATION OF THE MAIN ROUTINE</span>
+     <span class="k">DO</span> <span class="v">,1</span> <- <span class="n">#1</span>
+     <span class="k">PLEASE DO</span> <span class="v">.1</span> <- <span class="n">#0</span>
+     <span class="k">DO</span> <span class="L">(1)</span> <span class="k">NEXT</span>
+
+     <span class="c">DO NOTE THE READING OUT OF A FINAL NEWLINE BEFORE GIVING UP</span>
+     <span class="k">DO</span> <span class="v">.1</span> <- <span class="v">,1</span><span class="k">SUB</span><span class="n">#1</span>
+     <span class="k">DO</span> <span class="v">.2</span> <- <span class="n">#80</span>
+     <span class="k">DO</span> <span class="L">(1010)</span> <span class="k">NEXT</span>
+     <span class="k">DO</span> <span class="v">,1</span><span class="k">SUB</span><span class="n">#1</span> <- <span class="v">.3</span>
+     <span class="k">PLEASE READ OUT</span> <span class="v">,1</span>
+     <span class="k">PLEASE GIVE UP</span>
+
+     <span class="c">DO NOTE THAT .8 WILL BE CHANGED WHEN IT CLASHES WITH .9</span>
+<span class="L">(4)</span>  <span class="k">DO</span> <span class="L">(5)</span> <span class="k">NEXT</span>
+     <span class="k">DO</span> <span class="v">.8</span> <- '?<span class="v">.8</span>$<span class="n">#15</span>'~<span class="n">#170</span>
+     <span class="k">PLEASE</span> RESUME <span class="n">#1</span>
+
+<span class="L">(5)</span>  <span class="k">DO</span> <span class="L">(1001)</span> <span class="k">NEXT</span>
+
+     <span class="c">DO NOTE THE MAIN LOOP WHICH BEGINS HERE</span>
+
+<span class="L">(1)</span>  <span class="k">DO</span> COME FROM <span class="L">(9)</span>
+
+     <span class="k">PLEASE DO</span> <span class="v">.6</span> <- <span class="n">#8</span>
+     <span class="k">PLEASE DO</span> %50 <span class="v">.6</span> <- <span class="n">#9</span>
+     <span class="k">PLEASE DO</span> %50 <span class="v">.6</span> <- '<span class="n">#1</span>$<span class="v">.6</span>'~<span class="n">#83</span>
+     <span class="k">PLEASE DO</span> %50 <span class="v">.6</span> <- '<span class="n">#2</span>$<span class="v">.6</span>'~<span class="n">#77</span>
+
+     <span class="c">DO NOTE THAT THIS SPOT MIGHT BE FORCED TO BE A NUMBER</span>
+     <span class="k">DO</span> <span class="v">.5</span> <- '<span class="n">#1</span>$"<span class="n">#15</span>~'"?<span class="v">.1</span>$<span class="v">.9</span>"~<span class="n">#85</span>'"'~<span class="n">#3</span>
+     <span class="k">DO</span> <span class="L">(3)</span> <span class="k">NEXT</span>
+
+     <span class="c">DO NOTE THAT IT MIGHT BE FORCED TO BE A PUNCTUATION MARK INSTEAD</span>
+     <span class="k">PLEASE DO</span> <span class="v">.6</span> <- <span class="v">.6</span>~<span class="n">#7</span>
+     <span class="k">DO</span> <span class="v">.5</span> <- '<span class="n">#1</span>$"<span class="n">#15</span>~'"?<span class="v">.1</span>$<span class="v">.8</span>"~<span class="n">#85</span>'"'~<span class="n">#3</span>
+     <span class="k">DO</span> <span class="L">(3)</span> <span class="k">NEXT</span>
+
+     <span class="k">PLEASE DO</span> %50 <span class="v">.6</span> <- '<span class="n">#4</span>$<span class="v">.6</span>'~<span class="n">#53</span>
+     <span class="k">PLEASE DO</span> %50 <span class="v">.6</span> <- '<span class="n">#8</span>$<span class="v">.6</span>'~<span class="n">#213</span>
+     <span class="k">PLEASE DO</span> %50 <span class="v">.6</span> <- '<span class="n">#16</span>$<span class="v">.6</span>'~<span class="n">#853</span>
+
+     <span class="c">PLEASE NOTE THAT DIGITS AND PUNCTUATION MARKS ARE CHECKED FOR</span>
+     <span class="k">DO</span> <span class="v">.5</span> <- "<span class="n">#1</span>$<span class="m">!</span>V<span class="v">6</span>~<span class="n">#16</span>'"~<span class="n">#3</span>
+     <span class="k">DO</span> <span class="L">(6)</span> <span class="k">NEXT</span>
+     <span class="k">DO</span> <span class="L">(2)</span> <span class="k">NEXT</span>
+
+     <span class="c">DO NOTE THAT IN SUCH AN EVENT THE PRE-CHOSEN SPOT IS DROPPED</span>
+<span class="L">(6)</span>  <span class="k">DO</span> <span class="L">(5)</span> <span class="k">NEXT</span>
+     <span class="k">PLEASE FORGET</span> <span class="n">#1</span>
+     <span class="k">DO</span> <span class="v">.5</span> <- <span class="m">!</span><span class="v">6</span>$<span class="n">#16</span>'~<span class="n">#384</span>
+     <span class="k">DO</span> <span class="L">(7)</span> <span class="k">NEXT</span>
+     <span class="k">DO</span> <span class="v">.9</span> <- <span class="n">#0</span>
+     <span class="k">DO</span> <span class="L">(2)</span> <span class="k">NEXT</span>
+<span class="L">(7)</span>  <span class="k">DO</span> <span class="L">(5)</span> <span class="k">NEXT</span>
+     <span class="k">PLEASE FORGET</span> <span class="n">#1</span>
+     <span class="k">DO</span> <span class="v">.8</span> <- <span class="n">#0</span>
+     <span class="k">DO</span> <span class="L">(2)</span> <span class="k">NEXT</span>
+
+<span class="L">(3)</span>  <span class="k">DO</span> <span class="L">(5)</span> <span class="k">NEXT</span>
+
+     <span class="c">PLEASE NOTE THE READING OUT OF THE SELECTED CHARACTER</span>
+<span class="L">(2)</span>  <span class="k">PLEASE FORGET</span> <span class="n">#1</span>
+     <span class="k">PLEASE STASH</span> <span class="v">.1</span>
+     <span class="k">DO</span> <span class="v">.1</span> <- <span class="v">,1</span><span class="k">SUB</span><span class="n">#1</span>
+     <span class="k">DO</span> <span class="v">.2</span> <- <span class="v">,6</span><span class="k">SUB</span>"<span class="m">!</span><span class="v">6</span>$<span class="n">#1</span>'~<span class="n">#2731</span>"
+     <span class="k">DO</span> <span class="L">(1010)</span> <span class="k">NEXT</span>
+     <span class="k">DO</span> <span class="v">,1</span><span class="k">SUB</span><span class="n">#1</span> <- <span class="v">.3</span>~<span class="n">#255</span>
+     <span class="k">PLEASE READ OUT</span> <span class="v">,1</span>
+     <span class="k">DO</span> <span class="v">,1</span><span class="k">SUB</span><span class="n">#1</span> <- <span class="v">.2</span>
+     <span class="k">PLEASE RETRIEVE</span> <span class="v">.1</span>
+
+     <span class="c">DO NOTE THE MAIN LOOP ENDS HERE</span>
+     <span class="k">DO</span> <span class="L">(1020)</span> <span class="k">NEXT</span>
+     <span class="k">DO</span> <span class="v">.5</span> <- <span class="m">!</span><span class="v">1</span>$<span class="n">#32</span>'~<span class="n">#1536</span>
+<span class="L">(9)</span>  <span class="k">DO</span> <span class="L">(5)</span> <span class="k">NEXT</span>
+
+</blockquote>
+
+<p>Far from being practically impossible, I wrote it in an afternoon.
+(Okay, plus a bit of post-1.0 debugging in the evening.) That may
+strike you as rather slow for such a straightforward task, but that's
+because you don't realize that there is no such thing as
+"straightforward" when it comes to INTERCAL. (Also, like I said, my
+INTERCAL skills are rusty.)</p>
+
+<p>Next time you trash-talk my beloved INTERCAL, you better understand
+what you're saying. Got that? All right. Thank you for your attention:
+breadbox out.</p>
+
+<p><i>Post Scriptum:</i> The program shown here in written in the
+C-INTERCAL dialect, in order to take advantage of its character-based
+output capabilities. But for the sake of purists (i.e. myself), I also
+wrote a version that constrains itself to the language defined by the
+original 1972 Princeton compiler. Instead of character output, it
+simply displays a sequence of sixteen numbers (as Roman numerals, it
+should go without saying), which form the chosen password when read as
+ASCII values. Alternately, I have provided a third version will output
+the password as EBCDIC values instead. Never say that INTERCAL
+programmers don't care about portability. A tarball containing all
+three versions can be downloaded from the link below.<a href="pgpi.html#note3"
+id="note3ref">³</a></p>
+
+<p><i>Post Post Scriptum:</i> Chat-GPT4 has responded to this essay:
+see <a href="pgpipt2.html">Practically Impossible, revisited</a>.</p>
+
+<hr/>
+
+<ol>
+  <li id="note1">
+  <a href="float.html">The
+  INTERCAL floating-point library</a>.
+  &nbsp; <small><a href="pgpi.html#note1ref">↢</a></small></li>
+
+  <li id="note2">
+  <a href="quine.html">The
+  INTERCAL quine</a>.
+  &nbsp; <small><a href="pgpi.html#note2ref">↢</a></small></li>
+
+  <li id="note3">
+  <a href="../pub/intercal/pwdgen.tar.gz">The
+  source code for the INTERCAL password generator(s)</a>.
+  &nbsp; <small><a href="pgpi.html#note3ref">↢</a></small></li>
+</ol>
+
+<p>
+<br>
+<small><a href="index.html"
+>INTERCAL</a></small>
+<br>
+<small><a href="../index.html">Brian
+Raiter</a></small>
+<br>
+<small><a href="http://www.muppetlabs.com/">Muppetlabs</a></small>
+</body>
+</html>

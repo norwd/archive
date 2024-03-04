@@ -1,0 +1,55 @@
+; Count change 
+;	written by Louis Howell, 11/96
+;	based on the Scheme count-change program
+;	(See "Structure and Interpretation of Computer Programs";
+;	Abelson, Sussman, and Sussman; section 1.2.2.)
+;
+; First argument to program specifies an amount of money (in cents).
+; Program prints out the number of different ways to make change in coins.
+; 
+
+:set ArgRow = 30
+:set MaxArgs = 16
+:set aY = ArgRow
+:set iX = 3
+:set iY = 0
+
+:set bn = -65536
+:set nx = 0
+:set ny = 1
+:set kx = 0
+:set ky = 2
+:set cx = 0
+:set cy = 3
+
+[0,0]
+0   0   L   00  @   aY  ~   =   @   ?   J   J
+        -                               nop $    1  ~   y
+        '0'                             ~   $    5  ~   y
+        +                               1   8   10  ~   y
+        K   *   10  ~   #   iX  iY  +   H   ~   25  ~   y
+J   H                                       5   50  ~   y
+y   22                                      0
+    0                                       x
+L   K                                               d   c   0   ret
+L   ky  kx  #   @   ny  nx  #   ?   J   1   ~   y
+        ccw ky  &   bn  =   nx  ny  cw
+        L   kx  =   !   |   !   ?   J   0   ~   y
+y   ccw =   kx  ky  =   nx  ny  15  cw
+10  1   cw  14  ny  nx  =   13  ky  kx  =   y               -   ky  kx  =   cw
+K   -   nop                                         ~   ky  kx  cw  x   1   H
+    L   K                                   cw  y   cw  x       #
+                                            nop     +   0       ~
+                                            cw  ~   cw  =       ny
+L   kx  #   J                                           kx      nx
+ky          @                                           ky      #
+#           ny                                      x   =       ~
+cx  J   H   nx                                      0   nx      nop
+cy  &   bn  #                                       -   cw  ny  cw
+K   ky  =   L   ?   J   cy  cx  =   1   +   ~   y   1
+nop kx  K   nx  ny  cw                              K   =   kx  ky  =   nx  H
+nop L   =   !   |   !   ?   J   cy  cx  =   ~   y                           ny
+K               J   ny  28  cw              x   1   rev                     26
+                L   nx  =   27  ky  kx  =   y               -   ky  kx  =   K
+                                            L   y   J
+                                            K   ~   H

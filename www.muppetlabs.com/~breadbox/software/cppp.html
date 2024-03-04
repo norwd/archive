@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>
+C Partial Preprocessor
+</title>
+</head>
+<body bgcolor="#FFFFFC" text="#101000">
+<div style="max-width:76em;margin:1em;">
+<a href="../pub/software/cppp-2.9.tar.gz">Download
+cppp-2.9.tar.gz</a>
+<br/>
+<a href="https://git.sr.ht/~breadbox/cppp">Sourcehut page</a>
+<p align="center">
+<center>
+<h1>
+A Partial Preprocessor for C
+</h1>
+</center>
+</p>
+<p>
+cppp is a "partial C preprocessor". It does a tiny fraction of the job
+of the C preprocessor &mdash; namely the application of a subset of
+the <code>#ifdef</code> statements. The user runs cppp with one more
+macro symbols defined, or undefined, on the command line. If any of
+those macro symbols appear in an <code>#ifdef</code> statement, its
+effects are applied. All other preprocessor symbols are treated as
+indeterminate, and do not affect the output. The term
+"<code>#ifdef</code> statements" actually refers to all forms of
+conditional inclusion in the preprocessor, and includes
+<code>#ifdef</code>, <code>#ifndef</code>, <code>#if</code>
+directives, as well as <code>#elif</code>, <code>#elifdef</code>,
+and <code>#elifndef</code>.
+</p>
+<p>
+Here are some simple illustrative examples that should make cppp's
+effect clear:
+</p>
+<table align="center">
+<tr>
+<td align="center" valign="bottom" style="padding:4px;">
+Input file
+</td>
+<td align="center" style="padding:4px;">
+Output from<br/><tt>cppp -D<b>FOO</b></tt>
+</td>
+<td align="center" style="padding:4px;">
+Output from<br/><tt>cppp -D<b>BAR</b></tt>
+</td>
+<td align="center" style="padding:4px;">
+Output from<br/><tt>cppp -U<b>FOO</b> -U<b>BAZ</b></tt>
+</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="padding:4px;border:1px solid gray;">
+<code>/* Comments stand for code */</code><br/>
+<code>#ifdef <b>FOO</b></code><br/>
+<code>/* <b>FOO</b> is defined */</code><br/>
+<code># ifdef <b>BAR</b></code><br/>
+<code>/* <b>FOO</b> &amp; <b>BAR</b> are defined */</code><br/>
+<code># else</code><br/>
+<code>/* <b>BAR</b> is not defined */</code><br/>
+<code># endif</code><br/>
+<code>#else</code><br/>
+<code>/* <b>FOO</b> is not defined */</code><br/>
+<code># ifndef <b>BAZ</b></code><br/>
+<code>/* <b>FOO</b> &amp; <b>BAZ</b> are undefined */</code><br/>
+<code># endif</code><br/>
+<code>#endif</code></pre>
+</td>
+<td align="left" valign="top" style="padding:4px;border:1px solid gray;">
+<code>/* Comments stand for code */</code><br/>
+<code>/* <b>FOO</b> is defined */</code><br/>
+<code># ifdef <b>BAR</b></code><br/>
+<code>/* <b>FOO</b> &amp; <b>BAR</b> are defined */</code><br/>
+<code># else</code><br/>
+<code>/* <b>BAR</b> is not defined */</code><br/>
+<code># endif</code><br/>
+</td>
+<td align="left" valign="top" style="padding:4px;border:1px solid gray;">
+<code>/* Comments stand for code */</code><br/>
+<code>#ifdef <b>FOO</b></code><br/>
+<code>/* <b>FOO</b> is defined */</code><br/>
+<code>/* <b>FOO</b> &amp; <b>BAR</b> are defined */</code><br/>
+<code>#else</code><br/>
+<code>/* <b>FOO</b> is not defined */</code><br/>
+<code># ifndef <b>BAZ</b></code><br/>
+<code>/* <b>FOO</b> &amp; <b>BAZ</b> are undefined */</code><br/>
+<code># endif</code><br/>
+<code>#endif</code></pre>
+</td>
+<td align="left" valign="top" style="padding:4px;border:1px solid gray;">
+<code>/* Comments stand for code */</code><br/>
+<code>/* <b>FOO</b> is not defined */</code><br/>
+<code>/* <b>FOO</b> &amp; <b>BAZ</b> are undefined */</code><br/>
+</td>
+</tr>
+</table>
+<p>
+In addition to removing <code>#ifdef</code> statements, cppp
+understands complex expressions in <code>#if</code> statements that
+make use of the <code>defined</code> operator. In cases where an
+expression is only partly determined, cppp will output an edited test
+with just the indeterminate expression. Some more examples:
+</p>
+<table align="center">
+<tr>
+<td align="center" valign="bottom" style="padding:4px;">
+Input file
+</td>
+<td align="center" style="padding:4px;">
+Output from<br/><tt>cppp -U<b>FOO</b></tt>
+</td>
+<td align="center" style="padding:4px;">
+Output from<br/><tt>cppp -U<b>FOO</b> -U<b>BAZ</b></tt>
+</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="padding:4px;border:1px solid gray;">
+<code>/* Yet another illustrative example */</code><br/>
+<code>#if (defined(<b>FOO</b>) || defined(<b>BAR</b>))</code><br/>
+<code>/* FOO or BAR */</code><br/>
+<code>#elif !defined(<b>FOO</b>) && !defined(<b>BAZ</b>)</code><br/>
+<code>/* not FOO and not BAZ */</code><br/>
+<code>#endif</code>
+</td>
+<td align="left" valign="top" style="padding:4px;border:1px solid gray;">
+<code>/* Yet another illustrative example */</code><br/>
+<code>#if defined(<b>BAR</b>)</code><br/>
+<code>/* FOO or BAR */</code><br/>
+<code>#elif !defined(<b>BAZ</b>)</code><br/>
+<code>/* not FOO and not BAZ */</code><br/>
+<code>#endif</code>
+</td>
+<td align="left" valign="top" style="padding:4px;border:1px solid gray;">
+<code>/* Yet another illustrative example */</code><br/>
+<code>#if defined(<b>BAR</b>)</code><br/>
+<code>/* FOO or BAR */</code><br/>
+<code>#else</code><br/>
+<code>/* not FOO and not BAZ */</code><br/>
+<code>#endif</code>
+</td>
+</tr>
+</table>
+<p>
+Finally, cppp will let you assign a numeric constant to a defined
+symbol, for situations where arithmetical tests are used:
+</p>
+<table align="center">
+<tr>
+<td align="center" valign="bottom" style="padding:4px;">
+Input file
+</td>
+<td align="center" style="padding:4px;">
+Output from<br/><tt>cppp -D<b>MYLIB_VERSION</b>=<b>0x0102</b></tt>
+</td>
+<td align="center" style="padding:4px;">
+Output from<br/><tt>cppp -D<b>MYLIB_VERSION</b>=<b>0x0200</b></tt>
+</td>
+</tr>
+<tr>
+<td align="left" valign="top" style="padding:4px;border:1px solid gray;">
+<code>/* Test the library's API version */</code><br/>
+<code>#if <b>MYLIB_VERSION</b> &gt;= ((<b>1</b> &lt;&lt; 8) |
+      <b>13</b>)</code><br/>
+<code>/* use the newer API */</code><br/>
+<code>#else</code><br/>
+<code>/* use the older API */</code><br/>
+<code>#endif</code>
+</td>
+<td align="left" valign="top" style="padding:4px;border:1px solid gray;">
+<code>/* Test the library's API version */</code><br/>
+<code>/* use the older API */</code>
+</td>
+<td align="left" valign="top" style="padding:4px;border:1px solid gray;">
+<code>/* Test the library's API version */</code><br/>
+<code>/* use the newer API */</code>
+</td>
+</table>
+<p>
+It's worth noting, however, that cppp can't resolve comparisons with
+anything other than integral constants. In particular, a test that
+involves another macro value will remain indeterminate, unless those
+macro symbols are also defined on the command line.
+</p>
+<p>
+cppp is mainly useful in dealing with legacy codebases, where
+<code>#ifdef</code> statements have crept in over time, to the
+general detriment of legibility. I originally created this program as
+a learning exercise, but several years later it proved its worth by
+saving me from what would have been a tedious and error-prone task.
+(Unfortunately, because of the nature of its origin, it's pretty
+unpleasant to look at in several places. I've managed to clean it up
+around the edges, but the central logic is messy and opaque. Use the
+program, not the source.)
+</p>
+<p>
+cppp is distributed under the GNU General Public License, version 2
+(or, at your option, any later version). Share and enjoy. Questions,
+comments, and bug reports should be directed to
+<a href="mailto:breadbox@muppetlabs.com">me</a>.
+</p>
+<p><hr></p>
+<small><a href="index.html">Software
+</a></small>
+<br/>
+<small><a href="../index.html">Brian Raiter</a></small>
+</body>
+</html>

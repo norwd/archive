@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<title>Bootstrapping Understanding: An Introduction to Reverse Engineering</title>
+<style type="text/css">
+body {
+  background-color: #FFFFFC;
+  font-size: 100%;
+  margin: 1em;
+  max-width: 68em;
+}
+h1, h2 {
+  text-align: center;
+}
+h3 {
+  padding-top: 1em;
+}
+img {
+  margin: 0.5em 0 0 5em;
+}
+code {
+  color: #223;
+  white-space: pre;
+}
+aside {
+  font-size: 85%;
+  margin: 0 0 0.3em 20em;
+  max-width: 55em;
+}
+.centered {
+  margin: 0 auto;
+  text-align: center;
+}
+.source {
+  margin: 0 6em 1em 4em;
+  border-collapse: collapse;
+}
+.source .ul1 {
+  width: 1em;
+  height: 0.5em;
+}
+.source .title {
+  font-family: monospace;
+  padding: 0 0.3em;
+  vertical-align: center;
+  width: 1%;
+}
+.source .ul2 {
+  border-top: 1px solid gray;
+  border-left: 1px solid gray;
+  height: 0.5em;
+}
+.source .ur {
+  border-top: 1px solid gray;
+  border-right: 1px solid gray;
+}
+.source .main {
+  border-left: 1px solid gray;
+  border-right: 1px solid gray;
+  border-bottom: 1px solid gray;
+  padding: 0 2em;
+}
+.term {
+  background-color: #000;
+  color: #AAA;
+  font-family: monospace;
+  font-size: 100%;
+  margin-left: 1em;
+  padding: 0.5em;
+  white-space: pre;
+  display: table;
+  min-width: 72em;
+}
+.term b {
+  color: #EEE;
+}
+.term .i {
+  background-color: #AAA;
+  color: #000;
+} 
+.term .c000080 { color: #000080; }
+.term .c0000FF { color: #0000FF; }
+.term .c005F00 { color: #005F00; }
+.term .c005F5F { color: #005F5F; }
+.term .c008787 { color: #008787; }
+.term .c0087D7 { color: #0087D7; }
+.term .c00D75F { color: #00D75F; }
+.term .c00FFFF { color: #00FFFF; }
+.term .c5F005F { color: #5F005F; }
+.term .c5F00FF { color: #5F00FF; }
+.term .c5FFFFF { color: #5FFFFF; }
+.term .c808000 { color: #808000; }
+.term .c808080 { color: #808080; }
+.term .c870000 { color: #870000; }
+.term .c875F00 { color: #875F00; }
+.term .c87FFAF { color: #87FFAF; }
+.term .cAF0087 { color: #AF0087; }
+.term .cAFD700 { color: #AFD700; }
+.term .cD7AF5F { color: #D7AF5F; }
+.term .cD7FF5F { color: #D7FF5F; }
+.term .cD7FFFF { color: #D7FFFF; }
+.term .cFF0000 { color: #FF0000; }
+.term .cFF00FF { color: #FF00FF; }
+.term .cFF5F00 { color: #FF5F00; }
+.term .cFFAF00 { color: #FFAF00; }
+.term .cFFAFAF { color: #FFAFAF; }
+.term .cFFAFFF { color: #FFAFFF; }
+.term .cFFD787 { color: #FFD787; }
+.term .cFFFF00 { color: #FFFF00; }
+.term .cFFFF87 { color: #FFFF87; }
+#vidtable td {
+  vertical-align: bottom;
+  padding: 0 2em;
+}
+#vidtable video {
+  border: 1px solid black;
+}
+#chartable {
+  margin-left: 2em;
+}
+#chartable td {
+  padding: 0 1em;
+}
+</style>
+</head>
+<body>
+<h1>Bootstrapping Understanding</h1>
+
+<h2>An Introduction to Reverse Engineering</h2>
+
+<hr />
+
+<h3>Introduction</h3>
+
+<p>Reverse engineering an unfamiliar data file could be described as the
+bootstrapping of understanding. In many ways the process resembles the
+scientific method, only applied to human-made, abstract objects
+instead of the natural world. You begin by gathering data, and then
+you use that information to put forth one or more hypotheses. You test
+the hypotheses, and use the outcome of those tests to refine them.
+Repeat as needed.</p>
+
+<p>Developing skills in reverse engineering is largely a matter of
+practice. Through an accumulation of experiences, you build up an
+intuition of where to investigate first, what patterns to look for,
+and what tools to keep handy.</p>
+
+<p>In this essay I will walk through the process of reverse-engineering
+some data files from an old computer game, in order to show you a
+little bit of how it's done.</p>
+
+<h3>Some Backstory</h3>
+
+<p>This all started for me when I was attempting to re-create
+<em>Chip's Challenge</em> for Linux.</p>
+
+<p><em>Chip's Challenge</em> was a game originally released in 1989 for Atari's
+now-forgotten hand-held console called the Lynx. The Atari Lynx was an
+impressive machine for the time period, but it came out at the same
+time as Nintendo's Game Boy, which ultimately dominated the market.</p>
+
+<p><em>Chip's Challenge</em> is a puzzle game with a top-down view and a
+tile-based map. As with most such games, the goal of each level is to
+reach the exit. On most levels, the exit is guarded by a chip socket,
+which can only be passed once you've collected a specific number of
+computer chips.</p>
+
+<table id="vidtable" class="centered">
+<tr>
+<td>
+<figure>
+<video width="320" height="180" controls="controls">
+<source src="bure/lynxdemo.ogv" type="video/ogg"/>
+<source src="bure/lynxdemo.mp4" type="video/mp4"/>
+<source src="bure/lynxdemo.webm" type="video/webm"/>
+<object data="bure/lynxdemo.mp4" width="320" height="180"></object>
+<a href="bure/lynxdemo.webm">[Video clip (1min)]</a>
+</video>
+<figcaption>The Atari Lynx in action</figcaption>
+</figure>
+<td>
+<figure>
+<video width="320" height="240" controls="controls">
+<source src="bure/gameplay.ogv" type="video/ogg"/>
+<source src="bure/gameplay.mp4" type="video/mp4"/>
+<source src="bure/gameplay.webm" type="video/webm"/>
+<object data="bure/gameplay.mp4" width="320" height="240"></object>
+<a href="bure/gameplay.webm">[Video clip (1min)]</a>
+</video>
+<figcaption>Playthrough of the first level</figcaption>
+</figure>
+</tr>
+</table>
+
+<p>You start a new game at the first level, called "LESSON 1". In
+addition to chips and the chip socket, the first level introduces you
+to keys and doors. Other levels include obstacles such as traps,
+bombs, bodies of water, and creatures which (mostly) move around in
+predictable patterns. The wide variety of objects and machinery allow
+for an immense range of puzzle-based and timing-based challenges.
+There are over 140 levels to solve in order to complete the game.</p>
+
+<p>Though the Lynx was ultimately unsuccessful, <em>Chip's Challenge</em> was
+popular enough to be ported to many other platforms, eventually
+including Microsoft Windows, where it enjoyed widespread exposure. A
+small but loyal fan base coalesced around the game, and eventually a
+level editor was developed, allowing the creation of countless
+fan-made levels.</p>
+
+<p>And here's where I came in. I decided I wanted to make an open source
+version of the basic game engine, that could play <em>Chip's Challenge</em>
+on Linux as well as Windows, and make it easy for me to play all the
+fan-made levels.</p>
+
+<p>The existence of a level editor was wonderful for me, since I could
+use it to investigate obscure questions about the game logic by
+building custom levels and running tests. Unfortunately, no level
+editor existed for the original Lynx game &mdash; only for the more
+familiar Windows port.</p>
+
+<p>Now, the Windows port wasn't done by the original team, and had
+introduced a great many changes to the game logic (not all of them
+intentional). When I started writing my engine, I wanted to provide
+both the original Lynx version's game logic and the more well-known
+Windows version. But the lack of a Lynx level editor seriously limited
+my ability to investigate the original game in detail. The Windows
+port had the advantage of having the levels stored in a separate data
+file, making it easy for people to isolate and reverse-engineer. In
+contrast, the Lynx game was distributed on ROM cartridges, which
+contained sprite images, sound effects, and machine code as well as
+the level data, all run together. There was no indication where the
+level data lived in this 128kB ROM dump, or what it looked like, and
+without that knowledge I had no way of creating a level editor for the
+Lynx version.</p>
+
+<p>One day, while doing some idle research, I happened to find a copy of
+the MS-DOS port of <em>Chip's Challenge</em>. Like most of the earlier ports
+of the game, the game logic was closer to the original than the
+Windows version. When I looked at the program's data to see how it was
+stored, I was surprised to discover that the level data was broken out
+into its own directory, and each level was stored in its own separate
+file. With the level data isolated so finely, I guessed that it
+wouldn't be too hard to reverse-engineer the format of the level data
+files. This would make it possible to write a level editor for the
+MS-DOS version of the game. An interesting possibility, I thought.</p>
+
+<p>But then another member of the <em>Chip's Challenge</em> community alerted me
+to an interesting fact. The contents of the MS-DOS level files
+appeared inside the dump of the Lynx ROM, byte for byte. This meant
+that if I could decode the MS-DOS files, I could then use this
+knowledge to read and modify the levels inside the Lynx ROM dump. It
+would be possible to build a level editor for the original Lynx game
+directly.</p>
+
+<p>Reverse-engineering the MS-DOS level files was suddenly my top
+priority.</p>
+
+<h3>The Data Files</h3>
+
+<p>Here is a link to a <a href="bure/levels.tar.gz">tarball of the directory containing the data
+files</a>. They are provided if you want to follow
+along with the process in the essay, or if you want to try your hand
+at decoding the data files yourself.</p>
+
+<p><aside><strong>Is this legal?</strong> That's a good question. Since these files are
+only a small part of the MS-DOS program, and are useless on their own,
+and since I'm providing them specifically for educational purposes, I
+believe that this falls within fair use. Hopefully, any interested
+parties agree with me on this. (If I do get a threatening letter from a
+bunch of lawyers, though, maybe I can modify this essay to also make
+fun of the data files, and then claim protection under parody.)</aside>
+</p>
+
+<h3>Prerequisites</h3>
+
+<p>I am assuming that you know what hexadecimal is, even if you aren't
+proficient at decoding hexadecimal values, and that you have some
+familiarity with the Unix shell. The shell session displayed in this
+essay takes place on a typical Linux system, but the commands used are
+almost all well-established Unix utilities, and are widely available
+on other Unices.</p>
+
+<h3>First Look</h3>
+
+<p>Here's the listing of the directory containing the data files from the
+MS-DOS port:</p>
+
+<p><div class="term">$&nbsp;<b>ls levels</b><br/>all_full.pak  cake_wal.pak  eeny_min.pak  iceberg.pak	lesson_5.pak  mulligan.pak  playtime.pak  southpol.pak	totally_.pak<br/>alphabet.pak  castle_m.pak  elementa.pak  ice_cube.pak	lesson_6.pak  nice_day.pak  potpourr.pak  special.pak	traffic_.pak<br/>amsterda.pak  catacomb.pak  fireflie.pak  icedeath.pak	lesson_7.pak  nightmar.pak  problems.pak  spirals.pak	trinity.pak<br/>apartmen.pak  cellbloc.pak  firetrap.pak  icehouse.pak	lesson_8.pak  now_you_.pak  refracti.pak  spooks.pak	trust_me.pak<br/>arcticfl.pak  chchchip.pak  floorgas.pak  invincib.pak	lobster_.pak  nuts_and.pak  reverse_.pak  steam.pak	undergro.pak<br/>balls_o_.pak  chiller.pak   forced_e.pak  i.pak		lock_blo.pak  on_the_r.pak  rink.pak	  stripes.pak	up_the_b.pak<br/>beware_o.pak  chipmine.pak  force_fi.pak  i_slide.pak	loop_aro.pak  oorto_ge.pak  roadsign.pak  suicide.pak	vanishin.pak<br/>blink.pak     citybloc.pak  force_sq.pak  jailer.pak	memory.pak    open_que.pak  sampler.pak   telebloc.pak	victim.pak<br/>blobdanc.pak  colony.pak    fortune_.pak  jumping_.pak	metastab.pak  oversea_.pak  scavenge.pak  telenet.pak	vortex.pak<br/>blobnet.pak   corridor.pak  four_ple.pak  kablam.pak	mind_blo.pak  pain.pak	    scoundre.pak  t_fair.pak	wars.pak<br/>block_fa.pak  cypher.pak    four_squ.pak  knot.pak	mishmesh.pak  paranoia.pak  seeing_s.pak  the_last.pak	writers_.pak<br/>block_ii.pak  deceptio.pak  glut.pak	  ladder.pak	miss_dir.pak  partial_.pak  short_ci.pak  the_mars.pak	yorkhous.pak<br/>block_n_.pak  deepfree.pak  goldkey.pak   lemmings.pak	mixed_nu.pak  pentagra.pak  shrinkin.pak  the_pris.pak<br/>block_ou.pak  digdirt.pak   go_with_.pak  lesson_1.pak	mix_up.pak    perfect_.pak  skelzie.pak   three_do.pak<br/>block.pak     digger.pak    grail.pak	  lesson_2.pak	monster_.pak  pier_sev.pak  slide_st.pak  time_lap.pak<br/>bounce_c.pak  doublema.pak  hidden_d.pak  lesson_3.pak	morton.pak    ping_pon.pak  slo_mo.pak	  torturec.pak<br/>brushfir.pak  drawn_an.pak  hunt.pak	  lesson_4.pak	mugger_s.pak  playhous.pak  socialis.pak  tossed_s.pak</div></p>
+
+<p>As you can see, the files all end in <code>.pak</code>. The extension <code>.pak</code> is a
+common extension for an application-specific data file, and
+unfortunately gives no useful guidance to the internal structure. The
+names of the files are essentially the first eight characters of the
+level name, with a few exceptions. (For example, the levels
+"BLOCK BUSTER" and "BLOCK BUSTER II" both omit the word "buster" from
+their file names, so they don't collide.)</p>
+
+<p><div class="term">$&nbsp;<b>ls levels | wc</b><br/>     17     148    1974</div></p>
+
+<p>The directory contains 148 data files, and in fact there are exactly
+148 levels in the game, so that checks out.</p>
+
+<p>Let's look at what's actually in these files. <code>xxd</code> is the standard
+hexdump utility, so let's see what "LESSON 1" looks like on the
+inside.</p>
+
+<p><div class="term">$&nbsp;<b>xxd levels/lesson_1.pak</b><br/>00000000: 1100 cb00 0200 0004 0202 0504 0407 0505  ................<br/>00000010: 0807 0709 0001 0a01 010b 0808 0d0a 0a11  ................<br/>00000020: 0023 1509 0718 0200 2209 0d26 0911 270b  .#......"..&amp;..'.<br/>00000030: 0b28 0705 291e 0127 2705 020d 0122 0704  .(..)..''...."..<br/>00000040: 0902 090a 0215 0426 0925 0111 1502 221d  .......&amp;.%....".<br/>00000050: 0124 011d 0d01 0709 0020 001b 0400 1a00  .$....... ......<br/>00000060: 2015 2609 1f00 3300 2911 1522 2302 110d   .&amp;...3.).."#...<br/>00000070: 0107 2609 1f18 2911 1509 181a 0223 021b  ..&amp;...)......#..<br/>00000080: 0215 2201 1c01 1c0d 0a07 0409 0201 0201  ..".............<br/>00000090: 2826 0123 1505 0902 0121 1505 220a 2727  (&amp;.#.....!..".''<br/>000000a0: 0b05 0400 060b 0828 0418 780b 0828 0418  .......(..x..(..<br/>000000b0: 700b 0828 0418 6400 1710 1e1e 1a19 0103  p..(..d.........<br/>000000c0: 000e 1a17 1710 0e1f 010e 1314 1b29 1f1a  .............)..<br/>000000d0: 0012 101f 011b 0c1e 1f01 1f13 1001 0e13  ................<br/>000000e0: 141b 001e 1a0e 1610 1f2d 0020 1e10 0116  .........-. ....<br/>000000f0: 1024 291f 1a01 1a1b 1019 000f 1a1a 1d1e  .$).............<br/>00000100: 2d02                                     -.</div></p>
+
+<p><aside><strong>What is a hexdump utility?</strong> A hex dump is a standard way to
+display the exact bytes of a binary file. Most byte values do not map
+to printable ASCII characters, or have ambiguous appearances (such as
+the tab character). In a hex dump, the individual bytes are output as
+numerical values. The values are displayed in base 16, or hexadecimal
+&mdash; thus the name "hex dump". In the example shown, there are sixteen
+bytes displayed per line of output. The leftmost column shows the
+line's position in the file &mdash; also in hexadecimal, so this number
+goes up by sixteen each line. The bytes are displayed in eight
+columns, each column showing two bytes. On the far right, the hex dump
+shows what the bytes would look like displayed as characters, but with
+all of the non-printable ASCII values replaced with dots. This makes
+it easier to identify strings which might be embedded inside a binary
+file.</aside>
+</p>
+
+<p>Clearly, reverse-engineering these files isn't going to be as
+straightforward as merely looking at their contents and seeing what
+appears where. There isn't anything here that looks particularly
+obvious as to what function it serves.</p>
+
+<h3>What Are We Expecting To See?</h3>
+
+<p>Let's step back a moment and clarify: What data are we specifically
+expecting to be present in these data files?</p>
+
+<p>The most obvious thing we would expect to see is some kind of "map" of
+the level &mdash; data which indicates the positions of the walls and the
+doors, and everything else that makes each level unique.</p>
+
+<p><img src="bure/lesson_1.png" alt="Map of level 1: LESSON 1" title="Map of level 1: LESSON 1" /></p>
+
+<p>(Fortunately for us, fans of the game have painstakingly compiled
+complete maps of all 148 levels, so we can use them to see what each
+level's map should include.)</p>
+
+<p>In addition to the map, each level has a handful of other attributes.
+For example, note that each level has a name, such as "LESSON 1",
+"PERFECT MATCH", "DRAWN AND QUARTERED", and so on. Different levels
+also have different time limits, so presumably that information also
+needs to be present in the data. Each level also has a different
+number of chips which need to be collected in order to get past the
+chip socket. (One might assume that this number would just be
+determined by the number of chips in the level, but as it turns out a
+few of the levels contain more chips than necessary to open the chip
+socket. For those levels at least, the actual minimum number must be
+specified explicitly.)</p>
+
+<p>Another piece of data that we'd expect to find in the level data is
+the hint text. Some levels have a "hint button", a large question mark
+on the ground. When Chip stands on it, a bit of helpful text is shown.
+Only 20 or so levels have a hint button.</p>
+
+<p>Finally, each level also has a password &mdash; a sequence of four letters
+which allows the player to resume the game at that level. (This
+password was necessary, because the Lynx had no persistent storage.
+There was no way to save games, so the password was how you avoided
+having to play the game from the start every time you turned it on.)</p>
+
+<p>So, here's our list of data:</p>
+
+<ul>
+<li>map layout</li>
+<li>level name</li>
+<li>level password</li>
+<li>time limit</li>
+<li>chip count</li>
+<li>hint text</li>
+</ul>
+
+<p>Let's take a moment to estimate the total size of this data. The
+easiest parts are the time limit and the chip count. Both of these are
+numbers which can range from 0 to 999, so they are likely stored as
+two-byte integer values, for a total of 4 bytes. The password is
+always four letters long, so likely stored as another four bytes, for
+a total of 8 bytes. The level names vary in length from four to
+nineteen characters. If we assume an extra byte for a string
+terminator, that's twenty bytes, giving a running total of 28 bytes.
+The longest hint text is over eighty bytes in size; if we round this
+up to ninety, we get 118 bytes total.</p>
+
+<p>And what about the map layout? Well, most levels are 32 × 32 tiles in
+size. No levels are larger than this. A few levels appear to be
+smaller, although it wouldn't be unreasonable to suppose that they are
+merely embedded inside of a 32 × 32 layout. If we assume the map
+requires one byte per tile, that would be 1024 bytes for the full
+layout. This gives us a grand total of 1142 bytes as the estimated
+data size for each level. Of course this is just a rough initial
+estimate. It's entirely possible some of these items are stored
+differently than we've guessed, or they may not be in the level files
+at all. And other data may be present that we've overlooked or don't
+know about. But it's a good place to start.</p>
+
+<p>Now that we've clarified what we're expecting the data files to
+contain, let's go back to looking at what they actually contain.</p>
+
+<h3>What Is and Isn't Present</h3>
+
+<p>Even though the file's data appears to be completely opaque upon first
+glance, there are still a couple of things we can take note of.
+First off is what we <em>don't</em> see. We don't see the level's name, for
+example, or the hint text. We can verify that this isn't a fluke by
+checking the other files as well:</p>
+
+<p><div class="term">$&nbsp;<b>strings levels/* | less</b><br/>:!!;#<br/>&amp;&gt;''::4#<br/>.,,!<br/>-54";<br/>/&amp;67<br/>!)60<br/>&lt;171<br/>*(0*<br/>82&gt;'=/<br/>8&gt;&lt;171&amp;&amp;<br/>9&gt;#2')(<br/>, )9<br/> 0hX<br/>`@PX<br/>)""*<br/>24**5<br/>;))&lt;<br/>B777:..22C1<br/>E,,F<br/>-GDED<br/>EGFF16G;;H&lt;<br/>IECJ<br/>9K444<br/>=MBBB&gt;&gt;N9"O"9P3?Q<br/><span class="i">lines 1-24/1544 (more)</span></div></p>
+
+<p>Nothing shows up but random bits of ASCII garbage.</p>
+
+<p>Presumably the level names and hints are in these files, somewhere,
+but either they're not stored in ASCII, or they've undergone some sort
+of transformation (e.g. due to compression).</p>
+
+<p>Another thing we should notice: this file is barely above 256 bytes in
+size. This is rather small, given our initial size estimate of over
+1140 bytes.</p>
+
+<p><aside>The <code>-S</code> option tells <code>ls</code> to sort the files
+by size, largest to smallest.</aside>
+<div class="term">$&nbsp;<b>ls -lS levels | head</b><br/>total 592<br/>-rw-r--r-- 1 breadbox breadbox 680 Jun 23  2015 mulligan.pak<br/>-rw-r--r-- 1 breadbox breadbox 675 Jun 23  2015 shrinkin.pak<br/>-rw-r--r-- 1 breadbox breadbox 671 Jun 23  2015 balls_o_.pak<br/>-rw-r--r-- 1 breadbox breadbox 648 Jun 23  2015 cake_wal.pak<br/>-rw-r--r-- 1 breadbox breadbox 647 Jun 23  2015 citybloc.pak<br/>-rw-r--r-- 1 breadbox breadbox 639 Jun 23  2015 four_ple.pak<br/>-rw-r--r-- 1 breadbox breadbox 636 Jun 23  2015 trust_me.pak<br/>-rw-r--r-- 1 breadbox breadbox 625 Jun 23  2015 block_n_.pak<br/>-rw-r--r-- 1 breadbox breadbox 622 Jun 23  2015 mix_up.pak</div></p>
+
+<p>The largest level file is only 680 bytes in size, which isn't very
+big. How small do they get?</p>
+
+<p><aside>The <code>-r</code> option tells <code>ls</code> to reverse the
+sort order.</aside>
+<div class="term">$&nbsp;<b>ls -lSr levels | head</b><br/>total 592<br/>-rw-r--r-- 1 breadbox breadbox 206 Jun 23  2015 kablam.pak<br/>-rw-r--r-- 1 breadbox breadbox 214 Jun 23  2015 fortune_.pak<br/>-rw-r--r-- 1 breadbox breadbox 219 Jun 23  2015 digdirt.pak<br/>-rw-r--r-- 1 breadbox breadbox 226 Jun 23  2015 lesson_2.pak<br/>-rw-r--r-- 1 breadbox breadbox 229 Jun 23  2015 lesson_8.pak<br/>-rw-r--r-- 1 breadbox breadbox 237 Jun 23  2015 partial_.pak<br/>-rw-r--r-- 1 breadbox breadbox 239 Jun 23  2015 knot.pak<br/>-rw-r--r-- 1 breadbox breadbox 247 Jun 23  2015 cellbloc.pak<br/>-rw-r--r-- 1 breadbox breadbox 248 Jun 23  2015 torturec.pak</div></p>
+
+<p>The smallest level file is only 206 bytes, which is less than a third
+of the largest. This is a pretty wide range, given that we were
+expecting each level to be roughly the same size.</p>
+
+<p>In our initial estimate, we figured the map layout would require one
+byte per tile, for a total of 1024 bytes. If we cut this estimate in
+half, so that each tile only requires 4 bits (or two tiles per byte),
+that's still 512 bytes for the map. 512 is smaller than 680, but it's
+still bigger than most level files. And anyway, 4 bits would only give
+us 16 different values, and there are far more than 16 different
+objects in this game.</p>
+
+<p>So clearly, maps are not stored in the files in such a direct fashion.
+They either have a more complex encoding, one that allows for a more
+efficient representation, and/or they are explicitly compressed in
+some manner. In a level like "LESSON 1", for example, we could easily
+see how omitting entries for the "empty" tiles would dramatically
+decrease the overall size of the map data.</p>
+
+<p>We can look at the maps of some of the largest files:</p>
+
+<p><img src="bure/mulligan.png" alt="Map of level 57: STRANGE MAZE" title="Map of level 57: STRANGE MAZE" />
+<img src="bure/shrinkin.png" alt="Map of level 98: SHRINKING" title="Map of level 98: SHRINKING" /></p>
+
+<p>and then compare these with the maps of some of the smallest files:</p>
+
+<p><img src="bure/kablam.png" alt="Map of level 106: KABLAM" title="Map of level 106: KABLAM" />
+<img src="bure/fortune_.png" alt="Map of level 112: FORTUNE FAVORS THE" title="Map of level 112: FORTUNE FAVORS THE" /></p>
+
+<p>This comparison supports the idea that smaller data files correspond
+with levels that are simpler, or contain more redundancy. If the data
+is compressed via some type of run-length encoding, for example, this
+might easily explain the range of different file sizes.</p>
+
+<p>If the files are in fact compressed, then we will probably need to
+decipher the compression before we can start deciphering the map data.</p>
+
+<h3>Looking at Many Files Simultaneously</h3>
+
+<p>Our cursory examination of the first data file has allowed us to make
+several inferences, but hasn't revealed anything concrete. As a next
+step, let's start looking for patterns in multiple data files. For
+now, we assume that all 148 files are using the same organizational
+scheme to encode their data, so looking for consistent patterns across
+files might help us get our foot in the door.</p>
+
+<p>Let's start at the very beginning of the files. The top of the file is
+a likely place to store "metadata" that tells us about the file's
+contents. By looking at just the first line of the hex dump for each
+file, we can do a quick and easy visual comparison of the first 16
+bytes, and look for any pattern that stands out:</p>
+
+<p><aside>Here
+we're using a one-line <code>sed</code> program to pull out the first line of the
+hexdump output. Using <code>head -n1</code> would have also worked.</aside>
+<div class="term">$&nbsp;<b>for f in levels/* ; do xxd $f | sed -n 1p ; done | less</b><br/>00000000: 2300 dc01 0300 0004 0101 0a03 030b 2323  #.............##<br/>00000000: 2d00 bf01 0300 0015 0101 2203 0329 2222  -........."..)""<br/>00000000: 2b00 a101 0301 0105 0000 0601 0207 0505  +...............<br/>00000000: 1d00 d300 0200 0003 0101 0402 0205 0102  ................<br/>00000000: 2d00 7a01 0300 0006 1414 0701 0109 0303  -.z.............<br/>00000000: 3100 0802 0200 0003 0101 0502 0206 1313  1...............<br/>00000000: 1a00 b700 0200 0003 0100 0502 0206 0101  ................<br/>00000000: 1a00 0601 0300 0005 0001 0601 0107 0303  ................<br/>00000000: 2000 7a01 0200 0003 0202 0401 0105 0028   .z............(<br/>00000000: 3a00 a400 0200 0003 2828 0428 0205 0303  :.......((.(....<br/>00000000: 2600 da00 0300 0004 0507 0901 010a 0303  &amp;...............<br/>00000000: 2400 f000 0300 0004 0303 0504 0407 0101  $...............<br/>00000000: 2a00 ef01 0300 0005 0101 0614 0007 0303  *...............<br/>00000000: 2c00 8c01 0300 0004 0303 0500 0107 0101  ,...............<br/>00000000: 2a00 0001 0300 0004 0303 0501 0107 0404  *...............<br/>00000000: 1b00 6d01 0200 0003 0101 0502 0206 0003  ..m.............<br/>00000000: 1e00 1701 0200 0003 0202 0401 0105 0013  ................<br/>00000000: 3200 ee01 0f00 0015 0101 270f 0f29 1414  2.........'..)..<br/>00000000: 2a00 5b01 0300 0005 0303 0601 0107 1414  *.[.............<br/>00000000: 2c00 8a01 0200 0003 0202 0401 0105 0303  ,...............<br/>00000000: 1d00 9c00 0216 1604 0000 0516 0107 0205  ................<br/>00000000: 2000 e100 0200 0003 0101 0402 0205 0303   ...............<br/>00000000: 2000 2601 0300 0004 0303 0502 0207 0101   .&amp;.............<br/>00000000: 1f00 f600 0132 0403 0000 0532 3206 0404  .....2.....22...<br/><span class="i">lines 1-24/148 (more)</span></div></p>
+
+<p>By scrolling up and down through this, we can see what sorts of
+similarities appear in each column.</p>
+
+<p>Starting with the first byte, we soon realize that its value appears
+to fall into a rather restricted range of values, about hexadecimal
+<code>10</code>&ndash;<code>40</code> (or about 20&ndash;60 in decimal). This is pretty specific.</p>
+
+<p>Even more interesting, the second byte of each file is always zero,
+without exception. Possibly the second byte is unused, or is padding.
+Another possibility, though, is that the first two bytes together
+represent a single 16-bit value, stored in little-endian order.</p>
+
+<p><aside><strong>What is little-endian?</strong> When you store a numerical value that is
+larger than a single byte, you have to decide beforehand the order the
+bytes will be stored in. If you store the byte representing the
+smaller part of the number first, that's called <em>little-endian</em> order;
+if you store the byte representing the larger part of the number
+first, that's <em>big-endian</em> order. In English, for example, we write
+numbers in big-endian order: the string "42" means forty-two, not
+four-and-twenty. Little-endian is the native ordering of many
+microprocessor families, so it tends to be the more popular ordering
+outside of network protocols, which typically require the use of
+big-endian.</aside>
+</p>
+
+<p>If we continue on this way, we will quickly see that the third byte in
+the file is not like the previous two: its value ranges all over the
+place. The fourth byte, however, is always either <code>00</code>, <code>01</code>, or <code>02</code>,
+with <code>01</code> being the most common. Again, this suggests that these two
+bytes comprise another 16-bit value, with a range of approximately
+0&ndash;700 in decimal. This hypothesis can be further reinforced by noting
+that the value of the third byte tends to be low when the fourth
+byte's value is <code>02</code>, and tends to be high when the fourth byte is
+<code>00</code>.</p>
+
+<p>Note, by the way, that this is part of the motivation for the standard
+hexdump format displaying bytes in pairs &mdash; it makes it easy to also
+read the output as a sequence of 16-bit integers. The hexdump format
+became standardized when 16-bit computers were the norm. Try replacing
+<code>xxd</code> with <code>xxd -g1</code> to turn off grouping entirely, and you can see
+that identifying pairs of bytes in the middle of the line requires
+more effort. This is a simple example of how the tools we use to look
+at unfamiliar data bias us to notice certain types of patterns. It's
+good that <code>xxd</code> defaults to highlighting this pattern, because it's a
+common one (even nowadays, when 64-bit computers are ubiquitous). But
+it's also good to know how to change these settings when they're not
+helpful.</p>
+
+<p>Let's continue our eyeball investigation, and see if this pattern of
+16-bit integers holds up. The fifth byte tends to have very low
+values: <code>02</code> and <code>03</code> are the most common, and <code>05</code> seems to be the
+highest value. The sixth byte of the file is very frequently zero &mdash;
+but every now and then it has a much larger value, such as <code>32</code> or
+<code>2C</code>. We don't get as strong a suggestion of values spread out over a
+range with this pair.</p>
+
+<h3>Looking Closer at the Initial Values</h3>
+
+<p>We can test this feeling more directly by using <code>od</code> to generate the
+hex dump. The <code>od</code> utility is similar to <code>xxd</code>, but it provides a much
+wider range of output formats. We can use it to dump the output as
+16-bit decimal integers like so:</p>
+
+<p><aside>The
+<code>-t</code> option to <code>od</code> specifies the output format. In this case, the <code>u</code>
+specifies unsigned decimal numbers, and the <code>2</code> specifies two bytes
+per entry. (You can also request this format with the <code>-d</code> option.)</aside>
+<div class="term">$&nbsp;<b>for f in levels/* ; do od -tu2 $f | sed -n 1p ; done | less</b><br/>0000000    35   476     3  1024   257   778  2819  8995<br/>0000000    45   447     3  5376   257   802 10499  8738<br/>0000000    43   417   259  1281     0   262  1794  1285<br/>0000000    29   211     2   768   257   516  1282   513<br/>0000000    45   378     3  1536  5140   263  2305   771<br/>0000000    49   520     2   768   257   517  1538  4883<br/>0000000    26   183     2   768     1   517  1538   257<br/>0000000    26   262     3  1280   256   262  1793   771<br/>0000000    32   378     2   768   514   260  1281 10240<br/>0000000    58   164     2   768 10280 10244  1282   771<br/>0000000    38   218     3  1024  1797   265  2561   771<br/>0000000    36   240     3  1024   771  1029  1796   257<br/>0000000    42   495     3  1280   257  5126  1792   771<br/>0000000    44   396     3  1024   771     5  1793   257<br/>0000000    42   256     3  1024   771   261  1793  1028<br/>0000000    27   365     2   768   257   517  1538   768<br/>0000000    30   279     2   768   514   260  1281  4864<br/>0000000    50   494    15  5376   257  3879 10511  5140<br/>0000000    42   347     3  1280   771   262  1793  5140<br/>0000000    44   394     2   768   514   260  1281   771<br/>0000000    29   156  5634  1046     0  5637  1793  1282<br/>0000000    32   225     2   768   257   516  1282   771<br/>0000000    32   294     3  1024   771   517  1794   257<br/>0000000    31   246 12801   772     0 12805  1586  1028<br/><span class="i">lines 1-24/148 (more)</span></div></p>
+
+<p>This output makes it clear that our intuitions about the first few
+bytes were correct. We can see that the file's first 16-bit value
+falls in the range of 20&ndash;70 decimal, and that the second 16-bit value
+ranges from 100&ndash;600 decimal. The values after these two are not so
+well-behaved, however. They do show certain patterns (such as the fact
+that 1024 appears in the fourth position surprisingly often), but they
+simply don't have the consistency of the first values in the file.</p>
+
+<p>So let us tentatively conclude that the first four bytes in the file
+are special, and consist of two 16-bit values. Coming as they do at
+the very start of the file, they are likely metadata, and help define
+how to read the remainder of the file.</p>
+
+<p>In fact, the second value's range of 100&ndash;600 is rather close to the
+range of file sizes we noticed earlier, which was 208&ndash;680. Maybe this
+isn't a coincidence? Let's put forth a hypothesis: the 16-bit value
+stored in the third and fourth byte of the file correlates with the
+overall file size. Now that we have a hypothesis, we can test it.
+Let's see if the larger files consistently have larger values at this
+location, and if smaller files have smaller values.</p>
+
+<p>In order to display the size of a file in bytes, with no other
+information, we can use <code>wc</code> with the <code>-c</code> option. Likewise, we can
+add options to <code>od</code> to force it to output only the values we're
+interested in. We can then use command substitution to capture these
+values in shell variables and display them side by side:</p>
+
+<p><aside>The <code>-An</code> option to <code>od</code>
+suppresses the leftmost column showing the file offset, while <code>-N4</code>
+tells <code>od</code> to stop after the first 4 bytes of the file.</aside>
+<div class="term">$&nbsp;<b>for f in levels/* ; do size=$(wc -c &lt;$f) ; data=$(od -tuS -An -N4 $f) ; echo "$size: $data" ; done | less</b><br/>585:     35   476<br/>586:     45   447<br/>550:     43   417<br/>302:     29   211<br/>517:     45   378<br/>671:     49   520<br/>265:     26   183<br/>344:     26   262<br/>478:     32   378<br/>342:     58   164<br/>336:     38   218<br/>352:     36   240<br/>625:     42   495<br/>532:     44   396<br/>386:     42   256<br/>450:     27   365<br/>373:     30   279<br/>648:     50   494<br/>477:     42   347<br/>530:     44   394<br/>247:     29   156<br/>325:     32   225<br/>394:     32   294<br/>343:     31   246<br/><span class="i">lines 1-24/148 (more)</span></div></p>
+
+<p>When we look at this output, we can see the values do have a
+rough correlation. Smaller files tend to have smaller values in the
+second position, and larger files tend to have larger values. The
+correlation isn't exact, though, and it's worth noting that the file
+size is always considerably larger than the value stored in the file.</p>
+
+<p>The first 16-bit integer also tends to be larger when the file size is
+larger, though this is also a bit inconsistent, and it's easy to find
+examples of medium-sized files with relatively large values in the
+first position. But maybe if we add the two values, their sum might
+correlate better with the file size?</p>
+
+<p>We can use <code>read</code> to extract the two numbers from the output of <code>od</code>
+into separate variables, and then use shell arithmetic to find their
+sum:</p>
+
+<p><aside>The <code>read</code> shell command can't be used on the right-hand
+side of a pipe, because piped-to commands are run in a subshell, which
+naturally takes its environment variables with it to the bit bucket
+when it exits. So instead, we need to take advantage of <code>bash</code>'s
+process substitution feature, and turn the output of <code>od</code> into a
+temporary file which can then be redirected into the <code>read</code> command.</aside>
+<div class="term">$&nbsp;<b>for f in levels/* ; do size=$(wc -c &lt;$f) ; read v1 v2 &lt; &lt;(od -tuS -An -N4 $f) ; sum=$(($v1 + $v2)) ;
+    echo "$size: $v1 + $v2 = $sum" ; done | less</b><br/>585: 35 + 476 = 511<br/>586: 45 + 447 = 492<br/>550: 43 + 417 = 460<br/>302: 29 + 211 = 240<br/>517: 45 + 378 = 423<br/>671: 49 + 520 = 569<br/>265: 26 + 183 = 209<br/>344: 26 + 262 = 288<br/>478: 32 + 378 = 410<br/>342: 58 + 164 = 222<br/>336: 38 + 218 = 256<br/>352: 36 + 240 = 276<br/>625: 42 + 495 = 537<br/>532: 44 + 396 = 440<br/>386: 42 + 256 = 298<br/>450: 27 + 365 = 392<br/>373: 30 + 279 = 309<br/>648: 50 + 494 = 544<br/>477: 42 + 347 = 389<br/>530: 44 + 394 = 438<br/>247: 29 + 156 = 185<br/>325: 32 + 225 = 257<br/>394: 32 + 294 = 326<br/>343: 31 + 246 = 277<br/><span class="i">lines 1-24/148 (more)</span></div></p>
+
+<p>The sum of the two numbers also roughly correlates with the file size,
+but it's still not quite the same. How far off is it, actually? Let's
+display the difference between them:</p>
+
+<p><div class="term">$&nbsp;<b>for f in levels/* ; do size=$(wc -c &lt;$f) ; read v1 v2 &lt; &lt;(od -tuS -An -N4 $f) ; diff=$(($size - $v1 - $v2)) ;
+    echo "$size = $v1 + $v2 + $diff" ; done | less</b><br/>585 = 35 + 476 + 74<br/>586 = 45 + 447 + 94<br/>550 = 43 + 417 + 90<br/>302 = 29 + 211 + 62<br/>517 = 45 + 378 + 94<br/>671 = 49 + 520 + 102<br/>265 = 26 + 183 + 56<br/>344 = 26 + 262 + 56<br/>478 = 32 + 378 + 68<br/>342 = 58 + 164 + 120<br/>336 = 38 + 218 + 80<br/>352 = 36 + 240 + 76<br/>625 = 42 + 495 + 88<br/>532 = 44 + 396 + 92<br/>386 = 42 + 256 + 88<br/>450 = 27 + 365 + 58<br/>373 = 30 + 279 + 64<br/>648 = 50 + 494 + 104<br/>477 = 42 + 347 + 88<br/>530 = 44 + 394 + 92<br/>247 = 29 + 156 + 62<br/>325 = 32 + 225 + 68<br/>394 = 32 + 294 + 68<br/>343 = 31 + 246 + 66<br/><span class="i">lines 1-24/148 (more)</span></div></p>
+
+<p>The difference, or "leftover" value, appears as the rightmost number
+in this output. This value doesn't quite fall into a regular pattern,
+but it does seem to stay in a limited range of about 40&ndash;120. And
+again, the larger files tend to have larger leftover values. But
+sometimes small files have large leftover values too, so it's not
+as consistent as we might wish.</p>
+
+<p>Still, we should note that the leftover values are never negative. So
+the idea that the two metadata values are specifying subsections of
+the file still has some appeal.</p>
+
+<p>(If you're sharp-eyed enough, you might have already spotted something
+which provides a hint to an as-yet unnoticed relationship. If you
+don't see it, then keep reading; the secret will be revealed before
+long.)</p>
+
+<h3>Cross-File Comparisons on a Larger Scale</h3>
+
+<p>At this point, it would be nice if we could do a cross-file comparison
+of more than 16 bytes at a time. In order to do this, we'll need to
+use a different kind of visualization. One good technique would be to
+create an image, with each pixel representing a single byte from one
+of the files, the color indicating the byte's value. The image could
+show a cross-section of all 148 files at once, each data file
+providing one row of pixels in the image. Since every file is a
+different size, we'll take the first 200 bytes of each in order to
+produce a rectangular image.</p>
+
+<p>The simplest image to produce is a grayscale image, where each byte
+value corresponds to a different level of gray. We can very easily
+create a PGM file with our data, as the PGM header consists entirely
+of ASCII text:</p>
+
+<p><div class="term">$&nbsp;<b>echo P5 200 148 255 &gt;hdr.pgm</b></div></p>
+
+<p><aside><strong>What is a PGM file?</strong> PGM, short for "portable graymap", is one of
+three image file formats that were created to be extremely simple to
+read and write: after the ASCII header, every byte identifies the
+grayscale color of a single pixel. The other two file formats in this
+family are PBM, "portable bitmap", which specifies monochrome images
+as 8 pixels per byte, and PPM, "portable pixmap", which specifies
+color images as 3 bytes per pixel.</aside>
+</p>
+
+<p>The <code>P5</code> is the initial signature indicating the PGM file format. The
+next two numbers, <code>200</code> and <code>148</code>, give the width and height of the
+image, and the final <code>255</code> specifies the maximum value per pixel. The
+PGM header is terminated by a newline, after which follows the pixel
+data. (Note that the PGM header is most commonly laid out on three
+separate lines of text, but the PGM standard only requires the
+elements to be separated by some kind of whitespace.)</p>
+
+<p>We can use the <code>head</code> utility to pull the first 200 bytes out of each
+file:</p>
+
+<p><div class="term">$&nbsp;<b>for f in levels/* ; do head -c200 $f ; done &gt;out.pgm</b></div></p>
+
+<p>Then, we can concatenate this with our header to create a displayable
+image:</p>
+
+<p><aside><code>xview</code> is an old X
+program for displaying images in a window. Feel free to replace it
+with your image viewer of choice, e.g. ImageMagick's <code>display</code> utility
+&mdash; although be aware that a surprising number of image viewing
+utilities won't accept an image file piped to standard input.</aside>
+<div class="term">$&nbsp;<b>cat hdr.pgm out.pgm | xview /dev/stdin</b></div>
+<div><img src="bure/cat-hdr-out-xview.png" alt="[IMAGE]"/></div></p>
+
+<p>If you find it difficult to make out detail in a dark image, you might
+find it easier to use a different color scheme. You can use
+ImageMagick's <code>pgmtoppm</code> utility to map the pixels to a different
+color range. This version will produce a "negative" image:</p>
+
+<p><div class="term">$&nbsp;<b>cat hdr.pgm out.pgm | pgmtoppm white-black | xview /dev/stdin</b></div>
+<div><img src="bure/cat-hdr-out-pgmtoppm-whiteblack-xview.png" alt="[IMAGE]"/></div></p>
+
+<p>And this version makes low values yellow and high values blue:</p>
+
+<p><div class="term">$&nbsp;<b>cat hdr.pgm out.pgm | pgmtoppm yellow-blue | xview /dev/stdin</b></div>
+<div><img src="bure/cat-hdr-out-pgmtoppm-yellowblue-xview.png" alt="[IMAGE]"/></div></p>
+
+<p>Color visibility can be very subjective, so feel free to play around
+with this and see what works best for you. In any case, the 200 × 148
+image is a little small, so the best thing for improving visibility is
+to enlarge it:</p>
+
+<p><div class="term">$&nbsp;<b>cat hdr.pgm out.pgm | xview -zoom 300 /dev/stdin</b></div>
+<div><img src="bure/cat-hdr-out-xview-zoom-300.png" alt="[IMAGE]"/></div></p>
+
+<p>The image is dark, indicating that most bytes contain small values. In
+contrast to this is a prominent strip of mostly bright pixels near the
+left-hand edge. This strip is located at the third byte in the file,
+which as we noted earlier varies across the full range of values.</p>
+
+<p>And though there aren't many high values outside the third byte, when
+we do find them they often appear in runs, creating short bright
+streaks in our image. Several of these runs appear to be periodically
+interrupted, creating a dotted-line effect. (It's possible that with
+the right colorization, we might notice such sequences in the dimmer
+pixels as well.)</p>
+
+<p>Looking closely at our image will also reveal that much of the
+left-hand side is dominated by subtle vertical stripes. These stripes
+speak to some regularity which runs through most of the files. Not all
+of the files &mdash; there are the odd rows of pixels scattered about where
+the stripes are interrupted &mdash; but more than enough to establish the
+existence of a real pattern. This pattern disappears on the right-hand
+side of the image, the dim background of stripes giving way to
+something much more noisy and unpatterned. (The stripes also seem to
+be absent on the far-left edge of the image &mdash; but, again, using a
+different color scheme may show that they start closer to the left
+edge than they appear to here.)</p>
+
+<p>The stripes consist of thin lines of slightly lighter pixels on a
+background of slightly darker pixels. This visual pattern should
+therefore correlate with a pattern in the data files of slightly
+higher byte values regularly interspersed among slightly lower byte
+values. The stripes appear to peter out about halfway across the
+image. Since the image shows the first 200 bytes of the files, we
+should expect the byte pattern to end after approximately 100 bytes.</p>
+
+<p>The fact that these patterns change across the data files might lead
+us to wonder what the files look like past the first 200 bytes. Well,
+we can easily replace the <code>head</code> utility with <code>tail</code> and get a view of
+what the last 200 bytes look like:</p>
+
+<p><div class="term">$&nbsp;<b>for f in levels/* ; do tail -c200 $f ; done &gt;out.pgm ; cat hdr.pgm out.pgm | xview -zoom 300 /dev/stdin</b></div>
+<div><img src="bure/for-f-in-levels-do-tail-c200-f-done-out-cat-hdr-out-xview-zoom-300.png" alt="[IMAGE]"/></div></p>
+
+<p>Immediately we see that this region of the data files is very
+different. There are a lot more occurrences of large byte values,
+particularly near the end of the file. (Though as before, they
+seem to prefer to cluster together, covering our image in bright
+horizontal streaks.) The high byte values seem to increase in
+frequency until near the end, when they abruptly give way to a return
+to low values for the last dozen or so bytes. And again, the pattern
+isn't universal, but is far too common to be coincidental.</p>
+
+<p>There might be more areas to be found in the middle of the files,
+which we haven't really looked at yet. What we'd like to do next is
+look at all of the complete files in this way. But since the files are
+all different sizes, they don't make a nice rectangular array of
+pixels. We could pad out each line with black pixels, but it would be
+nicer if we could resize them to all be the same width, so that
+proportional areas will line up across files, more or less.</p>
+
+<p>We can in fact do this, with only a little more work, by making use of
+some python, along with its imaging library, <code>PIL</code> (a.k.a. "Pillow"):</p>
+
+<table class="source"><tr><td class="ul1"><td class="title" rowspan="2"><i>showbytes.py</i><td><tr><td class="ul2"><td class="ur"><tr><td class="main" colspan="3"><pre><code>import sys
+from PIL import Image
+
+# Retrieve the full list of data files.
+filenames = sys.argv[1:]
+
+# Create a grayscale image, its height equal to the number of data files.
+width = 750
+height = len(filenames)
+image = Image.new('L', (width, height))
+
+# Fill in the image, one row at a time.
+for y in range(height):
+    # Retrieve the contents of one data file.
+    data = open(filenames[y]).read()
+    linewidth = len(data)
+    # Turn the data into a pixel-high image, each byte becoming one pixel.
+    line = Image.new(image.mode, (linewidth, 1))
+    linepixels = line.load()
+    for x in range(linewidth):
+        linepixels[x,0] = ord(data[x])
+    # Stretch the line out to fit the final image, and paste it into place.
+    line = line.resize((width, 1))
+    image.paste(line, (0, y))
+
+# Magnify the final image and display it.
+image = image.resize((width, 3 * height))
+image.show()
+</code></pre></table>
+
+<p>When we invoke this script with the full list of data files as
+arguments, it constructs a comprehensive image and displays it in a
+separate window:</p>
+
+<p><div class="term">$&nbsp;<b>python showbytes.py levels/*</b></div>
+<div><img src="bure/python-showbytes-levels.png" alt="[IMAGE]"/></div></p>
+
+<p>Unfortunately this image, though comprehensive, doesn't really show us
+anything new. (It actually shows us less, since the resizing
+ruins the pattern of the stripes.) We might need a better
+visualization process for looking at the entire set of data.</p>
+
+<h3>Characterizing Data</h3>
+
+<p>With this in mind, let's pause a moment, and take an overall census of
+the data. We'd like to know if the data files favor certain byte
+values over others. If every value tends to be equally common, for
+example, this would be strong evidence that the files are in fact
+compressed.</p>
+
+<p>It only takes a few lines of python to take a complete census of byte
+values:</p>
+
+<table class="source"><tr><td class="ul1"><td class="title" rowspan="2"><i>census.py</i><td><tr><td class="ul2"><td class="ur"><tr><td class="main" colspan="3"><pre><code>import sys
+data = sys.stdin.read()
+for c in range(256):
+    print c, data.count(chr(c))
+</code></pre></table>
+
+<p>By jamming all of the data into a single variable, we can easily
+produce a count of how often each byte value appears.</p>
+
+<p><div class="term">$&nbsp;<b>cat levels/* | python ./census.py | less</b><br/>0 2458<br/>1 2525<br/>2 1626<br/>3 1768<br/>4 1042<br/>5 1491<br/>6 1081<br/>7 1445<br/>8 958<br/>9 1541<br/>10 1279<br/>11 1224<br/>12 845<br/>13 908<br/>14 859<br/>15 1022<br/>16 679<br/>17 1087<br/>18 881<br/>19 1116<br/>20 1007<br/>21 1189<br/>22 1029<br/>23 733<br/><span class="i">lines 1-24/256 (more)</span></div></p>
+
+<p>We can see that byte values 0 and 1 are the most common, 2 and 3 the
+next most common, and from there the populations continue to decrease
+(though with less consistency). For a better visualization of this
+data, we can give the output to <code>gnuplot</code> and turn the census into a
+bar graph:</p>
+
+<p><aside>The <code>-p</code> option to <code>gnuplot</code> tells it to keep the window
+displaying the graph open after <code>gnuplot</code> itself exits.</aside>
+<div class="term">$&nbsp;<b>cat levels/* | python ./census.py | gnuplot -p -e 'plot "-" with boxes'</b></div>
+<div><img src="bure/cat-levels-python-census-gnuplot-p-e-plot-with-boxes.png" alt="[GRAPH]"/></div></p>
+
+<p>It's very clear now that first few byte values are significantly more
+common than all others. The next several values are still relatively
+common, and then the frequencies of values after 50 or so drop off in
+a rather smooth, probabilistic curve. However, there is a subset of
+high values spaced evenly apart, whose frequency appears to be quite
+stable. Looking at the original output, we can confirm that this
+subset consists of values evenly divisible by eight.</p>
+
+<p>These differences in population counts suggest that there are a few
+different "classes" of byte values, and so it might make sense to
+look at how these classes are distributed. The first group of byte
+values would be just the lowest values: 0, 1, 2, and 3. The second
+group might then be values from 4 to 64. And the third group would be
+values above 64 which are evenly divisible by 8. Everything else,
+namely values above 64 not divisible by 8, would make up the fourth
+and final group.</p>
+
+<p>So, with this in mind, let's modify our last image-generating script.
+Instead of trying to show the actual values of each byte as a separate
+color, let's simply show which group each byte falls in. We can assign
+a distinct color to each of the four groups, and this should make it
+easy to see if certain values tend to appear in certain places.</p>
+
+<table class="source"><tr><td class="ul1"><td class="title" rowspan="2"><i>showbytes2.py</i><td><tr><td class="ul2"><td class="ur"><tr><td class="main" colspan="3"><pre><code>import sys
+from PIL import Image
+
+# Retrieve the full list of data files.
+filenames = sys.argv[1:]
+
+# Create a color image, its height equal to the number of data files.
+width = 750
+height = len(filenames)
+image = Image.new('RGB', (width, height))
+
+# Fill in the image, one row at a time.
+for y in range(height):
+    # Retrieve the contents of one data file.
+    data = open(filenames[y]).read()
+    linewidth = len(data)
+    # Turn the data into a pixel-high image, each byte becoming one pixel.
+    line = Image.new(image.mode, (linewidth, 1))
+    linepixels = line.load()
+    # Determine which group each byte belongs to and assign it a color.
+    for x in range(linewidth):
+        byte = ord(data[x])
+        if byte &lt; 0x04:     linepixels[x,0] = (255, 0, 0)
+        elif byte &lt; 0x40:   linepixels[x,0] = (0, 255, 0)
+        elif byte % 8 == 0: linepixels[x,0] = (0, 0, 255)
+        else:               linepixels[x,0] = (255, 255, 255)
+    # Paste the line of pixels into the final image, stretching to fit.
+    line = line.resize((width, 1))
+    image.paste(line, (0, y))
+
+# Magnify the final image and display it.
+image = image.resize((width, 3 * height))
+image.show()
+</code></pre></table>
+
+<p>We're assigning red, green, blue, and white to the four groups
+respectively. (Again, feel free to try out different color assignments
+to suit your personal tastes.)</p>
+
+<p><div class="term">$&nbsp;<b>python showbytes2.py levels/*</b></div>
+<div><img src="bure/python-showbytes2-levels.png" alt="[IMAGE]"/></div></p>
+
+<p>With this image, we can tentatively confirm our division of the data
+files into five sections:</p>
+
+<ol>
+<li>The four-byte header which we identified previously.</li>
+<li>The striped area, which we can't see directly but has lots of red
+pixels (i.e. low byte values).</li>
+<li>The main section, which is most of the files and is mostly green
+pixels (i.e. values under 64).</li>
+<li>The section near the end where blue pixels suddenly predominate.</li>
+<li>The short final section which suddenly returns to mostly green.</li>
+</ol>
+
+<p>These colors make clear that the fourth section, the one dominated by
+high byte values as we saw in the grayscale image, is specifically
+dominated by high byte values divisible by 8.</p>
+
+<p>We know from the previous image that the second section, a.k.a. the
+striped section, extends past the mostly-red area. In fact, we
+saw in one of the first images that the striped section seemed to
+slowly brighten on average as it went from left to right.</p>
+
+<p>Again, the non-green pixels in the main third section seem to
+occasionally form dotted-line patterns, alternating green with red (or
+blue or white). This pattern isn't terribly regular, though, and might
+be spurious.</p>
+
+<p>This division of the file into five sections is very tentative, of
+course. The fourth section, with the high byte values divisible by
+eight, might turn out to just be the end of the third section. Or the
+large third section might turn out to be better divided into multiple
+sections that we can't currently distinguish. At this point, the
+identifying of sections is more about helping us find places to
+further dig in. It's enough for now to know that there are sections
+where the overall population of byte values changes, and knowing
+roughly how big they are can help guide us as we continue to
+investigate.</p>
+
+<h3>Searching for Structure</h3>
+
+<p>So where should we look now? Well, as before, it's probably easiest to
+start at the top. Or rather, near the top. Since we've already pretty
+confidently identified the first section as a four-byte header, let's
+start looking more closely at what comes next &mdash; the area we've been
+calling section two, or the striped section. Those stripes are our
+biggest hint of the presence of structure, so that's the best place to
+look for more indications of pattern.</p>
+
+<p>(For the moment, we're assuming the striped pattern begins immediately
+after the first four bytes. It's not visually obvious that it does,
+but it seems likely, and an examination of the byte values should
+quickly determine the truth.)</p>
+
+<p>Let's go back to the hex dump, this time focusing specifically on the
+beginning of section two. Remember, what we're expecting to find is a
+recurring pattern of slightly higher byte values regularly
+interspersed among slightly lower byte values.</p>
+
+<p><aside>The
+<code>-s4</code> option tells <code>xxd</code> to skip over the first 4 bytes of the file.</aside>
+<div class="term">$&nbsp;<b>for f in levels/* ; do xxd -s4 $f | sed -n 1p ; done | less</b><br/>00000004: 0200 0003 0202 0401 0105 0303 0700 0108  ................<br/>00000004: 0201 0104 0000 0504 0407 0202 0902 010a  ................<br/>00000004: 0300 0004 0303 0504 0407 0505 0801 0109  ................<br/>00000004: 0300 0009 0202 1203 0313 0909 1401 0115  ................<br/>00000004: 0203 0305 0000 0602 0207 0505 0901 010a  ................<br/>00000004: 0203 0304 0000 0502 0206 0404 0901 010a  ................<br/>00000004: 0300 0005 022a 0602 2907 0303 0902 000a  .....*..).......<br/>00000004: 0203 0305 0000 0605 0507 0101 0802 0209  ................<br/>00000004: 0300 0007 0303 0901 010a 0707 0b09 090c  ................<br/>00000004: 0300 0004 0101 0903 030e 0404 1609 0920  ...............<br/>00000004: 0200 0003 1313 0402 0205 0013 0701 0109  ................<br/>00000004: 0500 0006 0505 0701 0109 0606 0e07 070f  ................<br/>00000004: 0100 0003 0101 0a03 030b 0a0a 0e32 3216  .............22.<br/>00000004: 0300 0004 0705 0903 030a 0606 0b08 080c  ................<br/>00000004: 0200 0003 0701 0402 0209 0501 0a08 080b  ................<br/>00000004: 0200 0003 0202 0901 010a 0303 0b05 010d  ................<br/>00000004: 0200 0003 0202 0403 0305 0101 0904 040a  ................<br/>00000004: 0300 0007 0303 0f01 0115 0707 2114 1422  ............!.."<br/>00000004: 0200 0003 0202 0403 0309 0101 0a04 040b  ................<br/>00000004: 0231 3103 0202 0500 0006 0303 0701 0109  .11.............<br/>00000004: 0200 0003 0202 0b32 320c 0303 0e08 0811  .......22.......<br/>00000004: 0201 0103 0000 0902 020a 0303 0b09 090c  ................<br/>00000004: 0200 0003 0202 0a01 010b 0303 0d0b 0b0f  ................<br/>00000004: 0300 0005 0303 0701 0109 0001 0b05 051b  ................<br/><span class="i">lines 27-50/148 (more)</span></div></p>
+
+<p>Looking closely at the sequence of bytes in a line, we can see a
+pattern in which the 1st, 4th, 7th, and 10th byte is larger than its
+immediate neighbors. It's not a perfect pattern &mdash; there are certainly
+exceptions &mdash; but it's definitely pervasive enough to generate the
+visual regularity of stripes we noticed in the images. (And it's
+enough to confirm our assumption that the pattern of stripes begins
+immediately after the four-byte header.)</p>
+
+<p>The consistency of this pattern suggests strongly that this section of
+the file is an array or a table, with each entry in the array being
+three bytes long.</p>
+
+<p>We can adjust our hexdump format to make it easier to see the output
+as a series of triplets:</p>
+
+<p><aside>The <code>-g3</code> option sets the grouping to 3 bytes instead of 2. The
+<code>-c18</code> option sets the number of bytes per line to 18 instead of 16,
+which is done just to make it a multiple of 3.</aside>
+<div class="term">$&nbsp;<b>for f in levels/* ; do xxd -s4 -g3 -c18 $f | sed -n 1p ; done | less</b><br/>00000004: 050000 060505 070101 090606 0e0707 0f0001  ..................<br/>00000004: 010000 030101 0a0303 0b0a0a 0e3232 161414  .............22...<br/>00000004: 030000 040705 090303 0a0606 0b0808 0c0101  ..................<br/>00000004: 020000 030701 040202 090501 0a0808 0b0101  ..................<br/>00000004: 020000 030202 090101 0a0303 0b0501 0d0302  ..................<br/>00000004: 020000 030202 040303 050101 090404 0a0302  ..................<br/>00000004: 030000 070303 0f0101 150707 211414 221313  ............!.."..<br/>00000004: 020000 030202 040303 090101 0a0404 0b0001  ..................<br/>00000004: 023131 030202 050000 060303 070101 090505  .11...............<br/>00000004: 020000 030202 0b3232 0c0303 0e0808 110b0b  .......22.........<br/>00000004: 020101 030000 090202 0a0303 0b0909 0c0a0a  ..................<br/>00000004: 020000 030202 0a0101 0b0303 0d0b0b 0f2323  ................##<br/>00000004: 030000 050303 070101 090001 0b0505 1b0707  ..................<br/>00000004: 022323 030000 040202 050303 030101 070505  .##...............<br/>00000004: 031414 050000 060303 070505 080101 090707  ..................<br/>00000004: 030000 050202 060303 070505 080101 090606  ..................<br/>00000004: 030202 040000 050303 070404 080005 090101  ..................<br/>00000004: 030202 040000 050303 090404 1d0101 1f0909  ..................<br/>00000004: 020000 050303 060101 070202 0f0300 110505  ..................<br/>00000004: 050000 070101 0c0505 0d0007 110c0c 120707  ..................<br/>00000004: 030202 050000 060303 070505 080101 090606  ..................<br/>00000004: 020000 030101 050202 060505 070100 080303  ..................<br/>00000004: 020000 030202 050303 090101 0a0505 0b0302  ..................<br/>00000004: 022c2c 030000 040202 020303 050101 060202  .,,...............<br/><span class="i">lines 38-61/148 (more)</span></div></p>
+
+<p>With the hex dump formatted this way, some more features of this
+pattern start to stand out. As before, the first byte of each triplet
+tends to be larger than the bytes surrounding it. We can also see that
+the second and third byte in each triplet are frequently duplicated.
+Running down the first column, we see the majority of second and third
+bytes values are <code>0000</code>. But the non-zero ones often come in pairs as
+well, like <code>0101</code> or <code>2323</code>. Again, this isn't a perfect pattern, but
+it's much too common to be coincidental. And glancing at the ASCII
+column on the far right confirms that, when we do have byte values
+high enough to map to a printable ASCII character, they often do
+appear in pairs.</p>
+
+<p>Another noteworthy pattern, though not as immediately obvious, is that
+the first byte in each triplet increases as we proceed from left to
+right. Although this pattern is less immediately visible, it is highly
+consistent; we have to look through many lines to find our first
+counterexample. And the bytes tend to increase by small amounts,
+though not in any kind of regular pattern.</p>
+
+<p>Something we noticed when looking at the original image is that the
+striped section doesn't end at the same place in each file. There is a
+transition from the stripe-forming pattern on the left to the
+random-looking noise on the right, but this transition happens at a
+different point for each row of pixels. This implies that some kind of
+marker must be present, so a program reading the data file would be
+able to tell when the array ends and the next set of data begins.</p>
+
+<p>Let's return to the hex dump for just the first level, so we can see
+the whole thing:</p>
+
+<p><div class="term">$&nbsp;<b>xxd -s4 -g3 -c18 levels/lesson_1.pak</b><br/>00000004: 020000 040202 050404 070505 080707 090001  ..................<br/>00000016: 0a0101 0b0808 0d0a0a 110023 150907 180200  ...........#......<br/>00000028: 22090d 260911 270b0b 280705 291e01 272705  "..&amp;..'..(..)..''.<br/>0000003a: 020d01 220704 090209 0a0215 042609 250111  ...".........&amp;.%..<br/>0000004c: 150222 1d0124 011d0d 010709 002000 1b0400  .."..$....... ....<br/>0000005e: 1a0020 152609 1f0033 002911 152223 02110d  .. .&amp;...3.).."#...<br/>00000070: 010726 091f18 291115 09181a 022302 1b0215  ..&amp;...)......#....<br/>00000082: 22011c 011c0d 0a0704 090201 020128 260123  ".............(&amp;.#<br/>00000094: 150509 020121 150522 0a2727 0b0504 00060b  .....!..".''......<br/>000000a6: 082804 18780b 082804 18700b 082804 186400  .(..x..(..p..(..d.<br/>000000b8: 17101e 1e1a19 010300 0e1a17 17100e 1f010e  ..................<br/>000000ca: 13141b 291f1a 001210 1f011b 0c1e1f 011f13  ...)..............<br/>000000dc: 10010e 13141b 001e1a 0e1610 1f2d00 201e10  .............-. ..<br/>000000ee: 011610 24291f 1a011a 1b1019 000f1a 1a1d1e  ...$).............<br/>00000100: 2d02                                       -.</div></p>
+
+<p>Looking along the sequence of triplets, we can tentatively guess that
+the striped section in this data file ends after 17 triplets, at
+offset <code>00000036</code>. This isn't certain, but the first byte of each
+triplet is continually increasing in value, but then decreases at the
+18th triplet. And another piece of evidence is that at the 18th
+triplet, the second byte has the same value as the first byte. This
+isn't something we noticed earlier, but if we go back and look, we'll
+see the first byte is never the same as the second or third bytes.</p>
+
+<p>If our marker theory is correct, then there are two possibilities. The
+first possibility is that there is some kind of special byte value
+after the striped section (i.e. immediately following the 17th
+triplet). The second possibility is that there is a value stored
+somewhere which equals the size of the striped section. This size
+might be indicated by the number 17 (to indicate the number of
+triplets), or 51 (giving the total number of bytes in the section), or
+55 (51 plus 4, the file offset where the section ends).</p>
+
+<p>For the first possibility, the doubled byte value could conceivably be
+a section end marker (assuming such a sequence never actually appears
+as part of section two). However, a careful examination of a few other
+data files contradicts this idea, as no such pattern appears
+elsewhere.</p>
+
+<p>For the second possibility, an obvious place to look for this size
+indicator would be in section one. Lo and behold, the first 16-bit
+value in the file's four-byte header is 17:</p>
+
+<p><div class="term">$&nbsp;<b>od -An -tuS -N4 levels/lesson_1.pak</b><br/>    17   203</div></p>
+
+<p>If our theory is correct, then, this value doesn't measure the actual
+size of the striped section, but rather the number of three-byte
+entries. To put this idea to the test, let's go back to the
+calculation we did earlier comparing the sum of the two 16-bit
+integers with the file size. This time, we'll multiply the first
+number by three to get an actual size in bytes:</p>
+
+<p><div class="term">$&nbsp;<b>for f in levels/* ; do size=$(wc -c &lt;$f) ; read v1 v2 &lt; &lt;(od -tuS -An -N4 $f) ; diff=$(($size - 3 * $v1 - $v2)) ;
+    echo "$size = 3 * $v1 + $v2 + $diff" ; done | less</b><br/>585 = 3 * 35 + 476 + 4<br/>586 = 3 * 45 + 447 + 4<br/>550 = 3 * 43 + 417 + 4<br/>302 = 3 * 29 + 211 + 4<br/>517 = 3 * 45 + 378 + 4<br/>671 = 3 * 49 + 520 + 4<br/>265 = 3 * 26 + 183 + 4<br/>344 = 3 * 26 + 262 + 4<br/>478 = 3 * 32 + 378 + 4<br/>342 = 3 * 58 + 164 + 4<br/>336 = 3 * 38 + 218 + 4<br/>352 = 3 * 36 + 240 + 4<br/>625 = 3 * 42 + 495 + 4<br/>532 = 3 * 44 + 396 + 4<br/>386 = 3 * 42 + 256 + 4<br/>450 = 3 * 27 + 365 + 4<br/>373 = 3 * 30 + 279 + 4<br/>648 = 3 * 50 + 494 + 4<br/>477 = 3 * 42 + 347 + 4<br/>530 = 3 * 44 + 394 + 4<br/>247 = 3 * 29 + 156 + 4<br/>325 = 3 * 32 + 225 + 4<br/>394 = 3 * 32 + 294 + 4<br/>343 = 3 * 31 + 246 + 4<br/><span class="i">lines 1-24/148 (more)</span></div></p>
+
+<p>Aha! With this change, the total sum of values from our header is
+always exactly four less than the size of the entire data file. And
+since four is also the number of bytes in the header, it is clear that
+this is not a coincidence. The first number gives the number of
+three-byte entries in the table, and the second number gives the
+number of bytes which make up the remainder of the data file.</p>
+
+<p>We have found a consistent formula, so we now completely understand
+what the numbers in section one represent.</p>
+
+<p>(By the way, here is the secret pattern that I said sharp-eyed readers
+might have spotted, back when we were first experimenting with these
+numbers. Looking closely at the equations would reveal that when files
+had the same first number, they also had the same leftover difference.
+This is because this difference was always just twice the value of the
+first number plus four. It's not an obvious pattern, but it's one that
+a meticulous or lucky person might have noticed.)</p>
+
+<p>So we can now characterize the file as having three main sections:</p>
+
+<ol>
+<li>the four-byte header;</li>
+<li>the table of three-byte entries; and</li>
+<li>the rest of the file, presumably providing most of the actual data.</li>
+</ol>
+
+<p>(The other sections that we roughly identified earlier must therefore
+be subsections of the third section.)</p>
+
+<h3>Interpreting the Metadata</h3>
+
+<p>Given this layout, it would be natural to assume that the entries in
+the section two table are some kind of metadata, which are needed to
+interpret the data in the third section.</p>
+
+<p>So &hellip; what kind of metadata does this table contain? </p>
+
+<p>We have noted previously a couple of indicators which suggest that the
+data file may be compressed. (This is even more compelling now that we
+know the third section of each file, presumably containing the main
+data for each level, is only 100&ndash;600 bytes in size.) If so, then it
+is likely that the table preceding the main data provides compression
+metadata &mdash; a dictionary of some kind which is applied during
+decompression. Huffman-encoded data, for example, is typically
+preceded by a dictionary mapping the original byte values to bit
+sequences. While we don't expect that these files are Huffman-encoded
+(as the data shows clear patterns on the byte level, and thus is
+unlikely to be a bitstream), it's not unreasonable to try to interpret
+this table as a decompression dictionary.</p>
+
+<p>(Of course, not every compression scheme makes use of a stored
+dictionary. The deflate algorithm used by <code>gzip</code> and <code>zlib</code>, for
+example, allows the dictionary to be re-created from the data stream
+directly. But these tend to be the exception rather than the rule.)</p>
+
+<p>Typically an entry in a dictionary consists of two parts: a key, and a
+value. Sometimes the key is implicit, of course, as when the
+dictionary is organized as an array instead of a lookup table.
+However, we've already observed that the three-byte entries seem to
+come in two parts &mdash; specifically, the first byte of each entry
+follows a pattern which is distinctly different from the pattern
+followed by the second and third bytes. Given this, it seems like a
+reasonable first hypothesis would be to treat the first byte as the
+key and the remaining two bytes as the value.</p>
+
+<p>If so, then one of the simplest way to interpret the striped section
+is that the first byte is the byte value in the compressed data to
+replace, and the second and third bytes are the values to replace them
+with. The result of this scheme would certainly be larger, though it's
+not clear by how much. Still, it's not an unreasonable hypothesis, and
+it's easy enough to test it out. We can write a short python program
+to apply this decompression scheme:</p>
+
+<table class="source"><tr><td class="ul1"><td class="title" rowspan="2"><i>decompress.py</i><td><tr><td class="ul2"><td class="ur"><tr><td class="main" colspan="3"><pre><code>import struct
+import sys
+
+# Read the compressed data file.
+data = sys.stdin.read()
+
+# Extract the two integers of the four-byte header.
+tablesize, datasize = struct.unpack('HH', data[0:4])
+data = data[4:]
+
+# Separate the dictionary table and the compressed data.
+tablesize *= 3
+table = data[0:tablesize]
+data = data[tablesize:datasize]
+
+# Apply the dictionary entries to the data section.
+for n in range(0, len(table), 3):
+    key = table[n]
+    val = table[n+1:n+3]
+    data = data.replace(key, val)
+
+# Output the expanded result.
+sys.stdout.write(data)
+</code></pre></table>
+
+<p>We can then try out this script on a sample data file:</p>
+
+<p><div class="term">$&nbsp;<b>python ./decompress.py &lt;levels/lesson_1.pak | xxd</b><br/>00000000: 0b0b 0b0b 0404 0000 0a0a 0109 0d05 0502  ................<br/>00000010: 0200 0100 0000 0101 0100 0009 0702 0209  ................<br/>00000020: 1100 0125 0100 2309 0700 0009 0d1d 0124  ...%..#........$<br/>00000030: 011d 0a0a 0105 0500 0100 2000 1b02 0200  .......... .....<br/>00000040: 1a00 2009 0709 1100 011f 0033 001e 0100  .. ........3....<br/>00000050: 2309 0709 0d23 0000 0023 0a0a 0105 0509  #....#...#......<br/>00000060: 1100 011f 0200 1e01 0023 0907 0001 0200  .........#......<br/>00000070: 1a00 0023 0000 1b00 0009 0709 0d01 1c01  ...#............<br/>00000080: 1c0a 0a01 0105 0502 0200 0100 0001 0000  ................<br/>00000090: 0107 0509 1101 2309 0704 0400 0100 0001  ......#.........<br/>000000a0: 2109 0704 0409 0d01 010b 0b0b 0b08 0804  !...............<br/>000000b0: 0402 0200 0608 0807 0707 0502 0202 0078  ...............x<br/>000000c0: 0808 0707 0705 0202 0200 7008 0807 0707  ..........p.....<br/>000000d0: 0502 0202 0064 0017 101e 1e1a 1901 0300  .....d..........<br/>000000e0: 0e1a 1717 100e 1f01 0e13 141b 1e01 1f1a  ................<br/>000000f0: 0012 101f 011b 0c1e 1f01 1f13 1001 0e13  ................<br/>00000100: 141b 001e 1a0e 1610 1f2d 0020 1e10 0116  .........-. ....<br/>00000110: 1024 1e01 1f1a 011a 1b10 1900 0f1a 1a1d  .$..............<br/>00000120: 1e2d 0000                                .-..</div></p>
+
+<p>The results are pretty lackluster, however. The resulting data stream
+has in fact expanded from the original, to be sure &mdash; but not much.
+Certainly not as much as we need for it to contain all the data that
+we expect to find. This decompression scheme is apparently a little
+too simple.</p>
+
+<p>If we examine the resulting output more closely, we'll quickly see
+that it begins with a lot of repeated bytes. <code>0b</code>, <code>04</code>, <code>00</code>, <code>0a</code>
+all appear in pairs. Looking back at the compressed original, we will
+see that all of these pairs came from our replacements using the
+dictionary. But in the process, we can hardly fail to notice that all
+of these repeated values also correspond to entries in the dictionary.
+That is, if we applied the dictionary again, the data would expand
+further. So &hellip; perhaps we didn't decompress enough?</p>
+
+<p>Our first instinct might be to do a second pass, applying each
+dictionary entry a second time to expand the data further. Our second
+instinct might be to do multiple passes with the dictionary, repeating
+the process until all bytes which appear as dictionary keys have been
+replaced. However, if we look more closely at the dictionary's
+organization, we should eventually realize that if we simply apply the
+dictionary entries from <em>right to left</em>, instead of from left to
+right, then all of the values should get expanded in a single pass.</p>
+
+<p>With this hypothesis, we can see the structure for a more plausible
+compression algorithm. The program takes the original data, and scans
+it to find the most commonly appearing two-byte sequence. It then
+replaces this two-byte sequence with a single byte value which
+currently does not appear in the data. It then repeats this process,
+continuing until no two-byte sequence appears more than twice in the
+data. In fact, this compression algorithm has a name: It is known as
+"byte pair encoding" &mdash; or sometimes as "re-pair compression", short
+for "recursive pairs".</p>
+
+<p>(And this can account for some of the patterns we see in the
+dictionary. The dictionary is built up from left to right while
+compressing, thus it needs to be applied from right to left when
+decompressing. Since dictionary entries often refer to previous
+entries, it makes sense that the second and third bytes would
+frequently be lower in value than the first byte.)</p>
+
+<p><aside>While byte pair encoding isn't particularly impressive, it has the
+advantage that the decompressor can be implemented with a minimum of
+code. I myself have made use of this technique in a few situations
+where I needed to minimize the <em>combined</em> size of the compressed data
+and the decompression code.</aside>
+</p>
+
+<p>So. We can make a one-line change to our python program to apply the
+dictionary from right to left:</p>
+
+<table class="source"><tr><td class="ul1"><td class="title" rowspan="2"><i>decompress2.py</i><td><tr><td class="ul2"><td class="ur"><tr><td class="main" colspan="3"><pre><code>import struct
+import sys
+
+# Read the compressed data file.
+data = sys.stdin.read()
+
+# Extract the two integers of the four-byte header.
+tablesize, datasize = struct.unpack('HH', data[0:4])
+data = data[4:]
+
+# Separate the dictionary table and the compressed data.
+tablesize *= 3
+table = data[0:tablesize]
+data = data[tablesize:datasize]
+
+# Apply the dictionary entries to the data section in reverse order.
+for n in range(len(table) - 3, -3, -3):
+    key = table[n]
+    val = table[n+1:n+3]
+    data = data.replace(key, val)
+
+# Output the expanded result.
+sys.stdout.write(data)
+</code></pre></table>
+
+<p>When we try this version, we get a much larger output:</p>
+
+<p><div class="term">$&nbsp;<b>python ./decompress2.py &lt;levels/lesson_1.pak | xxd | less</b><br/>00000000: 0000 0000 0000 0000 0000 0000 0000 0000  ................<br/>00000010: 0000 0000 0000 0000 0000 0000 0000 0000  ................<br/>00000020: 0000 0000 0000 0000 0000 0000 0000 0000  ................<br/>00000030: 0000 0000 0000 0000 0000 0000 0000 0000  ................<br/>00000040: 0000 0000 0000 0000 0000 0000 0000 0000  ................<br/>00000050: 0000 0000 0000 0000 0000 0000 0000 0000  ................<br/>00000060: 0000 0000 0000 0000 0000 0000 0000 0000  ................<br/>00000070: 0000 0000 0000 0000 0000 0000 0000 0000  ................<br/>00000080: 0000 0000 0000 0000 0000 0000 0000 0000  ................<br/>00000090: 0000 0000 0000 0000 0000 0000 0000 0000  ................<br/>000000a0: 0000 0000 0000 0000 0000 0000 0000 0000  ................<br/>000000b0: 0000 0000 0000 0000 0000 0000 0000 0000  ................<br/>000000c0: 0000 0000 0000 0000 0000 0000 0000 0000  ................<br/>000000d0: 0000 0000 0000 0000 0000 0000 0000 0000  ................<br/>000000e0: 0000 0000 0000 0000 0000 0000 0000 0000  ................<br/>000000f0: 0000 0000 0000 0000 0000 0000 0000 0000  ................<br/>00000100: 0000 0000 0000 0000 0000 0101 0101 0100  ................<br/>00000110: 0101 0101 0100 0000 0000 0000 0000 0000  ................<br/>00000120: 0000 0000 0000 0000 0000 0100 0000 0101  ................<br/>00000130: 0100 0000 0100 0000 0000 0000 0000 0000  ................<br/>00000140: 0000 0000 0000 0000 0000 0100 2300 0125  ............#..%<br/>00000150: 0100 2300 0100 0000 0000 0000 0000 0000  ..#.............<br/>00000160: 0000 0000 0000 0000 0101 0101 011d 0124  ...............$<br/>00000170: 011d 0101 0101 0100 0000 0000 0000 0000  ................<br/><span class="i">lines 1-24/93 (more)</span></div></p>
+
+<p>We see a lot of zero bytes in this output &mdash; but this may be
+consistent with a mostly-empty map. The non-zero bytes in the data do
+seem to be clumped up near each other. Since we're hoping to find a
+32 × 32 map, let's reformat the output to 32 bytes per line:</p>
+
+<p><div class="term">$&nbsp;<b>python ./decompress2.py &lt;levels/lesson_1.pak | xxd -c32 | less</b><br/>00000000: 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000  ................................<br/>00000020: 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000  ................................<br/>00000040: 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000  ................................<br/>00000060: 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000  ................................<br/>00000080: 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000  ................................<br/>000000a0: 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000  ................................<br/>000000c0: 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000  ................................<br/>000000e0: 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000  ................................<br/>00000100: 0000 0000 0000 0000 0000 0101 0101 0100 0101 0101 0100 0000 0000 0000 0000 0000  ................................<br/>00000120: 0000 0000 0000 0000 0000 0100 0000 0101 0100 0000 0100 0000 0000 0000 0000 0000  ................................<br/>00000140: 0000 0000 0000 0000 0000 0100 2300 0125 0100 2300 0100 0000 0000 0000 0000 0000  ............#..%..#.............<br/>00000160: 0000 0000 0000 0000 0101 0101 011d 0124 011d 0101 0101 0100 0000 0000 0000 0000  ...............$................<br/>00000180: 0000 0000 0000 0000 0100 2000 1b00 0000 0000 1a00 2000 0100 0000 0000 0000 0000  .......... ......... ...........<br/>000001a0: 0000 0000 0000 0000 0100 2300 011f 0033 001e 0100 2300 0100 0000 0000 0000 0000  ..........#....3....#...........<br/>000001c0: 0000 0000 0000 0000 0101 0101 0123 0000 0023 0101 0101 0100 0000 0000 0000 0000  .............#...#..............<br/>000001e0: 0000 0000 0000 0000 0100 2300 011f 0000 001e 0100 2300 0100 0000 0000 0000 0000  ..........#.........#...........<br/>00000200: 0000 0000 0000 0000 0100 0000 1a00 0023 0000 1b00 0000 0100 0000 0000 0000 0000  ...............#................<br/>00000220: 0000 0000 0000 0000 0101 0101 0101 1c01 1c01 0101 0101 0100 0000 0000 0000 0000  ................................<br/>00000240: 0000 0000 0000 0000 0000 0000 0100 0001 0000 0100 0000 0000 0000 0000 0000 0000  ................................<br/>00000260: 0000 0000 0000 0000 0000 0000 0100 2301 2300 0100 0000 0000 0000 0000 0000 0000  ..............#.#...............<br/>00000280: 0000 0000 0000 0000 0000 0000 0100 0001 2100 0100 0000 0000 0000 0000 0000 0000  ................!...............<br/>000002a0: 0000 0000 0000 0000 0000 0000 0101 0101 0101 0100 0000 0000 0000 0000 0000 0000  ................................<br/>000002c0: 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000  ................................<br/>000002e0: 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000  ................................<br/><span class="i">lines 1-24/47 (more)</span></div></p>
+
+<p>By focusing on the patterns of non-zero values, we can see what
+clearly appears to be a map in the output. In fact, we can make this
+pattern more visible by using a "colorized" hexdump tool which assigns
+different colors to each byte value, making it easier to see patterns
+of repeated values:</p>
+
+<p><aside><code>xcd</code> is not a standard tool, but you can find a copy of it
+<a href="http://www.muppetlabs.com/%7Ebreadbox/software/xcd.html">here</a>. Note
+the <code>-r</code> option to <code>less</code>, which tells it not to sanitize the escape
+sequences.</aside>
+<div class="term">$&nbsp;<b>python ./decompress2.py &lt;levels/lesson_1.pak | ./xcd -c32 | less -r</b><br/><table style="border-collapse:collapse"><tr><td>00000000: <td><span class="c808080">0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000</span>&nbsp;&nbsp;<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀</tr><tr><td>00000020: <td><span class="c808080">0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000</span>&nbsp;&nbsp;<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀</tr><tr><td>00000040: <td><span class="c808080">0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000</span>&nbsp;&nbsp;<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀</tr><tr><td>00000060: <td><span class="c808080">0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000</span>&nbsp;&nbsp;<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀</tr><tr><td>00000080: <td><span class="c808080">0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000</span>&nbsp;&nbsp;<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀</tr><tr><td>000000A0: <td><span class="c808080">0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000</span><span class="c">&nbsp;&nbsp;<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀</tr><tr><td><span class="c">000000C0: <td></span><span class="c808080">0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000</span><span class="c">&nbsp;&nbsp;<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀</tr><tr><td><span class="c">000000E0: <td></span><span class="c808080">0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000</span><span class="c">&nbsp;&nbsp;<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀</tr><tr><td><span class="c">00000100: <td></span><span class="c808080">0000 0000 0000 0000 0000 </span><span class="cFFFF00">0101 0101 01</span><span class="c808080">00 </span><span class="cFFFF00">0101 0101 01</span><span class="c808080">00 0000 0000 0000 0000 0000</span><span class="c">&nbsp;&nbsp;<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="c808080">␀<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀</tr><tr><td><span class="c">00000120: <td></span><span class="c808080">0000 0000 0000 0000 0000 </span><span class="cFFFF00">01</span><span class="c808080">00 0000 </span><span class="cFFFF00">0101 01</span><span class="c808080">00 0000 </span><span class="cFFFF00">01</span><span class="c808080">00 0000 0000 0000 0000 0000</span><span class="c">&nbsp;&nbsp;<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="cFFFF00">␁<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="cFFFF00">␁<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀</tr><tr><td><span class="c">00000140: <td></span><span class="c808080">0000 0000 0000 0000 0000 </span><span class="cFFFF00">01</span><span class="c808080">00 </span><span class="c5F005F">23</span><span class="c808080">00 </span><span class="cFFFF00">01</span><span class="cFF5F00">25 </span><span class="cFFFF00">01</span><span class="c808080">00 </span><span class="c5F005F">23</span><span class="c808080">00 </span><span class="cFFFF00">01</span><span class="c808080">00 0000 0000 0000 0000 0000</span><span class="c">&nbsp;&nbsp;<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="cFFFF00">␁<td class="c808080">␀<td class="c5F005F">#<td class="c808080">␀<td class="cFFFF00">␁<td class="cFF5F00">%<td class="cFFFF00">␁<td class="c808080">␀<td class="c5F005F">#<td class="c808080">␀<td class="cFFFF00">␁<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀</tr><tr><td><span class="c">00000160: <td></span><span class="c808080">0000 0000 0000 0000 </span><span class="cFFFF00">0101 0101 01</span><span class="c5FFFFF">1D </span><span class="cFFFF00">01</span><span class="cFF0000">24 </span><span class="cFFFF00">01</span><span class="c5FFFFF">1D </span><span class="cFFFF00">0101 0101 01</span><span class="c808080">00 0000 0000 0000 0000</span><span class="c">&nbsp;&nbsp;<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="c5FFFFF">␝<td class="cFFFF00">␁<td class="cFF0000">$<td class="cFFFF00">␁<td class="c5FFFFF">␝<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀</tr><tr><td><span class="c">00000180: <td></span><span class="c808080">0000 0000 0000 0000 </span><span class="cFFFF00">01</span><span class="c808080">00 </span><span class="c00D75F">20</span><span class="c808080">00 </span><span class="cFFAFAF">1B</span><span class="c808080">00 0000 0000 </span><span class="c0087D7">1A</span><span class="c808080">00 </span><span class="c00D75F">20</span><span class="c808080">00 </span><span class="cFFFF00">01</span><span class="c808080">00 0000 0000 0000 0000</span><span class="c">&nbsp;&nbsp;<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="cFFFF00">␁<td class="c808080">␀<td class="c00D75F">␠<td class="c808080">␀<td class="cFFAFAF">␛<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c0087D7">␚<td class="c808080">␀<td class="c00D75F">␠<td class="c808080">␀<td class="cFFFF00">␁<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀</tr><tr><td><span class="c">000001A0: <td></span><span class="c808080">0000 0000 0000 0000 </span><span class="cFFFF00">01</span><span class="c808080">00 </span><span class="c5F005F">23</span><span class="c808080">00 </span><span class="cFFFF00">01</span><span class="cFFD787">1F </span><span class="c808080">00</span><span class="c5F00FF">33 </span><span class="c808080">00</span><span class="cFFAF00">1E </span><span class="cFFFF00">01</span><span class="c808080">00 </span><span class="c5F005F">23</span><span class="c808080">00 </span><span class="cFFFF00">01</span><span class="c808080">00 0000 0000 0000 0000</span><span class="c">&nbsp;&nbsp;<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="cFFFF00">␁<td class="c808080">␀<td class="c5F005F">#<td class="c808080">␀<td class="cFFFF00">␁<td class="cFFD787">␟<td class="c808080">␀<td class="c5F00FF">3<td class="c808080">␀<td class="cFFAF00">␞<td class="cFFFF00">␁<td class="c808080">␀<td class="c5F005F">#<td class="c808080">␀<td class="cFFFF00">␁<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀</tr><tr><td><span class="c">000001C0: <td></span><span class="c808080">0000 0000 0000 0000 </span><span class="cFFFF00">0101 0101 01</span><span class="c5F005F">23 </span><span class="c808080">0000 00</span><span class="c5F005F">23 </span><span class="cFFFF00">0101 0101 01</span><span class="c808080">00 0000 0000 0000 0000</span><span class="c">&nbsp;&nbsp;<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="c5F005F">#<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c5F005F">#<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀</tr><tr><td><span class="c">000001E0: <td></span><span class="c808080">0000 0000 0000 0000 </span><span class="cFFFF00">01</span><span class="c808080">00 </span><span class="c5F005F">23</span><span class="c808080">00 </span><span class="cFFFF00">01</span><span class="cFFD787">1F </span><span class="c808080">0000 00</span><span class="cFFAF00">1E </span><span class="cFFFF00">01</span><span class="c808080">00 </span><span class="c5F005F">23</span><span class="c808080">00 </span><span class="cFFFF00">01</span><span class="c808080">00 0000 0000 0000 0000</span><span class="c">&nbsp;&nbsp;<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="cFFFF00">␁<td class="c808080">␀<td class="c5F005F">#<td class="c808080">␀<td class="cFFFF00">␁<td class="cFFD787">␟<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="cFFAF00">␞<td class="cFFFF00">␁<td class="c808080">␀<td class="c5F005F">#<td class="c808080">␀<td class="cFFFF00">␁<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀</tr><tr><td><span class="c">00000200: <td></span><span class="c808080">0000 0000 0000 0000 </span><span class="cFFFF00">01</span><span class="c808080">00 0000 </span><span class="c0087D7">1A</span><span class="c808080">00 00</span><span class="c5F005F">23 </span><span class="c808080">0000 </span><span class="cFFAFAF">1B</span><span class="c808080">00 0000 </span><span class="cFFFF00">01</span><span class="c808080">00 0000 0000 0000 0000</span><span class="c">&nbsp;&nbsp;<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="cFFFF00">␁<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c0087D7">␚<td class="c808080">␀<td class="c808080">␀<td class="c5F005F">#<td class="c808080">␀<td class="c808080">␀<td class="cFFAFAF">␛<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="cFFFF00">␁<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀</tr><tr><td><span class="c">00000220: <td></span><span class="c808080">0000 0000 0000 0000 </span><span class="cFFFF00">0101 0101 0101 </span><span class="cAF0087">1C</span><span class="cFFFF00">01 </span><span class="cAF0087">1C</span><span class="cFFFF00">01 0101 0101 01</span><span class="c808080">00 0000 0000 0000 0000</span><span class="c">&nbsp;&nbsp;<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="cAF0087">␜<td class="cFFFF00">␁<td class="cAF0087">␜<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀</tr><tr><td><span class="c">00000240: <td></span><span class="c808080">0000 0000 0000 0000 0000 0000 </span><span class="cFFFF00">01</span><span class="c808080">00 00</span><span class="cFFFF00">01 </span><span class="c808080">0000 </span><span class="cFFFF00">01</span><span class="c808080">00 0000 0000 0000 0000 0000 0000</span><span class="c">&nbsp;&nbsp;<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="cFFFF00">␁<td class="c808080">␀<td class="c808080">␀<td class="cFFFF00">␁<td class="c808080">␀<td class="c808080">␀<td class="cFFFF00">␁<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀</tr><tr><td><span class="c">00000260: <td></span><span class="c808080">0000 0000 0000 0000 0000 0000 </span><span class="cFFFF00">01</span><span class="c808080">00 </span><span class="c5F005F">23</span><span class="cFFFF00">01 </span><span class="c5F005F">23</span><span class="c808080">00 </span><span class="cFFFF00">01</span><span class="c808080">00 0000 0000 0000 0000 0000 0000</span><span class="c">&nbsp;&nbsp;<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="cFFFF00">␁<td class="c808080">␀<td class="c5F005F">#<td class="cFFFF00">␁<td class="c5F005F">#<td class="c808080">␀<td class="cFFFF00">␁<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀</tr><tr><td><span class="c">00000280: <td></span><span class="c808080">0000 0000 0000 0000 0000 0000 </span><span class="cFFFF00">01</span><span class="c808080">00 00</span><span class="cFFFF00">01 </span><span class="cD7FF5F">21</span><span class="c808080">00 </span><span class="cFFFF00">01</span><span class="c808080">00 0000 0000 0000 0000 0000 0000</span><span class="c">&nbsp;&nbsp;<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="cFFFF00">␁<td class="c808080">␀<td class="c808080">␀<td class="cFFFF00">␁<td class="cD7FF5F">!<td class="c808080">␀<td class="cFFFF00">␁<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀</tr><tr><td><span class="c">000002A0: <td></span><span class="c808080">0000 0000 0000 0000 0000 0000 </span><span class="cFFFF00">0101 0101 0101 01</span><span class="c808080">00 0000 0000 0000 0000 0000 0000</span><span class="c">&nbsp;&nbsp;<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="cFFFF00">␁<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀</tr><tr><td><span class="c">000002C0: <td></span><span class="c808080">0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000</span><span class="c">&nbsp;&nbsp;<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀</tr><tr><td><span class="c">000002E0: <td></span><span class="c808080">0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000</span><span class="c">&nbsp;&nbsp;<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀</tr></table><span class="i">lines 1-24/47 (more)</span></div></p>
+
+<p>Compare this with the fan-made map of the first level:</p>
+
+<p><img src="bure/lesson_1.png" alt="Map of level 1: LESSON 1" title="Map of level 1: LESSON 1" /></p>
+
+<p>Unquestionably, we are looking at the data for the level's map. We can
+feel pretty confident that we have correctly deduced the decompression
+algorithm.</p>
+
+<h3>Interpreting the Data</h3>
+
+<p>By comparing the byte values to the map image, we can determine that
+<code>00</code> encodes an empty tile, <code>01</code> encodes a wall, and <code>23</code> represents a
+chip. <code>1A</code> represents a red door, <code>1B</code> represents a blue door, and so
+on. We can assign explicit values to chips, keys, doors, and every
+other tile which make up the level's map.</p>
+
+<p>We can then proceed to the next level, and identify the byte values
+for the objects appearing in there. And so on to the next levels, and
+eventually we will have a complete list of byte values and the game
+objects that they encode.</p>
+
+<p>As we had originally guessed, the map ends after exactly 1024 bytes
+(at offset <code>000003FF</code>).</p>
+
+<p><aside>This time <code>sed</code> is being used to delete the first 32 lines of
+the hex dump. Since we're displaying 32 bytes per line, this will omit
+the first 1024 bytes.</aside>
+<div class="term">$&nbsp;<b>python ./decompress2.py &lt;levels/lesson_1.pak | ./xcd -c32 | sed 1,32d</b><br/><table style="border-collapse:collapse"><tr><td><span class="c">00000400: <td></span><span class="c870000">06</span><span class="c808080">00 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000</span><span class="c">&nbsp;&nbsp;<td class="c870000">␆<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀</tr><tr><td><span class="c">00000420: <td></span><span class="c808080">0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000</span><span class="c">&nbsp;&nbsp;<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀</tr><tr><td><span class="c">00000440: <td></span><span class="c808080">0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000</span><span class="c">&nbsp;&nbsp;<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀</tr><tr><td><span class="c">00000460: <td></span><span class="c808080">0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000</span><span class="c">&nbsp;&nbsp;<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀</tr><tr><td><span class="c">00000480: <td></span><span class="cAFD700">78</span><span class="c808080">00 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000</span><span class="c">&nbsp;&nbsp;<td class="cAFD700">x<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀</tr><tr><td><span class="c">000004A0: <td></span><span class="c808080">0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000</span><span class="c">&nbsp;&nbsp;<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀</tr><tr><td><span class="c">000004C0: <td></span><span class="c808080">0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000</span><span class="c">&nbsp;&nbsp;<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀</tr><tr><td><span class="c">000004E0: <td></span><span class="c808080">0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000</span><span class="c">&nbsp;&nbsp;<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀</tr><tr><td><span class="c">00000500: <td></span><span class="c875F00">70</span><span class="c808080">00 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000</span><span class="c">&nbsp;&nbsp;<td class="c875F00">p<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀</tr><tr><td><span class="c">00000520: <td></span><span class="c808080">0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000</span><span class="c">&nbsp;&nbsp;<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀</tr><tr><td><span class="c">00000540: <td></span><span class="c808080">0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000</span><span class="c">&nbsp;&nbsp;<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀</tr><tr><td><span class="c">00000560: <td></span><span class="c808080">0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000</span><span class="c">&nbsp;&nbsp;<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀<td class="c808080">␀</tr><tr><td><span class="c">00000580: <td></span><span class="cFFAFFF">64</span><span class="c808080">00 </span><span class="c005F00">17</span><span class="cFFFF87">10 </span><span class="cFFAF00">1E1E </span><span class="c0087D7">1A</span><span class="c87FFAF">19 </span><span class="cFFFF00">01</span><span class="c000080">03 </span><span class="c808080">00</span><span class="c808000">0E </span><span class="c0087D7">1A</span><span class="c005F00">17 17</span><span class="cFFFF87">10 </span><span class="c808000">0E</span><span class="cFFD787">1F </span><span class="cFFFF00">01</span><span class="c808000">0E </span><span class="c005F5F">13</span><span class="c008787">14 </span><span class="cFFAFAF">1B</span><span class="cFFAF00">1E </span><span class="cFFFF00">01</span><span class="cFFD787">1F </span><span class="c0087D7">1A</span><span class="c808080">00 </span><span class="cD7AF5F">12</span><span class="cFFFF87">10 </span><span class="cFFD787">1F</span><span class="cFFFF00">01</span><span class="c">&nbsp;&nbsp;<td class="cFFAFFF">d<td class="c808080">␀<td class="c005F00">␗<td class="cFFFF87">␐<td class="cFFAF00">␞<td class="cFFAF00">␞<td class="c0087D7">␚<td class="c87FFAF">␙<td class="cFFFF00">␁<td class="c000080">␃<td class="c808080">␀<td class="c808000">␎<td class="c0087D7">␚<td class="c005F00">␗<td class="c005F00">␗<td class="cFFFF87">␐<td class="c808000">␎<td class="cFFD787">␟<td class="cFFFF00">␁<td class="c808000">␎<td class="c005F5F">␓<td class="c008787">␔<td class="cFFAFAF">␛<td class="cFFAF00">␞<td class="cFFFF00">␁<td class="cFFD787">␟<td class="c0087D7">␚<td class="c808080">␀<td class="cD7AF5F">␒<td class="cFFFF87">␐<td class="cFFD787">␟<td class="cFFFF00">␁</tr><tr><td><span class="c">000005A0: <td></span><span class="cFFAFAF">1B</span><span class="c00FFFF">0C </span><span class="cFFAF00">1E</span><span class="cFFD787">1F </span><span class="cFFFF00">01</span><span class="cFFD787">1F </span><span class="c005F5F">13</span><span class="cFFFF87">10 </span><span class="cFFFF00">01</span><span class="c808000">0E </span><span class="c005F5F">13</span><span class="c008787">14 </span><span class="cFFAFAF">1B</span><span class="c808080">00 </span><span class="cFFAF00">1E</span><span class="c0087D7">1A </span><span class="c808000">0E</span><span class="cFF00FF">16 </span><span class="cFFFF87">10</span><span class="cFFD787">1F </span><span class="cD7FFFF">2D</span><span class="c808080">00 </span><span class="c00D75F">20</span><span class="cFFAF00">1E </span><span class="cFFFF87">10</span><span class="cFFFF00">01 </span><span class="cFF00FF">16</span><span class="cFFFF87">10 </span><span class="cFF0000">24</span><span class="cFFAF00">1E </span><span class="cFFFF00">01</span><span class="cFFD787">1F</span><span class="c">&nbsp;&nbsp;<td class="cFFAFAF">␛<td class="c00FFFF">␌<td class="cFFAF00">␞<td class="cFFD787">␟<td class="cFFFF00">␁<td class="cFFD787">␟<td class="c005F5F">␓<td class="cFFFF87">␐<td class="cFFFF00">␁<td class="c808000">␎<td class="c005F5F">␓<td class="c008787">␔<td class="cFFAFAF">␛<td class="c808080">␀<td class="cFFAF00">␞<td class="c0087D7">␚<td class="c808000">␎<td class="cFF00FF">␖<td class="cFFFF87">␐<td class="cFFD787">␟<td class="cD7FFFF">-<td class="c808080">␀<td class="c00D75F">␠<td class="cFFAF00">␞<td class="cFFFF87">␐<td class="cFFFF00">␁<td class="cFF00FF">␖<td class="cFFFF87">␐<td class="cFF0000">$<td class="cFFAF00">␞<td class="cFFFF00">␁<td class="cFFD787">␟</tr><tr><td><span class="c">000005C0: <td></span><span class="c0087D7">1A</span><span class="cFFFF00">01 </span><span class="c0087D7">1A</span><span class="cFFAFAF">1B </span><span class="cFFFF87">10</span><span class="c87FFAF">19 </span><span class="c808080">00</span><span class="c0000FF">0F </span><span class="c0087D7">1A1A </span><span class="c5FFFFF">1D</span><span class="cFFAF00">1E </span><span class="cD7FFFF">2D</span><span class="c808080">00 00</span><span class="c">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<td class="c0087D7">␚<td class="cFFFF00">␁<td class="c0087D7">␚<td class="cFFAFAF">␛<td class="cFFFF87">␐<td class="c87FFAF">␙<td class="c808080">␀<td class="c0000FF">␏<td class="c0087D7">␚<td class="c0087D7">␚<td class="c5FFFFF">␝<td class="cFFAF00">␞<td class="cD7FFFF">-<td class="c808080">␀<td class="c808080">␀</tr></table></div></p>
+
+<p>Immediately following the map data is a sequence of 384 bytes (ranging
+from <code>00000400</code>&ndash;<code>0000057F</code>) which are almost entirely zeros, but with
+a few non-zero bytes tossed in. After that is a completely different
+pattern of bytes, so it makes sense to assume that this 384-byte
+sequence is a section of its own.</p>
+
+<p>If we look at a few other levels, we'll quickly see a pattern. The
+384-byte section actually consists of three subsections, each 128
+bytes long. Each subsection starts out with a number of non-zero
+bytes, after which zeros are used to pad out the remainder of the
+subsection.</p>
+
+<p>Some levels have a lot of data here; some (like the first level) only
+have a minimum. By comparing the levels with their maps, we will soon
+see that the amount of data appearing in this section is directly
+related to the number of "mobs" in the level. In this case, the term
+"mob" includes the creatures in the level, the dirt blocks (which
+don't move independently, but can be pushed around), and Chip himself
+(the player). So the mobs don't appear on the map proper, but are
+instead encoded in these three buffers.</p>
+
+<p>Once we know that these three subsections provide the data to specify
+the level's mobs, it's not too difficult to work out what the
+individual subsections contain.</p>
+
+<p>The first 128-byte subsection is a list of byte values that specify
+the type of mob. For example, the second level's buffers look like
+this:</p>
+
+<p><div class="term">$&nbsp;<b>python ./decompress2.py &lt;levels/lesson_2.pak | xxd | less</b><br/>00000400: 0608 1c1c 0808 0000 0000 0000 0000 0000  ................<br/>00000410: 0000 0000 0000 0000 0000 0000 0000 0000  ................<br/>00000420: 0000 0000 0000 0000 0000 0000 0000 0000  ................<br/>00000430: 0000 0000 0000 0000 0000 0000 0000 0000  ................<br/>00000440: 0000 0000 0000 0000 0000 0000 0000 0000  ................<br/>00000450: 0000 0000 0000 0000 0000 0000 0000 0000  ................<br/>00000460: 0000 0000 0000 0000 0000 0000 0000 0000  ................<br/>00000470: 0000 0000 0000 0000 0000 0000 0000 0000  ................<br/>00000480: a870 98a0 6868 0000 0000 0000 0000 0000  .p..hh..........<br/>00000490: 0000 0000 0000 0000 0000 0000 0000 0000  ................<br/>000004a0: 0000 0000 0000 0000 0000 0000 0000 0000  ................<br/>000004b0: 0000 0000 0000 0000 0000 0000 0000 0000  ................<br/>000004c0: 0000 0000 0000 0000 0000 0000 0000 0000  ................<br/>000004d0: 0000 0000 0000 0000 0000 0000 0000 0000  ................<br/>000004e0: 0000 0000 0000 0000 0000 0000 0000 0000  ................<br/>000004f0: 0000 0000 0000 0000 0000 0000 0000 0000  ................<br/>00000500: 6060 6060 5868 0000 0000 0000 0000 0000  ````Xh..........<br/>00000510: 0000 0000 0000 0000 0000 0000 0000 0000  ................<br/>00000520: 0000 0000 0000 0000 0000 0000 0000 0000  ................<br/>00000530: 0000 0000 0000 0000 0000 0000 0000 0000  ................<br/>00000540: 0000 0000 0000 0000 0000 0000 0000 0000  ................<br/>00000550: 0000 0000 0000 0000 0000 0000 0000 0000  ................<br/>00000560: 0000 0000 0000 0000 0000 0000 0000 0000  ................<br/>00000570: 0000 0000 0000 0000 0000 0000 0000 0000  ................<br/><span class="i">lines 64-87/93 (more)</span></div></p>
+
+<p>Compare this with the map for the level:</p>
+
+<p><img src="bure/lesson_2.png" alt="Map of level 2: LESSON 2" title="Map of level 2: LESSON 2" /></p>
+
+<p>This level contains six mobs: three bugs, two blocks, and Chip. The
+first 128-byte subsection contains one <code>06</code> byte, three <code>08</code> bytes,
+and two <code>1C</code> bytes. It is reasonable to conclude that <code>06</code> indicates
+Chip, <code>08</code> indicates a bug, and <code>1C</code> indicates a block.</p>
+
+<p>(As we continue to compare the data files with the level maps, and to
+fill out our dictionary of mobs, we will quickly discover a wrinkle in
+this theory: Chip can be represented by four different values, namely
+<code>04</code>, <code>05</code>, <code>06</code>, or <code>07</code>. This multiplicity of representations holds
+for all mobs, in fact. A careful comparison of the different values
+will eventually reveal that the byte value indicating the type has a
+value of 0, 1, 2, or 3 added to it, indicating which way the mob is
+initially facing: north, east, south, or west respectively. Thus, a
+byte value of <code>06</code> specifically indicates Chip facing south.)</p>
+
+<p>The meaning of the other two subsections are less obvious. But, by
+focusing on repeated values in these subsections and comparing the
+maps for those mobs, eventually it becomes clear that the bytes in the
+second subsection provide the x-coordinate of each mob, and the bytes
+in the third subsection provide the y-coordinate of each mob. This
+solution is made less immediately obvious by the fact that the
+coordinates stored in these subsections are actually shifted left
+3 bits, i.e. they are multiplied by 8. This little fact conveniently
+explains the "blue" population group that we identified in the census.
+(The reason these values are shifted is unclear, but a likely
+explanation is that the lower three bits are used for representing
+frames of animation while mobs are in motion.)</p>
+
+<p>With this section dispensed with, we can now see that many of the data
+files only have a few bytes left to account for:</p>
+
+<p><aside>Note that <code>xxd</code> will accept a hexadecimal
+value for the <code>-s</code> option.</aside>
+<div class="term">$&nbsp;<b>for f in levels/* ; do python ./decompress2.py &lt;$f | xxd -s 0x580 | sed -n 1p ; done | less</b><br/>00000580: 9001 0c17 1701 1120 1717 00              ....... ...<br/>00000580: 0000 0c17 1b13 0c0d 101f 011e 1a20 1b00  ............. ..<br/>00000580: f401 0c18 1e1f 101d 0f0c 1800            ............<br/>00000580: 2c01 0c1b 0c1d 1f18 1019 1f00            ,...........<br/>00000580: 9001 0c1d 0e1f 140e 1117 1a22 00         ...........".<br/>00000580: 2c01 0d0c 1717 1e01 1a01 1114 1d10 00    ,..............<br/>00000580: 2c01 0d10 220c 1d10 011a 1101 0d20 1200  ,..."........ ..<br/>00000580: 5802 0d17 1419 1600                      X.......<br/>00000580: 0000 0d17 1a0d 0f0c 190e 1000            ............<br/>00000580: f401 0d17 1a0d 1910 1f00                 ..........<br/>00000580: f401 0d17 1a0e 1601 110c 0e1f 1a1d 2400  ..............$.<br/>00000580: ee02 0d17 1a0e 1601 0d20 1e1f 101d 0114  ......... ......<br/>00000580: 5802 0d17 1a0e 1601 1901 1d1a 1717 00    X..............<br/>00000580: 5e01 0d17 1a0e 1601 1a20 1f00            ^........ ..<br/>00000580: c201 0d17 1a0e 1601 0d20 1e1f 101d 00    ......... .....<br/>00000580: 2c01 0d1a 2019 0e10 010e 141f 2400       ,... .......$.<br/>00000580: 5000 0d1d 201e 1311 141d 1000            P... .......<br/>00000580: e703 0e0c 1610 0122 0c17 1600            ......."....<br/>00000580: 5802 0e0c 1e1f 1710 0118 1a0c 1f00       X.............<br/>00000580: 8f01 0e0c 1f0c 0e1a 180d 1e00            ............<br/>00000580: 0000 0e10 1717 0d17 1a0e 1610 0f00 1b1d  ................<br/>00000580: 2c01 0e13 0e13 0e13 141b 1e00            ,...........<br/>00000580: 8f01 0e13 1417 1710 1d00                 ..........<br/>00000580: bc02 0e13 141b 1814 1910 00              ...........<br/><span class="i">lines 1-24/148 (more)</span></div></p>
+
+<p>A survey of the first pair of bytes in the remainder will quickly
+suggest they hold yet another 16-bit integer. Read this way, most
+values turn out to be round numbers in decimal:</p>
+
+<p><aside>The <code>od</code> command uses
+<code>-j</code> instead of <code>-s</code> to jump to an initial offset. Also note the
+<code>printf</code> command: in addition to providing formatting, it's a handy
+way to output text without a trailing newline.</aside>
+<div class="term">$&nbsp;<b>for f in levels/* ; do printf "%-20s" $f ; python ./decompress2.py &lt;$f | od -An -j 0x580 -tuS -N2 ; done | less</b><br/>levels/all_full.pak    400<br/>levels/alphabet.pak      0<br/>levels/amsterda.pak    500<br/>levels/apartmen.pak    300<br/>levels/arcticfl.pak    400<br/>levels/balls_o_.pak    300<br/>levels/beware_o.pak    300<br/>levels/blink.pak       600<br/>levels/blobdanc.pak      0<br/>levels/blobnet.pak     500<br/>levels/block_fa.pak    500<br/>levels/block_ii.pak    750<br/>levels/block_n_.pak    600<br/>levels/block_ou.pak    350<br/>levels/block.pak       450<br/>levels/bounce_c.pak    300<br/>levels/brushfir.pak     80<br/>levels/cake_wal.pak    999<br/>levels/castle_m.pak    600<br/>levels/catacomb.pak    399<br/>levels/cellbloc.pak      0<br/>levels/chchchip.pak    300<br/>levels/chiller.pak     399<br/>levels/chipmine.pak    700<br/><span class="i">lines 1-24/148 (more)</span></div></p>
+
+<p>If we refer back to the list we originally made of the data that we
+expected to find in the files, we will realize that this number is the
+level's time limit (with a value of zero for levels which are
+untimed).</p>
+
+<p>After these two bytes, the data becomes less regular. The fact that
+most levels only have a dozen or so bytes left in the file severely
+limits what else can be contained here:</p>
+
+<p><div class="term">$&nbsp;<b>python ./decompress2.py &lt;levels/all_full.pak | xxd -s 0x0582</b><br/>00000582: 0c17 1701 1120 1717 00                   ..... ...</div></p>
+
+<p>This level, for example, has nine bytes left over. Consider this
+limited size, and then add to it the fact that these nine bytes
+contain four occurrences of the value <code>17</code>, arranged into two pairs.
+It doesn't take long to notice that the pattern of <code>17</code>s correspond to
+the pattern of letter <code>L</code>s in the title "ALL FULL". The title is eight
+characters long, so the zero byte at the end is presumably a string
+terminator.</p>
+
+<p>Once we've discovered this, it's a trivial matter to look through the
+other levels and use their titles to compile a full character list:</p>
+
+<table id="chartable">
+<tr><td align="center"><code>00</code></td>
+    <td>string terminator</td></tr>
+<tr><td align="center"><code>01</code></td>
+    <td>space</td></tr>
+<tr><td align="center"><code>02</code>&ndash;<code>0B</code></td>
+    <td>digits 0 through 9</td></tr>
+<tr><td align="center"><code>0C</code>&ndash;<code>25</code></td>
+    <td>letters A through Z</td></tr>
+<tr><td align="center"><code>26</code>&ndash;<code>30</code></td>
+    <td>punctuation marks</td></tr>
+</table>
+
+<p>For most levels, this is the end of the data file. A couple dozen,
+however, have data following the title. If we look at the list, we'll
+quickly see that they are the levels which contain hint buttons, and
+this remaining data gives the text of the level's hint string, encoded
+in the same character set as the titles.</p>
+
+<p>With that, we have reached the end of all of the files. We now have a
+full description of the layout of the level data. Our task is
+complete.</p>
+
+<h3>Loose Ends</h3>
+
+<p>The perceptive reader might have noticed that we originally expected
+to find two more items in these files, which never made an appearance.
+We can explain both of their absences:</p>
+
+<p>The first item was the chip count, i.e. the total number of chips the
+player must collect in order to pass through the chip socket. As we
+noted originally, this is frequently the same as the total number of
+chips present in the level &mdash; but not always. So this data must be
+provided somehow. The answer can be found by examining the maps of
+those levels which contain an excess of chips. It turns out that there
+are two different values used to represent chips. <code>23</code> is the value we
+identified originally, but <code>31</code> is also used to represent a chip, one
+that doesn't contribute to the total needed to open the chip socket.
+(The two types of chip are the same as far as gameplay is concerned,
+though. If a level contains one chip of type <code>31</code>, then any of the
+level's chips can be left uncollected.)</p>
+
+<p>The second item is the level's four-letter password. This one cannot
+be found hidden elsewhere in the level's data. Unfortunately, this is
+one loose end which further investigation of the data file will not
+tie up. We are forced to conclude that the passwords are simply stored
+elsewhere. The most likely explanation would be that they are
+hardcoded in the program itself. As it happens, though, it turns out
+the passwords are not directly stored anywhere. I found out much
+later, from people familiar with the code itself, that the passwords
+are generated dynamically using a pseudorandom number generator,
+initialized to a specific sequence. Thus, the level passwords cannot
+be changed directly at all, and only by modifying the assembly code.</p>
+
+<h3>Postscript</h3>
+
+<p>Once I had managed to completely reverse-engineer the data in the
+level files, I was then able to write a program which could both
+encode and decode level data. With that, I was able to create my
+long-desired level editor for the Lynx version of <em>Chip's Challenge</em>,
+and the availability of this tool greatly increased my ability to
+study the logic of the game, and to improve my emulation of it.</p>
+
+<p>But &hellip; I should mention that the above sequence is not how I,
+personally, went about reverse-engineering these data files. I started
+at the other end, as it happens, by identifying the string data. I
+began by looking at files for the first eight levels. Since they are
+named "LESSON 1" through "LESSON 8", I hunted through the data for
+common substrings among them. As it happened, I got lucky: none of
+these levels had their titles affected by compression, and so all
+eight titles appear in the data files intact. Of course, I was
+confounded by the non-ASCII nature of the strings, but the double-S in
+the title helped me to identify the pattern repeated across the eight
+data files. And, once I had found the title, I then knew the character
+encoding for the letters, digits, and the space character. When I
+applied this encoding to the rest of the file, the hint strings became
+visible immediately following the title, and I began seeing anomalies:</p>
+
+<p><aside>The venerable
+<code>tr</code> utility makes it easy to translate the data files' idiosyncratic
+character set into ASCII.</aside>
+<div class="term">$&nbsp;<b>tr '\001-\045' ' 0-9A-Z' &lt;levels/lesson_1.pak | xxd</b><br/>00000000: 4600 cb00 3000 0032 3030 3332 3235 3333  F...0..200322533<br/>00000010: 3635 3537 0020 3820 2039 3636 4238 3846  6557. 8  966B88F<br/>00000020: 0058 4a37 354d 3000 5737 4226 3746 2739  .XJ75M0.W7B&amp;7F'9<br/>00000030: 3928 3533 2953 2027 2733 3042 2057 3532  9(53)S ''30B W52<br/>00000040: 3730 3738 304a 3226 375a 2046 4a30 5752  70780J2&amp;7Z FJ0WR<br/>00000050: 2059 2052 4220 3537 0055 0050 3200 4f00   Y RB 57.U.P2.O.<br/>00000060: 554a 2637 5400 3300 2946 4a57 5830 4642  UJ&amp;7T.3.)FJWX0FB<br/>00000070: 2035 2637 544d 2946 4a37 4d4f 3058 3050   5&amp;7TM)FJ7MO0X0P<br/>00000080: 304a 5720 5120 5142 3835 3237 3020 3020  0JW Q QB85270 0<br/>00000090: 2826 2058 4a33 3730 2056 4a33 5738 2727  (&amp; XJ370 VJ3W8''<br/>000000a0: 3933 3200 3439 3628 324d 7839 3628 324d  932.496(2Mx96(2M<br/>000000b0: 7039 3628 324d 6400 4c45 5353 4f4e 2031  p96(2Md.LESSON 1<br/>000000c0: 0043 4f4c 4c45 4354 2043 4849 5029 544f  .COLLECT CHIP)TO<br/>000000d0: 0047 4554 2050 4153 5420 5448 4520 4348  .GET PAST THE CH<br/>000000e0: 4950 0053 4f43 4b45 542d 0055 5345 204b  IP.SOCKET-.USE K<br/>000000f0: 4559 2954 4f20 4f50 454e 0044 4f4f 5253  EY)TO OPEN.DOORS<br/>00000100: 2d30                                     -0</div></p>
+
+<p>For example, there are two places in the hint text where the sequence
+of an S followed by a space is replaced with a right parenthesis.
+These anomalies gave me enough clues to deduce the presence of
+compression, and something of its nature. Eventually I connected the
+anomalous byte values with their appearances near the top of the data
+file. (For example, you can see in the above hex dump at offset
+<code>00000035</code> is a right parenthesis immediately followed by a capital S
+and a space.) From there I worked out the compression scheme in a
+fashion similar to the process outlined above. The rest was relatively
+straightforward.</p>
+
+<p>The lesson to take from this, I feel, is that there is no one right
+way to go about examining an unfamiliar data file. Whatever tools that
+you can make work are the right tools for reverse engineering.</p>
+
+<p><hr/></p>
+<small><a href="index.html">Texts</a></small>
+<br/>
+<small><a href="../index.html">Brian Raiter</a></small>
+</body>
+</html>
