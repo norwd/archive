@@ -1,0 +1,1783 @@
+#!/usr/bin/perl -w
+
+#
+# datbuild: Copyright (C) 2002 by Brian Raiter. This program is free
+# software. There is no warranty. See the accompanying documentation.
+#
+
+=head1 NAME
+
+datbuild - create a Chip's Challenge .dat file from a text source file.
+
+=head1 SYNOPSIS
+
+    datbuild in.txt out.dat
+or
+    datbuild out.dat         #  < in.txt
+or
+    datbuild                 #  < in.txt > out.dat
+
+(Note that the last form is only valid on systems where binary data
+can be safely written to STDOUT.)
+
+datbuild fulfills a role similar to John Elion's ChipEdit program.
+However, datbuild runs anywhere Perl is available (version 5.x).
+Furthermore, it works as a compiler or assembler, creating a .dat file
+from a textual source file description. The syntax of the this source
+text is described below.
+
+=head1 LAYOUT OF THE INPUT FILE
+
+The source file is broken up into subsections. Each subsection
+defines a separate level in the set.
+
+The subsections are separated from each other by a line containing
+three percent signs:
+
+    %%%
+
+A line of three percent signs also comes before the first level and
+after the last level, at the end of the source file. Any other line
+that begins with a percent sign is treated as a comment, and its
+contents are ignored.
+
+Beyond these things, the source file consists of statements.
+Statements generally appear as a single line of text. Some statements,
+however, require multiple lines. These multi-line statements are
+terminated with the word B<end> appearing alone on a line.
+
+=head1 INPUT FILE HEADER STATEMENTS
+
+There are a couple of statements that can appear at the very top of
+the source file, before the first level subsection.
+
+    ruleset [ lynx | ms ]
+
+The B<ruleset> statement is the most important of these. It defines
+the ruleset for the level set. If the I<ruleset> statment is absent,
+it defaults to B<lynx>.
+
+    maxlevel NNN
+
+The B<maxlevel> statement specifies the number of the last level in
+the .dat file. By default, this value is provided automatically and
+does not need to be specified.
+
+In addition to the above, a set of tile definitions can appear in the
+header area. See below for a full description of the B<tiles>
+multi-line statement. Any tile definitions provided here remain in
+force throughout the file.
+
+=head1 INPUT FILE LEVEL STATEMENTS
+
+Within each level's subsection, the following two statments are required.
+
+    title STRING
+    password PASS
+
+The B<title> statement supplies the level's title, or name. The title
+string can be written either within double quotes, or unadorned. The
+B<password> statement supplies the level's password. This password
+must consist of exactly four uppercase alphabetic characters.
+
+The following statements may also appear in a level subsection.
+
+    chips NNN
+
+The B<chips> statement defines how many chips are required on this
+level to open the chip socket. The default value is zero.
+
+    time NNN
+
+The B<time> statement defines how many seconds are on the level's
+clock. The default value is zero (i.e., no time limit).
+
+    hint STRING
+
+The B<hint> statement defines the level's hint text. As with the
+B<title> statement, the string can either be unadorned or delimited
+with double quotes.
+
+     tiles
+     DEF1
+     DEF2
+     ...
+     end
+
+The B<tiles> multi-line statement introduces one or more tile
+definitions. The definitions appear one per line, until a line
+containing B<end> is found. Note that the tile definitions given here
+only apply to the current level. A complete description of tile
+definitions is given below.
+
+    map [ X Y ]    map [ X Y ]
+    LINE1	   LINE1
+    LINE2	   LINE2
+    ...		   ...
+    and		   end
+    OVER1
+    OVER2
+    ...
+    end
+
+The B<map> statement defines the actual contents of (part of) the
+level's map. The line containing the B<map> statement can optionally
+include a pair of coordinates; these coordinates indicate where the
+the section will be located on the level's map. If coordinates are
+omitted, the defined section will be located at (0 0) -- i.e., the
+upper-left corner of the level. The lines inside the B<map> statement
+pictorially define the contents of the map section, until a line
+containing B<and> or B<end> is encountered. When the map is terminated
+by B<and>, then the lines defining are immediately followed by lines
+defining an overlay. The overlay uses the same origin as the map
+section (although note that it can be smaller than the map section it
+is paired with). A complete description of the map and overlay
+sections is given below.
+
+    border TL
+
+The B<border> statement specifies a tile. The edges of the map are
+then changed to contain this tile. Typically this is used to enclose
+the level in walls.
+
+The following statements are also available, though they are usually
+not needed. They provide means for explicitly defining level data, for
+the occasional situation where the usual methods are more cumbersome.
+
+    creatures X1 Y1 ; X2 Y2 ...
+
+The B<creatures> statements permits explicit naming of the coordinates
+in the creature list. Pairs of coordinates are separated from each
+other by semicolons; any number of coordinate pairs can be specified.
+There can be multiple B<creatures> statements in a level's subsection.
+
+    traps P1 Q1 -> R1 S1 ; P2 Q2 -> R2 S2 ...
+
+The B<traps> statement permits explicit naming of the coordinates for
+elements in the bear trap list. Coordinates are given in one or more
+groups of four, separated by semicolons. Each group consists of the x-
+and y-coordinates of the brown button, an arrow (->), and then the x-
+and y-coordinates of the bear trap. Any number of B<traps> statements
+can appear in a level's subsection.
+
+    cloners P1 Q1 -> R1 S1 ; P2 Q2 -> R2 S2 ...
+
+The B<cloners> statement permits explicit naming of elements in the
+clone machine list. It uses the same syntax as the B<traps> statment,
+with the red button's coordinates preceding the coordinates of the
+clone machine.
+
+    level NNN
+
+The B<level> statement defines the level's number. By default it is
+one more than the number of the prior level. Note: Giving levels
+the "wrong" numbers can cause the chips.exe program to crash.
+
+    field NN B01 B02 ...
+
+The B<field> statement allows fields to be directly specified and
+embedded in the .dat file. The first argument specifies the field
+number; the remaining arguments provide the byte values for the actual
+field data. Note: It is very easy to create a corrupt .dat file using
+this statement.
+
+=head1 DEFINING TILES
+
+A tile definition consists of two parts. The first part is either one
+or two characters. The characters can be letters, numbers, punctuation
+-- anything except spaces. The second part is the name of a tile or a
+pair of tiles. The characters then become that tile's representation.
+
+Here is an example of some tile definitions:
+
+    tiles
+    #       wall
+    *       teleport
+    rb      red button
+    @       chip south
+    end
+
+(Note that a single tab character comes after the characters and
+before the tile names.) Once these definitions have been provided, the
+newly-defined characters can then be used in a map.
+
+The above definitions all use singular tiles. To define a pair of
+tiles, combine the two names with a plus sign, like so:
+
+    tiles
+    X       block + bomb
+    G       glider north + clone machine
+    end
+
+Notice that the top tile is named first, then the bottom tile.
+
+The B<tiles> statement is the only statement that can appear in the
+header, as well as in a level's subsection. Tile definitions in the
+header are global, and can be used in every subsection. Tile
+definitions inside a subsection are local, and apply only to that
+level.
+
+A number of tile definitions are pre-set ahead of time, supplying
+standard representations for some of the most common tiles. (If these
+representations are not desired, the characters can always be
+redefined.) Here are some of the built-in definitions:
+
+    #       wall                  $       computer chip
+    ,       water                 H       socket
+    =       ice                   E       exit
+    &       fire                  []      block
+    6       bomb                  ?       hint button
+
+See below for the complete list of tile names and built-in
+definitions.
+
+A few groups tiles allow one to specify multiple definitions in a
+single line. For example:
+
+    tiles
+    G       glider
+    end
+
+This one definition is equivalent to the following:
+
+    tiles
+    Gn      glider north
+    Gs      glider south
+    Ge      glider east
+    Gw      glider west
+    end
+
+(Note that "G" by itself is still undefined.) All creatures, including
+Chip, can be defined using this abbreviated form.
+
+Doors and keys are the other groups that have this feature; the
+following definition:
+
+    tiles
+    D       door
+    end
+
+is equivalent to:
+
+    tiles
+    Dr      red door
+    Db      blue door
+    Dy      yellow door
+    Dg      green door
+    end
+
+=head1 MAP SECTIONS
+
+Once all the needed tiles have defined representations, using the map
+statement is a simple matter. Here is an example:
+
+    map
+    # # # # # #
+    # &     & # # #
+        []    H E #
+    # &     $ # # #
+    # # # # # #
+    end
+
+This is a map of a small room. A block stands in the way of the
+entrance. Three of the four corners contain fire; the fourth contains
+a chip. On the west wall is an exit guarded by a chip socket.
+
+Note that each cell in the map is two characters wide. (Thus, for
+example, the octothorpes describe a solid wall around the room.)
+
+Here is a larger example, which presents the map from LESSON 2:
+
+    tiles
+    B       bug north
+    C       chip south
+    end
+
+    map 7 7
+        # # # # # # #
+        #     $     #
+        #           #
+        #     #     # # # # # # # # # #
+    # # #     # B     , ,           $ #
+    # E H     # # B   , ,   [][]C ?   #
+    # # #     # B     , ,           $ #
+        #     #     # # # # # # # # # #
+        #           #
+        #     $     #
+        # # # # # # #
+    end
+
+There are a couple of different ways to fill a cell with two tiles.
+The first way is to simple use tile definitions which contains two
+tiles:
+
+    tiles
+    X       block + bomb
+    G       glider east + clone machine
+    end
+
+    map 12 14
+            # #
+          6 E #
+            # # X
+    G
+    end
+
+The second way is to squeeze two representations into a single cell.
+Obviously, this can only be done with both representations are a
+single character.
+
+    tiles
+    [       block
+    G       glider east
+    +       clone machine
+    end
+
+    map 12 14
+            # #
+          6 E #
+            # # [6
+    G+
+    end
+
+In both cases, the top tile always comes before the bottom tile. Note
+that you can "bury" a tile by placing it to the right of a space:
+
+    map
+    # # # # # #
+       6 6 6E #
+    # # # # # #
+    end
+
+Any number of map statements can appear in a level's subsection. The
+map statements will be combined together to make the complete map.
+
+=head1 OVERLAY SECTIONS
+
+Every map statement can optionally include an overlay section. This
+overlay permits button connections and monster ordering to be defined.
+
+The overlay is applied to the same position as the map section it
+accompanies. The overlay can duplicate parts of the map section it
+covers, and any such duplication will be treated as such and ignored.
+The only characters in the overlay that are significant are the ones
+that differ from the map section it covers. These characters are
+treated as labels. Labels are always a single character; two non-space
+characters in a cell always indicates two separate labels. Any
+non-space characters can be used as labels, as long as they don't
+match up with the map.
+
+An overlay section defined a button connection by using the same label
+in two (or more) cells. One of the labelled cells will contain either
+a bear trap or a clone machine, and the other will contain the
+appropriate button. If there are more than two cells with the same
+label, all but one should contain a button.
+
+Characters that only appear once in an overlay, on the other hand,
+indicate creatures. The characters then indicate the ordering of the
+creatures in the creature list with respect to each other. The
+ordering of characters is the usual ASCII sequence (e.g., numbers
+first, then capital letters, then lowercase letters).
+
+For example, here is a map with an overlay that demonstrates all
+three of these uses:
+
+    tiles
+    G       glider east
+    +       clone machine
+    r       red button
+    *       beartrap
+    b       brown button
+    end
+
+    map
+    G                           v #
+    G+      *   r   * G+    b &   # r
+    G+    *     r     #           # r
+    # >   b b G             < #   #
+    and
+    2                           v #
+    A       b   C   c C     c &   # A
+    B     a     C     #           # B
+    # >   a b 1             < #   #
+    end
+
+In this example, capitals are used for the clone machine connections,
+lowercase for the bear trap connections, and numbers are used for the
+creature ordering.
+
+Note that the gliders atop clone machines are not numbered. While it
+is not an error to include clone machine creatures in the ordering,
+they are ignored by the game. (To be precise, they are ignored under
+the MS ruleset. Under the Lynx ruleset, the creature list is not used
+at all, since that ruleset has its own ordering rules.)
+
+Finally, note that it is not necessary to reproduce any of the map
+section's text in the overlay section. Blanks can be used instead. The
+ignoring of matching text is simply a feature designed to assist with
+keeping the overlay's contents properly aligned.
+
+The B<traps>, B<cloners>, and B<creatures> statements can be used in
+lieu of, or in conjunction with, data from overlay sections. In the
+case of the creature list, items are added to the list in the order
+that they are encountered in the source text.
+
+If a level contains no overlay information and none of the above three
+statements, then this information will be filled in automatically. The
+data will be determined by following the original Lynx-based rules --
+viz., buttons are connected to the next beartrap/clone machine in
+reading order, wrapping around to the top if necessary. (Likewise, the
+creature ordering is just the order of the creatures in their initial
+placement, modified by swapping the first creature with Chip before
+removing Chip from the list.) Thus, if you actually want to force an
+empty bear trap list, clone machine list, or creature list, you must
+include an empty B<traps>, B<cloners>, and/or B<creatures> statement.
+
+=head1 TILE NAMES
+
+Here is the complete list of tiles as they are named in definitions.
+Two or more names appearing on the same line indicates that they are
+two different names for the same tile. Note that the tile names are
+not case-sensitive; capitalization is ignored.
+
+    empty
+    wall
+    water
+    fire
+    dirt
+    ice
+    gravel
+    computer chip          ic chip
+    socket
+    exit
+    ice corner southeast   ice se
+    ice corner southwest   ice sw
+    ice corner northwest   ice nw
+    ice corner northeast   ice ne
+    force floor north      force north
+    force floor south      force south
+    force floor east	   force east
+    force floor west	   force west
+    force floor random	   force random		     force any
+    hidden wall permanent  invisible wall permanent
+    hidden wall temporary  invisible wall temporary
+    wall north             partition north
+    wall south		   partition south
+    wall east		   partition east
+    wall west		   partition west
+    wall southeast         partition southeast	     wall se
+    closed toggle wall	   toggle closed
+    open toggle wall	   toggle open
+    blue door		   door blue
+    red door		   door red
+    green door		   door green
+    yellow door		   door yellow
+    blue key		   key blue
+    red key		   key red
+    green key		   key green
+    yellow key		   key yellow
+    blue button		   button blue		     tank button
+    red button		   button red		     clone button
+    green button	   button green		     toggle button
+    brown button	   button brown		     trap button
+    blue block floor	   blue wall fake
+    blue block wall	   blue wall real
+    thief
+    teleport
+    bomb
+    beartrap		   trap
+    popup wall
+    hint button
+    clone machine	   cloner
+    water boots		   water shield		     flippers
+    fire boots		   fire shield
+    ice boots		   spiked shoes		     skates
+    force boots		   magnet		     suction boots
+    block		   moveable block
+    cloning block north	   block north
+    cloning block south	   block south
+    cloning block east	   block east
+    cloning block west	   block west
+    chip north
+    chip south
+    chip east
+    chip west
+    ball north
+    tank north
+    bug north		   bee north
+    paramecium north	   centipede north
+    fireball north	   flame north
+    glider north	   ghost north
+    blob north
+    walker north	   dumbbell north
+    teeth north		   frog north
+
+(The last nine lines, listing the creatures, only show the
+north-facing versions. The remaining 27 names, for the south-, east-,
+and west-facing versions, follow the obvious patttern.)
+
+Note that tile names may be abbreviated to any unique prefix. In
+particular, this permits one to write names like "glider north" as
+simply "glider n".
+
+There are also tile names for the "extra" tiles. These tiles are
+listed in parentheses, to indicate that they were not originally
+intended to be used in maps.
+
+    (combination)
+    (chip drowned)
+    (chip burned)
+    (chip bombed)
+    (unused 1)
+    (unused 2)
+    (unused 3)
+    (exiting)
+    (exit 1)
+    (exit 2)
+    (chip swimming north)  (chip swimming n)
+    (chip swimming west)   (chip swimming w)
+    (chip swimming south)  (chip swimming s)
+    (chip swimming east)   (chip swimming e)
+
+Finally, note that one can also explicitly refer to tiles by their
+hexadecimal byte value by using the "0x" prefix. Thus, the names
+"0x2A" and "bomb" are equivalent.
+
+=head1 PREDEFINED TILE DEFINITIONS
+
+The following is the complete list of built-in tile definitions:
+
+    #       wall                  E       exit
+    $       ic chip               H       socket
+    ,       water                 =       ice
+    &       fire                  6       bomb
+    ;       dirt                  :       gravel
+    ~       wall north            ^       force floor north
+    _       wall south            v       force floor south
+    |       wall west             <       force floor west
+     |      wall east             >       force floor east
+    _|      wall southeast        <>      force floor random
+    ?       hint button
+    []      block                 [       block
+    ^]      cloning block north + clone machine
+    <]      cloning block west + clone machine 
+    v]      cloning block south + clone machine 
+    >]      cloning block east + clone machine
+
+=head1 LICENSE
+
+datbuild was written by Brian Raiter <breadbox@muppetlabs.com>.
+
+Copyright (C) 2002 Brian Raiter
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and documentation (the "Software"), to deal in
+the Software without restriction, including without limitation the
+rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+=cut
+
+use strict;
+
+# The readtxtfile package exports one function, readtxtfile. This
+# function takes a handle to a text file as its sole argument. It
+# returns a hash reference that defines the level set described in the
+# file, or undef if the file could not be translated correctly. In the
+# latter case one or more error messages will be displayed on STDERR.
+#
+package readtxtfile;
+
+# Error message display.
+#
+sub err(@) { warn "line $.: ", @_, "\n"; return; }
+
+# The complete list of tile names the program recognizes.
+#
+my %tilenames = %{{
+    "empty"			=> 0x00, "floor"		=> 0x00,
+    "wall"			=> 0x01,
+    "ic chip"			=> 0x02, "computer chip"	=> 0x02,
+    "water"			=> 0x03,
+    "fire"			=> 0x04,
+    "invisible wall stay"	=> 0x05, "inv wall stay"	=> 0x05,
+    "hidden wall permanent"	=> 0x05,
+    "wall north"		=> 0x06, "partition north"	=> 0x06,
+    "blocked north"		=> 0x06,
+    "wall west"			=> 0x07, "partition west"	=> 0x07,
+    "blocked west"		=> 0x06,
+    "wall south"		=> 0x08, "partition south"	=> 0x08,
+    "blocked south"		=> 0x06,
+    "wall east"			=> 0x09, "partition east"	=> 0x09,
+    "blocked east"		=> 0x06,
+    "block"			=> 0x0A,
+    "moveable block"		=> 0x0A, "movable block"	=> 0x0A,
+    "dirt"			=> 0x0B,
+    "ice"			=> 0x0C,
+    "slide south"		=> 0x0D, "force south"		=> 0x0D,
+    "slide floor south"		=> 0x0D, "force floor south"	=> 0x0D,
+    "block north"		=> 0x0E, "cloning block north"	=> 0x0E,
+    "block west"		=> 0x0F, "cloning block west"	=> 0x0F,
+    "block south"		=> 0x10, "cloning block south"	=> 0x10,
+    "block east"		=> 0x11, "cloning block east"	=> 0x11,
+    "slide north"		=> 0x12, "force north"		=> 0x12,
+    "slide floor north"		=> 0x12, "force floor north"	=> 0x12,
+    "slide east"		=> 0x13, "force east"		=> 0x13,
+    "slide floor east"		=> 0x13, "force floor east"	=> 0x13,
+    "slide west"		=> 0x14, "force west"		=> 0x14,
+    "slide floor west"		=> 0x14, "force floor west"	=> 0x14,
+    "exit"			=> 0x15,
+    "blue door"			=> 0x16, "door blue"		=> 0x16,
+    "red door"			=> 0x17, "door red"		=> 0x17,
+    "green door"		=> 0x18, "door green"		=> 0x18,
+    "yellow door"		=> 0x19, "door yellow"		=> 0x19,
+    "ice southeast"		=> 0x1A, "ice se"		=> 0x1A,
+    "ice corner southeast"	=> 0x1A, "ice corner se"	=> 0x1A,
+    "ice southwest"		=> 0x1B, "ice sw"		=> 0x1B,
+    "ice corner southwest"	=> 0x1B, "ice corner sw"	=> 0x1B,
+    "ice northwest"		=> 0x1C, "ice nw"		=> 0x1C,
+    "ice corner northwest"	=> 0x1C, "ice corner nw"	=> 0x1C,
+    "ice northeast"		=> 0x1D, "ice ne"		=> 0x1D,
+    "ice corner northeast"	=> 0x1D, "ice corner ne"	=> 0x1D,
+    "blue wall fake"		=> 0x1E, "blue block floor"	=> 0x1E,
+    "blue wall real"		=> 0x1F, "blue block wall"	=> 0x1F,
+    "(combination)"		=> 0x20,
+    "thief"			=> 0x21, "spy"			=> 0x21,
+    "socket"			=> 0x22,
+    "green button"		=> 0x23, "button green"		=> 0x23,
+    "toggle button"		=> 0x23,
+    "red button"		=> 0x24, "button red"		=> 0x24,
+    "clone button"		=> 0x24,
+    "closed toggle wall"	=> 0x25, "toggle closed"	=> 0x25,
+    "open toggle wall"		=> 0x26, "toggle open"		=> 0x26,
+    "brown button"		=> 0x27, "button green"		=> 0x27,
+    "trap button"		=> 0x27,
+    "blue button"		=> 0x28, "button red"		=> 0x28,
+    "tank button"		=> 0x28,
+    "teleport"			=> 0x29,
+    "bomb"			=> 0x2A,
+    "beartrap"			=> 0x2B, "trap"			=> 0x2B,
+    "invisible wall see"	=> 0x2C, "inv wall see"		=> 0x2C,
+    "hidden wall temporary"	=> 0x2C,
+    "gravel"			=> 0x2D,
+    "popup wall"		=> 0x2E, "pass once"		=> 0x2E,
+    "hint button"		=> 0x2F,
+    "wall southeast"		=> 0x30, "wall se"		=> 0x30,
+    "blocked southeast"		=> 0x30, "blocked se"		=> 0x30,
+    "clone machine"		=> 0x31, "cloning machine"	=> 0x31,
+    "cloner"			=> 0x31,
+    "slide random"		=> 0x32, "slide any"		=> 0x32,
+    "force random"		=> 0x32, "force any"		=> 0x33,
+    "slide floor random"	=> 0x32, "slide floor any"	=> 0x32,
+    "force floor random"	=> 0x32, "force floor any"	=> 0x33,
+    "(chip drowned)"		=> 0x33,
+    "(chip burned)"		=> 0x34,
+    "(chip bombed)"		=> 0x35,
+    "(unused 1)"		=> 0x36,
+    "(unused 2)"		=> 0x37,
+    "(unused 3)"		=> 0x38,
+    "(exiting)"			=> 0x39,
+    "(exit 1)"			=> 0x3A,
+    "(exit 2)"			=> 0x3B,
+    "(chip swimming north)"	=> 0x3C, "(chip swimming n)"	=> 0x3C,
+    "(chip swimming west)"	=> 0x3D, "(chip swimming w)"	=> 0x3D,
+    "(chip swimming south)"	=> 0x3E, "(chip swimming s)"	=> 0x3E,
+    "(chip swimming east)"	=> 0x3F, "(chip swimming e)"	=> 0x3F,
+    "bug north"			=> 0x40, "bee north"		=> 0x40,
+    "bug west"			=> 0x41, "bee west"		=> 0x41,
+    "bug south"			=> 0x42, "bee south"		=> 0x42,
+    "bug east"			=> 0x43, "bee east"		=> 0x43,
+    "fireball north"		=> 0x44, "flame north"		=> 0x44,
+    "fireball west"		=> 0x45, "flame west"		=> 0x45,
+    "fireball south"		=> 0x46, "flame south"		=> 0x46,
+    "fireball east"		=> 0x47, "flame east"		=> 0x47,
+    "ball north"		=> 0x48,
+    "ball west"			=> 0x49,
+    "ball south"		=> 0x4A,
+    "ball east"			=> 0x4B,
+    "tank north"		=> 0x4C,
+    "tank west"			=> 0x4D,
+    "tank south"		=> 0x4E,
+    "tank east"			=> 0x4F,
+    "glider north"		=> 0x50, "ghost north"		=> 0x50,
+    "glider west"		=> 0x51, "ghost west"		=> 0x51,
+    "glider south"		=> 0x52, "ghost south"		=> 0x52,
+    "glider east"		=> 0x53, "ghost east"		=> 0x53,
+    "teeth north"		=> 0x54, "frog north"		=> 0x54,
+    "teeth west"		=> 0x55, "frog west"		=> 0x55,
+    "teeth south"		=> 0x56, "frog south"		=> 0x56,
+    "teeth east"		=> 0x57, "frog east"		=> 0x57,
+    "walker north"		=> 0x58, "dumbbell north"	=> 0x58,
+    "walker west"		=> 0x59, "dumbbell west"	=> 0x59,
+    "walker south"		=> 0x5A, "dumbbell south"	=> 0x5A,
+    "walker east"		=> 0x5B, "dumbbell east"	=> 0x5B,
+    "blob north"		=> 0x5C,
+    "blob west"			=> 0x5D,
+    "blob south"		=> 0x5E,
+    "blob east"			=> 0x5F,
+    "paramecium north"		=> 0x60, "centipede north"	=> 0x60,
+    "paramecium west"		=> 0x61, "centipede west"	=> 0x61,
+    "paramecium south"		=> 0x62, "centipede south"	=> 0x62,
+    "paramecium east"		=> 0x63, "centipede east"	=> 0x63,
+    "blue key"			=> 0x64, "key blue"		=> 0x64,
+    "red key"			=> 0x65, "key red"		=> 0x65,
+    "green key"			=> 0x66, "key green"		=> 0x66,
+    "yellow key"		=> 0x67, "key yellow"		=> 0x67,
+    "water boots"		=> 0x68, "boots water"		=> 0x68,
+    "water shield"		=> 0x68, "shield water"		=> 0x68,
+    "flippers"			=> 0x68,
+    "fire boots"		=> 0x69, "boots fire"		=> 0x69,
+    "fire shield"		=> 0x69, "shield fire"		=> 0x69,
+    "ice boots"			=> 0x6A, "boots ice"		=> 0x6A,
+    "ice skates"		=> 0x6A, "skates"		=> 0x6A,
+    "spiked shoes"		=> 0x6A,
+    "slide boots"		=> 0x6B, "boots slide"		=> 0x6B,
+    "force boots"		=> 0x6B, "boots force"		=> 0x6B,
+    "suction boots"		=> 0x6B, "boots suction"	=> 0x6B,
+    "magnet"			=> 0x6B,
+    "chip north"		=> 0x6C,
+    "chip west"			=> 0x6D,
+    "chip south"		=> 0x6E,
+    "chip east"			=> 0x6F
+}};
+
+# The list of incomplete tile names recognized. Each incomplete name
+# has a list of characters that complete them.
+#
+my %partialnames = %{{
+    "key"	=> { "blue key"		=> "b", "red key"	=> "r",
+		     "green key"	=> "g", "yellow key"	=> "y" },
+    "door"	=> { "blue door"	=> "b", "red door"	=> "r",
+		     "green door"	=> "g", "yellow door"	=> "y" },
+    "bug"	=> { "bug north"	=> "n", "bug west"	=> "w",
+		     "bug south"	=> "s", "bug east"	=> "e" },
+    "bee"	=> { "bee north"	=> "n", "bee west"	=> "w",
+		     "bee south"	=> "s", "bee east"	=> "e" },
+    "fireball"	=> { "fireball north"	=> "n", "fireball west"	=> "w",
+		     "fireball south"	=> "s", "fireball east"	=> "e" },
+    "flame"	=> { "flame north"	=> "n", "flame west"	=> "w",
+		     "flame south"	=> "s", "flame east"	=> "e" },
+    "ball"	=> { "ball north"	=> "n", "ball west"	=> "w",
+		     "ball south"	=> "s", "ball east"	=> "e" },
+    "tank"	=> { "tank north"	=> "n", "tank west"	=> "w",
+		     "tank south"	=> "s", "tank east"	=> "e" },
+    "glider"	=> { "glider north"	=> "n", "glider west"	=> "w",
+		     "glider south"	=> "s", "glider east"	=> "e" },
+    "ghost"	=> { "ghost north"	=> "n", "ghost west"	=> "w",
+		     "ghost south"	=> "s", "ghost east"	=> "e" },
+    "teeth"	=> { "teeth north"	=> "n", "teeth west"	=> "w",
+		     "teeth south"	=> "s", "teeth east"	=> "e" },
+    "frog"	=> { "frog north"	=> "n", "frog west"	=> "w",
+		     "frog south"	=> "s", "frog east"	=> "e" },
+    "walker"	=> { "walker north"	=> "n", "walker west"	=> "w",
+		     "walker south"	=> "s", "walker east"	=> "e" },
+    "dumbbell"	=> { "dumbbell north"	=> "n", "dumbbell west"	=> "w",
+		     "dumbbell south"	=> "s", "dumbbell east"	=> "e" },
+    "blob"	=> { "blob north"	=> "n", "blob west"	=> "w",
+		     "blob south"	=> "s", "blob east"	=> "e" },
+    "paramecium"=> { "paramecium north"	=> "n", "paramecium west" => "w",
+		     "paramecium south"	=> "s", "paramecium east" => "e" },
+    "centipede"	=> { "centipede north"	=> "n", "centipede west" => "w",
+		     "centipede south"	=> "s", "centipede east" => "e" },
+    "chip"	=> { "chip north"	=> "n", "chip west"	=> "w",
+		     "chip south"	=> "s", "chip east"	=> "e" },
+    "(swimming chip)"
+		=> { "(swimming chip north)" => "n",
+		     "(swimming chip west)"  => "w",
+		     "(swimming chip south)" => "s",
+		     "(swimming chip east)"  => "e" }
+}};
+
+# The list of tile definitions for a given level.
+#
+my %localtiles;
+
+# The list of tile definitions that are defined throughout the set. A
+# number of definitions are made at startup.
+#
+my %globaltiles = %{{
+    " "  => "empty",
+    "#"  => "wall",
+    "\$" => "ic chip",
+    ","  => "water",
+    "&"  => "fire",
+    "~"  => "wall north",
+    "|"  => "wall west",
+    "_"  => "wall south",
+    " |" => "wall east",
+    "[]" => "block",
+    "["  => "block",
+    ";"  => "dirt",
+    "="  => "ice",
+    "v"  => "force south",
+    "^"  => "force north",
+    ">"  => "force east",
+    "<"  => "force west",
+    "E"  => "exit",
+    "H"  => "socket",
+    "6"  => "bomb",
+    ":"  => "gravel",
+    "?"  => "hint button",
+    "_|" => "wall southeast",
+    "<>" => "force any",
+    "^]" => [ "cloning block north", "clone machine" ],
+    "<]" => [ "cloning block west", "clone machine" ],
+    "v]" => [ "cloning block south", "clone machine" ],
+    ">]" => [ "cloning block east", "clone machine" ]
+}};
+
+foreach my $key (keys %globaltiles) {
+    if (ref $globaltiles{$key}) {
+	$globaltiles{$key} = [ $tilenames{$globaltiles{$key}->[0]},
+			       $tilenames{$globaltiles{$key}->[1]} ];
+    } else {
+	$globaltiles{$key} = $tilenames{$globaltiles{$key}};
+    }
+}
+
+# Add a list of tile definitions to a hash.
+#
+sub addtiledefs(\%@)
+{
+    my $tiledefs = shift;
+    while (my $def = shift) { $tiledefs->{$def->[0]} = $def->[1] }
+}
+
+# Given a string, return the tile with that name. If the name is not
+# recognized, undef is returned and a error message is displayed.
+#
+sub lookuptilename($)
+{
+    my $name = shift;
+    my $value = undef;
+
+    return $tilenames{$name} if exists $tilenames{$name};
+
+    if ($name =~ /^0x([0-9A-Fa-f][0-9A-Fa-f])$/) {
+	$value = hex $1;
+	return $value if $value >= 0 && $value <= 255;
+    }
+
+    my $n = length $name;
+    foreach my $key (keys %tilenames) {
+	if ($name eq substr $key, 0, $n) {
+	    return err "ambiguous object id \"$name\""
+		if defined $value && $value != $tilenames{$key};
+	    $value = $tilenames{$key};
+	}
+    }
+    return err "unknown object id \"$name\"" unless defined $value;
+    return $value;
+}
+
+# Given two characters, return the tile or pair of tiles which the
+# characters represent. The characters can stand for a pair of tiles
+# directly, or each character can independently represent one tile. In
+# either case, a pair of tiles is returned as an array ref. A single
+# tile is returned directly. If one or both characters are
+# unrecognized, undef is returned and an error message is displayed.
+#
+sub lookuptile($);
+sub lookuptile($)
+{
+    my $symbol = shift;
+    $symbol =~ s/\A(.) \Z/$1/;
+
+    return $localtiles{$symbol} if exists $localtiles{$symbol};
+    return $globaltiles{$symbol} if exists $globaltiles{$symbol};
+
+    if (length($symbol) == 2) {
+	my $top = lookuptile substr $symbol, 0, 1;
+	if (defined $top && ref $top && $top->[1] < 0) {
+	    return $top;
+	} elsif (defined $top && !ref $top) {
+	    my $bot = lookuptile substr $symbol, 1, 1;
+	    if (defined $bot && !ref $bot) {
+		return [ $top, $bot ];
+	    }
+	}
+    }
+
+    return err "unrecognized map tile \"$symbol\"";
+}
+
+# Return true if the given tile is one of the creatures (not
+# including blocks or Chip).
+#
+sub iscreature($) { $_[0] >= 0x40 && $_[0] < 0x64 }
+
+# Given a completed map, return the default list of traps connections
+# as an array ref. (The default list follows the original Lynx rules
+# of connecting buttons to the first subsequent trap in reading
+# order.)
+#
+sub buildtraplist($)
+{
+    my $map = shift;
+    my $firsttrap = undef;
+    my @traps;
+    my @buttons;
+
+    foreach my $y (0..31) {
+	foreach my $x (0..31) {
+	    if ($map->[$y][$x][0] == 0x27 || $map->[$y][$x][1] == 0x27) {
+		push @buttons, [ $y, $x ];
+	    } elsif ($map->[$y][$x][0] == 0x2B || $map->[$y][$x][1] == 0x2B) {
+		push @traps, map { { from => $_, to => [ $y, $x ] } } @buttons;
+		undef @buttons;
+		$firsttrap = [ $y, $x ] unless defined $firsttrap;
+	    }
+	}
+    }
+    push @traps, map { { from => $_, to => $firsttrap } } @buttons
+	if @buttons && defined $firsttrap;
+    return \@traps;
+}
+
+# Given a completed map, return the default list of clone machine
+# connections as an array ref. (This function looks a lot like the
+# prior one.)
+#
+sub buildclonerlist($)
+{
+    my $map = shift;
+    my $firstcm = undef;
+    my @cms;
+    my @buttons;
+
+    foreach my $y (0..31) {
+	foreach my $x (0..31) {
+	    if ($map->[$y][$x][0] == 0x24 || $map->[$y][$x][1] == 0x24) {
+		push @buttons, [ $y, $x ];
+	    } elsif ($map->[$y][$x][0] == 0x31 || $map->[$y][$x][1] == 0x31) {
+		push @cms, map { { from => $_, to => [ $y, $x ] } } @buttons;
+		undef @buttons;
+		$firstcm = [ $y, $x ] unless defined $firstcm;
+	    }
+	}
+    }
+    push @cms, map { { from => $_, to => $firstcm } } @buttons
+	if @buttons && defined $firstcm;
+    return \@cms;
+}
+
+# Given a completed map, return the default ordering of creatures as
+# an array ref. (The default ordering is to first list the creatures
+# in reading order, including Chip. Then, the first creature on the
+# list swaps positions with Chip, who is then removed from the list.)
+#
+sub buildcreaturelist($$)
+{
+    my $map = shift;
+    my $ruleset = shift;
+    my @crlist;
+
+    foreach my $y (0..31) {
+	foreach my $x (0..31) {
+	    my $tile = $map->[$y][$x][0];
+	    if (iscreature $tile) {
+		push @crlist, [ $y, $x ];
+	    } elsif ($tile >= 0x6C && $tile < 0x70 && @crlist > 1) {
+		push @crlist, shift @crlist;
+	    }
+	}
+    }
+    splice @crlist, 128 if @crlist > 127 && $ruleset eq "lynx";
+    return \@crlist;
+}
+
+# Translate escape sequences in the given string.
+#
+sub unescape($)
+{
+    local $_ = shift;
+    s/\\([0-7][0-7][0-7])/chr oct$1/eg;
+    s/\\([\\\"])/$1/g;
+    return $_;
+}
+
+# Compare two arrays of lines of text. Wherever the same pair of
+# characters appears in same place in both arrays, the occurrence in
+# the first array is replaced with spaces.
+#
+sub subtracttext(\@\@)
+{
+    my $array = shift;
+    my $remove = shift;
+
+    for (my $n = 0 ; $n < @$array && $n < @$remove ; ++$n) {
+	my $m = 0;
+	while ($m < length $array->[$n] && $m < length $remove->[$n]) {
+	    my $a = substr $array->[$n], $m, 2;
+	    my $b = substr $remove->[$n], $m, 2;
+	    $a .= " " if length $a == 1;
+	    $b .= " " if length $b == 1;
+	    substr($array->[$n], $m, 2) = "  " if $a eq $b;
+	    $m += 2;
+	}
+    }
+}
+
+# Interpret a textual description of a section of the map. The
+# interpreted map data is added to the map array passed as the first
+# argument. The second and third arguments set the origin of the map
+# section. The remaining arguments are the lines from the text file
+# describing the map section. The return value is 1 if the
+# interpretation is successful. If any part of the map sections cannot
+# be understood, undef is returned and an error message is displayed.
+#
+sub parsemap($$$@)
+{
+    my $map = shift;
+    my $y0 = shift;
+    my $x0 = shift;
+    return err "map extends below the 32nd row" if $y0 + @_ > 32;
+    for (my $y = $y0 ; @_ ; ++$y) {
+	my $row = shift;
+	return err "map extends beyond the 32nd column"
+	    if $x0 + length($row) / 2 > 32;
+	for (my $x = $x0 ; length $row ; ++$x) {
+	    my $cell = lookuptile substr $row, 0, 2;
+	    return err "unrecognized tile at ($x $y)" unless defined $cell;
+	    return unless defined $cell;
+	    if (ref $cell) {
+		if ($cell->[1] < 0) {
+		    $map->[$y][$x] = [ $cell, 0x00 ];
+		} else {
+		    $map->[$y][$x] = $cell;
+		}
+	    } else {
+		$map->[$y][$x] = [ $cell, 0x00 ];
+	    }
+	    substr($row, 0, 2) = "";
+	}
+    }
+    return 1;
+}
+
+# Interpret a textual overlay section. The first argument is the
+# level's hash ref. The second and third arguments set the origin of
+# the overlay section. The remaining arguments are the lines from the
+# text file describing the overlay. The return value is 1 if the
+# interpretation is successful. If any part of the overlay section
+# cannot be understood, undef is returned and an error message is
+# displayed.
+#
+sub parsecon($$$@)
+{
+    my %symbols;
+    my $data = shift;
+    my $y0 = shift;
+    my $x0 = shift;
+    return err "overlay extends below the 32nd row" if $y0 + @_ > 32;
+    for (my $y = $y0 ; @_ ; ++$y) {
+	my $row = shift;
+	return err "overlay extends beyond the 32nd column"
+	    if $x0 + length($row) / 2 > 32;
+	for (my $x = $x0 ; length $row ; ++$x) {
+	    $_ = substr $row, 0, 1, "";
+	    push @{$symbols{$_}}, [ $y, $x ] unless $_ eq " " || $_ eq "";
+	    $_ = substr $row, 0, 1, "";
+	    push @{$symbols{$_}}, [ $y, $x ] unless $_ eq " " || $_ eq "";
+	}
+    }
+
+    foreach my $symbol (sort keys %symbols) {
+	my $list = $symbols{$symbol};
+	if (@$list == 1) {
+	    my ($y, $x) = ($list->[0][0], $list->[0][1]);
+	    my $cell = $data->{map}[$y][$x];
+	    return err "no creature under \"$symbol\" at ($x $y)"
+		unless defined $cell &&
+			(iscreature $cell->[0] || iscreature $cell->[1]);
+	    push @{$data->{creatures}}, [ $y, $x ];
+	} else {
+	    my $linktype = undef;
+	    my $to = undef;
+	    my (@from, $type);
+	    foreach my $pos (@$list) {
+		my ($y, $x) = ($pos->[0], $pos->[1]);
+		my $cell = $data->{map}[$y][$x];
+		my $obj = $cell->[1] || $cell->[0];
+		if ($obj == $tilenames{"red button"}) {
+		    $type = "cloners";
+		    push @from, [ $y, $x ];
+		} elsif ($obj == $tilenames{"brown button"}) {
+		    $type = "traps";
+		    push @from, [ $y, $x ];
+		} elsif ($obj == $tilenames{"clone machine"}) {
+		    $type = "cloners";
+		    return err "clone machine under \"$symbol\" at ($x $y) ",
+			       "connected to non-button at ($to->[1] $to->[0])"
+			if defined $to;
+		    $to = [ $y, $x ];
+		} elsif ($obj == $tilenames{"beartrap"}) {
+		    $type = "traps";
+		    return err "beartrap under \"$symbol\" at ($x $y) ",
+			       "connected to non-button at ($to->[1] $to->[0])"
+			if defined $to;
+		    $to = [ $y, $x ];
+		} else {
+		    return err "no button/trap/clone machine ",
+			       "under \"$symbol\" at ($x $y)";
+		}
+		$linktype ||= $type;
+		return err "inconsistent connection ",
+			   "under \"$symbol\" at ($x $y)"
+		    unless $linktype eq $type;
+	    }
+	    push @{$data->{$linktype}},
+		 map { { from => $_, to => $to } } @from;
+	}
+    }
+    return 1;
+}
+
+# Interpret a tile definition. Given a line of text supplying the tile
+# definition, the function returns an array ref. Each element in the
+# array is a pair: the first element gives the character(s), and the
+# second element supplies the tile(s). If the definition is ambiguous
+# or invalid, undef is returned and an error message is displayed.
+#
+sub parsetiledef($)
+{
+    my $def = shift;
+    $def =~ s/^(\S\S?)\t//
+	or return err "syntax error in tile defintion \"$def\"";
+    my $symbol = $1;
+    $def = lc $def;
+    $def =~ s/^\s+//;
+    $def =~ s/\s+$//;
+
+    if ($def =~ /^([^\+]*[^\+\s])\s*\+\s*([^\+\s][^\+]*)$/) {
+	my ($def1, $def2) = ($1, $2);
+	my ($tile1, $tile2);
+	$tile1 = lookuptilename $def1;
+	return unless defined $tile1;
+	if (lc $def2 eq "pos") {
+	    return err "ordered tile definition \"$symbol\" ",
+		       "must be a single character"
+		unless length($symbol) == 1;
+	    $tile2 = -1;
+	} else {
+	    $tile2 = lookuptilename $def2;
+	    return unless defined $tile2;
+	}
+	return [ [ $symbol, [ $tile1, $tile2 ] ] ];
+    }
+
+    my @defs;
+    if (exists $partialnames{$def}) {
+	return err "incomplete tile definition \"$symbol\" ",
+		   "must be a single character"
+	    unless length($symbol) == 1;
+	foreach my $comp (keys %{$partialnames{$def}}) {
+	    push @defs, [ $symbol . $partialnames{$def}{$comp},
+			  $tilenames{$comp} ];
+	}
+	return \@defs;
+    }
+
+    my $tile = lookuptilename $def;
+    return [ [ $symbol, $tile ] ] if defined $tile;
+    return;
+}
+
+# Given a handle to a text file, read the introductory lines that
+# precede the first level definition, if any, and return a hash ref
+# for storing the level set. If an error occurs, undef is returned and
+# an error message is displayed.
+#
+sub parseheader($)
+{
+    my $input = shift;
+    my %data = (ruleset => "lynx");
+    my $slurpingdefs = undef;
+    local $_;
+
+    while (<$input>) {
+	chomp;
+	if (defined $slurpingdefs) {
+	    if (/^\s*[Ee][Nn][Dd]\s*$/) {
+		undef $slurpingdefs;
+	    } else {
+		my $def = parsetiledef $_;
+		return unless $def;
+		addtiledefs %globaltiles, @$def;
+	    }
+	    next;
+	} elsif (/^\s*[Tt][Ii][Ll][Ee][Ss]\s*$/) {
+	    $slurpingdefs = 1;
+	    next;
+	}
+
+	last if /^%%%$/;
+	next if /^\s*$/ || /^%/;
+
+	/^\s*(\S+)\s+(\S(?:.*\S)?)\s*$/ or return err "syntax error";
+	my ($name, $value) = ($1, $2);
+	$name = lc $name;
+	if ($name eq "ruleset") {
+	    $value = lc $value;
+	    return err "invalid ruleset \"$value\""
+		unless $value =~ /^(lynx|ms)$/;
+	    $data{ruleset} = $value;
+	} elsif ($name eq "maxlevel") {
+	    return err "invalid maximum level \"$value\""
+		unless $value =~ /\A\d+\Z/ && $value < 1000;
+	    $data{maxlevel} = $value;
+	} else {
+	    return err "invalid statement \"$name\"";
+	}
+    }
+
+    return err "unclosed definition section" if $slurpingdefs;
+    return \%data;
+}
+
+# Given a handle to a text file, positioned at the start of a level
+# description, parse the lines describing the level and return a hash
+# ref containing the level data. If the end of the file is encountered
+# before a level description is found, false is returned. If any
+# errors are encountered, undef is returned and an error message is
+# displayed.
+#
+sub parselevel($)
+{
+    my $input = shift;
+    my %data = (leveltime => 0, chips => 0);
+    my $seenanything = undef;
+    my $slurpingdefs = undef;
+    my $slurpingmap = undef;
+    my @maptext;
+    local $_;
+
+    for my $y (0..31) { for my $x (0..31) { $data{map}[$y][$x] = [ 0, 0 ] } }
+    undef %localtiles;
+
+    while (<$input>) {
+	chomp;
+	if (defined $slurpingdefs) {
+	    if (/^\s*[Ee][Nn][Dd]\s*$/) {
+		undef $slurpingdefs;
+	    } else {
+		my $def = parsetiledef $_;
+		return unless $def;
+		addtiledefs %localtiles, @$def;
+	    }
+	    next;
+	} elsif (defined $slurpingmap) {
+	    if (/^\s*([AEae])[Nn][Dd]\s*$/) {
+		my $overlay = lc($1) eq "a";
+		if ($slurpingmap->[2] >= 0) {
+		    my @overlaytext = splice @maptext, $slurpingmap->[2];
+		    return err "overlay section is taller than the map section"
+			if @overlaytext > @maptext;
+		    subtracttext @overlaytext, @maptext;
+		    return unless parsecon \%data,
+					   $slurpingmap->[0],
+					   $slurpingmap->[1],
+					   @overlaytext;
+		} else {
+		    $slurpingmap->[2] = @maptext;
+		    return unless parsemap $data{map},
+					   $slurpingmap->[0],
+					   $slurpingmap->[1],
+					   @maptext;
+		}
+		unless ($overlay) {
+		    undef $slurpingmap;
+		    undef @maptext;
+		}
+	    } else {
+		1 while s{^([^\t]*)\t}{$1 . (" " x (8 - length($1) % 8))}e;
+		push @maptext, $_;
+	    }
+	    next;
+	} elsif (/^\s*[Tt][Ii][Ll][Ee][Ss]\s*$/) {
+	    $slurpingdefs = 1;
+	    next;
+	} elsif (/^\s*[Mm][Aa][Pp]\s*(?:(\d+)\s+(\d+)\s*)?$/) {
+	    $slurpingmap = [ $2 || 0, $1 || 0, -1 ];
+	    next;
+	} elsif (/^\s*[Mm][Aa][Pp]/) {
+	    return err "invalid syntax following \"map\"";
+	}
+
+	last if /^%%%$/;
+	next if /^\s*$/ || /^%/;
+
+	$seenanything = 1;
+	/^\s*(\S+)\s+(\S(?:.*\S)?)\s*$/ or return err "syntax error";
+	my ($name, $value) = ($1, $2);
+	$name = lc $name;
+	if ($name eq "level") {
+	    return err "invalid level number \"$value\""
+		unless $value =~ /\A\d+\Z/ && $value < 1000;
+	    $data{number} = $value;
+	} elsif ($name eq "time") {
+	    return err "invalid level time \"$value\""
+		unless $value =~ /\A\d+\Z/ && $value < 1000;
+	    $data{leveltime} = $value;
+	} elsif ($name eq "chips") {
+	    return err "invalid chip count \"$value\""
+		unless $value =~ /\A\d+\Z/ && $value < 1000;
+	    $data{chips} = $value;
+	} elsif ($name eq "title" || $name eq "name") {
+	    $value = unescape $value if $value =~ s/\A\"(.*)\"\Z/$1/;
+	    $data{title} = $value;
+	} elsif ($name eq "password" || $name eq "passwd") {
+	    return err "invalid password \"$value\""
+		unless $value =~ /\A[A-Z][A-Z][A-Z][A-Z]\Z/;
+	    $data{passwd} = $value;
+	} elsif ($name eq "hint") {
+	    $value = unescape $value if $value =~ s/\A\"(.*)\"\Z/$1/;
+	    $data{hint} = $value;
+	} elsif ($name eq "traps") {
+	    $data{traps} ||= [ ];
+	    while ($value =~ s/\A\s* (\d+)\s+(\d+) \s*[-=]?>\s*
+				     (\d+)\s+(\d+) (?:\s*[,;])?//x) {
+		push @{$data{traps}}, { from => [ $2, $1 ],
+					to => [ $4, $3 ] };
+	    }
+	    return err "syntax error in trap list at \"$value\""
+		if $value && $value !~ /\A[,;]\Z/;
+	} elsif ($name eq "cloners") {
+	    $data{cloners} ||= [ ];
+	    while ($value =~ s/\A\s* (\d+)\s+(\d+) \s*[-=]?>\s*
+				     (\d+)\s+(\d+) (?:\s*[,;])?//x) {
+		push @{$data{cloners}}, { from => [ $2, $1 ],
+					  to => [ $4, $3 ] };
+	    }
+	    return err "syntax error in clone machine list at \"$value\""
+		if $value && $value !~ /\A[,;]\Z/;
+	} elsif ($name eq "creatures") {
+	    $data{creatures} ||= [ ];
+	    while ($value =~ s/\A\s* (\d+)\s+(\d+) (?:\s*[,;])?//x) {
+		push @{$data{creatures}}, [ $2, $1 ];
+	    }
+	    return err "syntax error in creature list at \"$value\""
+		if $value && $value !~ /\A[,;]\Z/;
+	} elsif ($name eq "border") {
+	    my $cell = lookuptile $value;
+	    return unless defined $cell;
+	    $cell = [ $cell, 0x00 ] unless ref $cell;
+	    foreach my $y (0..31) { $data{map}[$y][0]  = [ @$cell ] }
+	    foreach my $y (0..31) { $data{map}[$y][31] = [ @$cell ] }
+	    foreach my $x (1..30) { $data{map}[0][$x]  = [ @$cell ] }
+	    foreach my $x (1..30) { $data{map}[31][$x] = [ @$cell ] }
+	} elsif ($name eq "field") {
+	    return err "invalid field spec \"$value\""
+		unless $value =~ /^(\d+)\s+(\d+(?:\s+\d+)*)$/;
+	    my ($num, $data) = ($1, $2);
+	    return err "multiple specs for field $num"
+		if exists $data{fields}{$num};
+	    $data{fields}{$num} = join "", map { chr } split " ", $data;
+	} else {
+	    return err "invalid command \"$name\"";
+	}
+    }
+    return "" unless $seenanything;
+
+    return err "unclosed defs section" if $slurpingdefs;
+    return err "unclosed map section" if $slurpingmap;
+
+    return err "missing level title" unless exists $data{title};
+    return err "missing password" unless exists $data{passwd};
+    return err "missing level map" unless exists $data{map};
+
+    $data{traps} ||= buildtraplist $data{map};
+    $data{cloners} ||= buildclonerlist $data{map};
+    $data{creatures} ||= buildcreaturelist $data{map}, $data{ruleset};
+    $data{fields} ||= { };
+
+    return err "title too long (", length($data{title}),
+	       "); 254 is the maximum length allowed"
+	if length($data{title}) > 254;
+    return err "hint too long (", length($data{hint}),
+	       "); 254 is the maximum length allowed"
+	if exists $data{hint} && length($data{hint}) > 254;
+    return err "too many (", scalar(@{$data{traps}}),
+	       ") trap connections; 25 is the maximum allowed"
+	if @{$data{traps}} > 25;
+    return err "too many (", scalar(@{$data{cloners}}),
+	       ") clone machine connections; 31 is the maximum allowed"
+	if @{$data{cloners}} > 31;
+    return err "too many (", scalar(@{$data{cloners}}),
+	       ") creatures; 127 is the maximum allowed"
+	if @{$data{creatures}} > 127;
+
+    return \%data;
+}
+
+# This function takes a handle to a text file and returns a hash ref
+# containing the described level set. If the file could not be
+# completely translated, undef is returned and one or more error
+# messages will be displayed.
+#
+sub readtxtfile($)
+{
+    my $input = shift;
+    my $data;
+
+    $data = parseheader $input;
+    return unless $data;
+
+    my $lastnumber = 0;
+    for (;;) {
+	my $level = parselevel $input;
+	return unless defined $level;
+	last unless $level;
+	$level->{number} ||= $lastnumber + 1;
+	$lastnumber = $level->{number};
+	push @{$data->{levels}}, $level;
+	last if eof $input;
+    }
+
+    $#{$data->{levels}} = $data->{maxlevel} - 1
+	if exists $data->{maxlevel} && $data->{maxlevel} < @{$data->{levels}};
+
+    return $data;
+}
+
+# The writedatfile package exports one function, writedatfile. This
+# function takes as arguments a handle to a binary file, and a hash
+# reference defining a level set. The function writes the specified
+# level set to the binary file and returns a true value. If an error
+# occurs while writing the file, a false value is returned and one or
+# more error messages will be displayed on STDERR.
+#
+package writedatfile;
+
+# Given a pack template, return the size of the packed data in bytes.
+# The template is assumed to only contain the types a, C, v, and V.
+#
+sub packlen($)
+{
+    my $template = shift;
+    my $size = 0;
+    while (length $template) {
+	my $char = substr $template, 0, 1, "";
+	my $n = $char eq "V" ? 4 : $char eq "v" ? 2 : 1;
+	$n *= $1 if $template =~ s/\A(\d+)//;
+	$size += $n;
+    }
+    return $size;
+}
+
+# Given a string of packed data, return a string containing the same
+# data run-length encoded.
+#
+sub rlecompress($)
+{
+    my $in = shift;
+    my $out = "";
+
+    while (length $in) {
+	my $byte = substr $in, 0, 1;
+	my $n = 1;
+	++$n while $n < length $in && $byte eq substr $in, $n, 1;
+	substr($in, 0, $n) = "";
+	while ($n >= 255) { $out .= "\xFF\xFF$byte"; $n -= 255; }
+	if ($n > 2) {
+	    $out .= "\xFF" . chr($n) . $byte;
+	} elsif ($n) {
+	    $out .= $byte x $n;
+	}
+    }
+    return $out;
+}
+
+# Given a level set definition, return the pack arguments for creating
+# the .dat file's header data.
+#
+sub mkdatfileheader(\%)
+{
+    my $data = shift;
+    my @fields;
+
+    if ($data->{ruleset} eq "ms") {
+	push @fields, 0x0002AAAC;
+    } else {
+	push @fields, 0x0102AAAC;
+    }
+    push @fields, scalar @{$data->{levels}};
+    return ("Vv", @fields);
+}
+
+# Given a level definition, return the pack arguments for creating the
+# level's header data in the .dat file.
+#
+sub mkdatfilelevelheader(\%)
+{
+    my $data = shift;
+    my @fields;
+
+    push @fields, $data->{number};
+    push @fields, $data->{leveltime};
+    push @fields, $data->{chips};
+    return ("vvv", @fields);
+}
+
+# Given a level definition, return the pack arguments for creating the
+# level's map data in the .dat file.
+# 
+sub mkdatfilelevelmap(\%)
+{
+    my $data = shift;
+    my $map = $data->{map};
+    my ($layer1, $layer2);
+    my @fields;
+
+    for my $y (0..31) {
+	for my $x (0..31) {
+	    if (defined $map->[$y][$x]) {
+		if (defined $map->[$y][$x][0]) {
+		    $layer1 .= chr $map->[$y][$x][0];
+		} else {
+		    $layer1 .= "\0";
+		}
+		if (defined $map->[$y][$x][1]) {
+		    $layer2 .= chr $map->[$y][$x][1];
+		} else {
+		    $layer2 .= "\0";
+		}
+	    } else {
+		$layer1 .= "\0";
+		$layer2 .= "\0";
+	    }
+	}
+    }
+
+    $layer1 = rlecompress $layer1;
+    $layer2 = rlecompress $layer2;
+
+    push @fields, 1;
+    push @fields, length $layer1;
+    push @fields, $layer1;
+    push @fields, length $layer2;
+    push @fields, $layer2;
+
+    return ("vva$fields[1]va$fields[3]", @fields);
+}
+
+# Given a level definition, return the pack arguments for creating the
+# level's title field in the .dat file.
+#
+sub mkdatfileleveltitle(\%)
+{
+    my $data = shift;
+    my $n = length($data->{title}) + 1;
+    return ("CCa$n", 3, $n, $data->{title});
+}
+
+# Given a level definition, return the pack arguments for creating the
+# level's hint field in the .dat file.
+#
+sub mkdatfilelevelhint(\%)
+{
+    my $data = shift;
+    return ("") unless exists $data->{hint};
+    my $n = length($data->{hint}) + 1;
+    return ("CCa$n", 7, $n, $data->{hint});
+}
+
+# Given a level definition, return the pack arguments for creating the
+# level's password field in the .dat file.
+#
+sub mkdatfilelevelpasswd(\%)
+{
+    my $data = shift;
+    my $n = length($data->{passwd}) + 1;
+    return ("CCa$n", 6, $n, $data->{passwd} ^ "\x99\x99\x99\x99");
+}
+
+# Given a level definition, return the pack arguments for creating the
+# level's bear trap list field in the .dat file.
+#
+sub mkdatfileleveltraps(\%)
+{
+    my $data = shift;
+
+    return ("") unless exists $data->{traps};
+    my $list = $data->{traps};
+    my $n = @$list;
+    return ("") unless $n;
+    my @fields;
+
+    push @fields, 4;
+    push @fields, $n * 10;
+    foreach my $i (0..$#$list) {
+	push @fields, $list->[$i]{from}[1], $list->[$i]{from}[0];
+	push @fields, $list->[$i]{to}[1], $list->[$i]{to}[0];
+	push @fields, 0;
+    }
+    return (("CCv" . ($n * 5)), @fields);
+}
+
+# Given a level definition, return the pack arguments for creating the
+# level's clone machine list field in the .dat file.
+#
+sub mkdatfilelevelcloners(\%)
+{
+    my $data = shift;
+
+    return ("") unless exists $data->{cloners};
+    my $list = $data->{cloners};
+    my $n = @$list;
+    return ("") unless $n;
+    my @fields;
+
+    push @fields, 5;
+    push @fields, $n * 8;
+    foreach my $i (0..$#$list) {
+	push @fields, $list->[$i]{from}[1], $list->[$i]{from}[0];
+	push @fields, $list->[$i]{to}[1], $list->[$i]{to}[0];
+    }
+    return (("CCv" . ($n * 4)), @fields);
+}
+
+# Given a level definition, return the pack arguments for creating the
+# level's creature list field in the .dat file.
+#
+sub mkdatfilelevelcrlist(\%)
+{
+    my $data = shift;
+
+    return ("") unless exists $data->{creatures};
+    my $list = $data->{creatures};
+    my $n = @$list;
+    return ("") unless $n;
+    my @fields;
+
+    push @fields, 10;
+    push @fields, $n * 2;
+    foreach my $i (0..$#$list) {
+	push @fields, $list->[$i][1], $list->[$i][0];
+    }
+    return (("CCC" . ($n * 2)), @fields);
+}
+
+# Given a level definition, return the pack arguments for creating the
+# level's miscellaneous fields, if any, in the .dat file.
+#
+sub mkdatfilelevelmisc(\%)
+{
+    my $data = shift;
+    my ($template, @fields) = ("");
+
+    return ("") unless exists $data->{fields};
+    foreach my $num (keys %{$data->{fields}}) {
+	my $n = length($data->{fields}{$num});
+	$template .= "CCa$n";
+	push @fields, $num, $n, $data->{fields}{$num};
+    }
+    return ($template, @fields);
+}
+
+# Given a level definition, return the pack arguments for creating the
+# level in the .dat file.
+#
+sub mkdatfilelevel(\%)
+{
+    my $data = shift;
+    my ($template, @fields);
+    my @p;
+
+    @p = mkdatfilelevelheader %$data;  $template .= shift @p; push @fields, @p;
+    @p = mkdatfilelevelmap %$data;     $template .= shift @p; push @fields, @p;
+
+    my $data2pos = @fields;            $template .= "v";      push @fields, 0;
+    my $tmplt2pos = length $template;
+
+    @p = mkdatfileleveltitle %$data;   $template .= shift @p; push @fields, @p;
+    @p = mkdatfilelevelhint %$data;    $template .= shift @p; push @fields, @p;
+    @p = mkdatfilelevelpasswd %$data;  $template .= shift @p; push @fields, @p;
+    @p = mkdatfileleveltraps %$data;   $template .= shift @p; push @fields, @p;
+    @p = mkdatfilelevelcloners %$data; $template .= shift @p; push @fields, @p;
+    @p = mkdatfilelevelcrlist %$data;  $template .= shift @p; push @fields, @p;
+    @p = mkdatfilelevelmisc %$data;    $template .= shift @p; push @fields, @p;
+
+    $fields[$data2pos] = packlen substr $template, $tmplt2pos;
+
+    unshift @fields, packlen $template;
+    $template = "v$template";
+
+    return ($template, @fields);
+}
+
+# Given a level set definition, return the pack arguments for creating
+# the .dat file.
+#
+sub mkdatfile(\%)
+{
+    my $data = shift;
+    my ($template, @fields);
+    my @p;
+
+    @p = mkdatfileheader %$data;
+    $template = shift @p;
+    @fields = @p;
+
+    foreach my $level (@{$data->{levels}}) {
+	@p = mkdatfilelevel %$level;
+	$template .= shift @p;
+	push @fields, @p;
+    }
+
+    return ($template, @fields);
+}
+
+# This function takes a handle to a binary file and a hash ref
+# defining a level set, and writes the level set to the binary file as
+# a .dat file. The return value is false if the file's contents could
+# not be completely created; otherwise a true value is returned.
+#
+sub writedatfile($\%)
+{
+    my $file = shift;
+    my $data = shift;
+
+    my @args = mkdatfile %$data;
+    my $template = shift @args;
+    print $file pack $template, @args;
+}
+
+#
+#
+#
+
+package main;
+
+my ($infile, $outfile);
+if (@ARGV == 0) {
+    $infile = "&STDIN";
+    $outfile = "&STDOUT";
+} elsif (@ARGV == 1) {
+    $infile = "&STDIN";
+    $outfile = shift;
+} elsif (@ARGV == 2) {
+    $infile = shift;
+    $outfile = shift;
+} else {
+    die "Usage: datbuild [[INPUT.TXT] OUTPUT.DAT]\n",
+	"Type \"perldoc datbuild\" for more information.\n";
+}
+
+open TXT, "<$infile" or die "$infile: $!\n";
+my $data = readtxtfile::readtxtfile \*TXT or exit 1;
+open DAT, ">$outfile" or die "$outfile: $!\n";
+binmode DAT;
+writedatfile::writedatfile \*DAT, %$data or die "$outfile: $!\n";

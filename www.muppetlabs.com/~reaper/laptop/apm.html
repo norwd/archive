@@ -1,0 +1,51 @@
+<html>
+<head>
+<title> APM usage </title>
+</head>
+<body>
+
+<p><hr><hr>
+<h1> APM usage </h1>
+<p><hr><hr>
+
+<p> I just recently compiled a new 1.2.13 kernel, and added the APM
+patches to it.  The kernel patched effortlessly, and upon rebooting,
+worked without a hitch.
+
+<p> Unfortunately, I discovered a few minutes later that my PCMCIA modem
+no longer worked properly: it was dropping characters in its responses.
+I checked with <code>/var/adm/messages</code>, and discovered that
+<code>/dev/cua1</code> was getting something called an "input overrun",
+which I assume to mean there's some sort of interrupt-handling problem,
+or a new conflict in how the port is prioritized.  
+
+<p> I am using a Megahertz XJ1144, which is a 14.4k modem, incorporating
+a slower 16450 UART.  The "input overruns" may have something to do with
+this slower port, but I can't be certain. (Brief explanation: a 16450
+buffers one character at a time, compared to a 16550, which buffers 16
+characters at a time.  The practical upshot of this is that the 16550
+can go a much longer time without any attention from the CPU.)
+
+<p> The practical result of this is that I am primarily running the
+APM-disabled kernel, since the modem is far more important to me.  I
+have written a small and somewhat silly <a
+href="battmon.html">program</a> to show a readout of the current status
+of the battery, by reading <code>/proc/apm</code> and converting it into
+a little bar graph.  Another program which does this is available,
+which is X-dependent.  Although I run mine in X, it's text-based, and is
+therefore suitable to a wider range of applications.  
+
+<p> Sadly, most of the time, I can't use it due to the PCMCIA conflict.
+I haven't had the time to figure out how to conquer this problem, so it
+will simply have to exist.  I don't know if this will be an issue with
+later models, which may have a more up-to-date APM BIOS.  (The APM
+startup information says I have a Version 1.0 BIOS, whatever that may
+mean.)
+
+
+<p><hr>
+This page was designed and implemented by 
+<a href="mailto:reaper@muppetlabs.com">Ian Johnston</a>.  Check out my
+<a href="../index.html">homepage</a> for a laugh...
+</body>
+</html>

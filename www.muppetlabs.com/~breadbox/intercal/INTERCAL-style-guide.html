@@ -1,0 +1,523 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>Google INTERCAL Style Guide</title>
+  <style><!--
+    body {
+      background-color: #ffffff;
+      color: black;
+      margin-right: 1in;
+      margin-left: 1in;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      color: #3366ff;
+      font-family: sans-serif;
+    }
+    h1 {
+      text-align: center;
+      font-size: 18pt;
+    }
+    h2 {
+      margin-left: -0.5in;
+      margin-top: 0.5in;
+    }
+    h3 {
+      margin-left: -0.25in;
+    }
+    h4 {
+      margin-left: -0.125in;
+    }
+    hr {
+      margin-left: -0.5in;
+    }
+    code {
+      color: #005000;
+      font-size: 110%;
+    }
+    pre {
+      margin-left: 2%;
+      font-size: 10pt;
+      display: block;
+      color: #005000;
+      background-color: #fbfefb;
+      border-color: #fafffa;
+      border-left-width: 1px;
+      border-right-width: 0px;
+      border-top-width: 0px;
+      border-bottom-width: 0px;
+      border-style: solid;
+      border-top: 1px solid #fffaff;
+      border-left: 1px solid #fffaff;
+      border-right: 1px dotted #eff0ef;
+      border-bottom: 1px dotted #eff0ef;
+      padding-left: 12px;
+      padding-right: 12px;
+      padding-top: 4px;
+      padding-bottom: 4px;
+    }
+    pre {
+      -moz-border-radius: 12px;
+    }
+    .point {
+      color: #5588ff;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 90%;
+      font-weight: bold;
+      margin-left: -2%;
+    }
+    //-->
+  </style>
+</head>
+
+<body>
+
+  <h1>Google INTERCAL Style Guide</h1>
+
+  <h2>Introduction</h2>
+
+  <p>Historically, INTERCAL has not been widely used at Google, or
+  anywhere else. Recent events, however, have made it expedient to put
+  together a style guide for INTERCAL programming (in much the same
+  way that building a wall with bags of sand when the levee breaks is
+  expedient).</p>
+
+  <p>If you're looking for an introduction to using INTERCAL, you've come to
+  the wrong place. This should come as no surprise. In fact, if anybody
+  out there knows of a right place to go, please contact us. In the
+  meantime, however, you can amuse yourself with
+  <a href="intercal.txt">the
+  original manual</a>.</p>
+
+  <p>The rules below are not guidelines or recommendations, or even
+  teleological inferences, but strict rules. <em>You may not disregard
+  the rules listed below</em> unless they don't apply to you in the
+  first place.</p>
+
+  <p>If you have questions about these guidelines, you are almost certainly
+  not alone.</p>
+
+  <h2>Coding Standards</h2>
+
+  <h3>Spacing and Formatting</h3>
+
+  <p>INTERCAL has a standard formatting style that is widely used.
+  Unfortunately it is at odds with the formatting guidelines in other
+  Google style guides. Adhering to the general philosophy that a
+  compromise should leave no one happy, the following rules have been
+  selected.</p>
+
+  <ul>
+   <li>Line labels should always begin at column zero.</li>
+   <li>The <code>DO</code> should begin at column eight (whether or
+   not it is preceded by a label, of course). Code proper should thus
+   begin at column eleven.</li>
+   <li>If the <code>DO</code> is replaced by a <code>PLEASE</code>,
+   then it should begin at column four, so that code still begins at
+   column eleven. Please note that this means that you should not use
+   <code>PLEASE</code> with a line label. Theoretically this could
+   present a problem with label-heavy code, but until it does stop
+   whining about hypothetical situations.</li>
+   <li>If the statement is longer than one line, any and all continued
+   lines should be indented to column eleven.</li>
+  </ul>
+
+  <h4>Tabs</h4>
+  <p>Tabs are universally used in INTERCAL source code, but try
+  telling that to anyone here. Jerks. Just replace the leading tabs in
+  your source code with eight spaces before submitting your code.</p>
+
+  <h4>Line Breaks</h4>
+  <p>Line breaks should always be placed to the right of a binary
+  operator. Other things being equal, prefer to place the break after
+  a higher-level operator rather than a heavily nested one. (Some
+  people also prefer to place line breaks following an interleave over
+  a select, but this is not required.)</p>
+
+  <p>Here is an illustrative example.</p>
+  <b>Bad:</b>
+  <pre>
+        DO :3 &lt;- '"'"'"'".1$':1~#32768'"~"#1109$#1"'$':1~#128'"~#2735'$':1~"
+           #546$#0"'"~"#43679"'$':1~"#1365$#0"'"~"#1023$#63"'$'"'"'".1$#0
+           "~#34959'$':1~"#0$#1170"'"~#11007'$':1~"#0$#2925"'"~"#2005$#255"'
+  </pre>
+  <b>Good:</b>
+  <pre>
+        DO :3 &lt;- '"'"'"'".1$':1~#32768'"~"#1109$#1"'$':1~#128'"~#2735'$':1~
+           "#546$#0"'"~"#43679"'$':1~"#1365$#0"'"~"#1023$#63"'$'"'"'".1$#0"~
+           #34959'$':1~"#0$#1170"'"~#11007'$':1~"#0$#2925"'"~"#2005$#255"'
+  </pre>
+  <b>Better:</b>
+  <pre>
+        DO :3 &lt;- '"'"'"'".1$':1~#32768'"~"#1109$#1"'$':1~#128'"~#2735'$
+           ':1~"#546$#0"'"~"#43679"'$':1~"#1365$#0"'"~"#1023$#63"'$
+           '"'"'".1$#0"~#34959'$':1~"#0$#1170"'"~#11007'$':1~"#0$#2925"'"~
+           "#2005$#255"'
+  </pre>
+
+  <h4>Internal Spaces</h4>
+  <p>Do not put spaces inside of expressions. Sometimes people get
+  this idea that spaces will help make a complex expression slightly
+  less opaque. Ho ho ho. The truth is, it doesn't help enough to be
+  worth the bother, and everyone is used to seeing no spaces in
+  expressions by now. Seriously, just let it go.</p>
+
+  <h4>Grouping</h4>
+  <p>Outermost sparks/rabbit-ears must match on either side of a
+  binary operator. That is, your code shouldn't contain expressions
+  that look like this:</p>
+
+  <b>Bad:</b>
+  <pre>
+        DO .5 &lt;- ":1~'#32768$#0'"$':2~"#32768$#0"'
+  </pre>
+
+  <p>Fix it to look like this:</p>
+  <b>Good:</b>
+  <pre>
+        DO .5 &lt;- ":1~'#32768$#0'"$":2~'#32768$#0'"
+  </pre>
+
+  <p>Having your code always adhere to this rule while you're writing
+  it is a pain, yes, but it's nothing compared to the pain of reading
+  other people's code that doesn't.</p>
+
+  <h4>Line lengths</h4>
+  <p>The general standard in Google code is to restrict lines to
+  eighty columns. It is recommended that INTERCAL code be restricted
+  to seventy-two columns, so that the last eight columns can be used
+  to punch sequence numbers. If you think that's a perfectly idiotic
+  idea, then you are welcome to use eighty columns, on the condition
+  that if anybody drops a deck of punch cards containing your code,
+  you're the one who has to put it all back in sequence again. You
+  want to sign up for that? Yeah, didn't think so.</p>
+
+  <h3>Naming Conventions</h3>
+
+  <p>Naming rules are very important in maintainable INTERCAL code,
+  due to the lack of local variables or local labels or really any
+  kind of scoping whatsoever. We follow the general practices of the
+  INTERCAL community, with the following additional rules.</p>
+
+  <h4>Line Labels</h4>
+  <ul>
+    <li>Four-digit line labels are reserved for general-purpose
+    libraries that are used throughout the INTERCAL community. If you
+    are introducing a new library, and you think it should be in the
+    under-ten-thousand set, you will need to present your case to the
+    style committee and get signoff by two-thirds of the people
+    present, assuming quorum has been satisfied. (Note: assuming the
+    number of committee members is stored in <code>.1</code>, the
+    number of people required to satisfy quorum is
+    <code>'V".1~#65534"$"!1~.1'~#65534"'~'#0$#65535'</code>.)</li>
+    <li>Five-digit line labels are reserved for use by all other
+    libraries.</li>
+    <li>Line labels in executables (i.e. non-library code) should all
+    have from one to three digits.</li>
+  </ul>
+
+  <p>Generally, you should try to keep close numbers near each other
+  in the code, at least initially. Obviously this state cannot always
+  be preserved as the code is revised over time, so this guideline is
+  mainly an attempt to stave off the inevitable.</p>
+
+  <p>In addition to the above rules, you should always use composite
+  numbers when writing new code. Prime numbers are reserved for use by
+  other parts of the code to fall back on when they run out of numbers
+  in their designated block.</p>
+
+  <h4>Variable Names</h4>
+  <ul>
+    <li>Global variables in libraries should be in the same general
+    range as their line labels.</li>
+    <li>Likewise, executables should generally not use variable names
+    with four or more digits (except of course when accessing a
+    variable provided by a library).</li>
+    <li>As a general rule of thumb, a variable name's cardinal value
+    should roughly correspond with its scope &mdash; e.g. a widely
+    used global variable should be assigned a number of relatively low
+    magnitude.</li>
+    <li><code>.5</code> is reserved as an error return flag. Don't use
+    <code>.5</code> for other purposes in your code. This should go
+    without saying.</li>
+    <li>The other one-digit variable names are reserved for passing
+    arguments to routines.</li>
+  </ul>
+
+  <p>If you are writing a routine that needs to accept more than eight
+  arguments of one type, consider using stashed values instead.
+  Failing that, consider packing one or more pairs of 16-bit values
+  into 32-bit values. Failing that, consider giving up and letting
+  someone else deal with writing that stupid routine. Are you sure
+  that you really need that routine? Maybe it can be put off until
+  version two.</p>
+
+  <p>While we're on the subject of variable names, you should always
+  keep the list of variables in <code>STASH</code> and
+  <code>RETRIEVE</code> statements in sorted order. Sort by variable
+  type first, then by the name's cardinal value. For example:
+  <pre>
+    PLEASE STASH .1 + .2 + .3 + .4 + .610 + :3 + :101 + ,44 + ;1
+  </pre>
+  Ideally, variable lists should also be sorted when they appear in
+  <code>READ OUT</code> and <code>WRITE IN</code> statements. However,
+  this may sometimes require renaming variables throughout the entire
+  program, and/or modifying your application's user interface, so
+  regretfully this is not an absolute requirement. Your peers may
+  judge you if you don't, though.</p>
+
+  <h3>Comments</h3>
+
+  <p>Comments should always begin with <code>DO NOTE</code>, unless
+  they begin with <code>PLEASE NOTE</code>. Remember that comments
+  take up space in compiled INTERCAL programs, and furthermore they
+  take up processing time if execution passes through them. For these
+  reasons, <em>keep comments to a minimum, and never put comments
+  inside of optimized INTERCAL code</em>. Ideally all of your comments
+  will lie outside of the path of execution.</p>
+
+  <p>For libraries, comments can appear directly above each entry
+  point (unless of course the previous routines falls through, in
+  which case move it somewhere else and add an explanation).</p>
+
+  <p>Source code files should include a comment block that provides a
+  copyright statement, in the following form:</p>
+  <pre>
+        DO NOTE COPYRIGHT MMVIII GOOGLE INCORPORATED
+  </pre>
+
+  <p>Other information such as the license boilerplate can be included
+  if you really think it's necessary. (Remember: this is INTERCAL.
+  Does the license really matter?) Since a header block would always
+  get executed, please use footer blocks instead, and place the
+  comment at the bottom of the file.</p>
+
+  <p>Do not write comments in lowercase. Lowercase in INTERCAL source
+  code looks really weird. Just trust us on this one.</p>
+
+  <p>Finally, please remember to <em>always</em> double-check your
+  comments to make sure that they don't contain an embedded
+  <code>DO</code>. If you find such, reword the comments as necessary
+  to remove it. An embedded <code>PLEASE</code> has the same problem:
+  If you find an embedded <code>PLEASE</code> in your comment, reword
+  it to be less ingratiating.</p>
+
+  <h3>Internationalization</h3>
+
+  <p>Although UTF-8 is in wide use these days, not everyone is equally
+  comfortable in editing code with nonstandard characters. Because of
+  this, you should use the pedestrian ASCII replacement <code>$</code>
+  to interleave, in place of the original <code>&cent;</code>.
+  Likewise, you should use <code>?</code> in place of
+  <code>&#x2200;</code>. (And do <em>not</em> use the trigraph of
+  <code>V -</code> with a backspace character inbetween, as this is
+  not portable. Although admittedly it does look really nice when you
+  print your source code on a daisy-wheel printer. Okay, you can use
+  the trigraph if you own a daisy-wheel printer, but for everyone else
+  it's off limits.)</p>
+
+  <p>If you're creating input files for running unit tests of INTERCAL
+  code, please keep your input numerals in English. If a significant
+  fraction of engineers on your team are familiar with Basque or
+  Sanskrit, then you can consider relaxing this requirement. (On the
+  other hand, feel free to use either <tt>NINE</tt> or <tt>NINER</tt>
+  as the mood strikes you.)</p>
+
+  <h2>Language Features</h2>
+
+  <h3>Using <code>!</code> as an abbreviation for <code>'.</code></h3>
+
+  <p><span class="point">Con:</span> Use of this abbreviation makes it
+  harder to grep for 16-bit variables. It's irritating to deal with
+  when one has to add another enclosing group in an expression and the
+  sparks and rabbit-ears have to be swapped for each other.</p>
+
+  <p><span class="point">Pro:</span> The abbreviation is already used
+  widely if not universally. Shorter expressions means shorter
+  statements.</p>
+
+  <p><span class="point">Decision:</span> The abbreviation is too
+  familiar to INTERCAL programmers, and its use is therefore not just
+  permitted but required.</p>
+
+  <h3>Eliminating nonessential grouping in expressions</h3>
+
+  <p><span class="point">Con:</span> Allowing extra groups sometimes
+  allow you to avoid having to exchange all the rabbit-ears in a
+  subexpression with sparks (and vice versa) when editing code.</p>
+
+  <p><span class="point">Pro:</span> Large expressions already have
+  too many groups; allowing even more just makes code difficult to
+  read.</p>
+
+  <p><span class="point">Decision:</span> Adding extra groups is like
+  asking for extra dioxin in your fillet of sole. Bite the bullet and
+  edit those subexpressions. Yes, that means you must suffer so that
+  we don't have to. It's called life, okay?</p>
+
+  <h3>Using line abstention</h3>
+
+  <p><span class="point">Con:</span> It's not always obvious when a
+  routine is making use of line abstention, confusing the casual
+  reader.</p>
+
+  <p><span class="point">Pro:</span> Several familiar idioms are based
+  on line abstention, such as those that appear in the standard
+  library.</p>
+
+  <p><span class="point">Decision:</span> Line abstention is
+  permitted, but you should strive to have the <code>REINSTATE</code>
+  statement follow as closely as possible. Libraries should never
+  leave an abstention in effect between calls, unless the alternative
+  would be to introduce more global variables.</p>
+
+  <h3>Using gerund abstention</h3>
+
+  <p><span class="point">Con:</span> The effects of gerund abstention
+  cannot be contained: it is necessarily global, potentially affecting
+  all code in the main program and any libraries in use. It also
+  interferes with line abstention, which is not always obvious to the
+  programmer if line abstention is being used in one or more
+  libraries.</p>
+
+  <p><span class="point">Pro:</span> Watching someone else try to
+  track down a bug caused by gerund abstention is
+  <em>hilarious</em>.</p>
+
+  <p><span class="point">Decision:</span> Do you really need to ask?
+  For crying out loud, don't use gerund abstention! Unless you're
+  writing an executable and your code makes no further calls to any
+  library routines, that is. Only in that specific situation is it
+  okay to use. Oh, and only as long as you aren't also making use of
+  line abstention, or if you are you can verify that it doesn't
+  interact with your use of gerund abstention. Or at least not in any
+  unexpected way &mdash; if it interacts in a way that you want it to,
+  then that's okay, I suppose. Oh, what the heck. If it works, use
+  it.</p>
+
+  <h3>Embedding messages for fatal errors as syntactically incorrect
+  statements</h3>
+
+  <p><span class="point">Con:</span> Taking advantage of INTERCAL's
+  feature of displaying syntax errors when encountered at runtime is a
+  klugey way to display error messages, and potentially confusing to
+  users who are unfamiliar with the practice.</p>
+
+  <p><span class="point">Pro:</span> Displaying messages in the proper
+  way is such an incredible pain in the neck.</p>
+
+  <p><span class="point">Decision:</span> Let's face it. If we didn't
+  permit this practice, INTERCAL programs wouldn't have any error
+  messages.</p>
+
+  <h3>Using <code>COME FROM</code></h3>
+
+  <p><span class="point">Con:</span> <code>COME FROM</code> is a
+  nonstandard extension of the language. It is a late addition, and
+  there is no guarantee that it will remain part of the language going
+  forward. It also arguably goes against the philosophy of the core
+  language as it was originally defined.</p>
+
+  <p><span class="point">Pro:</span> <code>COME FROM</code> is
+  unlikely to be removed from any existing or future compilers, seeing
+  as it has ironically become the most well-known feature of the
+  language. It also relieves pressure on the <code>NEXT</code> stack,
+  which has a hard limit of seventy-nine entries.</p>
+
+  <p><span class="point">Decision:</span> <code>COME FROM</code> is
+  permitted throughout Google, although you should avoid it if you are
+  concerned about portability to the Princeton compiler.</p>
+
+  <h3>Using non-standard features</h3>
+
+  <p><span class="point">Con:</span> INTERCAL extensions such as
+  threading and operator overloading are non-standard and poorly
+  tested, and may therefore have broad unforeseen side effects.</p>
+
+  <p><span class="point">Pro:</span> INTERCAL extensions such as
+  threading and operator overloading are non-standard and poorly
+  tested, and may therefore have broad unforeseen side effects.</p>
+
+  <p><span class="point">Decision:</span> Undecided. Use your best
+  judgement.</p>
+
+  <h3>Setting <code>.5</code> to <code>#2</code>/<code>#3</code>
+  instead of <code>#1</code>/<code>#2</code></h3>
+
+  <p><span class="point">Con:</span> This use is nonstandard, and some
+  may therefore find it non-idiomatic. It requires an extra level of
+  nesting, which can impede performance.</p>
+
+  <p><span class="point">Pro:</span> The newer idiom often allows
+  branching to be accomplished with much simpler expressions. Also,
+  "performance"? Give me a break: it's INTERCAL.</p>
+
+  <p><span class="point">Decision:</span> Yeah, come on. Do you even
+  understand the question? Be honest. If you can explain the issue to
+  me in one sentence, then you're already an experienced INTERCAL
+  programmer and you don't need to consult this guide for assistance.
+  In fact, there's a non-trivial probability that you helped write
+  this.</p>
+
+
+  <h2>Some General Guidelines</h2>
+
+  <h3>Short Routines</h3>
+
+  <p>To the extent that it is feasible, routines should be kept small
+  and focused. It is however recognized that long routines are
+  sometimes appropriate, so no hard limit is placed on routine length.
+  If you're writing a routine and it exceeds 700 lines or so, think
+  about whether it can be broken up without introducing a herd of new
+  global variables.</p>
+
+  <h3>Short Statements</h3>
+
+  <p>Long expressions can take the INTERCAL novice a day or two to
+  mentally work through, and thus should be avoided when possible.
+  Where possible, try to keep your statements under 512 characters.</p>
+
+  <h3>Consistency</h3>
+
+  <p>Above all, <em>be consistent</em>. If you're editing code, take a few
+  hours to look at the code around you and understand its style. If
+  they always use rabbit-ears for their outermost group, you should
+  too. If they always prefix <code>RESTORE</code> statements with
+  <code>PLEASE</code>, you should do the same. If they have internal
+  spaces in their expression, you should go through the file and
+  remove them, and then look to see what other files they might have
+  edited and fix those as well.</p>
+
+  <p>The point of having style guidelines is to have a common
+  vocabulary of coding, so people can concentrate on what you're
+  desperately trying to accomplish, rather than how. We present global
+  style rules here so people know the vocabulary. But local style is
+  also important. No, it won't help, not really. But do it anyway. I'm
+  serious. Do it. Do it or I'll come find you and beat you like a
+  tambourine.</p>
+
+  <h2>When to use INTERCAL</h2>
+
+  <p>Never. What are you, high?</p>
+
+  <!-- Note: In the style guide that was published, this paragraph was
+  replaced with the following (out of concern that a drug reference,
+  however vague, might generate an unintended reaction):
+      <p>Only if you absolutely have to! Good grief, has it really come to
+      this?</p>
+  For posterity I am restoring my original answer, because I still
+  think it's pretty funny.
+  -->
+
+  <hr/>
+
+  <p align="right">
+  Revision XLVIII
+  <br/>
+  <i>Brian Raiter</i>
+  </p>
+
+</body>
+</html>
+
+</body>
+</html>

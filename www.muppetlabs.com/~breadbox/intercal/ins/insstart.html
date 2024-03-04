@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>I N T E R S E C T I O N S  &amp;  S P L A T S</title>
+<style>
+body {
+  max-width: 64em;
+  background-color: #F8F8FF;
+  color: #000000;
+}
+</style>
+</head>
+<body>
+<h1>Setup for Intersections &amp; Splats</h1>
+<p>
+Select a configuration, and then press "BEGIN" to start your game.
+(If you aren't familiar with Intersections &amp; Splats, then you
+may want to read the <a href="insstart.html#help">help</a> first.)
+<p>
+<form method=post action="http://www.muppetlabs.com/~breadbox/intercal/ins/ins.cgi">
+<input type="hidden" name="A" value="A">
+<samp>[X]</samp> Number of guesses (1-15):
+<input type="text" name="CX" size=3 maxlength=2 value="10">
+<p>
+<samp>[Y]</samp> Size of code (number of digits in the code) (1-15):
+<input type="text" name="CY" size=3 maxlength=2 value="4">
+<p>
+<samp>[N]</samp> Number of different digits to play with (1-9):
+<input type="text" name="CN" size=2 maxlength=1 value="6">
+<p>
+<input type="submit" value="BEGIN">
+<input type="hidden" name="Z" value="Z">
+</form>
+<p>
+Find out more about <a href="description.html">the INTERCAL CGI
+script</a>.
+<br>
+Return to <a href="../index.html">the INTERCAL page</a>.
+<p>
+<hr><a name="help"></a>
+<h2>How to Play the Game</h2>
+<p>
+Intersections &amp; Splats is an INTERCAL implementation of
+one of my favorite games, Cows &amp; Bulls (more commonly
+known these days by the commercial version, Mastermind). And
+now it is an INTERCAL CGI script as well, which is what this page is
+an introduction to.
+<p>
+<h3>Rules of the Game</h3>
+<p>
+The idea of the game is that one person selects a "code" in the form
+of a short string of digits, typically four. (Mastermind used colors
+in place of numbers.) The other person has a limited number of chances
+to guess what the code is. Every move consists of submitting a guess,
+and the first player replying with a score. Each scoring reveals a
+little more information about the code. A guess is scored by giving a
+certain number of cows and a certain number of bulls. These correspond
+to Mastermind's white pegs and black pegs, respectively - and, in this
+program, intersections (<samp>+</samp>) and splats (<samp>*</samp>).
+(These names come from the INTERCAL language, by the way.)
+<p>
+This game is perfect for a computer because the person who makes the
+code has nothing to do but score the other player's guesses - a
+mechanical task.
+<p>
+Here's how the scoring works. For every number in the code that is
+matched by the same number in the same position in the guess, a splat
+is scored. And for every number in the code that is matched by the
+same number in the guess, but in the wrong position, an intersection,
+is scored.
+<p>
+For example: with a code of "3451", and a guess of "2465", one splat
+and one intersection would be earned. The splat is for the 4, and the
+intersection is for the 5. Of course, the player making the guesses
+isn't told which numbers earned what - that's what they have to
+deduce. A guess of "6152" gets exactly the same score, even though the
+intersection and splat correspond to completely different digits.
+<p>
+The game continues until the code is discovered or the player runs out
+of guesses.
+<p>
+<h3>More About Scoring</h3>
+<p>
+Note that there can be some confusion about how the scoring works with
+repeated digits. In absence of a better standards body, I have stuck
+with the version described in the Mastermind rules, which is that a
+digit in the guess can match up with more than one digit in the code.
+Another example is in order. Say the code is "2412". A guess of "2544"
+would earn one splat and two intersections. The splat is for having a
+2 in the guess in the right position, and one of the intersections is
+also for having a 2 in the guess, but in the wrong position. The other
+intersection is earned by having a 4 in the guess, again in the wrong
+position. The second 4 in the guess, however, does not affect the
+scoring.
+<p>
+Here is an algorithmic description of how scoring is done. The
+computer looks at each digit in the code in turn. If the digit under
+consideration is matched by the same digit in the same place, a splat
+is earned. Otherwise, if any other digit in the guess is the same, an
+intersection is earned.
+<p>
+Play the game a few times; you'll get the idea.
+<p>
+<h2>The Mechanics of the Game</h2>
+<p>
+At every turn the board is displayed. The board shows all of the
+guesses you have made so far. Above each guess are the intersections
+and splats that they earned. Here is an example of a game in progress:
+<p><pre>
+           +    
+ * +  +    * *  
+ (1)  (5)  (2)  ( )  ( )  ( )  ( )  ( )  ( )  ( )   (?)
+ (2)  (4)  (4)  ( )  ( )  ( )  ( )  ( )  ( )  ( )   (?)
+ (4)  (4)  (3)  ( )  ( )  ( )  ( )  ( )  ( )  ( )   (?)
+ (2)  (6)  (5)  ( )  ( )  ( )  ( )  ( )  ( )  ( )   (?)
+
+ IV
+</pre><p>
+The first guess "1242" earned one splat and one intersection. The
+third guess "2435" earned two splats and one intersection. The Roman
+numeral "IV" (four) indicates that the game is waiting for the player
+to make their fourth guess.
+<p>
+Guesses are entered into a text entry field, situated directly below
+the board. After the guess is ready, the MOVE button is pushed to
+continue. The script will put the guess on the board and give it a
+score.
+<p>
+At the end of the game, whether you win or lose, the questions marks
+disappear and the code is displayed. You can then play another game
+with the same setup, or come back to this page and choose a different
+configuration.
+<p>
+You can leave the game at any time by selecting the EXIT link. Also,
+during the game, you can push the RESIGN button if you want to give up
+and see the code.
+<p>
+<h3>Configuring the Game</h3>
+<p>
+The game is set up originally to have ten guesses in a game, four
+digits in the code, and to use the digits 1 through 6. (This matches
+the setup of the Mastermind version.) By modifying these settings, you
+can control the difficulty of the game. Increasing the size of the
+code or the number of digits to use will make the game harder;
+increasing the number of guesses will give you more opportunities to
+gather information. (I myself often play with six digits in the code,
+and using all nine possible digits.)
+<p>
+Note that if you enter a configuration that is not within the given
+ranges, you will get a page with a succinct error message. Select
+<samp>RETURN</samp> or use your browser's "Back" feature to return here.
+<p>
+<h3>The Source</h3>
+<p>
+If you're curious, the source code is available. The source code
+distribution includes documentation, a standalone version that
+runs in the terminal, and a bonus colorized version for vt100/ANSI
+color terminals.
+<blockquote>
+<a href="../../pub/intercal/ins.tar.gz"
+>Source code for Intersections &amp; Splats</a>
+</blockquote>
+<br>
+<br>
+That's it. Have fun. Questions, comments, bug reports and inquiries
+into my mental health are all welcome.
+<p>
+Brian Raiter
+<br>
+breadbox [whirlpool] muppetlabs [spot] com
+<p>
+<br>
+<font size=-1><a href="../index.html">
+INTERCAL</a></font>
+<br>
+<font size=-1><a href="../../index.html">Brian
+Raiter</a></font>
+<br>
+<font size=-1><a href="../../../index.html">Muppetlabs</a></font>
+</body></html>

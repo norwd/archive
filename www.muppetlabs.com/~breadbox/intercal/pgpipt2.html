@@ -1,0 +1,296 @@
+<!DOCUMENT html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<title>Practically Impossible, revisited</title>
+<style>
+body {
+  font-family: "Georgia", Times, serif;
+  max-width: 48em;
+  margin: 1em auto;
+}
+h1 {
+  text-align: center;
+  padding: 1em 0 2em 0;
+}
+code {
+  font-family: Söhne Mono, Monaco, Andale Mono, Ubuntu Mono, monospace;
+  font-size: 0.9rem;
+}
+.center {
+  margin: 0.2em auto;
+  text-align: center;
+}
+.openai-response {
+  background-color: #F7F7F8;
+  font-family: Söhne, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, Helvetica Neue, Arial, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+  color: #343541;
+  margin: 0em 1em;
+  padding: 0.25em 1em 0.25em 1.5em;
+}
+</style>
+</head>
+<body>
+
+<h1>Practically Impossible, revisited</h1>
+
+<p>Well. It appears that somebody (this time a person unknown to me)
+took <a href="pgpi.html">my slightly disjunctured rant</a>, including
+my full INTERCAL program, and submitted it back to Chat-GPT4, wanting
+to see if it would take the opportunity to clarify its previous
+assertions, or refute any of my objections. I don't have access to the
+details this time, so I'm just going on the transcript as reported to
+me. Assuming that it is indeed a faithful record, I feel that it's
+worth sharing and acknowledging. To wit:</p>
+
+<blockquote class="openai-response">
+  <p>INTERCAL is a esoteric programming language designed to be as
+  different from conventional programming languages as possible. It's
+  known for its obfuscation and convoluted syntax, and your provided
+  program adheres to this style perfectly.</p>
+</blockquote>
+
+<p>Yes, because if it didn't adhere to this style, it wouldn't work.
+"Aha, I see that your well-tested Python program is written in a
+Pythonic style!"</p>
+
+<blockquote class="openai-response">
+  <p>It's quite an accomplishment to create a functional password
+  generator in such an unusual language!</p>
+</blockquote>
+
+<p>Such a backhanded compliment. Again, I will acknowledge that it is
+an accomplishment to write a functional program of any nature in
+INTERCAL—<em>if</em> you're not already conversant. But that is true
+in nearly any programming language, to some degree. Furthermore,
+there's nothing about a password generator program in particular that
+is especially challenging to the INTERCAL programmer.</p>
+
+<p>Indeed, I would argue that a password generator is almost as good a
+fit for INTERCAL's strengths as a practical task can get. It doesn't
+require parsing input, it doesn't have any extraneous output
+requirements, there are no error states to detect or describe, and
+several arithmetical steps of the process can be finessed with
+creative bit-twiddling. Really, you could hardly ask for something
+better suited to the meager handful of things that INTERCAL does
+well.</p>
+
+<p>(In fact, if you're interested in INTERCAL programming yourself, I
+would definitely recommend this as a practice problem. Without looking
+at my code, try to write your own version. Then once you have a
+working program, compare it to mine and see where we made different
+tradeoffs.)</p>
+
+<blockquote class="openai-response">
+  <p>Before we dive into the details of the program, let's try to
+  clarify why a previous version of ChatGPT might have said that
+  INTERCAL lacked a random number generator.</p>
+</blockquote>
+
+<p>Please do! I am all ears.</p>
+
+<blockquote class="openai-response">
+  <p>That statement may be somewhat misleading. It's not that INTERCAL
+  inherently lacks the ability to generate random numbers, but it
+  doesn't provide a straightforward, built-in function to do so.</p>
+</blockquote>
+
+<p>… you perfidious blatherskite.</p>
+
+<blockquote class="openai-response">
+  <p>Therefore, creating a random number generator in INTERCAL would
+  require a creative and complex implementation.</p>
+</blockquote>
+
+<p>And so we see that Chat-GPT still refuses to admit that INTERCAL
+does, in fact, provide a straightforward, built-in language feature
+for generating random events, or that turning said random events into
+random numbers is anything but "complex".</p>
+
+<p>I'm curious. Would Chat-GPT claim that C doesn't provide a
+"straightforward, built-in function" to generate random numbers? After
+all, it's not part of the language itself: you have to call out to a
+library function. (Or write your own PRNG, which while only a few
+lines of code would certainly be less straightforward.)</p>
+
+<p>If the distinction being made is based entirely on the availability
+of a standard function to provide random numbers, then STFU, because
+guess what: INTERCAL <em>also provides a random-number generation
+function in the standard library</em>. In fact it provides two of
+them—one with uniform distribution and one with normal distribution.
+So stop picking on INTERCAL like there's some kind of gaping hole in
+its functionality. (I mean, there is, there are many actually, but
+this happens to be one of the very few places where there is not.)</p>
+
+<p>Moreover, if C's <code>rand()</code> function is acknowledged to
+in fact be a source of random numbers, then STFU still, because the
+C-INTERCAL compiler is <em>using</em> C's <code>rand()</code> function
+in order to provide randomness. (It's called C-INTERCAL because it
+compiles to C code, you see.) Either way you slice it, there's nothing
+about INTERCAL's random-number generation that is any worse than any
+other, more pedestrian programming language.</p>
+
+<p>(An aside: I realize that some readers may now be wondering—if the
+INTERCAL system library has a standard function for generating uniform
+random numbers, then why didn't I use it in my password-generation
+program? The answer is twofold. Partly it was done as a minor
+optimization, since I never need more than a few bits of randomness at
+a time. You can also see, if you read the code, where after generating
+three random bits the code tests to see if the current character
+should be forced to be a digit or punctuation mark, and if so it skips
+over the code that generates the remaining random bits. The second
+reason I wrote it that way was because this capability was such a
+point of contention with the original response. I wanted to make sure
+to spotlight the generation of random values in my program, rather
+than hide it behind a system call. Yes, that does mean that the
+program could have been even shorter and simpler than it was.)</p>
+
+<blockquote class="openai-response">
+  <p>In the code you provided, it seems the author found a way to work
+  around this limitation.</p>
+</blockquote>
+
+<p>The limitation is with your grasp, not the language. I shall
+attempt to stop belaboring this point.</p>
+
+<blockquote class="openai-response">
+  <p>The password generator you posted creates passwords by
+  initializing an array (<code>,6</code>) with 16-bit values that
+  represent ASCII characters.</p>
+</blockquote>
+
+<p>I'll award partial credit for this statement. <code>,6</code> is an
+array of 16-bit integers, but the actual values are never more than 8
+bits wide, much as you would expect. And again the values represent
+ASCII characters somewhat indirectly, being, you
+know, <em>bitwise-reversed</em>.</p>
+
+<blockquote class="openai-response">
+  <p>The set of characters includes digits, some punctuation marks, and
+  uppercase and lowercase letters, but excludes easily misread
+  characters. It creates a 16-character password using these values,
+  and it seems to enforce a certain level of complexity by ensuring
+  the inclusion of at least one number and one punctuation mark.</p>
+</blockquote>
+
+<p>ChatGPT is here demonstrating its ability to glean information from
+comments and pass them along.</p>
+
+<blockquote class="openai-response">
+  <p>The main loop begins at <code>(1) DO COME FROM (9)</code>.</p>
+</blockquote>
+
+<p>Oh, that line? The one that comes immediately after the
+comment <code>DO NOTE THE MAIN LOOP WHICH BEGINS HERE</code>? That
+one? Are you sure?</p>
+
+<p>It really is like listening to a bullshit artist improvise.</p>
+
+<blockquote class="openai-response">
+  <p>Here, a spot in the password is selected and filled with a character
+  from the array.</p>
+</blockquote>
+
+<p>I would have to say that this sentence is misleading. Each
+character of the password is generated sequentially and immediately
+output. There is no selecting of a spot in the password, as it has
+described, since that would require the password to be stored in
+memory (which would complicate the program for very little
+advantage).</p>
+
+<blockquote class="openai-response">
+  <p>There are some points in the loop where the selected spot may be
+  forced to be a number or punctuation mark. If the character set is
+  checked for digits and punctuation marks, pre-chosen spots for these
+  types of characters are dropped. The selected character is then
+  read out.</p>
+</blockquote>
+
+<p>I'm unsure what this program thinks it means by the phrase "if the
+character set is checked for digits and punctuation marks". My best
+guess is that it's trying to say: "The chosen character from the
+character set is checked, and if it <em>is</em> a digit or punctuation
+mark" then etc. Or, it may just be a furtherance of its prior
+misunderstanding.</p>
+
+<p>In any case, it's obvious that it is simply doing its best to
+rephrase the information in my comments, and making educated guesses
+to paper over the parts that aren't explained outright.</p>
+
+<blockquote class="openai-response">
+  <p>This INTERCAL code uses a clever trick to generate seemingly
+  "random" numbers - using the <code>%50</code> operation (which in
+  INTERCAL means to mingle the bits of two 16-bit numbers), along with
+  unary operations like <code>#1</code>, <code>#2</code>, <code
+  >#4</code>, etc. on the same variable, to generate different results
+  each time the loop is run.</p>
+</blockquote>
+
+<p>Again, Chat-GPT. You need to learn when to stop talking. This
+entire sentence is fiction. It is a tapestry of phantasms. Nothing of
+Truth doth fade, but doth suffer a sea-change into something rich and
+strange. Sea-nymphs hourly ring its knell. Hark! now I hear
+them—ctrl-G (<code>BEL</code>).</p>
+
+<p>To be specific. <code>%50</code> is not an operation; it is a
+statement modifier. Said modifier affects control flow. It does not
+and cannot mingle bits, not having any arguments from which bits could
+be obtained. INTERCAL <em>does</em> have a binary operator called
+"mingle" (though I prefer its more common name, "interleave"), but
+it's denoted by <code>$</code> (or <code>¢</code>) and is not really
+relevant here. <code>#1</code>, <code>#2</code>, <code>#4</code>, etc.
+are not operators, unary or otherwise; they are the numerical
+constants 1, 2, and 4. Seriously, how did you get <em>that</em> one so
+completely wrong? And finally, none of those things, had they worked
+as you so creatively imagined, would assist a program in "generating
+different results each time the loop is run". (Such functionality
+could help in generating different values for each iteration of the
+loop, if we're being generous, but that isn't really the point in
+question, so if that is what is meant it's a non sequitur.)</p>
+
+<p>Chat-GPT, why are you so incapable of just saying "I don't
+know"‽</p>
+
+<p>That one isn't a rhetorical question, actually. Why can't Chat-GPT
+just own up when it doesn't know something? You know, before AI
+research was waylaid by Big Data, it was common practice, if not
+actually expected, that a program should be able to describe the
+process of its own reasoning. It was understood that a bare answer,
+without the chain of logic leading up to it, was useless if not
+actively harmful—even if the answer happened to be correct. But the
+design of modern systems made those inferential stack-dumps difficult
+to produce, or even (wait for it) practically impossible.</p>
+
+<p>So is the problem a fundamental one to its design? Does Chat-GPT
+never say "I don't know" because it simply cannot <em>tell</em> when
+it doesn't know something? Is the ability to make judgements on the
+quality of its own chain of reasoning simply not available to it, and
+therefore it has no basis on which to decide when to speak and when to
+remain silent wisely?</p>
+
+<p>I don't know, of course. It's just an impression, based on my vague
+understanding of how such systems work, and the types of errors
+Chat-GPT makes systematically. But hey: at least I know that I don't
+know.</p>
+
+<p>There are one or two more unwarranted defamations in the closing
+paragraphs of the transcript, but now that this essay has taken a
+serious turn, it seems pointless to continue. So I'll take my own
+advice and STFU here. I would just like to end with a reiteration of
+my request that Chat-GPT kindly learn to cease flinging calumnies at
+my beloved problem child. INTERCAL did nothing wrong.</p>
+
+<p>
+<br>
+<small><a href="pgpi.html"
+>Practically Impossible</a></small>
+<br>
+<small><a href="index.html"
+>INTERCAL</a></small>
+<br>
+<small><a href="../index.html">Brian
+Raiter</a></small>
+<br>
+<small><a href="../../index.html">Muppetlabs</a></small>
+</body>
+</html>

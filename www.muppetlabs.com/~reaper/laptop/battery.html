@@ -1,0 +1,141 @@
+<html>
+<head>
+<title> Battery Times </title>
+</head>
+<body>
+
+<p><hr><hr>
+<h1> Battery Times under Linux </h1>
+<p><hr><hr>
+
+<p> Out of curiosity more than anything else, I decided to start
+checking how long my battery would last under different conditions,
+depending on what i was doing at the time.
+
+<p> <a href="mailto:faith@cs.unc.edu">Rik Faith</a> has been doing some
+more detailed and precise work on battery times for his computer, which
+he's sent to me.  I've got it all laid out <a href="battery.html#faith">below</a>,
+but keep in mind that he's working with a different computer (and a
+different battery).
+
+<p> For all of my examples, the battery was fully charged (charge
+light glowing green), and a simple timing program that I wrote in perl
+was started as soon as I unplugged the power cord.  I've rounded to the
+nearest minute, since seconds in this context are fairly ridiculous.
+The stated time is the difference between power disconnect and the
+low-battery alarm, which probably leaves you with a few minutes of power
+left.  Note that these times are for the T-3400 monochrome; active
+matrix computers will have different (usually lower) times.
+
+<p><hr>
+
+<dl>
+
+<p><dt> 1st try: 4 hours 26 minutes
+
+	<dd> For this run, I was doing a wide range of things, probably
+a reasonable sample of everyday use: running X with three open windows;
+text editing using <i>vi</i>;
+PCMCIA modem usage for about 30 minutes; mounting and I/O to a floppy
+(only long enough to get one 200k file and unmount); 85% of a kernel
+compile (battery alarm went off mid-compile); perhaps 40 minutes of
+'idle' time in which the machine wasn't doing anything actively; no
+'suspend' at all, but the screen backlighting was off about half the 
+time.  
+
+<p> For
+this run, I was using the 1.2.8 kernel with PCMCIA but no APM (the
+kernel compile that happened was to install APM, actually).  This and
+all subsequent runs will be using the 540 MB drive (not the original
+120).
+
+
+<p><dt> 2nd try: 3 hours, 52 minutes
+
+	<dd> This was a killer session in terms of battery life: I
+decided to grab TeX off the net, and the only download option I had was
+floppy disk.  So, I spent a good hour accessing the floppy and doing a
+lot of HD work.  Once I had it downloaded, I started playing with TeX
+and <i>xdvi</i>, which ate up even more HD access.  (You can imagine
+that using TeX, under X, on 8 MB of RAM would swap quite a bit.)  I'm
+very impressed the battery lasted as long as it did.  There was also
+about an hour of text editing, so that probably helped preserve the
+battery life a bit.  Due to the active nature of what I was doing, the
+backlight was on almost the entire time the computer was powered up.
+
+<p> This session was run on a 1.2.13 kernel with the PCMCIA patches
+installed, and no APM.  APM and PCMCIA aren't co-operating, so I've
+chosen PCMCIA as the far more important module to have...  If anyone can
+tell me how to get these two packages to work together, I'd be quite
+happy (and yes, I can guess that the immediate response will be 'upgrade
+to the latest kernel!' but that's a bit more than I'm up for at the
+moment...)
+</dl>
+
+<a name="faith"></a>
+<p><hr>
+<h3> Rik's results</h3>
+
+<p> As I said above, <a href="mailto:faith@cs.unc.edu">Rik Faith</a>
+contributed this information, so you should speak to him about it if
+you have any questions.  The text below is verbatim from a message he
+sent me via email -- I've added some HTML to make it look better...
+
+<tt>
+<p>In January, I posted a note about a daemon I wrote for Linux that monitors
+battery status information (apmd, available from 
+<a href="ftp://ftp.cs.unc.edu/pub/users/faith/linux">ftp.cs.unc.edu:
+/pub/users/faith/linux</a>; <a
+href="http://sunsite.unc.edu/">sunsite</a>; and 
+<a href="ftp://ftp.tsx-11.mit.edu/pub/linux">tsx-11</a>).  I've 
+collected data during
+February, and I thought I'd share them.  Implications are for 95% instead
+of 100%, since the battery jumps from 5% to 0% when the machine starts
+beeping.  So you really only have 95% of the battery to play with.  I have
+a standard 3300mAh battery in my T3600CT.
+
+<dl>
+<dt>Discharge rates (124 data points):
+        <dd>Minimum: 0.120219 %/min => 13.2 hours
+        <br>Maximum: 0.508475 %/min =>  3.1 hours
+
+        <br>Average: 0.361665 %/min =>  4.4 hours
+</dl>
+
+<p>[Note, this doesn't mean I actually ever saw a 13 hour battery life, just
+that that was the projected lifetime based on the current discharge rate,
+as measured by the daemon.  This is with a pcmcia modem inserted, sometimes
+with the modem in use.  And a 3rd party memory card for a total of 16MB.]
+
+<dl>
+<dt>Charge rates (46 data points):
+       <dd>Minimum: 0.120968 %/min => 13.1 hours
+        <br>Maximum: 0.354610 %/min =>  4.5 hours
+        <br>Average: 0.275248 %/min =>  5.8 hours
+</dl>
+
+<p>[This is rate of charge when the machine is on, and projected time to a
+full charge if the machine is used in the same manner that it has been used
+when the data was calculated.]
+
+
+<dl>
+<dt>Resume mode discharge rates (18 data points):
+   <dd>Minimum:  5.4 %/day => 17 days
+        <br>Maximum: 11.2 %/day =>  8 days
+        <br>Average:  8.9 %/day => 10 days
+</dl>
+
+<p>[This is based on leaving the laptop in resume mode for between 6 and 35
+hours.  I've never left it off for longer than that.  I can't explain the
+variation -- it is unrelated to the amount of time being off.  I can't
+imagine how it might be related to memory contents...]
+</tt>
+
+
+<p><hr>
+This page was designed and implemented by 
+<a href="mailto:reaper@muppetlabs.com">Ian Johnston</a>.  Check out my
+<a href="../index.html">homepage</a> for a laugh...
+</body>
+</html>

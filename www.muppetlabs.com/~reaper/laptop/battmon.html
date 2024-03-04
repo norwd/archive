@@ -1,0 +1,134 @@
+<html>
+<head>
+<title> APM battery monitor </title>
+</head>
+<body>
+
+<h3> Warning: to download this program, you'll want to save the Source
+listing, and edit out the HTML.  This is due to an incompatibility between
+HTML and Perl. I've made a note of where this is important. There is no
+HTML code inside the <i>--- cut here ---</i> marks.</h3>
+<pre><code>
+
+--- cut here ---
+#!/usr/bin/perl
+
+# Simple Battery Monitor by Ian Johnston
+#-----------------------------------------
+# this program was designed and coded in about an hour, as a way to have
+# a reasonable display of current battery status.  it's not very slick
+# or even a great program, but it works, and it's very simple.  it is
+# designed solely with Linux in mind, and your kernel must have the APM
+# patches installed for it to work.  if your computer doesn't have an APM
+# BIOS, this program won't help you at all.
+#
+# the display shows three pieces of information: whether the battery is
+# charging or not, whether the AC line is connected, and the approximate
+# charge in the battery.  as of this writing, the screen looked like
+# this:
+#
+#	 ----------------------
+#	 |Battery Status  * AC|
+#	 |###########---------|
+#	 |0        5        10|
+#	 ----------------------
+#
+# the information displayed is: * = charging (becomes a '-' when the
+# battery isn't charging), AC = power line connected (once again, 
+# becomes '--' when disconnected).  the power bar should be fairly
+# obvious, but it indicates percentage of battery charge, in 5% chunks.
+#
+# there are some variables below which are designed to be modified to 
+# suit individual tastes.  at the moment, they are refresh delay and
+# bar-character.  refresh delay is the number of seconds between when
+# the program updates the information.  i have this sent to 10 at the
+# moment, since that seems like a reasonable amount of time, given the
+# circumstances.  the bar-character variable is just in case you don't
+# like the "#" character, and want to use, say "*" instead.  it's a 
+# matter of taste.
+#
+# i run this program as a window, using the following command:
+# 
+# rxvt -geometry 20x3+582+0 -T battery -n battery -e /home/reaper/bin/battery &
+#
+# obviously, you should replace the executable path (after the -e) with
+# the path to wherever you stick the program.  the geometry should be 
+# customized to suit your particular needs as well.  (20x3 is the right
+# size for the window, though.)
+#
+# this is hardly the prettiest possible implementation, but it is a quick,
+# simple hack, and it works for my needs.
+#
+# this software is copyright (c) 1996 Ian Johnston.  it is freely
+# distributable in any form, and may be modified without any prior
+# permission.  if you include a substantial portion of this code in a
+# program you write, please mention my name as a contributing author.
+# i leave it up to you to determine what substantial means.  this program
+# is not warranted in any way to perform any particular function, and 
+# suitability to a given task is neither expressed nor implied.  use
+# at your own risk.
+#
+# please mail me with any bugs or comments: reaper@muppetlabs.com or
+# reaper@gahd.mallard.rain.com
+#
+# i don't plan on maintaining this software in any way, but if i make
+# changes for the better, i'll post them to my web site:
+# http://www.muppetlabs.com/~reaper/
+# like i said above, i will be glad to fix bugs if you find them.
+
+#-------------------------------------------------------------------
+# user-definable variables:
+
+$refresh_delay = 10; # number of seconds between refreshes - I use 10
+$bar_character = "#"; # the character which makes up the power bar
+
+#-------------------------------------------------------------------
+
+$| = 1;
+$CLS = "\014";
+
+if (-x "/usr/bin/tput") {             # SysV-like systems.
+        $CLS = `/usr/bin/tput clear`;
+} elsif (-x "/usr/ucb/clear") {       # Deathstarish-challenged boxen.
+	$CLS = `/usr/ucb/clear`;
+}
+
+
+while (1)
+{
+	open (APM, "/proc/apm");
+	@apm = <APM>; # this line doesn't work with HTML
+			# it should read: @apm = &lt;APM&gt;;
+			# View Source to make sure you get the
+			# correct line.
+	close APM;
+	
+	$ac = (split(' ', $apm[3]))[1]; # on or off
+	$status = (split(' ', $apm[4]))[2]; # 'charging' or 'charged'
+	$power = (split(' ', $apm[5]))[2]; # a percentage
+	$power =~ s/(\d+)%/$1/;
+
+	if ($status =~ 'charging') {$charging = '*';} else {$charging = "-";}
+	if ($ac =~ 'on') {$line_power = 'AC';} else {$line_power = '--';}
+	$bar_mult = int($power / 5);
+
+	$charge = "";
+
+	for ($x=0; $x<$bar_mult; $x++)
+	{
+		$charge .= $bar_character;
+	}
+	for ($x=0; $x<(20-$bar_mult); $x++)
+	{
+		$charge .= "-";
+	}
+
+	print $CLS;
+	print "Battery Status  $charging $line_power\n";
+	print "$charge\n";
+	print "0        5        10";
+	
+	sleep $refresh_delay;
+}
+--- cut here ---
+</pre></code></html>

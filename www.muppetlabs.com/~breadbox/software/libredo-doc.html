@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Redo Library</title>
+<style>
+body { margin: 1em; max-width: 72em; }
+h1 { text-align: center; padding-bottom: 1em; }
+.table td { vertical-align: top; padding: 0.5em 1em; }
+.grid td { padding: 0; }
+</style>
+</head>
+<body>
+<h1>Redo Library</h1>
+<p>
+libredo is a simple library that makes it easy to add powerful undo
+and redo commands to a logic puzzle game (or similar sorts of
+programs). libredo takes responsiblity for managing a branching undo
+state history without needing to be tightly integrated into the
+calling program.
+<p>
+<h2>Contents</h2>
+<p>
+<ul>
+<li><a href="libredo-doc.html#0">Overview</a>
+<li><a href="libredo-doc.html#1">Candidate Programs</a>
+<li><a href="libredo-doc.html#2">Use Cases</a>
+<li><a href="libredo-doc.html#3">The Redo API: Types</a>
+<li><a href="libredo-doc.html#4">The Redo API: Functions</a>
+</ul>
+<p>
+<a name="0"></a>
+<h2>Overview</h2>
+<p>
+Many such programs that provide undo and redo commands will only
+remember a single linear sequence. That is, undone states will only be
+redo-able while a user is using these two commands. As soon as the
+user takes some other action that changes state in a new way, all
+remaining undone states are forgotten. This limited functionality is
+common, if not ubiquitous. In contrast, libredo provides functions
+that allow a program to manage a complete history of user actions. The
+program can then let the user navigate around this history.
+<p>
+The library assists the calling program by organizing and remembering
+a complete history of visited states. When undo is used to return to a
+previous state, the user can make other changes without losing
+history. Then, if undo is used to return to the branch point a second
+time, both sequences will be available for redoing. The user's history
+is no longer linear. Instead, it takes the form of a tree, rooted at
+the starting state and bifurcating.
+<p>
+With this history available, libredo will detect when a user returns
+to a previously-seen state via a new sequence of actions. The calling
+program can then notify the user that their latest path has led to
+familiar territory. If this new sequence is more efficient, however,
+libredo can also automate the process of promoting the new sequence
+over the old one.
+<p>
+<a name="1"></a>
+<h2>Candidate Programs</h2>
+<p>
+libredo was originally designed to be used with programs that
+implement a certain class of logic puzzles. Logic puzzles typically
+involve rearranging or altering elements of a well-defined system, and
+there are a certain set of features that often arise:
+<p>
+<ul>
+<li>There is a well-defined initial state, and one or more final states.
+<li>There is no hidden information, which would reduce the desirability
+of giving the user an undo/redo facility in the first place. (For
+example, the solitaire game Klondike would not be a good candidate,
+since at the start many of the cards are face down.)
+<li>There is a limited and well-defined set of actions available to the
+user at any given point. This is in contrast to games that depend on
+the timing of user actions, since then the timing becomes a necessary
+component of the action, causing the total set of actions to expand
+significantly. (Such games typically don't provide undo facilities in
+any case.)
+<li>The complete state of the system can typically be encoded in a small
+amount of space, making it feasible to maintain an unabridged move
+history in memory.
+<li>The main challenge to the user is to solve the puzzle &mdash; but after
+that, there is usually a secondary challenge of trying to improve
+one's solution, typically by solving it in fewer steps. (Thus, a logic
+puzzle with only one possible solution path might not find this
+library as useful, since the solver would not be expected to be doing
+an extensive search of the puzzle's solution space.)
+</ul>
+<p>
+Sokoban is a good example of a program that has all of these features.
+There are only four possible actions (up, down, left, and right), and
+the complete state can be encoded by recording the posible of every
+moveable object. The exact size of this state would depend on the
+level design, but the vast majority of Sokoban levels would need less
+than 100 bytes.
+<p>
+Freecell is another example. All cards are face-up throughout the
+game. There are 240 different actions: there are 16 places to move a
+card from, and 15 places to move it to. At most points in the game,
+however, there are only a dozen or so available moves. Given the
+constraints of the layout, only a single byte is needed to encode a
+card's location, so the complete state can be contained in 52 bytes.
+On the other hand, freecell would ultimately not be a good candidate,
+since its games are generally not complex enough to benefit from an
+advanced undo/redo facility.
+<p>
+As the final point above suggests, the library is built with the
+assumption that it is normal to be able to reach a given state through
+many different sequences of steps, and that in such situations the
+user will generally want to focus on the shortest sequence available.
+In order to avoid making it too difficult to navigate a complex
+solution space, the session's history is required to maintain a strict
+tree structure. Two different sequences of user actions will therefore
+always create two different positions in the history, even if they
+both lead to the same state. To capture this equivalence, the two
+positions will be linked by an attribute called the "better" pointer.
+These better pointers connect equivalent positions, outside of the
+tree's hierarchical structure.
+<p>
+<a name="2"></a>
+<h2>Use Cases</h2>
+<p>
+A libredo session is initialized by the caller providing the initial
+state, which becomes the root of the tree representing the history.
+Every user action will form a branch connecting one state to the next.
+<p>
+To give some concrete examples, imagine a game where the user has
+three possible actions, which are called A, B, and C. The user begins
+by performing a sequence of actions: A, A, and B. The program records
+the state for each. The session history, represented as a tree, now
+contains four positions, and looks like this:
+<p>
+<pre>
+        0. (Start)
+        |_ 1. A
+           |_ 2. A
+              |_ 3. B</pre>
+<p>
+(In this diagram each position is identified by a number. Each
+position is also labeled with the last action taken by the user, but
+in reality the action should label the branch going to the position
+from the parent. That would make for an even more confusing ASCII
+diagram, however.)
+<p>
+Now imagine that the user undoes their last action, B, and makes a new
+action, C. The history now looks like this:
+<p>
+<pre>
+        0. (Start)
+        |_ 1. A
+           |_ 2. A
+              |_ 3. B
+              |_ 4. C</pre>
+<p>
+If the user then undoes this action, they would find themselves back
+at position 2. At this point the program indicates to the user that
+they have two redo options, either B or C. If the user decides to redo
+B, they will resume the state at position 3, and can take a new action
+from there.
+<p>
+<pre>
+        0. (Start)
+        |_ 1. A
+           |_ 2. A
+              |_ 3. B
+              |  |_ 5. B
+              |_ 4. C</pre>
+<p>
+Now, assume that the user has returned to the starting state and tried
+a couple of different actions from there. The history now contains ten
+positions:
+<p>
+<pre>
+        0. (Start)
+        |_ 1. A
+        |  |_ 2. A
+        |     |_ 3. B
+        |     |  |_ 5. B
+        |     |_ 4. C
+        |_ 6. B
+           |_ 7. C
+           |_ 8. B</pre>
+<p>
+Now imagine that their next action, another B from position 8, happens
+to take them to the same state as if they had just done A from the
+starting point, i.e. position 1. In that case, when the new position
+is added to the session's history, this fact will be detected and
+the new position's better pointer will be set:
+<p>
+<pre>
+        0. (Start)
+        |_ 1. A
+        |  |_ 2. A
+        |     |_ 3. B
+        |     |  |_ 5. B
+        |     |_ 4. C
+        |_ 6. B
+           |_ 7. C
+           |_ 8. B
+              |_ 9. B [1]</pre>
+<p>
+The action still creates a new position, but one that has its better
+pointer (represented in the diagram in square brackets) to point to
+position 1. The program can use this to infrom the user that they have
+moved into a previously explored state.
+<p>
+Now imagine that the user returns to the initial state and executes a
+C action, and that this happens to take them to a state that is
+identical to the state at position 2. This differs from the previous
+example in that the new position marks a shorter path to the same
+state, so the older position will have its better pointer updated,
+instead:
+<p>
+<pre>
+        0. (Start)
+        |_ 1. A
+        |  |_ 2. A [10]
+        |     |_ 3. B
+        |     |  |_ 5. B
+        |     |_ 4. C
+        |_ 6. B
+        |  |_ 7. C
+        |  |_ 8. B
+        |     |_ 9. B [1]
+        |_ 10. C</pre>
+<p>
+This is all that will happen if grafting behavior is disabled. If
+grafting is enabled, however, then the library will go further, and
+remove the subtree rooted at position 2 and place it under position 10
+instead:
+<p>
+<pre>
+        0. (Start)
+        |_ 1. A
+        |  |_ 2. A [10]
+        |_ 6. B
+        |  |_ 7. C
+        |  |_ 8. B
+        |     |_ 9. B [1]
+        |_ 10. C
+           |_ 3. B
+           |  |_ 5. B
+           |_ 4. C</pre>
+<p>
+The user can thus continue from the new position, with the shorter
+prefix having been substituted into all of their previously explored
+paths. Position 2 will remain in the history, but as a leaf node,
+with its better pointer indicating its replacement.
+<p>
+If at some point the user reaches an endpoint, i.e. one of the
+solution states, then this fact will become an attribute of the entire
+solution path. Each position in a solution path knows which action
+leads towards the solution. When there are multiple solutions in the
+history, a position will identify the shortest solution path available
+for each action.
+<p>
+<a name="3"></a>
+<h2>The Redo API: Types</h2>
+<p>
+There two structs that are used to build the history tree. Their
+fields are exposed in the redo header file, and callers are free to
+examine them. Their contents should never be modified directly,
+however; only via the API.
+<p>
+(The libredo API also declares a third struct, a <tt>redo_session</tt>, 
+which is opaque to the calling program.)
+<p>
+<h3><tt><b>redo_position</b></tt></h3>
+<p>
+The central data structure of libredo is the <tt>redo_position</tt> struct.
+Each <tt>redo_position</tt> marks a position in the user's history tree: a
+state that can be reached by a specific sequence. A <tt>redo_position</tt>
+provides the following fields:
+<p>
+<table class="table">
+<tr><td><tt>redo_position&nbsp;*<b>prev</b></tt></td>
+<td>This field identifies the position's "parent" in the history tree.
+The initial position has a <tt>prev</tt> value of <tt>NULL</tt>; all other positions
+have a valid pointer to the position preceding it in the history.</td></tr>
+<tr><td><tt>redo_branch&nbsp;*<b>next</b></tt></td>
+<td>This field points to a linked list of branches. Each branch
+represents an action that leads from this position to a next one. This
+value is <tt>NULL</tt> if there are no actions originating from this
+position. The list is ordered by recency of usage: thus, the first
+branch in the list is the branch that was most recently created
+(by <tt>redo_addposition()</tt>) or accessed (by <tt>redo_getnextposition()</tt>).
+The fields <tt>prev</tt> and <tt>next</tt> together create the tree structure of the
+session history.</td></tr>
+<tr><td><tt>unsigned&nbsp;short&nbsp;<b>nextcount</b></tt></td>
+<td>This field gives the number of branches present in the linked list
+pointed to by <tt>next</tt>.</td></tr>
+<tr><td><tt>unsigned&nbsp;short&nbsp;<b>movecount</b></tt></td>
+<td>This field is the size of the path ending at this position &mdash; i.e.
+the number of actions that were taken to arrive here from the starting
+point.</td></tr>
+<tr><td><tt>redo_position&nbsp;*<b>better</b></tt></td>
+<td>If this field is not <tt>NULL</tt>, it points to another position in the
+session history that has the same game state as this one, but in fewer
+moves.</td></tr>
+<tr><td><tt>signed&nbsp;char&nbsp;<b>endpoint</b></tt></td>
+<td>This field is zero if it is possible to make further moves from this
+position. Otherwise, this position is marked as a final state. It is
+set by the caller via <tt>redo_addposition()</tt>. The caller can set
+different values for different types of final states, in which case
+the library will treat solution endpoints with higher values as being
+preferable.</td></tr>
+<tr><td><tt>signed&nbsp;char&nbsp;<b>solutionend</b></tt></td>
+<td>This field is zero if there are no valid solution paths that pass
+through this position. Otherwise, it holds the endpoint value assigned
+to the solution's final position. If more than one solution path
+passes through this position, then <tt>solutionend</tt> holds the highest of
+the <tt>endpoint</tt> values.</td></tr>
+<tr><td><tt>unsigned&nbsp;short&nbsp;<b>solutionsize</b></tt></td>
+<td>This field is zero if there are no valid solution paths that pass
+through this position. Otherwise, it holds the total length of the
+solution path. If more than one solution path passes through this
+position with the same <tt>endpoint</tt> value, then <tt>solutionsize</tt> holds the
+length of the shortest such path.</td></tr>
+</table>
+<p>
+<h3><tt><b>redo_branch</b></tt></h3>
+<p>
+The <tt>redo_branch</tt> struct represents a branch connecting one position
+to another in the history tree. Its fields are:
+<p>
+<table class="table">
+<tr><td><tt>int&nbsp;<b>move</b></tt></td>
+<td>This is the user action that labels the branch. The value of <tt>move</tt>
+is not constrained by the library, other than being an integer. The
+calling program is free to use whatever representation of user actions
+that is convenient, as long as it is consistent.</td></tr>
+<tr><td><tt>redo_position&nbsp;*<b>p</b></tt></td>
+<td>This field holds the position that the action results in &mdash; in other
+words, the branch's end point.</td></tr>
+<tr><td><tt>redo_branch&nbsp;*<b>cdr</b></tt></td>
+<td>Branches are stored in a linked list; this field either points to
+the next branch in the list, or is <tt>NULL</tt> to mark the end of the list.
+(The name <tt>cdr</tt> comes from the traditional Lisp function for moving
+through a linked list, and was used because the more common name
+"next" might have invited confusion with the field of that name in the
+<tt>redo_position</tt> struct.)</td></tr>
+</table>
+<p>
+<a name="4"></a>
+<h2>The Redo API: Functions</h2>
+<p>
+The following provides a brief description of each function in the
+library's API.
+<p>
+<h3><tt><b>redo_beginsession</b>()</tt></h3>
+<p>
+<table class="grid">
+<tr>
+<td>&nbsp;</td>
+<td align="left"><tt>redo_session *<b>redo_beginsession</b>(</tt></td>
+<td align="left"><tt>void const *<b>initialstate</b>,</tt></td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td align="left"></td>
+<td align="left"><tt>int <b>size</b>,</tt></td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td align="left"></td>
+<td align="left"><tt>int <b>cmpsize</b>)</tt></td>
+</tr>
+</table>
+<p>
+<tt>redo_beginsession()</tt> creates a new session, with an empty history.
+The return value is a pointer to the session. Most of the other API
+functions require this value as their first argument.
+<p>
+<tt>initialstate</tt> is a pointer to a buffer that contains a representation
+of the starting position. This position will become the root of the
+tree representing the history.
+<p>
+<tt>size</tt> is the number of bytes in the state representation. Every state
+will be stored in the history as a buffer of this size. The library
+does not examine the contents of this data, other than to compare it
+with buffers representing other states. The calling program is free to
+use whatever encoding is convenient, so long as it is consistent (i.e.
+a given state is always encoded to the same set of bytes).
+<p>
+That said, <tt>cmpsize</tt> can be used to specify how many bytes of the
+state data are to be used when comparing two buffers. Any bytes after
+<tt>cmpsize</tt> in the state data are stored by the library, but are
+otherwise ignored. If <tt>cmpsize</tt> is zero, then it is treated as being
+equal to <tt>size</tt>, i.e. all bytes are significant.
+<p>
+(Please note that if the calling program uses this feature and stores
+extra bytes in the state data, the library has no way to validate
+these bytes. Thus, if grafting occurs, or if <tt>redo_duplicatepath()</tt> is
+used to make copies of positions, inconsistenties can be introduced
+across a solution path. Whether or not this happens is entirely
+dependent on how the extra state data is being used by the calling
+program, of course. For programs where this is an issue, the caller
+may need to use <tt>redo_updatesavedstate()</tt> to manually fix up the extra
+state data for the transferred positions.)
+<p>
+<h3><tt><b>redo_endsession</b>()</tt></h3>
+<p>
+<table class="grid">
+<tr>
+<td>&nbsp;</td>
+<td align="left"><tt>void <b>redo_endsession</b>(</tt></td>
+<td align="left"><tt>redo_session *<b>session</b>)</tt></td>
+</tr>
+</table>
+<p>
+Call <tt>redo_endsession()</tt> to close the session and deallocate all
+memory associated with it.
+<p>
+<h3><tt><b>redo_getfirstposition</b>()</tt></h3>
+<p>
+<table class="grid">
+<tr>
+<td>&nbsp;</td>
+<td align="left"><tt>void <b>redo_getfirstposition</b>(</tt></td>
+<td align="left"><tt>redo_session const *<b>session</b>)</tt></td>
+</tr>
+</table>
+<p>
+This function returns the initial position of the session history,
+created in the call to <tt>redo_beginsession()</tt>.
+<p>
+<h3><tt><b>redo_getsessionsize</b>()</tt></h3>
+<p>
+<table class="grid">
+<tr>
+<td>&nbsp;</td>
+<td align="left"><tt>void <b>redo_getsessionsize</b>(</tt></td>
+<td align="left"><tt>redo_session const *<b>session</b>)</tt></td>
+</tr>
+</table>
+<p>
+This function returns the number of positions currently stored in the
+session.
+<p>
+<h3><tt><b>redo_addposition</b>()</tt></h3>
+<p>
+<table class="grid">
+<tr>
+<td>&nbsp;</td>
+<td align="left"><tt>redo_position *<b>redo_addposition</b>(</tt></td>
+<td align="left"><tt>redo_session *<b>session</b>,</tt></td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td align="left"></td>
+<td align="left"><tt>redo_position *<b>prev</b>,</tt></td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td align="left"></td>
+<td align="left"><tt>int <b>move</b>,</tt></td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td align="left"></td>
+<td align="left"><tt>void const *<b>state</b>,</tt></td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td align="left"></td>
+<td align="left"><tt>int <b>endpoint</b>,</tt></td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td align="left"></td>
+<td align="left"><tt>int <b>checkequiv</b>)</tt></td>
+</tr>
+</table>
+<p>
+The <tt>redo_addposition()</tt> function is how every position after the
+first is added to the session history. As with most API functions, the
+first argument identifies the session that is being added to.
+<p>
+<tt>prev</tt> identifies the position that the action is being applied to, and
+<tt>move</tt> identifies the action itself. If this action has already been
+made and is recorded in the history, then <tt>redo_addposition()</tt> will
+simply return it directly. Otherwise, it will create a new position
+and return it after adding it to the history tree.
+<p>
+<tt>state</tt> points to a buffer that contains the representation of the new
+position's state. The library will make a copy of this data, so the
+calling program is free to reuse or deallocate the buffer after
+<tt>redo_addposition()</tt> returns.
+<p>
+A non-zero value for <tt>endpoint</tt> indicates that the new position being
+created is a final state, i.e. a "solution state". In this case, the
+path ending in the newly created position will be marked as being a
+solution. The <tt>solutionend</tt> and <tt>solutionsize</tt> fields will be set, not
+just in the returned position but in all positions along the solution
+path. The caller can provide multiple non-zero values for different
+endpoints, in which case solutions with higher <tt>endpoint</tt> values will
+be treated as preferable. (In the case where a state leads to multiple
+final states with equal <tt>endpoint</tt> values, the shorter path will be
+preferred.)
+<p>
+The <tt>checkequiv</tt> argument controls how the library checks for
+identical states in the history. It can take one of three values:
+<p>
+<table class="table">
+<tr><td><tt>redo_nocheck</tt></td>
+<td>No check is made. This setting would be used if the calling program
+never examines the better pointers, or if it already knows that the
+current state is unique.</td></tr>
+<tr><td><tt>redo_check</tt></td>
+<td>The library checks for other positions in the history that have
+identical state data, and sets the better pointers appropriately if
+so. This is the usual case.</td></tr>
+<tr><td><tt>redo_checklater</tt></td>
+<td>The position is not checked, but is marked as needing to be checked.
+This check will then take place during the next call to
+<tt>redo_setbetterfields()</tt>.</td></tr>
+</table>
+<p>
+In the case where the check is performed: If another position is found
+with the same state but a smaller move count, the position returned by
+the function will have its better pointer set to the other position.
+If on the other hand the position found has a larger move count, then
+it will have its better pointer set instead, to point to the newly
+created position. In addition, it might have its subtree of positions
+grafted onto the new position, depending on the current grafting
+behavior. See below for more details.
+<p>
+<h3><tt><b>redo_setgraftbehavior</b>()</tt></h3>
+<p>
+<table class="grid">
+<tr>
+<td>&nbsp;</td>
+<td align="left"><tt>int <b>redo_setgraftbehavior</b>(</tt></td>
+<td align="left"><tt>redo_session *<b>session</b>,</tt></td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td align="left"></td>
+<td align="left"><tt>int <b>grafting</b>)</tt></td>
+</tr>
+</table>
+<p>
+<tt>redo_setgraftbehavior()</tt> determines the grafting behavior of
+<tt>redo_addposition()</tt>. The return value is the setting's value at the
+time the function was called.
+<p>
+When a position is added that has the same state as an already
+existing position but with a smaller move count, there are four
+possible actions that the library can take, depending on the setting:
+<p>
+<table class="table">
+<tr><td><tt>redo_nograft</tt></td>
+<td>Do nothing (beyond setting the better pointer appropriately).</td></tr>
+<tr><td><tt>redo_copypath</tt></td>
+<td>Copy the shortest solution path in the older position's subtree over
+to the new position. (If no solution path exists from the older
+position, then this is the same as <tt>redo_nograft</tt>.)</td></tr>
+<tr><td><tt>redo_graft</tt></td>
+<td>Transfer the entire subtree currently rooted at the older position
+over to the new position. The older position thus becomes a leaf node,
+and any solutions that the subtree contains will inherit the
+improvement in size. This is the default behavior setting.</td></tr>
+<tr><td><tt>redo_graftandcopy</tt></td>
+<td>Graft the subtree, as with <tt>redo_graft</tt>, but then copy the shortest
+solution back to the older position, so that it is not left as a leaf
+node. (If no solution path exists in the grafted subtree, then this
+behavior is the same as <tt>redo_graft</tt>.)</td></tr>
+</table>
+<p>
+<h3><tt><b>redo_getsavedstate</b>()</tt></h3>
+<p>
+<table class="grid">
+<tr>
+<td>&nbsp;</td>
+<td align="left"><tt>void const *<b>redo_getsavedstate</b>(</tt></td>
+<td align="left"><tt>redo_position const *<b>position</b>)</tt></td>
+</tr>
+</table>
+<p>
+This function returns a pointer to the session's copy of the state
+data for the given position. As with the other data associated with a
+position, the contents of this buffer should not be modified by the
+caller. (That said, see <tt>redo_updateextrastate()</tt> below.)
+<p>
+<h3><tt><b>redo_getnextposition</b>()</tt></h3>
+<p>
+<table class="grid">
+<tr>
+<td>&nbsp;</td>
+<td align="left"><tt>redo_position *<b>redo_getnextposition</b>(</tt></td>
+<td align="left"><tt>redo_position const *<b>position</b>,</tt></td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td align="left"></td>
+<td align="left"><tt>int <b>move</b>)</tt></td>
+</tr>
+</table>
+<p>
+<tt>redo_getnextposition()</tt> traverses a branch in the history tree,
+starting from <tt>position</tt> and following the branch labeled with
+<tt>move</tt> to another position, which is returned. <tt>NULL</tt> is returned if
+there is no branch labeled with <tt>move</tt> at <tt>position</tt>.
+<p>
+This function also has the effect of causing the requested branch to
+be moved to the front of the linked list (in the parent position).
+Thus this function keeps the linked list of branches in order of the
+most recently accessed.
+<p>
+<h3><tt><b>redo_dropposition</b>()</tt></h3>
+<p>
+<table class="grid">
+<tr>
+<td>&nbsp;</td>
+<td align="left"><tt>redo_position *<b>redo_dropposition</b>(</tt></td>
+<td align="left"><tt>redo_session *<b>session</b>,</tt></td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td align="left"></td>
+<td align="left"><tt>redo_position *<b>position</b>)</tt></td>
+</tr>
+</table>
+<p>
+This function deletes <tt>position</tt> from the session's history. In order
+for a position to be removed from the history, it must not have any
+branches to other positions. The return value is the position's parent
+if the deletion was successful. If the deletion was unsuccessful,
+<tt>position</tt> is returned, unchanged, instead.
+<p>
+<h3><tt><b>redo_updatesavedstate</b>()</tt></h3>
+<p>
+<table class="grid">
+<tr>
+<td>&nbsp;</td>
+<td align="left"><tt>void <b>redo_updatesavedstate</b>(</tt></td>
+<td align="left"><tt>redo_session const *<b>session</b>,</tt></td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td align="left"></td>
+<td align="left"><tt>redo_position *<b>position</b>,</tt></td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td align="left"></td>
+<td align="left"><tt>void const *<b>state</b>)</tt></td>
+</tr>
+</table>
+<p>
+This function modifies the "extra" state data stored for a position &mdash; i.e. the non-comparing bytes of state data. (Thus, if
+<tt>redo_beginsession()</tt> was called without a lower value for <tt>cmpsize</tt>,
+this function will have no effect.) The <tt>state</tt> argument should point
+to a buffer of complete state data, the same as would be passed to
+<tt>redo_addposition()</tt>, but only the excess bytes will be copied into
+the position's state data.
+<p>
+<h3><tt><b>redo_setbetterfields</b>()</tt></h3>
+<p>
+<table class="grid">
+<tr>
+<td>&nbsp;</td>
+<td align="left"><tt>int <b>redo_setbetterfields</b>(</tt></td>
+<td align="left"><tt>redo_session *<b>session</b>)</tt></td>
+</tr>
+</table>
+<p>
+This function acts on every position in the session that was added
+with <tt>redo_checklater</tt> as the final argument to <tt>redo_addposition()</tt>.
+Every such position has its better pointer correctly initialized, as
+would have been done if <tt>redo_addposition()</tt> had been called with
+<tt>redo_check</tt>. Note however that no grafting will occur: this function
+does not change the history tree, or anything other than the better
+pointers.
+<p>
+The intended use case for <tt>redo_setbetterfields()</tt> is for recreating a
+session's history tree from scratch, as e.g. from a save file. Without
+the ability to delay this step, a new session would have to create
+positions in the same order that they were created originally, in
+order to get the same network of better pointers. The alternative
+would be for the program to record all better pointers, and then
+recreate them directly.
+<p>
+With this feature, the code that saves the session history can simply
+record a flag indicating which positions have non-<tt>NULL</tt> better
+pointers. Then, the code that recreates the history from the saved
+data can use this flag to decide whether to call <tt>redo_addposition()</tt>
+with <tt>redo_nocheck</tt> or <tt>redo_checklater</tt>. And then
+<tt>redo_setbetterfields()</tt> is called once after the full history is
+present in the session.
+<p>
+<h3><tt><b>redo_suppresscycle</b>()</tt></h3>
+<p>
+<table class="grid">
+<tr>
+<td>&nbsp;</td>
+<td align="left"><tt>int <b>redo_suppresscycle</b>(</tt></td>
+<td align="left"><tt>redo_session *<b>session</b>,</tt></td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td align="left"></td>
+<td align="left"><tt>redo_position **<b>pposition</b>,</tt></td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td align="left"></td>
+<td align="left"><tt>void const *<b>state</b>,</tt></td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td align="left"></td>
+<td align="left"><tt>int <b>prunelimit</b>)</tt></td>
+</tr>
+</table>
+<p>
+<tt>redo_suppresscycle()</tt> looks for matching states along a path. It is
+similar to what <tt>redo_addposition()</tt> does when checking for
+pre-existing identical state, except that it is constrained to only
+examine the positions along a single path.
+<p>
+The typical use case for this function is to call it just before
+calling <tt>redo_addposition()</tt>, to guard against creating a "loop" via
+the better pointers. (This situation is not forbidden by the library,
+but may be unwanted by the calling program for various reasons.)
+<p>
+The <tt>pposition</tt> argument is the address of the position that marks the
+end of the path to be examined. <tt>state</tt> points to a buffer that
+contains the state data for the as-yet uncreated position. (In
+practical terms, <tt>pposition</tt> and <tt>state</tt> correspond to the <tt>prev</tt> and
+<tt>state</tt> arguments that will be passed to <tt>redo_addposition()</tt>.)
+<p>
+If a matching state is found among the given position's ancestors,
+then the position pointed to by <tt>pposition</tt> will be overwritten to
+point to the position with the matching state, and the return value
+will be true. A return value of false indicates that no matching state
+was found.
+<p>
+The <tt>prunelimit</tt> argument specifies a distance limit. If this argument
+is positive, then when a matching state is found among the ancestors
+inside that limit, the intervening positions will be automatically
+deleted, as per <tt>redo_dropposition()</tt>. This deletion takes place
+starting at the endmost position and going upwards, so if a position
+is encountered that has other branches, no further deletions will take
+place.
+<p>
+<h3><tt><b>redo_duplicatepath</b>()</tt></h3>
+<p>
+<table class="grid">
+<tr>
+<td>&nbsp;</td>
+<td align="left"><tt>int <b>redo_duplicatepath</b>(</tt></td>
+<td align="left"><tt>redo_session *<b>session</b>,</tt></td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td align="left"></td>
+<td align="left"><tt>redo_position *<b>dest</b>,</tt></td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td align="left"></td>
+<td align="left"><tt>redo_position const *<b>source</b>)</tt></td>
+</tr>
+</table>
+<p>
+This function copies a solution path, starting at <tt>source</tt> and going
+forward to an endpoint, over to <tt>dest</tt>. The two positions should have
+identical states, thus typically <tt>dest</tt> is simply the better pointer
+of the <tt>source</tt> position. If there is more than one solution path that
+passes through <tt>source</tt>, the path with the smallest solution size is
+selected.
+<p>
+The return value is true if the copy was completed successfully. If
+<tt>source</tt> is not part of a solution path, then nothing is copied and
+false is returned.
+<p>
+This function calls <tt>redo_addposition()</tt> internally to copy the
+positions, therefore it is not an error if some (or all) of the
+positions being copied are already present at <tt>dest</tt>.
+<p>
+<h3><tt><b>redo_hassessionchanged</b>()</tt></h3>
+<p>
+<table class="grid">
+<tr>
+<td>&nbsp;</td>
+<td align="left"><tt>int <b>redo_hassessionchanged</b>(</tt></td>
+<td align="left"><tt>redo_session const *<b>session</b>)</tt></td>
+</tr>
+</table>
+<p>
+This function returns true if the session history has been modified
+since the session was created, or since the last call to
+<tt>redo_clearsessionchanged()</tt>.
+<p>
+<h3><tt><b>redo_clearsessionchanged</b>()</tt></h3>
+<p>
+<table class="grid">
+<tr>
+<td>&nbsp;</td>
+<td align="left"><tt>int <b>redo_clearsessionchanged</b>(</tt></td>
+<td align="left"><tt>redo_session *<b>session</b>)</tt></td>
+</tr>
+</table>
+<p>
+This function resets the session's change flag, so that subsequent
+calls to <tt>redo_hassessionchanged()</tt> will return false until the
+session is changed again. The return value is the value of the change
+flag at the time the function was called.
+</body>
+</html>

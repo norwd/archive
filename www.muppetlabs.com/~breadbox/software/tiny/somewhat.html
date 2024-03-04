@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>
+A Whirlwind Tutorial on Creating Somewhat Teensy ELF Executables for Linux
+</title>
+<style type="text/css">
+body {
+  background-color: #FFFFFC;
+  text: #101000;
+  font-size: 100%;
+  max-width: 64em;
+  margin: 1em;
+}
+h1, .centered {
+  text-align: center;
+}
+</style>
+</head>
+<body>
+<h1>
+A Whirlwind Tutorial on Creating Somewhat Teensy ELF Executables for Linux
+</h1>
+<p>
+</p>
+<p class="centered">
+(or, "Okay Maybe Size Isn't <em>Quite</em> Everything")
+</p><p>
+<hr/>
+</p><p>
+All right. We have taken on the task of manually constructing a Linux
+ELF executable that dynamically links with libc in order to call its
+_exit() function. The idea is to produce an executable that is as
+small as possible while still rigidly adhering to the requirements of
+the ELF specification and the Linux ABI.
+</p><p>
+Dynamic linking is a rather involved process, something akin to jet
+planes hooking up and refueling in midair. A lot of machinery has to
+be in place to do the business that ld takes care of when linking
+statically. Back in the original tutorial, we shed a kilobyte from our
+program size when we threw out libc and started making direct system
+calls. Now it's time to bite the bullet and see how much of it we have
+to put back in.
+</p><p>
+(By the way, note that we're going to continue to keep the focus on
+32-bit executables. Most everything discussed here also applies
+equally to 64-bit executables, though.)
+</p><p>
+So, what does an executable need, in order to dynamically link with a
+shared object?
+</p><p>
+Well, for starters, it needs a <def>dynamic section</def>. This structure is a
+sort of miscellaneous junk drawer for all the pieces of information
+that the linker needs to know about at run time. Its form is an array
+of 32-bit values, with the first value used to indicate what the
+second value refers to. In other words, they form key-value pairs,
+with numeric identifiers for the keys.
+</p><p>
+The ELF specification explicitly spells out which entries in the
+dynamic structure are mandatory, fortunately. Quite a few of the
+mandatory entries are values that refer to other ELF structures &mdash; and
+that means we're going to need to include those structures, too. Ack.
+We need to back up for a moment here, before we get in over our heads
+too quickly. One new structure at a time.
+</p><p>
+For starters, what exactly needs to happen for dynamic linking to
+work? Well, a dynamically linked function (or any other symbol) has an
+address that isn't determined until the calling program is actually in
+memory. At some point after that the dynamic linker has to get
+involved, so that when a dynamic address is needed, it can intervene.
+The linker must be able to retrieve the name of the symbol, figure out
+which library contains the symbol, find the address of the symbol in
+the process's memory space (mapping the library into the process's
+memory space first if it isn't there already), and finally insert the
+retrieved address where the process expects to find it.
+</p><p>
+Right off we can see that the executable is going to need to contain
+some text strings. Somewhere, it needs to have the names of the
+dynamically-linked symbols, as well as the names of the dynamic
+libraries. Presumably there also needs to be some kind of mapping
+between the symbols and the places in the assembly code where the
+symbols are referred to.
+</p><p>
+Let's start with the storing of the names. These text strings are kept
+in a <def>string table</def>. An ELF executable can have any number of string
+tables, but a dynamically linked executable needs to have at least
+one. The format of a string table is very simple: It's simply a
+continuous stream of characters, with NUL bytes separating one string
+from the next. A particular string within the table is then identified
+by its offset within the table. The first byte of a string table must
+always be a NUL byte; thus an offset of zero always means the empty
+string.
+</p><p>
+That sounds simple enough. Let's put together a string table right
+now. We'll put two strings in it &mdash; the name of the function we want
+to link to, and the name of the library to find it in:
+</p><p>
+<pre>
+  strtab:
+                db      0
+  libc_name     equ     $ - strtab
+                db      'libc.so.6', 0
+  exit_name     equ     $ - strtab
+                db      '_exit', 0
+</pre>
+</p><p>
+The libc_name and exit_name values provide the offsets to the strings
+within the table. Presumably there will be some kind of "symbol table"
+that will use those offsets, right?
+</p><p>
+Right. A <def>symbol table</def>, like all ELF tables, takes the form of an
+array of structures. The structures have the following form:
+</p><p>
+<pre>
+                                        ; Elf32_Sym
+                dd      0               ;   st_name
+                dd      0               ;   st_value
+                dd      0               ;   st_size
+                db      0               ;   st_info
+                db      0               ;   st_other
+                dw      0               ;   st_shndx
+</pre>
+</p><p>
+st_name is the string table offset to the symbol's actual name. We've
+got that covered already. st_value and st_size provide the symbol's
+"value" and "size". What these things actually mean varies for
+different kinds of symbols. However, the value and size of an
+externally-defined symbol is always zero, meaning unknown. So, we're
+good there. st_other is not currently used and so is always zero.
+Check. st_shndx provides the index of the section in the section
+header table to which that symbol belongs. We don't have a section
+header table, so: Zero. Check. That just leaves st_info.
+</p><p>
+The st_info byte actually holds two values (thus the vague name), each
+four bits in size. The low nybble indicates the type of object this
+symbol refers to. The two important possibilities are STT_OBJECT &mdash;
+i.e., some kind of variable &mdash; and STT_FUNC &mdash; i.e., what we're
+interested in. The high nybble of the st_info field indicates the
+symbol's binding. We have three choices here: STB_LOCAL, STB_GLOBAL,
+and STB_WEAK. Weak? What's that? A weak symbol mostly works like a
+global symbol. It differs in that it is not an error for there to be
+more than one weak symbol definition with the same name. Since we're
+importing and not exporting, the distinction isn't important to us.
+We'll stick with global.
+</p><p>
+The ELF specification tells us that STT_FUNC has a value of 2 and
+STB_GLOBAL has a value of 1. So we have all the information we need to
+fill in our symbol table now, don't we? Hold on: One more detail. All
+symbol tables need to have an empty first entry. As with string
+tables, a symbol table index of zero always indicates an undefined or
+invalid symbol.
+</p><p>
+So <em>now</em> we can create our symbol table:
+</p><p>
+<pre>
+  %define STT_FUNC        2
+  %define STB_GLOBAL      1
+  
+  %define ST_INFO(b, t)   (((b) &lt;&lt; 4) | (t))
+  
+  symtab:                                               ; Elf32_Sym
+                dd      0                               ;   st_name
+                dd      0                               ;   st_value
+                dd      0                               ;   st_size
+                db      0                               ;   st_info
+                db      0                               ;   st_other
+                dw      0                               ;   st_shndx
+  
+                dd      exit_name                       ;   st_name
+                dd      0                               ;   st_value
+                dd      0                               ;   st_size
+                db      ST_INFO(STB_GLOBAL, STT_FUNC)   ;   st_info
+                db      0                               ;   st_other
+                dw      0                               ;   st_shndx
+</pre>
+</p><p>
+Well, that was easy.
+</p><p>
+Too easy, really. Weren't we expecting there to be some kind of
+mapping between symbol names and their use in the actual code? There
+doesn't seem to be anything for that in this table.
+</p><p>
+And in fact there isn't. This table just describes the type of each
+symbol. After all, a single symbol can get referenced many times. It
+would be a waste to repeat all of this stuff for each and every
+reference. So for the actual mapping, we have &hellip; yet another table!
+The <def>relocation table</def>, to be precise.
+</p><p>
+An entry in the relocation table is very simple, and looks like this:
+</p><p>
+<pre>
+                                        ; Elf32_Rel
+                dd      0               ;   r_offset
+                dd      0               ;   r_info
+</pre>
+</p><p>
+The r_offset field, in the case of an executable, is generally the
+memory address where the symbol's true value needs to be inserted.
+(The precise meaning of this field can vary.) The r_info field is
+another field with two values crammed together, this time an 8-bit
+value combined with a 24-bit value. The low byte is a number
+indicating the relocation type, and the high three bytes contain the
+index of the symbol in the symbol table.
+</p><p>
+There are quite a number of relocation types for the i386
+architecture. There's R_386_32, which indicates a direct insertion of
+the symbol's value, which is useful for obtaining pointers to objects.
+There is R_386_PC32, which obtains the symbol's value relative to the
+address of the relocation. This is much more useful for composing
+jumps and calls, which is what we want to do. There are also
+relocations that calculate values relative to various ELF structures,
+relocations that make individual copies of objects, and so on. Note
+also that relocations are additive. In other words, they are added to
+whatever value is already at the offset, rather than just overwriting
+it. (It may be worth briefly noting that ELF files can have an
+alternate kind of relocation table, called Elf32_Rela, in which the
+initial offset value is stored in a third field in the relocation
+record instead. Since those take up more space without adding any new
+capabilities, we're going to ignore them.) As we're importing a
+function address, what we want is R_386_PC32. So let's set the other
+relocation types to one side.
+</p><p>
+We should be able to build our relocation table now &hellip; wait a minute!
+We need an empty entry in the first position, right? No? No,
+apparently not. Okay, never mind.
+</p><p>
+<pre>
+  %define R_386_PC32      2
+  
+  %define R_INFO(s, t)    (((s) &lt;&lt; 8) | (t))
+  
+  reltab:                                               ; Elf32_Rel
+                dd      exit_call                       ;   r_offset
+                dd      R_INFO(1, R_386_PC32)           ;   r_info
+</pre>
+</p><p>
+For the r_offset field, we have a label that hasn't been placed yet.
+We'll need to define it when we write the actual code, at the point of
+the call to the _exit() function. The 1 in the r_info field is the
+index of our 1 and only symbol in the symbol table.
+</p><p>
+Okay! Now it looks like it's starting to come together. We've defined
+enough data for a linker to move from a relocation record to the
+symbol table entry, and from there to the actual name of the symbol.
+Maybe now we're ready to take a closer look at what goes into that
+dynamic section hodgepodge.
+</p><p>
+The dynamic section has 24 different types of entries. (Yeesh!) Nine
+of these are marked as mandatory for executables. Let's look at those.
+</p><p>
+One entry is labelled DT_STRTAB. It provides the address of the string
+table. We have one of those, so check. There's also a DT_STRSZ, which
+specifies the size of the string table. We have that too. Next up is
+DT_SYMTAB, giving the address of the symbol table, and DT_SYMENT,
+giving the size of a single entry in the symbol table. Check and
+check. Then there's DT_REL, DT_RELSZ, and DT_RELENT, which specify the
+address of the relocation table, the size of said table, and the size
+of a single entry in the table. Got it, got it, got it. So far, so
+good. The eighth entry type is DT_HASH, which specifies the address of
+the hash table. <em>Choke</em>. What hash table?! Looks like we have yet
+another ELF structure to learn about.
+</p><p>
+Since your average ELF file contains hundreds if not thousands of
+symbols, ELF files come with a simple hash table to expedite the
+process of doing lookups. The hash table is simply an array of 32-bit
+values. The first value in the array specifies the number of buckets
+in the hash table. The second value in the array specifies the total
+number of entries in the hash table's chains; this will be the same as
+the number of entries in the symbol table (including the null entry at
+the top). After these two values is the array of buckets, which is
+then followed by the array of chain links.
+</p><p>
+The ELF specification lays out exactly what hash function to use:
+</p><p>
+<pre>
+  unsigned long
+  elf_hash(const unsigned char *name)
+  {
+      unsigned long       h = 0, g;
+  
+      while (*name) {
+          h = (h &lt;&lt; 4) + *name++;
+          if (g = h &amp; 0xf0000000)
+              h ^= g &gt;&gt; 24;
+          h &amp;= ~g;
+      }
+      return h;
+  }
+</pre>
+</p><p>
+In the interest of speed, it is a very simple function, using nothing
+more than addition and bit-twiddling. To look up a symbol name in the
+hash table, a program runs the symbol name through the hash function,
+and uses the resulting number as an index into the bucket array,
+modulo the number of buckets. The number stored at that index is the
+index into the symbol table for a symbol with that hash value. The
+program then retrieves that symbol's name and compares it with the one
+it seeks. If it's not the right symbol, the program then uses the same
+number as an index into the chain array. The value there will be the
+index for another symbol whose name also hashes to that value. The
+program tries the new index; if it's still not the right symbol, it
+uses this latest index on the chain array again. It continues to
+follow the chain links until it finds the symbol it wants, or until it
+retrieves a zero value from the chain array, at which point the
+program knows that no more symbols are present with that hash value.
+(Since the first chain link always corresponds to the null entry, zero
+can never be a link to a valid symbol.)
+</p><p>
+A program that is building a hash table can choose whatever number of
+buckets it thinks will provide the best coverage with the fewest
+entries per bucket. Or if &mdash; as in our case &mdash; size is a concern
+instead of speed, it can build a table with a single bucket, which
+every symbol will hash to. In our case, there is only one symbol in
+our symbol table, so both of these strategies point to the same
+decision: a hash table with one bucket.
+</p><p>
+<pre>
+  hashtab:
+                dd      1               ; the number of buckets
+                dd      2               ; the number of symbols
+                dd      1               ; the lone bucket: symbol 1 for _exit
+                dd      0               ; the null symbol table entry
+                dd      0               ; the end of the only chain
+</pre>
+</p><p>
+The one bucket entry points to our one symbol. There are two chain
+entries, and both of them are zero because neither of them chain to
+the other.
+</p><p>
+We have a hash table. I mean, it's not much of a hash table, but it's
+valid in the eyes of the ELF specification. Hurrah!
+</p><p>
+Now, back to the dynamic section mishmash. We now have something to
+fill in for DT_HASH. But there is one more required entry left. What
+is it? As it happens, the ninth required entry is DT_NULL, which comes
+last in the table and marks its end. So that's it for the dynamic
+section!
+</p><p>
+Or is it? There's something we're still missing.
+</p><p>
+At this point, there's still nothing that points to the name of the
+shared-object library in the string table! Certainly that belongs in
+the dynamic section, or maybe as some kind of specially marked symbol?
+Actually, yes, it does belong in the dynamic section, under a
+DT_NEEDED identifier. DT_NEEDED is one of the optional entries &mdash;
+probably because, unlike the other entries, you can have more than one
+DT_NEEDED entry. Each one provides a string table offset to the name
+of a dynamic library, and the order they appear in the table
+determines the order that they will be searched for symbols. We just
+need the one, thanks.
+</p><p>
+(And you may have noticed, by this point, that there is truly nothing
+in the ELF file that connects a symbol to the library that supplies
+it. This is not an oversight, and in fact reflects one of the more
+noteworthy facts about dynamic linking in Unix &mdash; an exported symbol
+is truly global, and a library can usurp another library's symbol
+definition by getting loaded first. Check out the documentation for
+the LD_PRELOAD environment variable if you don't already know about
+it.)
+</p><p>
+So. Here is our dynamic section, all filled out:
+</p><p>
+<pre>
+  %define DT_NULL                0
+  %define DT_NEEDED              1
+  %define DT_HASH                4
+  %define DT_STRTAB              5
+  %define DT_SYMTAB              6
+  %define DT_STRSZ              10
+  %define DT_SYMENT             11
+  %define DT_REL                17
+  %define DT_RELSZ              18
+  %define DT_RELENT             19
+  
+  dyntab:
+                dd      DT_STRTAB, strtab
+                dd      DT_STRSZ,  strtabsz
+                dd      DT_SYMTAB, symtab
+                dd      DT_SYMENT, symentsz
+                dd      DT_REL,    reltab
+                dd      DT_RELSZ,  reltabsz
+                dd      DT_RELENT, relentsz
+                dd      DT_HASH,   hashtab
+                dd      DT_NEEDED, libc_name
+                dd      DT_NULL,   0
+</pre>
+</p><p>
+We need to go back and insert some labels and/or equates for a few of
+these symbols, but none of these require us to add content to the file
+that we don't already have.
+</p><p>
+As we can see now, the dynamic section functions as a kind of
+information kiosk for the dynamic linker, so it can find everything
+after it's been loaded into memory. Yes, it's all beginning to make
+sense.
+</p><p>
+(You may note that while the relocation table requires three entries,
+to fully specify its dimensions, the symbol table only requires two.
+Why isn't there a value that specifies the number of symbols in the
+symbol table? Because that number is included in the hash table. So
+that's one reason why the hash table isn't optional.)
+</p><p>
+So, are we done bloating up our executable with all these new ELF
+structures? Do we have everything we need to cooperate with the
+dynamic linker?
+</p><p>
+Not quite. One question: how does the linker find the dynamic section
+in the first place?
+</p><p>
+Answer: The dynamic section requires its own entry in the program
+segment header table. Remember the program segment header table? We've
+been getting by with only one program segment for the entire file, but
+that's not good enough any more. The linker needs to have the dynamic
+section called out directly with a program segment header table entry.
+(And if you ask how the dynamic linker finds the program segment
+header table, I will remind you that the location of the program
+segment header table is stashed in the ELF header itself. And if you
+ask how the linker finds the ELF header, go back and review the first
+tutorial: It's always the very first thing in the ELF file.)
+</p><p>
+Having a second program header table entry is a bit of a downer,
+because it means we won't be able to overlap it with the ELF header
+anymore: The first two bytes of the overlap are, in the ELF header,
+the number of entries in said table, and that number will now be two
+instead of one. As a small consolation, though, there will be two
+p_paddr fields in which we can hide bits of code.
+</p><p>
+In any case, there's no escaping the need for it, so let's quit
+dawdling and cobble together a new program header table:
+</p><p>
+<pre>
+  %define PT_LOAD              1
+  %define PT_DYNAMIC           2
+  
+  %define PF_R                 4
+  %define PF_W                 2
+  %define PF_X                 1
+  
+  phdr:                                                 ; Elf32_Phdr
+                dd      PT_LOAD                         ;   p_type
+                dd      0                               ;   p_offset
+                dd      $$                              ;   p_vaddr
+                dd      $$                              ;   p_paddr
+                dd      filesz                          ;   p_filesz
+                dd      memsz                           ;   p_memsz
+                dd      PF_R | PF_W | PF_X              ;   p_flags
+                dd      0x1000                          ;   p_align
+  
+                dd      PT_DYNAMIC                      ;   p_type
+                dd      dyntab - $$                     ;   p_offset
+                dd      dyntab                          ;   p_vaddr
+                dd      dyntab                          ;   p_paddr
+                dd      dyntabsz                        ;   p_filesz
+                dd      dyntabsz                        ;   p_memsz
+                dd      PF_R | PF_W                     ;   p_flags
+                dd      4                               ;   p_align
+</pre>
+</p><p>
+I've gone ahead and replaced some of the magic numbers in the old
+version with named definitions, so we can better see what's going on.
+The original entry is marked PT_LOAD, meaning that this segment is to
+be loaded into memory at startup. It will still contain the entire
+file's contents. (That doesn't let us off the hook of having a
+separate entry for the dynamic section.) The new entry is marked
+PT_DYNAMIC, so the linker will have no trouble finding it. (Hey!
+PT_DYNAMIC has a value of two, so if we put this entry first we could
+overlap with the ELF header again! But no: The second field in this
+entry isn't zero, so it won't actually mesh with the end of the ELF
+header. Dang.) This entry covers just the dynamic section, and is,
+somewhat surprisingly, typically marked as being writable. (I'm not
+sure why, but it matters; having a read-only dynamic table will cause
+your executable to segfault during initialization.) Thus the PT_LOAD
+entry itself needs to be marked as writable, since it's the one that
+actually determines the flags that are set for that page of memory.
+</p><p>
+So <em>now</em> we're done! We're ready to put all these disparate pieces
+together into a single file.
+</p><p>
+Well, almost. But not yet.
+</p><p>
+Here's a question: How does the dynamic linker ever get invoked?
+</p><p>
+This may come as a bit of a surprise (it certainly did to me), but the
+dynamic linker does not get handed every executable with a dynamic
+section by default. Dynamic linking is an opt-in affair, and you must
+specifically request it.
+</p><p>
+One of the issues here is that the dynamic linker is just another
+program, and occasionally changes in the kernel require changes in the
+linker. In order to maintain binary backwards-compatibility, it can be
+necessary to have more than one version of the dynamic linker program
+available. Thus, each and every program must specify which linker they
+were made to work with. In fact, the full pathname to the dynamic
+linker has to be embedded within the executable. And not within a
+string table, mind you. It needs to be involved too early in the
+process, so as a result it gets its own program header table entry.
+That's right: we need yet another entry to the program segment header
+table.
+</p><p>
+Grumble, grumble. Well, if we must:
+</p><p>
+<pre>
+  %define PT_INTERP            3
+  
+                dd      PT_INTERP                       ;   p_type
+                dd      interp - $$                     ;   p_offset
+                dd      interp                          ;   p_vaddr
+                dd      interp                          ;   p_paddr
+                dd      interpsz                        ;   p_filesz
+                dd      interpsz                        ;   p_memsz
+                dd      PF_R                            ;   p_flags
+                dd      0                               ;   p_align
+  
+  interp:
+                db      '/lib/ld-linux.so.2', 0
+  interpsz      equ     $ - interp
+</pre>
+</p><p>
+Why is it called PT_INTERP? Apparently the dynamic linker is being
+treated as a kind of interpreter. The dynamic linker is handed the
+program while the execve() system call is still running, and it does
+its work before execve() hands control over to the new executable. (In
+a manner of speaking, that is. A good chunk of the activity involved
+in dynamic linking is typically delayed until a given symbol is
+actually referenced. This saves time during startup, and can save time
+overall as well, if a number of the imported symbols don't get used.
+The dynamic linker arranges for this by having linked symbols call
+back into itself, at which time the real symbol's location is looked
+up. We aren't using this feature in our program, though, in the
+interests of minimizing our size.)
+</p><p>
+Note that this diminuitive segment only needs to be readable. And
+because it's a simple string, it has no aligment requirements.
+</p><p>
+Okay. I think that really is the last of the pieces. <em>Now</em> we're ready
+to put it all together. Or almost ready &hellip; hmm. Do you get the
+feeling that we've overlooked something?
+</p><p>
+Oh yeah. The program!
+</p><p>
+Originally the version of our program that used libc looked like this:
+</p><p>
+<pre>
+  _start:
+                push    byte 42
+                call    _exit
+</pre>
+</p><p>
+This time, however, we're importing the _exit symbol ourselves, at
+runtime. So what needs to go here?
+</p><p>
+Remember our entry in the relocation table? We put a label there,
+exit_call, and noted that we would need to place it in the code, at
+the point where the _exit() function is called. Well, we're at that
+place now.
+</p><p>
+So our program should look like this:
+</p><p>
+<pre>
+  _start:
+                push    byte 42
+  exit_call:    call    $
+</pre>
+</p><p>
+Or maybe not. A bit of thought should make it clear that this won't
+work. The exit_call label isn't quite pointing at the call address;
+instead it's pointing at the call instruction itself. We don't want to
+overwrite that part. So let's push exit_call forward one byte:
+</p><p>
+<pre>
+  _start:
+                push    byte 42
+                call    $
+  exit_call     equ     $ - 4
+</pre>
+</p><p>
+Much better. However, there's still an error here.
+</p><p>
+The dynamic linker is going to insert the relative address of the
+_exit() function there. But relative to what? Relative to the address
+that it's modifying &mdash; that is, relative to exit_call. But the x86
+call instruction doesn't work relative to that location; it calculates
+the destination relative to the instruction pointer, which by that
+time is pointing to the byte <em>after</em> the call instruction. So the
+value that the dynamic linker will insert there will be off by four
+bytes.
+</p><p>
+How do we repair this? Do we have to fixup the fixup? In a way, yes.
+Remember that I mentioned that relocations are added to whatever value
+is already embedded in the code, rather than just overwriting it. So
+we just need to store a value of -4 at exit_call. We could do that
+this way:
+</p><p>
+<pre>
+  _start:
+                push    byte 42
+                db      0xE8
+  exit_call:    dd      -4
+</pre>
+</p><p>
+But writing it like this will also work, and is more clear as to what's
+going on:
+</p><p>
+<pre>
+  _start:
+                push    byte 42
+                call    exit_call
+  exit_call     equ     $ - 4
+</pre>
+</p><p>
+And now &hellip; I think we have all the pieces! Finally. Let's put them
+together and see what we get.
+</p><p>
+<pre>
+  ; tiny.asm
+  
+  BITS 32
+  
+  %define ET_EXEC       2
+  %define EM_386        3
+  %define EV_CURRENT    1
+  
+  %define PT_LOAD       1
+  %define PT_DYNAMIC    2
+  %define PT_INTERP     3
+  
+  %define PF_X          1
+  %define PF_W          2
+  %define PF_R          4
+  
+  %define STT_FUNC      2
+  
+  %define STB_GLOBAL    1
+  
+  %define R_386_PC32    2
+  
+  %define DT_NULL       0
+  %define DT_NEEDED     1
+  %define DT_HASH       4
+  %define DT_STRTAB     5
+  %define DT_SYMTAB     6
+  %define DT_STRSZ      10
+  %define DT_SYMENT     11
+  %define DT_REL        17
+  %define DT_RELSZ      18
+  %define DT_RELENT     19
+  
+  %define ST_INFO(b, t) (((b) &lt;&lt; 4) | (t))
+  %define R_INFO(s, t)  (((s) &lt;&lt; 8) | (t))
+  
+  shentsz       equ     0x28
+  
+                org     0x08048000
+  
+  ;; The ELF header
+  
+  ehdr:                                                 ; Elf32_Ehdr
+                db      0x7F, "ELF", 1, 1, 1            ;   e_ident
+        times 9 db      0
+                dw      ET_EXEC                         ;   e_type
+                dw      EM_386                          ;   e_machine
+                dd      EV_CURRENT                      ;   e_version
+                dd      _start                          ;   e_entry
+                dd      phdr - $$                       ;   e_phoff
+                dd      0                               ;   e_shoff
+                dd      0                               ;   e_flags
+                dw      ehdrsz                          ;   e_ehsize
+                dw      phentsz                         ;   e_phentsize
+                dw      3                               ;   e_phnum
+                dw      shentsz                         ;   e_shentsize
+                dw      0                               ;   e_shnum
+                dw      0                               ;   e_shstrndx
+  ehdrsz        equ     $ - ehdr
+  
+  ;; The program segment header table
+  
+  phdr:                                                 ; Elf32_Phdr
+                dd      PT_INTERP                       ;   p_type
+                dd      interp - $$                     ;   p_offset
+                dd      interp                          ;   p_vaddr
+                dd      interp                          ;   p_paddr
+                dd      interpsz                        ;   p_filesz
+                dd      interpsz                        ;   p_memsz
+                dd      PF_R                            ;   p_flags
+                dd      0                               ;   p_align
+  phentsz       equ     $ - phdr
+                dd      PT_LOAD                         ;   p_type
+                dd      0                               ;   p_offset
+                dd      $$                              ;   p_vaddr
+                dd      $$                              ;   p_paddr
+                dd      filesz                          ;   p_filesz
+                dd      memsz                           ;   p_memsz
+                dd      PF_R | PF_W | PF_X              ;   p_flags
+                dd      0x1000                          ;   p_align
+  
+                dd      PT_DYNAMIC                      ;   p_type
+                dd      dyntab - $$                     ;   p_offset
+                dd      dyntab                          ;   p_vaddr
+                dd      dyntab                          ;   p_paddr
+                dd      dyntabsz                        ;   p_filesz
+                dd      dyntabsz                        ;   p_memsz
+                dd      PF_R | PF_W                     ;   p_flags
+                dd      4                               ;   p_align
+  
+  ;; The hash table
+  
+  hashtab:
+                dd      1                               ; no. of buckets
+                dd      2                               ; no. of symbols
+                dd      1                               ; the bucket: symbol #1
+                dd      0, 0                            ; two links, both zero
+  
+  ;; The symbol table
+  
+  symtab:                                               ; Elf32_Sym
+                dd      0                               ;   st_name
+                dd      0                               ;   st_value
+                dd      0                               ;   st_size
+                db      0                               ;   st_info
+                db      0                               ;   st_other
+                dw      0                               ;   st_shndx
+  symentsz      equ     $ - symtab  
+                dd      exit_name                       ;   st_name
+                dd      0                               ;   st_value
+                dd      0                               ;   st_size
+                db      ST_INFO(STB_GLOBAL, STT_FUNC)   ;   st_info
+                db      0                               ;   st_other
+                dw      0                               ;   st_shndx
+  
+  ;; The relocation table
+  
+  reltab:                                               ; Elf32_Rel
+                dd      exit_call                       ;   r_offset
+                dd      R_INFO(1, R_386_PC32)           ;   r_info
+  relentsz      equ     $ - reltab
+  reltabsz      equ     $ - reltab
+  
+  ;; The dynamic section
+  
+  dyntab:
+                dd      DT_STRTAB, strtab
+                dd      DT_STRSZ,  strtabsz
+                dd      DT_SYMTAB, symtab
+                dd      DT_SYMENT, symentsz
+                dd      DT_REL,    reltab
+                dd      DT_RELSZ,  reltabsz
+                dd      DT_RELENT, relentsz
+                dd      DT_HASH,   hashtab
+                dd      DT_NEEDED, libc_name
+                dd      DT_NULL,   0
+  dyntabsz      equ     $ - dyntab
+  
+  ;; The interpreter segment
+  
+  interp:
+                db      '/lib/ld-linux.so.2', 0
+  interpsz      equ     $ - interp
+  
+  ;; The string table
+  
+  strtab:
+                db      0
+  libc_name     equ     $ - strtab
+                db      'libc.so.6', 0
+  exit_name     equ     $ - strtab
+                db      '_exit', 0
+  strtabsz      equ     $ - strtab
+  
+  ;; Our program
+  
+  _start:
+                push    byte 42
+                call    exit_call
+  exit_call     equ     $ - 4
+  
+  ;; End of the file image.
+  
+  filesz        equ     $ - $$
+  memsz         equ     filesz  
+</pre>
+</p><p>
+Note that I've placed all of the structures at the top of the file,
+before the strings sections and the program. All ELF structures which
+contain 32-bit fields (which is basically everything except string
+tables) need to be dword-aligned in memory, which means they also need
+to be dword-aligned in the file. The easiest way to ensure that is to
+move all the alignment-agnostic sections to the end.
+</p><p>
+When this program is executed, what will happen? (Deep breath.) The
+kernel will map it into memory, whereupon it will see the entry in the
+program segment header table marked PT_INTERP. It will hand the image
+of our process-to-be over to the program named in that segment, which
+is the dynamic linker. The dynamic linker will refer to the dynamic
+section (thanks to it also having an entry in the program segment
+header table) to find the relocation table. The relocation table's one
+entry tells it to compute a relative address for the first symbol in
+the symbol table, the location for which is also retrieved from the
+dynamic section. The first entry in the symbol table provides a
+position in the string table (and again, the location for the string
+table comes from the dynamic section) where the symbol's name is
+stored, namely "_exit". To find that address the dynamic linker starts
+going down the list of shared-object libraries that our program has
+requested; this list contains only a single library, namely
+"libc.so.6". The dynamic linker will now shift its attention to that
+library's ELF structures instead of ours. It will compute the hash
+value of "_exit", and consult libc's hash table, symbol table, and
+string table in order to find an entry for that symbol. (If it failed
+to find this symbol, it would then try the next library mapped into
+our process space. Since there are no other such libraries, the
+dynamic linker would display an error message and quit the process.)
+The symbol table entry, once found, provides a value for the symbol,
+which the dynamic linker adjusts to match the address of the
+shared-object in our process space, and finally stores a relative
+version of that value at the address specified in our relocation table
+entry. (Phew.)
+</p><p>
+Then, when the kernel starts us running at our entry point, our
+program's call instruction executes, and it actually jumps to the
+desired _exit routine. Or so we hope, anyway.
+</p><p>
+Here we go:
+</p><p>
+<pre>
+  $ <b>nasm -f bin -o a.out tiny.asm</b>
+  $ <b>chmod +x a.out</b>
+  $ <b>./a.out ; echo $?</b>
+  42
+</pre>
+</p><p>
+It worked. How about that? We have dynamically linked!
+</p><p>
+Now let's check on the size of this thing:
+</p><p>
+<pre>
+  $ <b>wc -c a.out</b>
+      331 a.out
+</pre>
+</p><p>
+Well, that's considerably larger than 45 bytes. On the other hand,
+it's quite a lot smaller than the executable created for us by the
+linker. So, I'd say this still counts as a complete success.
+</p><p>
+<hr/>
+</p><p>
+The next question is, of course, can we make this any smaller?
+However, I'm going to step away from my usual role and tell you up
+front that there isn't a lot we can do to reduce this. We're playing
+with the net up, as the saying goes. There aren't any fields in the
+new ELF structures that permit arbitrary values, so we're not going to
+be able to overlap things much. And we don't have any optional
+structures that we can remove and still do dynamic linking. (Which is
+really to say that I've already omitted any optional structures like
+the procedure linkage table.)
+</p><p>
+Still, let's see what we <em>can</em> do.
+</p><p>
+We're still free to overlap sections, and there is some scope for
+that. A couple of the sections end in several zero bytes, for
+starters, which immediately brings the symbol table to mind, as it
+begins with no less than 16 NULs. The structures ending with the most
+NULs are the hash table and the dynamic structure &mdash; both have 11 NUL
+bytes at their tails. Let's use the hash table, since it's already
+placed above the symbol table, and overlap them, like so:
+</p><p>
+<pre>
+  ;; The hash table and the symbol table, overlapped
+  
+  hashtab:
+                dd      1                               ; no. of buckets
+                dd      2                               ; no. of symbols
+                db      1                               ; the bucket: symbol #1
+                                                        ; two links, both zero
+  symtab:                                               ; Elf32_Sym
+                dd      0                               ;   st_name
+                dd      0                               ;   st_value
+                dd      0                               ;   st_size
+                ; etc.
+</pre>
+</p><p>
+But this won't quite work, because now the symbol table is no longer
+dword-aligned. In practice we can only overlap 8 of the 11 bytes:
+</p><p>
+<pre>
+  ;; The hash table and the symbol table, overlapped
+  
+  hashtab:
+                dd      1                               ; no. of buckets
+                dd      2                               ; no. of symbols
+                dd      1                               ; the bucket: symbol #1
+                                                        ; two links, both zero
+  symtab:                                               ; Elf32_Sym
+                dd      0                               ;   st_name
+                dd      0                               ;   st_value
+                dd      0                               ;   st_size
+                ; etc.
+</pre>
+</p><p>
+Another trick we can do with structures ending in zeros is to put them
+at the end of the file. You may recall that the entries in the program
+segment header table specify both a file size and a memory size (the
+fields p_filesz and p_memsz). When the memory size is larger than the
+file size, the loader is required to explicitly make up the difference
+with NUL bytes.
+</p><p>
+We can only do this at the end of the file, even though we have three
+segments, since everything gets loaded in a single segment. (Only the
+PT_LOAD entry in the table actually causes anything to be copied out
+of the file and into memory. The PT_INTERP and PT_DYNAMIC entries in
+the table are really nothing more than pointers.) Since there are no
+alignment requirements for the ends of structures, we can chop all
+eleven bytes off the tail of the dynamic structure:
+</p><p>
+<pre>
+  align 4
+  
+  ;; The dynamic section
+  
+  dyntab:
+                dd      DT_STRTAB, strtab
+                dd      DT_STRSZ,  strtabsz
+                dd      DT_SYMTAB, symtab
+                dd      DT_SYMENT, symentsz
+                dd      DT_REL,    reltab
+                dd      DT_RELSZ,  reltabsz
+                dd      DT_RELENT, relentsz
+                dd      DT_HASH,   hashtab
+                dd      DT_NEEDED
+                db      libc_name
+  
+  dyntabsz      equ     ($ - dyntab) + 11
+  _end          equ     $ + 11
+  
+  ;; End of the file image.
+  
+  filesz        equ     $ - $$
+  memsz         equ     _end - $$
+</pre>
+</p><p>
+Of course, moving the dynamic section to the end of the file means
+that we may need to insert a few bytes of padding after the unaligned
+structures. (Thus the "align 4" directive just before the dynamic
+section.) But it's still worth doing. Also note that we need to be
+careful to adjust the values of all affected assembler symbols, so
+that the missing bytes are still counted as part of the structure.
+</p><p>
+What about overlapping something with the front of the dynamic
+section? The nice thing about the dynamic section is that its
+key-value pairs don't have to be in any particular order; anything can
+be moved to the front. There are a few possible entries that provide
+overlapping opportunities, but the one that I want to use is the
+hardest one to see &mdash; the end of the symbol table:
+</p><p>
+<pre>
+  %define STT_FUNC      2
+  %define STB_GLOBAL    1
+  
+  %define ST_INFO(b, t) (((b) &lt;&lt; 4) | (t))
+  
+                dd      exit_name                       ;   st_name
+                dd      0                               ;   st_value
+                dd      0                               ;   st_size
+                db      ST_INFO(STB_GLOBAL, STT_FUNC)   ;   st_info
+                db      0                               ;   st_other
+                dw      0                               ;   st_shndx
+</pre>
+</p><p>
+The last four bytes of our symbol table represent the value 18. That
+happens to match up with the value of DT_RELSZ. And so:
+</p><p>
+<pre>
+                dd      exit_name                       ;   st_name
+                dd      0                               ;   st_value
+                dd      0                               ;   st_size
+                                                        ;   st_info = 18
+                                                        ;   st_other = 0
+                                                        ;   st_shndx = 0
+  dyntab:
+                dd      DT_RELSZ,  reltabsz
+                dd      DT_RELENT, relentsz
+                dd      DT_REL,    reltab
+                ; etc.
+</pre>
+</p><p>
+Of course, the symbol table is already overlapping on the other side
+with the hash table, so both of them will get dragged down to the end
+of the file.
+</p><p>
+And moving on to the two string sections, we can of course overlap the
+single NUL at the end of the interpreter string with the one at the
+start of the string table:
+</p><p>
+<pre>
+  ;; The interpreter segment and the string table, overlapped
+  
+  interp:
+                db      '/lib/ld-linux.so.2'      ; plus a terminating NUL
+  interpsz      equ     ($ - interp) + 1
+  
+  strtab:
+                db      0
+  libc_name     equ     $ - strtab
+                db      'libc.so.6', 0
+  exit_name     equ     $ - strtab
+                db      '_exit', 0
+  strtabsz      equ     $ - strtab
+</pre>
+</p><p>
+Looks like we've already run out of things to overlap! Well, not
+quite. There is one more overlap we can create. The program segment
+header table contains three entries. The order of these entries is
+umimportant. We can shuffle them around so that the final field in the
+table will be the interpreter segment's p_align field. Because this
+segment has no alignment requirements, the value of this field is
+zero. However, the ELF specification notes that unaligned segments can
+be indicated with a value of either zero or one. Since the first field
+in the hash table is a one, let's use the latter.
+</p><p>
+<pre>
+  align 4
+  
+  ;; The program segment header table, the hash table, the symbol
+  ;; table, and the dynamic section, overlapped
+  
+  phdr:                                                 ; Elf32_Phdr
+                dd      PT_LOAD                         ;   p_type
+                dd      0                               ;   p_offset
+                dd      $$                              ;   p_vaddr
+                dd      $$                              ;   p_paddr
+                dd      filesz                          ;   p_filesz
+                dd      memsz                           ;   p_memsz
+                dd      PF_R | PF_W | PF_X              ;   p_flags
+                dd      0x1000                          ;   p_align
+  
+                dd      PT_DYNAMIC                      ;   p_type
+                dd      dyntab - $$                     ;   p_offset
+                dd      dyntab                          ;   p_vaddr
+                dd      dyntab                          ;   p_paddr
+                dd      dyntabsz                        ;   p_filesz
+                dd      dyntabsz                        ;   p_memsz
+                dd      PF_R | PF_W                     ;   p_flags
+                dd      4                               ;   p_align
+  
+                dd      PT_INTERP                       ;   p_type
+                dd      interp - $$                     ;   p_offset
+                dd      interp                          ;   p_vaddr
+                dd      interp                          ;   p_paddr
+                dd      interpsz                        ;   p_filesz
+                dd      interpsz                        ;   p_memsz
+                dd      PF_R                            ;   p_flags
+                                                        ;   p_align = 1
+  hashtab:
+                dd      1                               ; no. of buckets
+                dd      2                               ; no. of symbols
+                dd      1                               ; the bucket: symbol #1
+                ; etc.
+</pre>
+</p><p>
+With these overlaps in place, we can verify that we still have a
+working executable:
+</p><p>
+<pre>
+  $ <b>nasm -f bin -o a.out tiny.asm</b>
+  $ <b>chmod +x a.out</b>
+  $ <b>./a.out ; echo $?</b>
+  42
+  $ <b>wc -c a.out</b>
+      305 a.out
+</pre>
+</p><p>
+We reclaimed 8 bytes from the hash table, 11 bytes off the end of the
+dynamic structure, 1 byte from the interpreter segment, 4 bytes off
+the end of the symbol table, and 4 bytes out of the program segment
+header table &hellip; minus two bytes of padding that needed to be
+introduced. Our program is now 26 bytes smaller.
+</p><p>
+There is, of course, one last reduction that we can make, and that is
+(as before) squeezing the program itself into the ELF structures.
+</p><p>
+Despite all this new machinery, we don't have any addtional fields
+that we can cram arbitrary values into. Just our old standby, the
+p_paddr field in the program segment header table. However, we now
+have three p_paddr fields we can use. And our program is only two
+instructions long, so no problem.
+</p><p>
+<pre>
+  ;; Our program
+  
+  _start:
+                push    byte 42
+                call    exit_call
+  exit_call     equ     $ - 4
+</pre>
+</p><p>
+Well, there is one problem. The second instruction is five bytes long.
+We don't have five contiguous bytes we can use.
+</p><p>
+In the previous essay, we selected a load address with a upper byte
+that matched an instruction, so we could use part of the p_vaddr field
+as well. But that won't work this time. The initial byte of the call
+instruction is 0xE8, and this we can't have a load address above
+0x80000000. We could embed 0xE8 as the second-highest byte of the load
+address, except that what comes after the call instruction is the
+32-bit value -4, or 0xFFFFFFFC, which is no better. On top of this,
+that -4 value is going to be overwritten by the dynamic linker. The
+ELF spec doesn't explicitly say that you can't alter the p_vaddr field
+after it's been loaded &hellip; but neither does it say that you can. (This
+feels like one of those things that never occurred to anyone as
+needing to be explicitly forbidden. Sort of like how the ELF
+specification doesn't explicitly say that you can't expect your
+executable to work if you set the hard drive on fire while it's
+loading.) If we're really trying to play by the rules, then it's
+probably best to avoid altering ELF structures during runtime.
+</p><p>
+Is there any other field, anywhere else in the file, where we can
+squeeze a five-byte call instruction? No, there doesn't seem to be.
+</p><p>
+Is there another instruction we can use instead of call? Well, we can
+push a return value onto the stack manually and then jump. But a jump
+is also five bytes long, so that gets us nothing. (There is also the
+issue of getting a return value to put onto the stack in the first
+place. Normally that couldn't be done without a five-byte instruction
+either. In fact, the usual way of getting a return value is to execute
+a call to a pop instruction! But this is a special case: Since the
+_exit() function never returns, we likely could have gotten away with
+pushing any random value, or even subtracting four from the stack
+pointer.)
+</p><p>
+Well, is there another encoding of the call instruction we could use?
+A "call eax" instruction is only two bytes long, for example. But then
+we're still stuck with a five-byte instruction to load an address into
+eax.
+</p><p>
+Maybe we could use a "call [eax]" instruction? We still need to load
+eax with an address, of course. But before we were dealing with an
+address that doesn't exist until the dynamic linker comes along and
+inserts it. This way, we would be dealing with an address that we
+choose, one located in our file and known ahead of time. This is a
+possibility.
+</p><p>
+The only problem is that we don't have a pointer to anyplace within
+our file (or anywhere else, for that matter). So we'll need to pick a
+load address that we can create from scratch using short instructions.
+After experimenting with the instruction set for a bit, the best valid
+address I can come up with is 0x01000000, which I can generate like so:
+</p><p>
+<pre>
+          xor     eax, eax
+          inc     eax
+          bswap   eax
+</pre>
+</p><p>
+This is still five bytes, but since there are three instructions now,
+we don't need the five bytes to be contiguous. This would set eax to
+point to the beginning of the file image in memory. We still need to
+offset it to where the actual address gets stored, of course:
+</p><p>
+<pre>
+          call    [byte eax + (exit_call - $$)]
+</pre>
+</p><p>
+This instruction is three bytes long. We need another two bytes to
+push the argument, for a grand total of ten bytes. <em>Argh!</em> Once we
+account for the jumps we need to move from one p_paddr field to the
+next, we only have eight bytes available to us!
+</p><p>
+But wait. Our program now has a different encoding:
+</p><p>
+<pre>
+  00000000 6A2A                push    byte 42
+  00000002 31C0                xor     eax, eax
+  00000004 40                  inc     eax
+  00000005 0FC8                bswap   eax
+  00000007 FF507F              call    [byte eax + 0x7F]
+</pre>
+</p><p>
+Most of these byte values are below 0x80, providing opportunities for
+overlap with the p_vaddr field instead. That might give us enough room
+&hellip; except that this whole scheme depends on having a load address of
+0x01000000. So much for that idea.
+</p><p>
+On the other hand, this does suggest a new avenue of attack. Is there
+a different version of the call instruction that would be more
+friendly to being embedded in p_vaddr?
+</p><p>
+Indeed there is: the "call [mem]" instruction is six bytes long, and
+consists of 0xFF 0x15 followed by a four-byte address. By setting our
+binary's load address to 0x15FF0000, we could fit the rest of the
+instruction in the p_paddr field:
+</p><p>
+<pre>
+  phdr:                                                 ; Elf32_Phdr
+                dd      PT_LOAD                         ;   p_type
+                dd      0                               ;   p_offset
+                dw      0                               ;   p_vaddr
+  part2:        call    [exit_ptr]                      ;   p_paddr
+                dd      filesz                          ;   p_filesz
+                dd      memsz                           ;   p_memsz
+                dd      PF_R | PF_W | PF_X              ;   p_flags
+                dd      0x1000                          ;   p_align
+  
+                dd      PT_DYNAMIC                      ;   p_type
+                dd      dyntab - $$                     ;   p_offset
+                dd      dyntab                          ;   p_vaddr
+  _start:       push    byte 42                         ;   p_paddr
+                jmp     short part2
+                dd      dyntabsz                        ;   p_filesz
+                dd      dyntabsz                        ;   p_memsz
+                dd      PF_R | PF_W                     ;   p_flags
+                dd      4                               ;   p_align
+</pre>
+</p><p>
+Notice carefully that this version of the call instruction will need
+to be given an absolute address, instead of the usual call
+instruction's relative address. This means that we need to change the
+entry in the relocation table, so that the linker will actually store
+an absolute address. In other words, we need to use R_386_32 instead
+of R_386_PC32:
+</p><p>
+<pre>
+  %define R_386_32    1
+  
+  reltab:                                               ; Elf32_Rel
+                dd      exit_ptr                        ;   r_offset
+                dd      R_INFO(1, R_386_32)             ;   r_info
+</pre>
+</p><p>
+This also means that the four bytes at exit_ptr need to be initialized
+to zero, instead of -4. That's actually convenient, because now we can
+locate those bytes in the zero-initialized bss memory at the end:
+</p><p>
+<pre>
+  dyntabsz      equ     ($ - dyntab) + 11
+  exit_ptr      equ     $ + 11
+  _end          equ     $ + 15
+  
+  ;; End of the file image.
+  
+  filesz        equ     $ - $$
+  memsz         equ     _end - $$
+</pre>
+</p><p>
+And with that, I believe we are ready.
+</p><p>
+Here's the program in its entirety:
+</p><p>
+<pre>
+  ; tiny.asm
+  
+  BITS 32
+  
+  %define ET_EXEC       2
+  %define EM_386        3
+  %define EV_CURRENT    1
+  
+  %define PT_LOAD       1
+  %define PT_DYNAMIC    2
+  %define PT_INTERP     3
+  
+  %define PF_X          1
+  %define PF_W          2
+  %define PF_R          4
+  
+  %define STT_FUNC      2
+  
+  %define STB_GLOBAL    1
+  
+  %define R_386_32      1
+  
+  %define DT_NULL       0
+  %define DT_NEEDED     1
+  %define DT_HASH       4
+  %define DT_STRTAB     5
+  %define DT_SYMTAB     6
+  %define DT_STRSZ      10
+  %define DT_SYMENT     11
+  %define DT_REL        17
+  %define DT_RELSZ      18
+  %define DT_RELENT     19
+  
+  %define R_INFO(s, t)    (((s) &lt;&lt; 8) | (t))
+  
+  shentsz       equ     0x28
+  
+                org     0x15FF0000
+  
+  ehdr:                                                 ; Elf32_Ehdr
+                db      0x7F, "ELF", 1, 1, 1            ;   e_ident
+        times 9 db      0
+                dw      ET_EXEC                         ;   e_type
+                dw      EM_386                          ;   e_machine
+                dd      EV_CURRENT                      ;   e_version
+                dd      _start                          ;   e_entry
+                dd      phdr - $$                       ;   e_phoff
+                dd      0                               ;   e_shoff
+                dd      0                               ;   e_flags
+                dw      ehdrsz                          ;   e_ehsize
+                dw      phentsz                         ;   e_phentsize
+                dw      3                               ;   e_phnum
+                dw      shentsz                         ;   e_shentsize
+                dw      0                               ;   e_shnum
+                dw      0                               ;   e_shstrndx
+  ehdrsz        equ     $ - ehdr
+  
+  ;; The interpreter segment
+  
+  interp:       db      '/lib/ld-linux.so.2'
+  
+  interpsz      equ     $ - interp + 1
+  
+  ;; The string table
+  
+  strtab:
+                db      0
+  libc_name     equ     $ - strtab
+                db      'libc.so.6', 0
+  exit_name     equ     $ - strtab
+                db      '_exit', 0
+  strtabsz      equ     $ - strtab
+  
+  align 4
+  
+  ;; The relocation table
+  
+  reltab:                                               ; Elf32_Rel
+                dd      exit_ptr                        ;   r_offset
+                dd      R_INFO(1, R_386_32)             ;   r_info
+  relentsz      equ     $ - reltab
+  reltabsz      equ     $ - reltab
+  
+  ;; The program segment header table, hash table, symbol table,
+  ;; and dynamic section.
+  
+  phdr:                                                 ; Elf32_Phdr
+                dd      PT_LOAD                         ;   p_type
+                dd      0                               ;   p_offset
+                dw      0                               ;   p_vaddr
+  part2:        call    [exit_ptr]                      ;   p_paddr
+                dd      filesz                          ;   p_filesz
+                dd      memsz                           ;   p_memsz
+                dd      PF_R | PF_W | PF_X              ;   p_flags
+                dd      0x1000                          ;   p_align
+  phentsz       equ     $ - phdr
+                dd      PT_DYNAMIC                      ;   p_type
+                dd      dyntab - $$                     ;   p_offset
+                dd      dyntab                          ;   p_vaddr
+  _start:       push    byte 42                         ;   p_paddr
+                jmp     short part2
+                dd      dyntabsz                        ;   p_filesz
+                dd      dyntabsz                        ;   p_memsz
+                dd      PF_R | PF_W                     ;   p_flags
+                dd      4                               ;   p_align
+</p><p>
+                dd      PT_INTERP                       ;   p_type
+                dd      interp - $$                     ;   p_offset
+                dd      interp                          ;   p_vaddr
+                dd      0                               ;   p_paddr
+                dd      interpsz                        ;   p_filesz
+                dd      interpsz                        ;   p_memsz
+                dd      PF_R                            ;   p_flags
+                                                        ;   p_align = 1
+  
+  hashtab:
+                dd      1                               ; no. of buckets
+                dd      2                               ; no. of symbols
+                dd      1                               ; the bucket: symbol #1
+                                                        ; two links, both zero
+  
+  symtab:                                               ; Elf32_Sym
+                dd      0                               ;   st_name
+                dd      0                               ;   st_value
+                dd      0                               ;   st_size
+                db      0                               ;   st_info
+                db      0                               ;   st_other
+                dw      0                               ;   st_shndx
+  symentsz      equ     $ - symtab  
+                dd      exit_name                       ;   st_name
+                dd      0                               ;   st_value
+                dd      0                               ;   st_size
+                                                        ;   st_info = 18
+                                                        ;   st_other = 0
+                                                        ;   st_shndx = 0
+  ;; The dynamic section
+  
+  dyntab:
+                dd      DT_RELSZ,  reltabsz
+                dd      DT_RELENT, relentsz
+                dd      DT_REL,    reltab
+                dd      DT_STRSZ,  strtabsz
+                dd      DT_STRTAB, strtab
+                dd      DT_SYMENT, symentsz
+                dd      DT_SYMTAB, symtab
+                dd      DT_HASH,   hashtab
+                dd      DT_NEEDED
+                db      libc_name
+  dyntabsz      equ     $ - dyntab + 11
+  
+  exit_ptr      equ     $ + 11
+  _end          equ     $ + 15
+  
+  ;; End of the file image.
+  
+  filesz        equ     $ - $$
+  memsz         equ     _end - $$
+</pre>
+</p><p>
+And behold, it works:
+</p><p>
+<pre>
+  $ <b>nasm -f bin -o a.out tiny.asm</b>
+  $ <b>chmod +x a.out</b>
+  $ <b>./a.out ; echo $?</b>
+  42
+  $ <b>wc -c a.out</b>
+      297 a.out
+</pre>
+</p><p>
+This reduction netted us seven bytes, plus one less byte of alignment
+padding, raising to 34 the grand total of bytes saved from our first
+working version, and allowing our executable to slip below the
+300-byte mark.
+</p><p>
+Is this the smallest possible size for this program? It might be, but
+to be honest I don't know. It's a much more complicated executable,
+and things aren't as clear-cut as they were in the original tutorial.
+All I can say for certain is that I haven't been able to make it any
+smaller <em>yet</em>.
+</p>
+<p>&nbsp;</p>
+<p align="right">
+<a href="home.html">(finis)</a>
+</p>
+<hr/>
+<br/>
+<small><a href="index.html"
+>Tiny</a></small>
+<br/>
+<small><a href="../index.html"
+>Software</a></small>
+<br/>
+<small><a href="../../index.html">Brian Raiter</a></small>
+</body>
+</html>

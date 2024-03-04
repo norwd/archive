@@ -1,0 +1,144 @@
+<html>
+<head>
+<title> XFree86 3.1.2 </title>
+</head>
+<body>
+
+<p><hr><hr>
+<h1> Installing XFree86 3.1.2 </h1>
+<p><hr><hr>
+
+<p> My preferred installation method was to actually go and grab the 
+various packages directly from a sunsite mirror, rather than use the
+Slackware disk sets.  This was due to the extremely small nature of my
+HD...
+
+<p> The installation, once I sorted out where things were meant to be
+unpacked, was fairly straightforward.  Note that with version 3.1.2 of
+XF86, the WD90C24 chipset is directly supported.  There is another
+document available, the <a
+href="http://sunsite.unc.edu/mdw/HOWTO/mini/X-Notebook">X-Notebook
+mini HOWTO</a>, which details the general installation of X on a
+laptop computer, without going into great specifics on individual
+computers.  This is an excellent reference, and I found it extremely
+useful when working on installing X.
+
+<p> I've actually installed the packages which are marked (R)equired,
+plus an old version of fvwm and rxvt.  I got these from the 
+<a 
+href="ftp://ftp.warwick.ac.uk/pub/linux/sunsite.unc-mirror/X11/tinyX/">TinyX</a>
+distribution, which is one to check out, if you only want monochrome,
+and don't mind having XFree86 2.0.  I tried briefly to get the TinyX
+SVGA server to work, but eventually gave up in favor of getting the
+current server. (See the problem I mention below.)
+
+<p> When you install X (if you choose to do the configuration yourself
+rather than using my XF86Config),
+these are the vital, important points to remember:
+<p><ul>
+	<li> Your computer has a WD90C24 chipset.  The 3400 has the A
+model (WD90C24A), and the 3600 has the A2 model (WD90C24A2), although
+this currently makes no difference as far as the user is concerned.
+	<li> Your LCD screen should be treated as a standard 640x480
+monitor (ie, pick the most constrained options for monitor config, or use
+the specs for the external monitor you'll be using).
+	<li> On monochrome machines, you have 512k of 
+available VRAM when using the internal screen, due to the way the screen 
+is drawn. (You really have
+1024, but if you try to assert that, you'll get doubled images.)  There
+is still 1024k available when driving an external monitor.  Use a
+virtual desktop of 800x600 when using the LCD.
+	<li> Active-matrix machines are not apparently subject to this
+memory limitation (again due to the way the screen is drawn in hardware). 
+If you have a color machine, you should be able to 
+use 1024k and a 1024x768 virtual desktop with no trouble.
+	<li> The AccuPoint mouse is a PS/2 mouse, and should be treated
+as such.  Note that this means running selection/gpm will interfere with
+X starting, and you'll probably have to kill it before X will start
+properly (there may be a workaround available in the current
+<a href="http://sunsite.unc.edu/mdw/HOWTO/Busmouse">Busmouse-HOWTO</a>,
+but my copy -- which appears to date from around kernel 1.0 -- doesn't 
+have one).  
+If <kbd>startx</kbd> dies with the "Device or Resource Busy" 
+message, this is what's happening.
+</ul>
+
+<h2> Problem: video mode </h2>
+
+<p> The only brief problem I encountered was that for some reason, the
+desktop was tiled over itself in a random (but reproducible) pattern.
+It took me most of an evening to discover that, at least on the 3400
+monochrome version, the video hardware must be set to 'Simultaneous'
+display mode or it won't work properly.  On the 3400 monochrome, this is
+accomplished by entering the BIOS setup menu (hold down the [ESC] key
+while the system is rebooting; press [F1] at the prompt), and
+selecting 'Simultaneous' instead of 'Internal/External' mode in the
+'Display' box.  On the color versions, it's not necessary to use the
+BIOS menu.
+
+<p> On the color machines (eg. 3400CT and 3600CT), the <code>
+[Fn] + [F5]</code> hotkey combination switches between 
+internal/simultaneous/external display modes, and on the monochrome
+(3400), it only selects internal/external.  On the 3600, this setting 
+appears to make no difference to XFree86's operation <a 
+href="3600src.html">*</a>.  This 
+suggests that color 3400's will also have no problem with the different 
+settings either.
+
+<h2> Problem: video timings </h2>
+
+<p> Michael Holve reports that if the video mode timings (in the modeline
+definitions) on his 3600CT are even slightly wrong, the screen will go 
+all jittery.
+This should not be a problem if you just use the provided mode timings:
+
+<pre>
+Modeline "640x480"     25.175 640  664  760  800   480  491  493  525
+</pre>
+
+This trouble also appears to be isolated to the active-matrix machines
+(or at least, I've never had trouble with it on the monochrome 3400).
+
+<p><i> Thanks to 
+<a href="mailto:holve@fammed.som.sunysb.edu">Michael Holve</a> for
+his <a href="3600src.html">contributions</a> to this page.</i>
+
+<p><hr>
+
+<p> If I could give you only one piece of advice when dealing with the
+configuration of XFree86, it would be: be careful and patient.  Read
+the documentation, and try to understand what it says <em>before</em>
+messing around with the actual configuration files.  It'll save you a
+great deal of time and effort.
+
+<p> Here's my <a href="3400xcfg.html">XF86Config file</a>, for your 
+perusal.  Note that
+I don't have an external monitor for testing, and this config file
+isn't likely to work with one (except at 640x480).  If you want to use
+an external monitor it is <em>very</em> important that you find the
+ratings for your monitor, and follow the instructions given in the
+X-Notebook mini HOWTO.  You could very easily maim or destroy your
+monitor if you're not careful.
+
+<p> This config file will most likely work right out of the box on any
+of the models being covered in this mini HOWTO, but I make no
+guarantees.  Make sure you check it through and change any
+site-dependent stuff I've left in.  Also, if you have the time, it's
+well worth trying out the configuration process, if only for the
+experience.
+
+<p> <a href="3400xcfg.html">My XF86Config</a>.
+
+<p> Michael Holve has <a href="3600src.html">donated</a> 
+<a href="3600xcfg.html">his XF86Config</a> as well,
+although once again, no guarantees are made as to how well it will work
+for your particular situation.
+
+<p> <a href="3600xcfg.html">Michael Holve's XF86Config for a T-3600CT</a>.
+
+<p><hr>
+This page was designed and implemented by 
+<a href="mailto:reaper@muppetlabs.com">Ian Johnston</a>.  Check out my
+<a href="../index.html">homepage</a> for a laugh...
+</body>
+</html>
