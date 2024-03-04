@@ -1,0 +1,40 @@
+<html>
+<head>
+<title>Dennis Ritchie on &amp; | vs. ==</title>
+<link rel="made" rev="made" href="mailto:jutta@pobox.com">
+</head><body>
+From decvax!harpo!npoiv!alice!research!dmr Fri Oct 22 01:04:10 1982<br>
+Subject: Operator precedence<br>
+Newsgroups: net.lang.c<br>
+<p>
+<a name="main">The priorities of</a><code> &amp;&amp; || </code>vs.<code> == </code>etc. came about in the following way.
+<p>
+Early C had no separate operators for <code>&amp;</code> and <code>&amp;&amp;</code> or <code>|</code> and <code>||</code>.&#160;<tt> </tt>
+(Got that?)&#160;<tt> </tt>Instead it used the notion (inherited from
+<a href="msb-on-b.html#main">B</a>
+and
+<a href="alan-on-bcpl.html#bcpl-main">BCPL</a>)
+of "truth-value context": where a Boolean value was expected,
+after "if" and "while" and so forth, the &amp; and | operators were interpreted
+as &amp;&amp; and || are now; in ordinary expressions, the bitwise interpretations
+were used.&#160;<tt> </tt>It worked out pretty well, but was hard to explain.
+(There was the notion of "top-level operators" in a truth-value context.)
+<p>
+The precedence of <code>&amp;</code> and <code>|</code> were as they are now.
+<p>
+Primarily at the urging of Alan Snyder, the <code>&amp;&amp;</code> and <code>||</code> operators were
+added.&#160;<tt> </tt>This successfully separated the concepts of bitwise operations and
+short-circuit Boolean evaluation.&#160;<tt> </tt>However, I had cold feet about the
+precedence problems.&#160;<tt> </tt>For example, there were lots of programs with
+things like
+<pre>
+	if (a==b &amp; c==d) ...
+</pre>
+In retrospect it would have been better to go ahead and change the precedence
+of <code>&amp;</code> to higher than<code> ==</code>,&#160;<tt> </tt>but it seemed safer just to split <code>&amp;</code> and <code>&amp;&amp;</code>
+without moving <code>&amp;</code> past an existing operator.&#160;<tt> </tt>(After all, we had several
+hundred kilobytes of source code, and maybe 3 installations....)
+<p>
+	<a href="https://www.bell-labs.com/usr/dmr/www/index.html" name="dmr">Dennis Ritchie</a>
+</body>
+</html>

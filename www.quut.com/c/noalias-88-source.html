@@ -1,0 +1,109 @@
+<html>
+<head>
+<title>Noalias: excerpt from the ANSI C draft of January 1988 (Source)</title>
+<link rel="made" rev="made" href="mailto:jutta@pobox.com">
+</head>
+<body>
+<a href="noalias-88.html"><i>Noalias: excerpt from the ANSI C draft of
+January 1988</i></a>&#160;<tt> </tt>&#160;<tt> </tt>
+<i>Source</i>
+<hr>
+<pre>
+Newsgroups: comp.std.c
+Path: cs.tu-berlin.de!fu-berlin.de!zib-berlin.de!news.mathworks.com!uunet!in1.uu.net!allegra!alice!dmr
+From: dmr@research.att.com (Dennis Ritchie &lt;7549-15328&gt; 0112710)
+Subject: Re: Restricted Pointers? (Re: New proposal: Optimizer hints)
+Message-ID: &lt;D7DADv.5MG@research.att.com&gt;
+Organization: AT&amp;T Bell Labs, Murray Hill, NJ
+Date: Fri, 21 Apr 1995 04:13:06 GMT
+Lines: 86
+
+For the sake of history, I record the portion dealing with the
+semantics of noalias in X3J11's draft C standard as of Jan 1988.
+It's been manually de-troffed; apologies for errors.
+
+I had problems convincing myself that the notion of handle (see below)
+was well defined, and in understanding the consequences of the
+described semantics.  As my diatribe tells, though, the ultimate
+problem was that the model these semantics propose is wrong:
+&quot;noaliasness&quot; is not a useful property of objects, but
+is better understood in terms of promises about what pointers
+can point to.
+
+	Dennis Ritchie
+
+Here's the snippet from the draft:
+--------
+Semantics
+
+The properties associated with qualified types are
+meaningful only for expressions that are lvalues.
+
+Each lvalue that is a unary expression with the unary * indirection
+operator (either explicitly or as a result of the array subscript []
+operator) contains one or more &quot;handles&quot;.  These handles have pointer
+or array type and are the smallest expressions contained within the
+lvalue (ignoring the left operand of the comma operator, the operand
+of the sizeof operator, all argument expressions, and all expressions
+with integral type), and are associated with the entire object to
+which the lvalue refers, in part or as a whole.  The handles for
+lvalues with noalias-qualified type are &quot;noalias handles&quot; .  A handle
+is distinguished by the spelling of its operands (ignoring the
+spelling of any contained argument expressions) and by the storage
+duration of its &quot;handle objects&quot;, those objects whose values are
+accessed to evaluate the handle (excluding any objects accessed to
+evaluate any contained argument expressions).
+
+The &quot;actual object&quot; of a noalias handle is the entire object of which
+a part is designated by the same lvalue except that its type is the
+non-noalias-qualified version.  For each distinct noalias handle, it
+is unspecified whether the handle is associated with the actual object
+or is associated with a &quot;virtual object&quot; , a distinct object with the
+same size and address as the actual object.  The behavior of a program
+that depends upon a specific implementation choice is undefined.
+
+A virtual object, if and when created, acquires the last-stored value
+of the actual object.  A virtual object may be created at any sequence
+point within a function for which there exists a sequence point at
+which the storage for all handle objects is guaranteed to be reserved.
+A virtual object has a &quot;pending value&quot; if it has been modified through
+use of its noalias handle and the actual object does not have the same
+value.  All virtual objects with pending values for a noalias handle
+have their values assigned to their respective actual objects at the
+return of a function after whose execution storage is no longer
+guaranteed to be reserved for a handle object of the noalias handle.
+
+If an argument expression is a noalias handle, or is a noalias handle
+plus or minus an expression with integral type (either explicitly or
+as a result of combinations of the unary &amp; address operator and the
+array subscript [] operator), just after the return from the function,
+the value stored in the actual object is assigned to the currently
+associated virtual object, if any exists.\*F\
+[footnote]
+If the called function has a type that includes a prototype and the
+type of the parameter is a pointer to a const- and noalias-qualified
+type, this assignment can be suppressed, as the called function cannot
+modify the designated object.
+[end footnote]
+Furthermore, if, at the sequence point just before the call to the
+function, the noalias handle is currently associated with a virtual
+object with a pending value, its value is assigned to the actual
+object at that sequence point.
+
+[Dicussion of volatile qualifier deleted--dmr]
+
+The following are examples of some lvalues and their handles:
+
+	int a[2], b[3][4], i;
+	int *p, **q, *f();
+
+	a[1];        /* same as *(a + 1), handle: a */
+	b[i][2];     /* same as *(b[i] + 2), handle: b */
+	*p;          /* handle: p */
+	*(p + i);    /* handle: p */
+	*(i = 4, p); /* handle: p */
+	*f();        /* handle: f() */
+	**(q + i);   /* handle: *(q + i) */
+</pre>
+</body>
+</html>

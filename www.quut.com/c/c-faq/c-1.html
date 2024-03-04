@@ -1,0 +1,475 @@
+<html><head>
+<title>Null Pointers</title>
+<link rel="made" rev="made" href="mailto:jutta@cs.tu-berlin.de">
+</head>
+<body>
+<a href="index.html#comp-lang-c-faq"><img SRC="up.xbm" alt="[up]"></a>
+<a href="c-faq-toc.html#c-1"><img SRC="overview.xbm" alt="[overview]"></a>
+<a href="c-2.html"><img SRC="next.xbm" alt="[next]"></a>
+<hr>
+<h2>Section 1. Null Pointers</h2>
+<h3><a name="1-1">
+1.1:	What is this infamous null pointer, anyway?</a></h3>
+<p>
+  	The language definition states that for each pointer type, there
+	is a special value -- the &quot;null pointer&quot; -- which is
+	distinguishable from all other pointer values and which is not
+	the address of any object or function.&#160;<tt> </tt>That is, the address-of
+	operator <code>&amp; </code>will never yield a null pointer, nor will a
+	successful call to<code> malloc</code>.&#160;<tt> </tt>(<code>malloc </code>returns a null pointer when
+	it fails, and this is a typical use of null pointers: as a
+	&quot;special&quot; pointer value with some other meaning, usually &quot;not
+	allocated&quot; or &quot;not pointing anywhere yet.&quot;)
+<p>
+	A null pointer is conceptually different from an uninitialized
+	pointer.&#160;<tt> </tt>A null pointer is known not to point to any object; an
+	uninitialized pointer might point anywhere.&#160;<tt> </tt>See also questions
+	<a href="c-3.html#3-1">3.1</a>, <a href="c-3.html#3-13">3.13</a>, and <a href="c-17.html#17-1">17.1</a>.
+<p>
+	As mentioned in the definition above, there is a null pointer
+	for each pointer type, and the internal values of null pointers
+	for different types may be different.&#160;<tt> </tt>Although programmers need
+	not know the internal values, the compiler must always be
+	informed which type of null pointer is required, so it can make
+	the distinction if necessary (see below).
+<p>
+	References: <a href="index.html#K-amp-RI">K&amp;R I</a> Sec. 5.4 pp. 97-8; <a href="index.html#K-amp-RII">K&amp;R II</a> Sec. 5.4 p. 102; <a href="index.html#H-amp-S">H&amp;S</a>
+	Sec. 5.3 p. 91; <a href="index.html#ANSI">ANSI</a> Sec. 3.2.2.3 p. 38.
+<p>
+<h3>
+<a name="1-2">
+1.2:	How do I &quot;get&quot; a null pointer in my programs?</a></h3>
+<p>
+  	According to the language definition, a constant 0 in a pointer
+	context is converted into a null pointer at compile time.&#160;<tt> </tt>That
+	is, in an initialization, assignment, or comparison when one
+	side is a variable or expression of pointer type, the compiler
+	can tell that a constant 0 on the other side requests a null
+	pointer, and generate the correctly-typed null pointer value.
+	Therefore, the following fragments are perfectly legal:
+<p>
+<pre>
+	char *p = 0;
+	if(p != 0)
+</pre>
+<p>
+	However, an argument being passed to a function is not
+	necessarily recognizable as a pointer context, and the compiler
+	may not be able to tell that an unadorned 0 &quot;means&quot; a null
+	pointer.&#160;<tt> </tt><a name="1-2-execl">For instance, the Unix system call &quot;execl&quot;</a> takes a
+	variable-length, null-pointer-terminated list of character
+	pointer arguments.&#160;<tt> </tt>To generate a null pointer in a function
+	call context, an explicit cast is typically required, to force
+	the 0 to be in a pointer context:
+<p>
+<pre>
+	execl(&quot;/bin/sh&quot;, &quot;sh&quot;, &quot;-c&quot;, &quot;ls&quot;, (char *)0);
+</pre>
+<p>
+	If the <code>(char</code> <code>*) </code>cast were omitted, the compiler would not know
+	to pass a null pointer, and would pass an integer 0 instead.
+	(Note that many Unix manuals get this example wrong.)
+<p>
+	When function prototypes are in scope, argument passing becomes
+	an &quot;assignment context,&quot; and most casts may safely be omitted,
+	since the prototype tells the compiler that a pointer is
+	required, and of which type, enabling it to correctly convert
+	unadorned 0's.&#160;<tt> </tt>Function prototypes cannot provide the types for
+	variable arguments in variable-length argument lists, however,
+	so explicit casts are still required for those arguments.&#160;<tt> </tt>It is
+	safest always to cast null pointer function arguments, to guard
+	against varargs functions or those without prototypes, to allow
+	interim use of non-<a href="index.html#ANSI">ANSI</a> compilers, and to demonstrate that you
+	know what you are doing.&#160;<tt> </tt>(Incidentally, it's also a simpler
+	rule to remember.)
+<p>
+	Summary:
+<p>
+	Unadorned 0 okay:
+<ul>
+<li>initialization
+<li>assignment
+<li>comparison
+<li>function call, prototype in scope, fixed argument
+</ul>
+Explicit cast required:
+<ul>
+<li>
+	function call, no prototype in scope
+<li>
+	variable argument in varargs function call
+</ul>
+<p>
+	References: <a href="index.html#K-amp-RI">K&amp;R I</a> Sec. A7.7 p. 190, Sec. A7.14 p. 192; <a href="index.html#K-amp-RII">K&amp;R II</a>
+	Sec. A7.10 p. 207, Sec. A7.17 p. 209; <a href="index.html#H-amp-S">H&amp;S</a> Sec. 4.6.3 p. 72; <a href="index.html#ANSI">ANSI</a>
+	Sec. 3.2.2.3 .
+<p>
+<h3>
+<a name="1-3">
+1.3:	What is</a><code> NULL </code>and how is it #defined?</h3>
+<p>
+  	As a matter of style, many people prefer not to have unadorned
+	0's scattered throughout their programs.&#160;<tt> </tt>For this reason, the
+	preprocessor macro <code>NULL </code>is #defined (by <code>&lt;stdio.h&gt; </code>or
+	<code>&lt;stddef.h&gt;</code>), with value 0 (or <code>(void</code> <code>*)0</code>, about which more
+	later).&#160;<tt> </tt>A programmer who wishes to make explicit the
+	distinction between 0 the integer and 0 the null pointer can
+	then use <code>NULL </code>whenever a null pointer is required.&#160;<tt> </tt>This is a
+	stylistic convention only; the preprocessor turns <code>NULL </code>back to 0
+	which is then recognized by the compiler (in pointer contexts)
+	as before.&#160;<tt> </tt>In particular, a cast may still be necessary before
+	<code>NULL </code>(as before 0) in a function call argument.&#160;<tt> </tt>(The table
+	under <a href="c-1.html#1-2">question 1.2</a> above applies for <code>NULL </code>as well as 0.)
+<p>
+	<code>NULL </code>should <em>only</em> be used for pointers; see <a href="c-1.html#1-8">question 1.8</a>.
+<p>
+	References: <a href="index.html#K-amp-RI">K&amp;R I</a> Sec. 5.4 pp. 97-8; <a href="index.html#K-amp-RII">K&amp;R II</a> Sec. 5.4 p. 102; <a href="index.html#H-amp-S">H&amp;S</a>
+	Sec. 13.1 p. 283; <a href="index.html#ANSI">ANSI</a> Sec. 4.1.5 p. 99,
+	Sec. 3.2.2.3 p. 38,
+	<a href="../rat/d1.html#NULL-4-1-5">Rationale Sec. 4.1.5 p. 74.</a>
+<p>
+<h3>
+<a name="1-4">
+1.4:	How should</a><code> NULL </code>be #defined on a machine which uses a nonzero
+	bit pattern as the internal representation of a null pointer?</h3>
+<p>
+  	Programmers should never need to know the internal
+	representation(s) of null pointers, because they are normally
+	taken care of by the compiler.&#160;<tt> </tt>If a machine uses a nonzero bit
+	pattern for null pointers, it is the compiler's responsibility
+	to generate it when the programmer requests, by writing &quot;0&quot; or
+	&quot;<code>NULL</code>,&quot; a null pointer.&#160;<tt> </tt>Therefore, #defining <code>NULL </code>as 0 on a
+	machine for which internal null pointers are nonzero is as valid
+	as on any other, because the compiler must (and can) still
+	generate the machine's correct null pointers in response to
+	unadorned 0's seen in pointer contexts.
+<p>
+<h3><a name="1-5">
+1.5:	If</a><code> NULL  </code>were defined as follows:
+</h3><pre>
+	#define NULL ((char *)0)
+</pre><h3>
+	wouldn't that make function calls which pass an uncast<code> NULL</code>
+	work?</h3>
+<p>
+  	Not in general.&#160;<tt> </tt>The problem is that there are machines which
+	use different internal representations for pointers to different
+	types of data.&#160;<tt> </tt>The suggested #definition would make uncast <code>NULL</code>
+	arguments to functions expecting pointers to characters to work
+	correctly, but pointer arguments to other types would still be
+	problematical, and legal constructions such as
+<p>
+<pre>
+	FILE *fp = <code>NULL</code>;
+</pre>
+<p>
+	could fail.
+<p>
+	Nevertheless, <a href="index.html#ANSI">ANSI</a> C allows the alternate
+<p>
+<pre>
+	#define NULL ((void *)0)
+</pre>
+<p>
+	definition for <code>NULL</code>.&#160;<tt> </tt>Besides helping incorrect programs to work
+	(but only on machines with homogeneous pointers, thus
+	questionably valid assistance) this definition may catch
+	programs which use <code>NULL </code>incorrectly (e.g. when the ASCII&#160;<tt> </tt>NUL
+	character was really intended; see <a href="c-1.html#1-8">question 1.8</a>).
+<p>
+	References:
+	<a href="../rat/d1.html#NULL-4-1-5">ANSI Rationale Sec. 4.1.5 p. 74.</a>
+<p>
+<h3>
+<a name="1-6">
+1.6:	I use the preprocessor macro</a></h3>
+<p>
+<pre>
+	#define Nullptr(type) (type *)0
+</pre>
+<p><h3>
+	to help me build null pointers of the correct type.</h3>
+<p>
+  	This trick, though popular in some circles, does not buy much.
+	It is not needed in assignments and comparisons; see
+	<a href="c-1.html#1-2">question 1.2</a>.&#160;<tt> </tt>It does not even save keystrokes.&#160;<tt> </tt>Its use suggests to the
+	reader that the author is shaky on the subject of null pointers,
+	and requires the reader to check the #definition of the macro,
+	its invocations, and <em>all</em> other pointer usages much more
+	carefully.&#160;<tt> </tt>See also <a href="c-8.html#8-1">question 8.1</a>.
+<p>
+<h3>
+<a name="1-7">
+1.7:	Is the abbreviated pointer comparison </a>&quot;<code>if(p)</code>&quot; to test for non-
+	null pointers valid?&#160;<tt> </tt>What if the internal representation for
+	null pointers is nonzero?</h3>
+<p>
+  	When C requires the boolean value of an expression (in the <code>if</code>,
+	<code>while</code>, <code>for</code>, and <code>do </code>statements, and with the <code>&amp;&amp;</code>, <code>||</code>, <code>!</code>, and <code>?:</code>
+	operators), a false value is produced when the expression
+	compares equal to zero, and a true value otherwise.&#160;<tt> </tt>That is,
+	whenever one writes
+<p>
+<pre>
+	<code>if(expr)</code>
+</pre>
+<p>
+	where &quot;expr&quot; is any expression at all, the compiler essentially
+	acts as if it had been written as
+<p>
+<pre>
+	if(expr != 0)
+</pre>
+<p>
+	Substituting the trivial pointer expression &quot;p&quot; for &quot;expr,&quot; we
+	have
+<pre>
+	if(p)	is equivalent to     if(p != 0)
+</pre>
+<p>
+	and this is a comparison context, so the compiler can tell that
+	the (implicit) 0 is a null pointer, and use the correct value.
+	There is no trickery involved here; compilers do work this way,
+	and generate identical code for both statements.&#160;<tt> </tt>The internal
+	representation of a pointer does <em>not</em> matter.
+<p>
+	The boolean negation operator, <code>!</code>, can be described as follows:
+<p>
+<pre>
+	!expr   is essentially equivalent to    expr?0:1
+</pre>
+<p>
+	It is left as an exercise for the reader to show that
+<p>
+<pre>
+	if(!p)	is equivalent to	if(p == 0)
+</pre>
+<p>
+	&quot;Abbreviations&quot; such as <code>if(p)</code>, though perfectly legal, are
+	considered by some to be bad style.
+<p>
+	See also <a href="c-8.html#8-2">question 8.2</a>.
+<p>
+	References: <a href="index.html#K-amp-RII">K&amp;R II</a> Sec. A7.4.7 p. 204; <a href="index.html#H-amp-S">H&amp;S</a> Sec. 5.3 p. 91; <a href="index.html#ANSI">ANSI</a>
+	Secs. 3.3.3.3, 3.3.9, 3.3.13, 3.3.14, 3.3.15, 3.6.4.1, and
+	3.6.5 .
+<p>
+<h3>
+<a name="1-8">
+1.8:	If </a>&quot;<code>NULL</code>&quot; and &quot;0&quot; are equivalent, which should I use?</h3>
+<p>
+  	Many programmers believe that &quot;<code>NULL</code>&quot; should be used in all
+	pointer contexts, as a reminder that the value is to be thought
+	of as a pointer.&#160;<tt> </tt>Others feel that the confusion surrounding
+	&quot;<code>NULL</code>&quot; and &quot;0&quot; is only compounded by hiding &quot;0&quot; behind a
+	#definition, and prefer to use unadorned &quot;0&quot; instead.&#160;<tt> </tt>There is
+	no one right answer.&#160;<tt> </tt>C programmers must understand that &quot;<code>NULL</code>&quot;
+	and &quot;0&quot; are interchangeable and that an uncast &quot;0&quot; is perfectly
+	acceptable in initialization, assignment, and comparison
+	contexts.&#160;<tt> </tt>Any usage of &quot;<code>NULL</code>&quot; (as opposed to &quot;0&quot;) should be
+	considered a gentle reminder that a pointer is involved;
+	programmers should not depend on it (either for their own
+	understanding or the compiler's) for distinguishing pointer 0's
+	from integer 0's.
+<p>
+	<code>NULL </code>should <em>not</em> be used when another kind of 0 is required,
+	even though it might work, because doing so sends the wrong
+	stylistic message.&#160;<tt> </tt>(<a href="index.html#ANSI">ANSI</a> allows the #definition of <code>NULL </code>to be
+	<code>(void</code> <code>*)0</code>, which will not work in non-pointer contexts.)&#160;<tt> </tt>In
+	particular, do not use <code>NULL </code>when the ASCII null character (NUL)
+	is desired.&#160;<tt> </tt>Provide your own definition
+<p>
+<pre>
+	#define NUL '\0'
+</pre>
+<p>
+	if you must.
+<p>
+	References: <a href="index.html#K-amp-RII">K&amp;R II</a> Sec. 5.4 p. 102.
+<p>
+<h3>
+<a name="1-9">
+1.9:	But wouldn't it be better to use </a><code>NULL </code>(rather than 0) in case
+	the value of <code>NULL </code>changes, perhaps on a machine with nonzero
+	null pointers?</h3>
+<p>
+  	No.&#160;<tt> </tt>Although symbolic constants are often used in place of
+	numbers because the numbers might change, this is <em>not</em> the
+	reason that <code>NULL </code>is used in place of 0.&#160;<tt> </tt>Once again, the
+	language guarantees that source-code 0's (in pointer contexts)
+	generate null pointers.&#160;<tt> </tt><code>NULL </code>is used only as a stylistic
+	convention.
+<p>
+<h3>
+<a name="1-10">
+1.10:	I'm confused.</a>&#160;<tt> </tt><code>NULL </code>is guaranteed to be 0, but the null pointer
+	is not?</h3>
+<p>
+  	When the term &quot;null&quot; or &quot;<code>NULL</code>&quot; is casually used, one of several
+	things may be meant:
+<ol>
+<li>
+The conceptual null pointer, the abstract language
+		concept defined in <a href="c-1.html#1-1">question 1.1</a>.&#160;<tt> </tt>It is implemented
+		with...
+<li>
+The internal (or run-time) representation of a null
+		pointer, which may or may not be all-bits-0 and which
+		may be different for different pointer types.&#160;<tt> </tt>The
+		actual values should be of concern only to compiler
+		writers.&#160;<tt> </tt>Authors of C programs never see them, since
+		they use...
+<li>
+The source code syntax for null pointers, which is the
+		single character &quot;0&quot;.&#160;<tt> </tt>It is often hidden behind...
+<li>
+The <code>NULL </code>macro, which is #defined to be &quot;0&quot; or
+		<code>&quot;(void</code> <code>*)0&quot;</code>.&#160;<tt> </tt>Finally, as red herrings, we have...
+<li>
+The ASCII null character (NUL), which does have all bits
+		zero, but has no necessary relation to the null pointer
+		except in name; and...
+<li>
+The &quot;null string,&quot; which is another name for an empty
+		string (&quot;&quot;).&#160;<tt> </tt>The term &quot;null string&quot; can be confusing in
+		C (and should perhaps be avoided), because it involves a
+		null (<code>'\0'</code>) character, but not a null pointer, which
+		brings us full circle...
+</ol>
+	This article always uses the phrase &quot;null pointer&quot; (in lower
+	case) for sense 1, the character &quot;0&quot; for sense 3, and the
+	capitalized word &quot;<code>NULL</code>&quot; for sense 4.
+<p>
+<h3>
+<a name="1-11">
+1.11:	Why is there so much confusion surrounding null pointers?</a>&#160;<tt> </tt>Why
+	do these questions come up so often?</h3>
+<p>
+  	C programmers traditionally like to know more than they need to
+	about the underlying machine implementation.&#160;<tt> </tt>The fact that null
+	pointers are represented both in source code, and internally to
+	most machines, as zero invites unwarranted assumptions.&#160;<tt> </tt>The use
+	of a preprocessor macro (<code>NULL</code>) suggests that the value might
+	change later, or on some weird machine.&#160;<tt> </tt>The construct
+	&quot;<code>if(p == 0)</code>&quot; is easily misread as calling for conversion of p to
+	an integral type, rather than 0 to a pointer type, before the
+	comparison.&#160;<tt> </tt>Finally, the distinction between the several uses
+	of the term &quot;null&quot; (listed above) is often overlooked.
+<p>
+	One good way to wade out of the confusion is to imagine that C
+	had a keyword (perhaps &quot;nil&quot;, like Pascal) with which null
+	pointers were requested.&#160;<tt> </tt>The compiler could either turn &quot;nil&quot;
+	into the correct type of null pointer, when it could determine
+	the type from the source code, or complain when it could not.
+	Now, in fact, in C the keyword for a null pointer is not &quot;nil&quot;
+	but &quot;0&quot;, which works almost as well, except that an uncast &quot;0&quot;
+	in a non-pointer context generates an integer zero instead of an
+	error message, and if that uncast 0 was supposed to be a null
+	pointer, the code may not work.
+<p>
+<h3>
+<a name="1-12">
+1.12:	I'm still confused.</a>&#160;<tt> </tt>I just can't understand all this null
+	pointer stuff.</h3>
+<p>
+  	Follow these two simple rules:
+<p>
+<ol>
+<li>
+When you want to refer to a null pointer in source code,
+use &quot;0&quot; or &quot;<code>NULL</code>&quot;.
+<li>
+If the usage of &quot;0&quot; or &quot;<code>NULL</code>&quot; is an argument in a
+function call, cast it to the pointer type expected by
+the function being called.
+</ol>
+<p>
+	The rest of the discussion has to do with other people's
+	misunderstandings, or with the internal representation of null
+	pointers (which you shouldn't need to know), or with <a href="index.html#ANSI">ANSI</a> C
+	refinements.&#160;<tt> </tt>Understand questions <a href="c-1.html#1-1">1.1</a>, <a href="c-1.html#1-2">1.2</a>, and <a href="c-1.html#1-3">1.3</a>, and
+	consider <a href="c-1.html#1-8">1.8</a> and <a href="c-1.html#1-11">1.11</a>, and you'll do fine.
+<p>
+<h3>
+<a name="1-13">
+1.13:	Given all the confusion surrounding null pointers, wouldn't it
+	be easier simply to require them to be represented internally by
+	zeroes?</a></h3>
+<p>
+  	If for no other reason, doing so would be ill-advised because it
+	would unnecessarily constrain implementations which would
+	otherwise naturally represent null pointers by special, nonzero
+	bit patterns, particularly when those values would trigger
+	automatic hardware traps for invalid accesses.
+<p>
+	Besides, what would this requirement really accomplish?&#160;<tt> </tt>Proper
+	understanding of null pointers does not require knowledge of the
+	internal representation, whether zero or nonzero.&#160;<tt> </tt>Assuming that
+	null pointers are internally zero does not make any code easier
+	to write (except for a certain ill-advised usage of calloc; see
+	<a href="c-3.html#3-13">question 3.13</a>).&#160;<tt> </tt>Known-zero internal pointers would not obviate
+	casts in function calls, because the <em>size</em> of the pointer might
+	still be different from that of an int.&#160;<tt> </tt>(If &quot;nil&quot; were used to
+	request null pointers rather than &quot;0,&quot; as mentioned in <a href="c-1.html#1-11">question
+	1.11</a>, the urge to assume an internal zero representation would
+	not even arise.)
+<p>
+<h3>
+<a name="1-14">
+1.14:	Seriously, have any actual machines really used nonzero null
+	pointers, or different representations for pointers to different
+	types?</a></h3>
+  
+<p>The Prime 50 series used segment 07777, offset 0 for the null
+	pointer, at least for PL/I.&#160;<tt> </tt>Later models used segment 0, offset
+	0 for null pointers in C, necessitating new instructions such as
+	TCNP (Test C Null Pointer), evidently as a sop to all the extant
+	poorly-written C code which made incorrect assumptions.&#160;<tt> </tt>Older,
+	word-addressed Prime machines were also notorious for requiring
+	larger byte pointers (<code>char</code> <code>*</code>'s) than word pointers (<code>int</code> <code>*</code>'s).
+<p>
+	The Eclipse MV series from Data General has three
+	architecturally supported pointer formats (word, byte, and bit
+	pointers), two of which are used by C compilers: byte pointers
+	for <code>char</code> <code>* </code>and <code>void</code> <code>*</code>, and word pointers for everything else.
+<p>
+	Some Honeywell-Bull mainframes use the bit pattern 06000 for
+	(internal) null pointers.
+<p>
+	The CDC Cyber 180 Series has 48-bit pointers consisting of a
+	ring, segment, and offset.&#160;<tt> </tt>Most users (in ring 11) have null
+	pointers of 0xB00000000000.
+<p>
+	The Symbolics Lisp Machine, a tagged architecture, does not even
+	have conventional numeric pointers; it uses the pair &lt;NIL, 0&gt;
+	(basically a nonexistent &lt;object, offset&gt; handle) as a C null
+	pointer.
+<p>
+	Depending on the &quot;memory model&quot; in use, 80*86 processors (PC's)
+	may use 16 bit data pointers and 32 bit function pointers, or
+	vice versa.
+<p>
+	The old HP 3000 series computers use a different addressing
+	scheme for byte addresses than for word addresses; void and char
+	pointers therefore have a different representation than an int
+	(structure, etc.) pointer to the same address would have.
+
+<h3>
+<a name="1-15">
+1.15:	What does a run-time &quot;null pointer assignment&quot; error mean?
+How do I track it down?</a></h3>
+<p>
+  	This message, which occurs only under MS-DOS (see, therefore,
+	<a href="c-16.html">section 16</a>) means that you've written, via an
+	uninitialized and/or null pointer, to location zero.
+<p>
+	A debugger will usually let you set a data breakpoint on
+	location 0.&#160;<tt> </tt>Alternately, you could write a bit of code to copy
+	20 or so bytes from location 0 into another buffer, and
+	periodically check that it hasn't changed.
+<p>
+<hr>
+<a href="index.html#comp-lang-c-faq"><img SRC="up.xbm" alt="[up]"></a>
+<a href="c-faq-toc.html#c-1"><img SRC="overview.xbm" alt="[overview]"></a>
+<a href="c-2.html"><img SRC="next.xbm" alt="[next]"></a>
+</body></html>
