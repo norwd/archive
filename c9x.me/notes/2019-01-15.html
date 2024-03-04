@@ -1,0 +1,77 @@
+<!doctype html>
+<meta name=viewport content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../assets/css/simple.css" type="text/css" />
+
+<link rel="stylesheet" href="assets/notes.css" type="text/css"/>
+<title>Notes from 2019-01-15</title>
+<article>
+<h1><img id="logo" src="assets/logo.png" alt="">Notes</h1>
+<h3>2019-01-15</h3>
+
+<p>
+It has been forever since my last note!  I hereby take it as
+new year's resolution to share more about the interesting
+thought nuggets I come across.
+</p>
+<p>
+In computer hardware, arithmetic primitives are in fact <em>modular</em>
+primitives; this means that the result of <code>a+b</code> is defined as
+the mathematical sum of <code>a</code> and <code>b</code> modulo a power of 2
+(usually, 2³² or 2⁶⁴).  The mathematical structure obtained
+is a modular ring in which all operations "wrap around".
+It is only a ring and not a field because the multiplication
+operation does not have an inverse; to see why an inverse
+function for multiplication cannot be defined, observe that
+42 is the result of both 21×2 and (2³¹+21)×2!
+</p>
+<p>
+An elementary result equivalent to Bézout's identity
+is that any number co-prime with the modulus has a
+multiplicative inverse.  In a computer, this means that for
+any odd number <code>a</code>, a number <code>b</code> exists shuch that <code>a✕b = 1</code>.
+Now there is a particularly cute algorithm to find
+multiplicative inverses, and it is what motivated me to
+write this note.
+</p>
+<p>
+The core idea of the algorithm lies in an observation I
+found quite surprising: a multiplicative inverse <code>b</code> of <code>a</code>
+modulo 2ⁿ can be used to find an inverse <code>c</code> of <code>a</code> modulo
+2²ⁿ. Let's see how.
+</p>
+<pre>
+ab = 1 (mod 2ⁿ)
+  ⇒ ab - 1 = k2ⁿ
+  ⇒ (ab - 1)² = 0      (mod 2²ⁿ)
+  ⇒ a²b² - 2ab + 1 = 0 (mod 2²ⁿ)
+  ⇒ 2ab - a²b² = 1     (mod 2²ⁿ)
+  ⇒ a(2b - ab²) = 1    (mod 2²ⁿ)
+  ⇒ c = 2b - ab²       (mod 2²ⁿ)
+</pre>
+<p>
+This gives us the inductive step of the algorithm;
+to bootstrap it we simply need to find an inverse
+<code>b</code> of <code>a</code> modulo some small power of 2. To that
+end, one can check that all odd numbers are their
+own inverse modulo 4 (and 8).
+Putting it together in C.
+</p>
+<pre>
+uint32_t mulinv(uint32_t a) {
+    uint32_t b = a;   /* 1/a mod 2² */
+    b *= 2 - a*b;     /* 1/a mod 2⁴ */
+    b *= 2 - a*b;     /* 1/a mod 2⁸ */
+    b *= 2 - a*b;     /* 1/a mod 2¹⁶ */
+    b *= 2 - a*b;     /* 1/a mod 2³² */
+    return b;
+}
+</pre>
+<p>
+For those really eager for performance, it turns
+out that <code>b = 3*a ^ 2</code> is a cute initialization 
+by <a href="https://arxiv.org/abs/1303.0328">Peter Montgomery</a> which yields an inverse
+of <code>a</code> modulo 2⁵ and allows to cut one refinement
+step!
+</p>
+</article>
+<!-- analytics free! -->

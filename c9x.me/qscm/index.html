@@ -1,0 +1,240 @@
+<!doctype html>
+<meta name=viewport content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../assets/css/simple.css" type="text/css" />
+
+<title>QSCM - A tiny bootstrapped Scheme</title>
+
+<div class="container">
+<h1><!-- <img id="logo" src="compas.png" alt=""/> -->QSCM</h1>
+<h2>A Smooth Blend of Scheme and C</h2>
+
+<p> I am fascinated by systems that are self-sufficients,
+when I was a kid I wanted to make a lego car that would run
+by itself but the battery pack was too heavy for the engine
+that I had.  Then I learned about computers, and I became
+interested in compilers, and more specifically bootstrapped
+compilers.  These compilers are able to ingest their own
+source code and compile themselves.  This page describes my
+first attempt at writing such a compiler.
+
+<p> As a target for my bootstrapped compiler, I chose C, it's
+pretty high level, and if I can make the output of my compiler
+small enough I can probably have a nice entry for the IOCCC!
+To make the task non-trivial, we need a source language that
+is not simply a new syntax for C, we need a semantic gap that
+the compiler will bridge.  A functional language is a natural
+thing to consider at this point, and if we want easy parsing,
+it is clear that what we need is something that is similar to
+Scheme.
+
+<h3>A Quick (and dirty) Scheme</h3>
+
+<p> So our language has 5 keywords, <code>def do fun if
+let</code>.
+
+<p> The <code>let</code> keyword is a classic, it simply
+gives a name to an intermediate computation, for example
+<code>(let x 3 ...)</code> will bind 3 to the variable x
+and evaluate the body (leaved as an ellipsis) using this
+fresh binding.  The <code>if</code> construct will be our
+only way to do branching, when the condition evaluates to
+anything that is not 0, the "then" branch is taken,
+in all other cases the "else" is used. Computations are
+sequenced using <code>do</code>, the last computation of a
+<code>do</code> construct will determine the result of the
+whole sequence. Functions are created by the <code>fun</code>
+construct.  Finally <code>def</code> sets a gobal variable
+to a given value.
+A qscm program can use integer literals in base 10, string
+literals (which are read-only 0-terminated strings), and
+character literals like <code>#a #b #c</code>.
+Here follows the typical factorial example:
+
+<pre>
+(do (def ! (fun (n)
+        (if n (* n (! (- n 1))) 1)
+    ))
+    (! 6)
+) &#x2192; Evaluates to 720
+</pre>
+
+<p> To make the language suitable to do anything more than
+integer manipulations we garnish it with a "standard library"
+that includes the following 17 primitves:
+
+<ul>
+<li> binary comparison operators <code>&lt;= &gt;= &lt; &gt; =</code>;
+<li> standard arithmetic operators <code>+ - * /</code>;
+<li> Scheme pair constructor and destructors <code>cons car cdr</code>;
+<li> string allocation (returns a pointer) <code>new</code>;
+<li> pointer access operations <code>get set</code>;
+<li> IO for characters (ASCII) <code>getc putc</code>.
+</ul>
+
+<p> Here is a simple program that reads one line from the
+input and prints it backwards.  Note how we use pointers
+just like in C (this is the dirty/fun part of this Scheme).
+Looping is achieved by simple recursion.
+
+<pre>
+(do (def buf (new 100))
+    (def inl (fun (p)
+        (let c (getc)
+        (if (= c 10)
+            (set p 0)
+            (do (set p c)
+                (inl (+ 1 p)))
+        ))
+    ))
+    (def outl (fun (p)
+        (let c (get p)
+        (if c
+            (do (outl (+ 1 p))
+                (putc c))
+            0
+        ))
+    ))
+    (inl buf) (outl buf) (putc 10)
+)
+</pre>
+
+<p> By now, you might think that it is not going to be easy
+to bootstrap with so little and you are right.
+But despite the frugal apparences, this language is actually
+quite fun to use and I encourage you to write one or two
+programs in it!  If you lack insipration, Quicksort is a fun
+algorithm to program.
+
+<p> <em>Gotchas.</em>  The evaluation order of arguments is
+unspecified, so if your code depends on this, it will have
+unpredictable behavior (in my experience, clang as a backend
+will do what you want, gcc will not). Most of the default
+functions can be overwritten but <em>not</em> the arithmetic
+and comparison functions (this is a limitation of the
+compiler).  No proper tail recursion, sorry.
+
+<h3>The Compiler</h3>
+
+<ul>
+<li> The compiler
+     in qscm (<a href="data/17.qscm">17.qscm</a> ~7k) and
+     in C (<a href="data/qscm.c">qscm.c</a> ~5k).
+<li> The compilation helper script
+     in bash (<a href="data/comp.sh">comp.sh</a> ~1k).
+<li> BONUS The interpreter I used for the development
+     in Haskell (<a href="data/qscm.hs">qscm.hs</a> ~9k).
+</ul>
+
+<pre>
+$ cc -o comp qscm.c
+$ sh comp.sh 17.qscm
+$ diff /tmp/qscm.c qscm.c || echo 'bug!'  # they must be the same!
+$ ls -l
+...
+-rwxr-xr-x 1 qcar users   33060 Dec  5 16:29 a.out
+...
+$ # And a.out is the result of the self compilation!
+</pre>
+
+<p> The above commands show you how to bootstrap!  Using the helper
+script you can also compile the small example I gave in the previous
+section into a (efficient?) C program.  Be careful, because it is so
+tiny, the compiler will not check the syntax of your input program!
+It can segfault pretty easily on incorrect inputs.  They call it
+"garbage in, garbage out", I think.
+
+<h3>What Makes It Work</h3>
+
+<p>
+To start, you need an interpreter.  I wrote mine in Haskell in about
+one day (some tests included).  The hard part in my Haskell interpreter
+is to model the C strings as supported by qscm.  To do this I had to
+model heap and represent pointers.  Following the work on C semantics,
+my pointers are simply a pair of a <em>block</em> identifier (pointing
+to the whole string) and an <em>offset</em> in this larger string.
+All pointer arithmetic operations are checked by the interpreter, and
+operate on the offset.
+
+<p>
+Once the interpreter is working, you have to write the compiler. First,
+get a simple parser/pretty-printer working, this is fairly easy thanks
+to all the parentheses in Scheme!  Then you need to figure out a mapping
+between your source language constructs and constructs of the destination
+language, I decided to go really straightforward for basic qscm constructs.
+
+<ul>
+<li> <code>(do a b ...)</code> is translated by the sequencing operator <code>,</code>.
+<li> <code>(if a b c)</code> is translated by the ternary operator <code>?</code>.
+</ul>
+
+<p> The values of qscm are uniformly represented as numbers of type
+<code>intptr_t</code> abbreviated as <code>V</code>.  Then, depending on
+the operation that we perform on the value, this number is interpreted
+either as a signed integer or as a pointer.  For example, cons pairs are
+simply represented as pointers to arrays of two values, as you can see in
+the implementation for the cons, car, and cdr primitives.
+
+<pre>
+V C(V a,V d){                    /* cons */
+    V *p=malloc(2*sizeof*p);
+    p[0]=a; p[1]=d;
+    return (V)p;
+}
+V a_(V x){ return *(V*)x; }      /* car */
+V d_(V x){ return *((V*)x+1); }  /* cdr */
+</pre>
+
+<p> Remains the core of Scheme, functions and let
+bindings.  These two constructs introduce new names into the local scope.
+Following standard compilers/interpreters for functional languages, I used
+an <em>environment</em> to store this information.  When some piece of code
+accesses a local variable, we go and pick it up in the local environment.
+In the generated code, this is handled by the <code>L_(n, e)</code> function
+which gets the nth variable in the environment e.
+
+<pre>
+V L_(V n,V e){
+    while(--n)
+        e=d_(e);
+    return a_(e);
+}
+</pre>
+
+<p> Since environments are represented as lists, getting the nth variable in
+e amounts to take the cdr of the environment n-1 times and then return the car.
+Once we have this environment it is pretty clear what the let construct must
+do: (1)&nbsp;it must add the value of the bound expression as a new element in
+the environment, (2)&nbsp;then evaluate the second expression in
+the new environment, and (3)&nbsp;restore the old environment and
+return the result of the second evaluation.  The step three is fairly tricky
+to do using only C expressions, so I hacked it by calling a helper function
+<code>B_</code> that first pops the top variable off the environment passed
+as second argument and then returns the value of its first argument.
+So <code>(let x e1 e2)</code> is compiled as
+<code>(e = C(<i>e1</i>, e), B_(<i>e2</i>, &amp;e))</code>.
+
+<p> The handling of function also involves environments because of the creation of closures values.
+A closure is simply a cons pair that contains a function pointer and an environment.
+When the closure is invoked, we retrieve its environment and stack the value of its
+arguments on top of it, then we call the function pointer with the new environment as
+argument.  All of this is implemented by the <code>Z{1,2,3,4,n}</code> macros and
+function.
+
+<p> The compiler actually works in two phases, first it does a depth-first pass
+on the syntax (while parsing) and extracts all the functions into the list
+<code>fns</code>, then a second pass prints the output C code by first printing
+the function definitions and then printing the body of the main function (that
+is the expression resulting from the compilation of the whole program).
+Internally, expressions are represented as tagged pairs where the car of the pair
+is a character indicating the type of the expression and the cdr is the actual
+representation of the expression.
+
+<p> I will not explain all of the inners of the compiler here because it might
+be a fun game to check it out by yourself and see how such a tiny language can
+get to compile itself!  In particular, you can lookup how I emulate the || and
+&amp;&amp; which are missing in the language, or how I created a kind of printf
+function for easier pretty printing.  I am of course open to any suggestions
+to improve it!
+
+</div>
+<!-- analytics free! -->

@@ -1,0 +1,72 @@
+<!doctype html>
+<meta name=viewport content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../assets/css/simple.css" type="text/css" />
+
+<link rel="stylesheet" href="assets/notes.css" type="text/css"/>
+<title>Notes from 2022-11-16</title>
+<article>
+<h1><img id="logo" src="assets/logo.png" alt="">Notes</h1>
+<h3>2022-11-16</h3>
+
+<p>
+Say you are given two integer ranges [a, b) where a is inclusive
+and b is exclusive. We would like to write a function that returns
+whether the two ranges overlap or not. I suggest you try it out
+before reading the rest of the note.
+</p>
+<p>
+We are now going to take a viewpoint on the problem which I hope
+you will find original. Formally, the two intervals overlap if
+and only if they have (at least) one element in common. So we
+would like to decide if the following formula holds:
+</p>
+<pre>
+F := ∃x. x ∈ [a₁, b₁( &amp;&amp; x ∈ [a₂, b₂( 
+</pre>
+<p>
+However, programming languages are really only subsets of the
+mathematical language, and most of them won't let us express
+the existential quantification. What we would like to find is
+a formula <code>Fx</code> that is equivalent to <code>F</code> but free of constructs
+that cannot be used in typical programming languages. In
+particular, <code>Fx</code> must be free of the existential quantifier.
+</p>
+<p>
+It so happens that this business of eliminating quantifiers is
+a cornerstone of automated reasoning, where it goes by the
+unsurprising name of "quantifier elimination". Quite often
+the idea behind these procedures is to eliminate quantified
+variables by forming a conjunction of all the implicands.
+Let's see how this would work on our formula:
+</p>
+<pre>
+0: F := ∃x. x ∈ [a₁, b₁( &amp;&amp; x ∈ [a₂, b₂( 
+1:  &lt;=&gt; ∃x. (a₁ ≤ x &amp;&amp; x &lt; b₁) &amp;&amp; (a₂ ≤ x &amp;&amp; x &lt; b₂) 
+2:  ==&gt; a₁ &lt; b₁ &amp;&amp; a₁ &lt; b₂ &amp;&amp; a₂ &lt; b₂ &amp;&amp; a₂ &lt; b₁
+</pre>
+<p>
+In the last step we considered all pairs (a,b) that sandwich
+the variable x and formed the inequalities a &lt; b. By construction,
+and by transitivity of ≤,&lt;, the resulting conjunction is a
+consequence of our original formula <code>F</code>. In other words, if
+the two ranges overlap, then the formula on line 2 must hold.
+Interestingly for integers, and in fact for any <a href="https://en.wikipedia.org/wiki/Total_order">total order</a>, 
+the formula on line 2 is <em>equivalent</em> to <code>F</code> (take x to be
+max(a₁,a₂)). That's one thing we can easily formally verify
+using <a href="https://github.com/jrh13/hol-light/">HOL Light</a>:
+</p>
+<pre>
+prove
+ (`(?(x:int). (a1 &lt;= x /\ x &lt; b1) /\ (a2 &lt;= x /\ x &lt; b2)) &lt;=&gt;
+   a1 &lt; b1 /\ a1 &lt; b2 /\ a2 &lt; b2 /\ a2 &lt; b1`,
+  EQ_TAC THENL [ARITH_TAC; ALL_TAC] THEN STRIP_TAC THEN
+  EXISTS_TAC `max (a1:int) a2` THEN ASM_ARITH_TAC);;
+</pre>
+<p>
+Finally, note that the two conjuncts <code>a₁ &lt; b₁</code> and <code>a₂ &lt; b₂</code>
+are simply saying that the two input ranges are non-empty.
+If the two ranges are known to be non-empty, then the check
+degenerates to <code>a₁ &lt; b₂ &amp;&amp; a₂ &lt; b₁</code>.
+</p>
+</article>
+<!-- analytics free! -->

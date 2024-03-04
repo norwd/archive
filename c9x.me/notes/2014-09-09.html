@@ -1,0 +1,45 @@
+<!doctype html>
+<meta name=viewport content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../assets/css/simple.css" type="text/css" />
+
+<link rel="stylesheet" href="assets/notes.css" type="text/css"/>
+<title>Notes from 2014-09-09</title>
+<article>
+<h1><img id="logo" src="assets/logo.png" alt="">Notes</h1>
+<h3>2014-09-09</h3>
+
+<p>
+Don Knuth, in its Volume 1 of The Art of Computer Programming
+argues against garbage collection by saying that early freeing can
+lead to a more efficient usage of the memory by the allocator.
+</p>
+<p>
+In the following diagrams which represent a memory state, the
+heavy gray area is not used by the program but the garbage collector
+did not reclaim it yet, the black areas are in use, and the white
+areas are free to use.
+  <img class="imgblock" src="assets/gc1.png" alt="gc1">
+If the program tries to allocate one small block in the current
+state, the allocator will use some of the free space,
+  <img class="imgblock" src="assets/gc2.png" alt="gc2">
+Now the garbage collector reclaims the gray zone and we
+are left with two disjoint blocks of memory.
+  <img class="imgblock" src="assets/gc3.png" alt="gc3">
+On the other hand, if memory is managed manually the gray block
+has been freed eagerly,
+  <img class="imgblock" src="assets/nogc1.png" alt="nogc1">
+Thus, when the application needs some extra memory it can be tightly
+packed and only leaves one large hole in the memory.
+  <img class="imgblock" src="assets/nogc2.png" alt="nogc2">
+</p>
+<p>
+I guess this is all to be taken with a grain of salt since
+there are also easy arguments for garbage collection (for example
+fast allocation).  All in all I feel that programmers using languages
+with GC will advocate for it, and the converse for the others.
+The reasonable choice to make is probably application specific and
+even in this case it is likely to be hard and controversial making
+the right decision at the planning stage.
+</p>
+</article>
+<!-- analytics free! -->

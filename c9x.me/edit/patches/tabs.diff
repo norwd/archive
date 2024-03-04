@@ -1,0 +1,173 @@
+diff --git a/main.c b/main.c
+index d6f2616..3f5ff96 100644
+--- a/main.c
++++ b/main.c
+@@ -88,7 +88,7 @@ gev(int fd, int flag, void *unused)
+ 			selbeg = -1u;
+ 			break;
+ 		case GMouseDown:
+-			mousewin = win_which(e.mouse.x, e.mouse.y);
++			mousewin = curwin;
+ 			if (!mousewin)
+ 				break;
+ 			if (e.mouse.button == GBLeft) {
+diff --git a/win.c b/win.c
+index a7cc523..4f27659 100644
+--- a/win.c
++++ b/win.c
+@@ -26,6 +26,7 @@ static int runewidth(Rune r, int x);
+ 
+ static W wins[MaxWins];
+ static W *screen[MaxWins + 1];
++static W tabs;
+ static struct {
+ 	W win;
+ 	W *owner;
+@@ -50,6 +51,7 @@ win_init(struct gui *gui)
+ 
+ 	/* initialize the tag */
+ 	tag.win.eb = eb_new(-1);
++	tabs.eb = eb_new(-1);
+ 	eb_ins_utf8(tag.win.eb, 0, (unsigned char *)TagInit, sizeof TagInit - 1);
+ 
+ 	/* the gui module does not give a way to access the screen
+@@ -68,7 +70,7 @@ W *
+ win_new()
+ {
+ 	W *w, *w1;
+-	int i, x, size;
++	int i;
+ 
+ 	for (w1=wins;; w1++) {
+ 		if (w1 - wins >= MaxWins)
+@@ -78,17 +80,16 @@ win_new()
+ 	}
+ 	for (i=0; (w = screen[i]) && screen[i+1]; i++)
+ 		;
+-	if (!w) {
+-		x = 0;
+-		size = fwidth;
+-	} else {
+-		size = w->rectw - w->rectw/2 - g->border;
+-		move(w, w->rectx, 0, w->rectw/2, fheight);
+-		x = w->rectx + w->rectw + g->border;
++	if (w) {
+ 		i++;
+ 	}
+ 	w1->eb = eb_new(-1);
+-	move(w1, x, 0, size, fheight);
++	w1->rectx = 0;
++	w1->recty = TabHeight;
++	tabs.recth = TabHeight;
++	move(w1, w1->rectx, w1->recty, fwidth, fheight);
++	move(&tabs, 0, 0, fwidth, tabs.recth);
++	win_redraw_frame(w1, 1);
+ 	screen[i] = w1;
+ 	screen[i+1] = 0;
+ 	return w1;
+@@ -114,7 +115,7 @@ win_kill(W *w)
+ 		w1 = sw[-1];
+ 		rx = w1->rectx;
+ 	}
+-	move(w1, rx, 0, w->rectw+g->border+w1->rectw, fheight);
++	move(w1, w1->rectx, w1->recty, w->rectw+g->border+w1->rectw, fheight);
+ 	while (w->eb->tasks)
+ 		ex_cancel(w->eb->tasks);
+ 	eb_kill(w->eb);
+@@ -234,7 +235,7 @@ win_move(W *w, int x, int y)
+ 	if (j != 0)
+ 		/* window swap */
+ 		for (i=0, x=0; (w = screen[i]); i++) {
+-			move(w, x, 0, w->rectw, fheight);
++			move(w, x, w->recty, w->rectw, fheight);
+ 			x += w->rectw + g->border;
+ 		}
+ 	else if (i != 0) {
+@@ -242,7 +243,7 @@ win_move(W *w, int x, int y)
+ 		w1 = screen[i-1];
+ 		dx = x - w->rectx;
+ 		move(w, x, 0, w->rectw - dx, fheight);
+-		move(w1, w1->rectx, 0, w1->rectw + dx, fheight);
++		move(w1, w1->rectx, w1->recty, w1->rectw + dx, fheight);
+ 	}
+ }
+ 
+@@ -259,11 +260,13 @@ win_resize_frame(int w1, int h1)
+ 		w = (screen[i]->rectw * w1) / fwidth;
+ 		if (!screen[i+1])
+ 			w = w1 - x;
+-		move(screen[i], x, 0, w, h1);
++		move(screen[i], 0, screen[i]->recty, w1, h1);
+ 		x += w + g->border;
+ 	}
+ 	fwidth = w1;
+ 	fheight = h1;
++	tabs.recth = TabHeight;
++	move(&tabs, 0, 0, fwidth, tabs.recth);
+ }
+ 
+ /* win_redraw_frame - Redraw the whole frame.
+@@ -276,24 +279,30 @@ win_redraw_frame(W *focus, int insert)
+ 	int i;
+ 
+ 	b = (GRect){ 0, 0, g->border, fheight };
+-	for (i=0; (w = screen[i]); i++) {
+-		assert(!screen[i+1] || w->rectx + w->rectw + g->border == screen[i+1]->rectx);
+-		if (dirty(w)) {
+-			if (screen[i+1]) {
+-				b.x = w->rectx + w->rectw;
+-				g->drawrect(&b, 0, 0, b.w, b.h, GGray);
+-			}
+-			draw(w, GPaleYellow, focus, insert);
+-			if (tag.owner == w)
+-				tag.win.dirty = 1;
+-		}
+-	}
+-	if (tag.visible && dirty(&tag.win)) {
++	draw(focus, GPaleYellow, focus, insert);
++	g->drawrect(&b, 0, 0, b.w, b.h, GGray);
++	if (tag.visible) {
+ 		b = tag.win.rect;
+ 		b.y -= g->border;
+ 		g->drawrect(&b, 0, 0, b.w, g->border, GGray);
+ 		draw(&tag.win, GPaleGreen, focus, insert);
+ 	}
++
++	buf_clr(&tabs.eb->b);
++	for (i = 0; (w = screen[i]); i++) {
++		if (win_text(w) && win_text(w)->eb && win_text(w)->eb->path) {
++			eb_ins_utf8(tabs.eb, 0, (unsigned char *)win_text(w)->eb->path, strlen(win_text(w)->eb->path));
++		} else {
++			eb_ins_utf8(tabs.eb, 0, (unsigned char *) "empty", sizeof "empty" - 1);
++		}
++		if (w == focus) {
++			eb_ins_utf8(tabs.eb, 0, (unsigned char *)" >", sizeof " >" - 1);
++		} else {
++			eb_ins_utf8(tabs.eb, 0, (unsigned char *)"  ", sizeof "  " - 1);
++		}
++	}
++	move(&tabs, 0, 0, fwidth, tabs.recth);
++	draw(&tabs, GPaleGreen, focus, 0);
+ }
+ 
+ /* win_scroll - Scroll the window by [n] lines.
+diff --git a/win.h b/win.h
+index bf2f913..eabc8f5 100644
+--- a/win.h
++++ b/win.h
+@@ -17,6 +17,7 @@ enum {
+ 	MaxHeight = 500,    /* maximum number of lines */
+ 	MaxWins = 6,        /* maximum number of windows */
+ 	TagRatio = 3,       /* fraction of the screen for the tag */
++	TabHeight = 20,      /* pixel height of the tab window */
+ };
+ 
+ struct w {
+@@ -34,6 +35,7 @@ enum CursorLoc { CTop, CMid, CBot };
+ void win_init(struct gui *g);
+ W *win_new(void);
+ W *win_kill(W *);
++W *win_cycle(W *, int dir);
+ unsigned win_at(W *w, int x, int y);
+ W *win_which(int x, int y);
+ W *win_edge(W *, int dir);
