@@ -1,0 +1,351 @@
+--------------------------------------------------
+
+         Imperative programming in SML
+
+                  7 Nov 2002
+
+                Tom Murphy VII
+
+--------------------------------------------------
+
+Outline
+
+ - References
+
+ - Cyclic Data Structures
+
+ - Memoization
+
+ - Benign Effects
+
+ - Value Restriction
+
+--------------------------------------------------
+
+Introduction to references
+
+References are:
+
+A type
+
+   'a ref
+
+   ... representing references holding 
+       values of type 'a.
+
+A constructor
+
+   ref : 'a -> 'a ref
+   
+   ...
+
+Functions
+
+   !   : 'a ref -> 'a
+   
+   ... fetching the contents of a reference
+   
+   :=  : 'a ref * 'a -> unit
+
+   ... updating the contents of a reference
+
+--------------------------------------------------
+
+
+A simple example
+
+   let
+        val r = ref "hello\n"
+   in
+        print (!r);
+        r := "bye";
+        print (!r ^ "\n");
+        r := !r ^ !r;
+        print (!r ^ "\n")
+   end
+    ... what does this print?
+
+--------------------------------------------------
+
+References are not pointers or C++ references.
+(Sometimes it is tempting to think of them
+ that way.)
+A good analogy is 1-element arrays:
+
+structure Ref =
+struct
+
+    type 'a ref = 'a Array.array
+    fun ref x = Array.array(1, x)
+    fun ! a = Array.sub(a, 0)
+    fun r := x = Array.update(r, 0, x)
+
+end
+
+(Technically this won't work in SML because
+ ref is a *constructor*, not a function.)
+
+--------------------------------------------------
+
+Advanced Information
+
+All references are equality types.
+Equality is on the reference cell
+itself, not its contents.
+
+   ref (fn _ => 0) = ref (fn _ => 1)
+       well typed ... false.
+
+   ref 0 = ref 0
+       well typed ... FALSE!
+
+   val x = ref 0
+
+   x = x 
+       well typed ... true.
+
+--------------------------------------------------
+
+Advanced Information
+
+'ref' is a constructor and can be used
+in patterns:
+
+   (* like: fun hd (h::t) = h *)
+   fun ! (ref u) = u
+
+   fun ++ (r as ref i) = (r := i + 1; !r)
+
+   val x = ref 0
+
+   val y = ++ x
+         ... what's the value of y?
+
+--------------------------------------------------
+
+What are references good for?
+
+   - Circular data structures
+
+   - Memoization (other benign effects)
+
+   - Some special applications (ie, type inference)
+
+--------------------------------------------------
+Circular Data Structures: Doubly Linked List
+
+
+    datatype 'a dll = 
+         Node of 'a dll ref * 'a * 'a dll ref
+       | Empty
+
+    (* findr : 'a * 'b -> bool -> 'a dll -> 'b -> 'a option *)
+    fun findr _  Empty _ = NONE
+      | findr eq (Node (l, x, r)) y =
+        if eq (x, y) 
+        then SOME x 
+        else findr eq (!r) y
+
+    (* findl : 'a * 'b -> bool -> 'a dll -> 'b -> 'a option *)
+    fun findl _  Empty _ = NONE
+      | findl eq (Node (l, x, r)) y =
+        if eq (x, y)
+        then SOME x
+        else findl eq (!l) y
+
+    (* find : 'a * 'b -> bool -> 'a dll -> 'b -> 'a option *)
+    fun find eq n y =
+        case findr eq n y of
+           NONE => findl eq n y
+         | found => found
+
+    ... why can't we just write find recursively?
+
+--------------------------------------------------
+Doubly Linked Lists
+
+    datatype 'a dll = 
+         Node of 'a dll ref * 'a * 'a dll ref
+       | Empty
+
+    exception DLL of string
+
+    (* insertr : 'a dll -> 'a -> 'a dll *)
+    fun insertr Empty _ = raise DLL "Can't Insert into Empty"
+      | insertr (n as Node (l, a, r)) x =
+          let val new = Node(ref n, x, ref (!r))    (* NOT r *)
+          in (case !r of
+                Node(rl, _, _) => rl := new
+              | Empty => ());
+             r := new;
+             new
+          end
+
+--------------------------------------------------
+Detecting Cycles
+
+     (* just detect cycles to the right *)
+     (* 'a dll ref -> bool *) 
+     fun hascycler d =
+        let
+            fun hc seen (ref Empty) = false
+              | hc seen (n as ref (Node(_, _, r))) =
+                   List.exists (fn s => s = n) seen
+                   orelse hc (n :: seen) r
+        in
+            hc nil d
+        end
+
+--------------------------------------------------
+Slicker Way
+
+   (* No seen list -- the turtle vs. the hare! *)
+   (* 'a dll ref -> bool *)
+   fun slickcycler d =
+     let
+         fun hc (ref Empty) _ = false
+           | hc _ (ref Empty) = false
+           | hc _ (ref (Node(_, _, ref Empty))) = false
+           | hc (slow as ref (Node(_, _, sr)))
+                (ref (Node(_, _, fast as
+                           ref (Node(_, _, fr))))) =
+                slow = fast orelse hc sr fr
+     in
+         hc d d
+     end
+
+--------------------------------------------------
+Graphs
+
+    Doubly linked lists are just a special kind
+    of graph.
+
+    datatype 'a component = 
+        Node of 'a * 'a component list ref
+
+    type 'a graph = 'a component list
+
+    fun setlinks (Node (_, r)) l = r := l
+
+    (* create the three-cycle *)
+    val a = Node (1, ref nil)
+    val b = Node (2, ref [a])
+    val c = Node (3, ref [b])
+    val _ = setlinks a [c]
+
+--------------------------------------------------
+Graphs: Find all data
+
+    datatype 'a component = 
+        Node of 'a * 'a component list ref
+
+    (* ('a * bool ref) component -> 'a list *)
+    fun all (Node((_, ref true), _)) = nil
+      | all (Node((x, visited), neighbors)) =
+      let
+          val _ = visited := true
+          val otherstuff = map all (!neighbors)
+      in
+          x :: List.concat otherstuff
+      end
+
+
+--------------------------------------------------
+Cyclic Data Structures, cont'd: "Tying the Knot"
+
+    A recursive function is a kind of cyclic
+(ie, self-referential) "data structure".
+
+exception Impossible
+
+val self = ref ((fn _ => raise Impossible) : int -> int)
+
+val fact = fn n => if n < 1 then 1 
+                   else n * (!self) (n - 1)
+
+val _ = self := fact
+
+
+This is how lisp achieves recursive functions.
+(The system linker performs a similar trick for
+C, as well.)
+
+--------------------------------------------------
+Memoization
+
+signature SUSPENSION =
+sig
+
+     type 'a susp
+
+     val delay : (unit -> 'a) -> 'a susp
+
+     val force : 'a susp -> 'a
+
+end
+
+(* normal way *)
+structure Susp :> SUSPENSION =
+struct
+
+  type 'a susp = unit -> 'a
+
+  fun delay f = f
+
+  fun force f = f ()
+
+end
+--------------------------------------------------
+Memoization
+
+structure MemoSusp :> SUSPENSION =
+struct
+
+      type 'a susp = (unit -> 'a) * 'a option ref
+
+      fun delay f = (f, ref NONE)
+
+      fun force (f, memo as ref NONE) =
+          let val res = f ()
+          in 
+              memo := SOME res;
+              res
+          end
+        | force (_, ref (SOME m)) = m
+end
+
+... simple, but notice we keep around f even after
+we've run it.
+
+--------------------------------------------------
+Memoization
+
+An even slicker implementation:
+
+structure SlickerSuspension :> SUSPENSION =
+struct
+   type 'a susp = (unit -> 'a) ref
+   
+   exception Impossible
+
+   fun delay f =
+       let val memo = ref (fn x => raise Impossible)
+       in 
+           memo := (fn () =>
+                      let val res = f ()
+                      in memo := (fn () => res);
+                         res
+                      end);
+           memo
+       end
+
+   fun force f = (!f)()
+end
+
+"self-modifying" code?
+
+--------------------------------------------------
+
+         End of lecture 1
+
+--------------------------------------------------

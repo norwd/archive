@@ -1,0 +1,553 @@
+--------------------------------------------------
+
+         Imperative programming in SML
+                   Lecture 2
+
+                  12 Nov 2002
+
+                Tom Murphy VII
+
+--------------------------------------------------
+Assignment 5 Info
+
+ - minor changes
+
+    - fact example
+
+    - > isn't in MinML
+
+ - parser tips
+
+ - assuming type-checked input
+
+--------------------------------------------------
+Outline
+
+
+
+ - References
+
+ - Memoization
+
+ - Memoized Streams
+
+ - Benign Effects
+
+ - Proofs about Imperative Programs (?)
+
+ - Value Restriction
+
+--------------------------------------------------
+Re-introduction to references
+
+(* REVIEW. *)
+
+References are:
+
+A type
+
+   'a ref
+
+   ... representing references holding 
+       values of type 'a.
+
+A constructor
+
+   ref : 'a -> 'a ref
+   
+   ...
+
+Functions
+
+   !   : 'a ref -> 'a
+   
+   ... fetching the contents of a reference
+   
+   :=  : 'a ref * 'a -> unit
+
+   ... updating the contents of a reference
+
+--------------------------------------------------
+Memoization: Suspensions
+
+(* REVIEW. *)
+
+signature SUSPENSION =
+sig
+
+     type 'a susp
+
+     val delay : (unit -> 'a) -> 'a susp
+
+     val force : 'a susp -> 'a
+
+end
+
+(* simpler version *)
+structure MemoSusp :> SUSPENSION =
+struct
+
+      type 'a susp = (unit -> 'a) * 'a option ref
+
+      fun delay f = (f, ref NONE)
+
+      fun force (f, memo as ref NONE) =
+          let val res = f ()
+          in 
+              memo := SOME res;
+              res
+          end
+        | force (_, ref (SOME m)) = m
+end
+
+We implemented these such that the first force
+would do the computation, but later forces would
+simply return the memoized result.
+
+--------------------------------------------------
+Memoized streams ("lazy lists")
+
+   Using memoized suspensions, we can create
+memoized streams. The definition is the same, we
+just use MemoSusp instead of Suspension?
+
+   structure MS = MemoSusp
+
+   datatype 'a front =
+       Cons of 'a * 'a stream
+     | Nil
+
+   withtype 'a stream = 'a front MS.susp
+
+--------------------------------------------------
+Memoized streams
+
+   Memoized streams act just like memoized
+suspensions. The first time they are forced,
+potentially expensive computation is carried out.
+Later forces are free.
+
+   Here are some standard definitions:
+
+   fun fib 0 = 1
+     | fib 1 = 1
+     | fib n = fib (n - 1) + fib (n - 2)
+
+   fun count n () = Cons(n, MS.delay (count (n+1)))
+   val ints = MS.delay (count 0)
+
+   (* map for streams *)
+   fun smap' f s () =
+       case MS.force s of
+           Nil => Nil
+         | Cons(a, ss) => Cons(f a, smap f ss)
+   and smap f s = MS.delay (smap' f s)
+
+   (* take n elements from a stream *)
+   fun stake 0 s = nil
+     | stake n s = 
+       case MS.force s of
+	   Nil => nil
+	 | Cons(a, ss) => a :: stake (n - 1) ss
+
+--------------------------------------------------
+Memoized streams
+
+   fun loudfib n =
+       let in
+	   print ("Called fib " ^ 
+		  Int.toString n ^ "\n");
+	   fib n
+       end
+
+   (* stream of fibonacci numbers *)
+   val fibs = smap loudfib ints
+
+   (* slow *)
+   val fib33 = stake 33 fibs
+
+   (* instantaneous *)
+   val fib33' = stake 33 fibs
+
+   (* only computes 1 new fibonacci number *)
+   val fib34 = stake 34 fibs
+
+--------------------------------------------------
+Sometimes, Two Wrongs Make a Right
+
+   We've seen (and will see later) that imperative
+programming usually makes your program hard to
+reason about.
+
+   Paradoxically, however, using imperative
+features to memoize other imperative features can
+lead to a *more* functional program!
+
+--------------------------------------------------
+Example: Memoized keyboard input stream.
+
+   fun genkeys () =
+       case TextIO.input1 TextIO.stdIn of
+	   NONE => Nil
+	 | SOME c => Cons(c, MS.delay genkeys)
+
+   val keys = MS.delay genkeys
+
+   (* waits for input ... *)
+   val first_ten = stake 10 keys
+
+   (* returns the same keystrokes! *)
+   val again = stake 10 keys
+
+--------------------------------------------------
+Standard Table-based Memoization
+
+   Sometimes we're not just memoizing a single
+suspended computation, but a single function
+over a range of possible inputs.
+
+   For instance, the way we wrote fibonacci
+before was really bad. We re-compute a lot
+of intermediate values.
+
+--------------------------------------------------
+Table-based Memoization: Fibonacci
+
+   (* fib n
+
+      calculate fibonacci(n) for n >= 0 *)
+   fun fib 0 = 1
+     | fib 1 = 1
+     | fib n = fib (n - 1) + fib (n - 2)
+
+   fib 4 calls...
+      fib 3, which calls...
+         fib 2, which calls...
+            fib 0
+            fib 1
+      fib 2, which calls...
+         fib 0
+         fib 1
+
+   Lots of redundant computation!
+
+--------------------------------------------------
+Table-based Memoization: Fibonacci
+
+   local
+       val fiba = Array.array(500, NONE) 
+       val _ = Array.update(fiba, 0, SOME 1)
+       val _ = Array.update(fiba, 1, SOME 1)
+   in
+       (* fib n
+	  calculate fibonacci of n, 
+	  for 0 <= n < 500 *)
+       fun fib n =
+	   case Array.sub(fiba, n) of
+	       SOME x => x
+	     | NONE =>
+		   let val r = 
+		       fib (n - 1) + fib (n - 2)
+		   in
+		       Array.update(fiba, n, SOME r);
+		       r
+		   end
+   end
+
+--------------------------------------------------
+Table-based Memoization
+
+   Most of this code doesn't have to do with
+   fibonacci.
+
+   Can we abstract it into a general 
+   function-memoizer?
+
+   (This will be tricky, watch out.)
+
+
+   Morally, such a function should take an 
+   (int -> 'a) function, and return an 
+   (int -> 'a) function that's memoized.
+
+   
+   What's the problem with this setup?
+
+--------------------------------------------------
+Table-based Memoization
+
+   Problem:
+
+   fun fact 0 = 1
+     | fact n = n * fact (n - 1)
+                    ^^^^
+
+   The factorial function calls itself directly.
+   (NOT through the table.)
+
+
+   What can we do?
+
+--------------------------------------------------
+Generalized Table-based Memoization
+
+   Suppose we wrote factorial like this:
+
+   fun fact f 0 = 1
+     | fact f n = n * f (n - 1)
+                     ^^^
+
+   We pass in the function f that it should use
+   for its "recursive" calls.
+
+   Now factorial isn't recursive!!
+
+   Our memoizer will pass in a memoized version
+   of factorial for the recursive calls.
+
+   What's the type of fact?
+   What will be the type of our memoizer?
+
+--------------------------------------------------
+Generalized Table-based Memoization
+
+(* ((int -> 'a) -> int -> 'a) -> int -> 'a *)
+fun tablize f =
+    let
+	val memo = Array.array(500, NONE)
+
+	fun mf x =
+	    case Array.sub(memo, x) of
+		SOME r => r
+	      | NONE =>
+		    let val r = f mf x     (* !! *)
+		    in
+			Array.update(memo, x, SOME r);
+			r
+		    end
+    in
+	mf
+    end
+
+--------------------------------------------------
+Other Benign Effects: MTF Lists
+
+   As we see, it's possible to use imperative
+constructs to implement persistent data structures
+more efficiently. These are called "benign effects".
+
+   Move to front ("MTF") lists are a simple data
+structure for quick access to unordered data. The
+basic idea is to move an item to the head of the list
+any time it is used. Though this won't improve our
+worst-case running time, it tends to help in
+real-world situations where some data are looked up
+more frequently than others. (Or simply when there
+is good locality of access.)
+
+--------------------------------------------------
+Move-to-front Lists
+
+signature BUNCH =
+sig
+    type 'a bunch
+
+    val insert : 'a bunch -> 'a -> 'a bunch
+
+    val lookup : ('a * 'b -> bool) -> 'a bunch -> 
+                        'b -> 'a option
+
+end
+
+structure MTF :> BUNCH =
+struct
+
+    type 'a bunch = 'a list ref
+
+    fun insert (ref l) x = ref (x :: l)
+
+    fun lookup eq (b as ref l) x =
+        let
+            fun look _ nil = NONE
+              | look l (h::t) = if eq (h, x) then
+                                (b := h :: (rev l @ t);
+                                 SOME h)
+                                else look (h::l) t
+        in  look nil l
+        end
+end
+
+... why do we have to copy in insert?
+
+
+--------------------------------------------------
+Benign Effects, continued
+
+
+ Other examples:
+ - Splay Trees
+ - Union-Find path compression
+
+--------------------------------------------------
+Proving Things
+
+ - Proving things about imperative programs much
+   harder than functional programs
+
+ - Have to reason about *effect* of expression
+   as well as *value*
+
+ - Must be careful when replicating / deleting
+   code
+
+--------------------------------------------------
+Proving Things
+
+ - Transformation:
+
+   an imperative function from int -> int
+
+   becomes a functional function from
+   int * state -> int * state
+
+ - This makes it easier to reason about
+   the programs, but makes the programs
+   much uglier.
+
+ - "Purely Functional" languages like Haskell
+   build this in. ("Monads")
+
+--------------------------------------------------
+Value Restriction
+
+
+- val x = nil @ nil
+
+stdIn:79.1-79.19 Warning: type vars not generalized because of
+   value restriction are instantiated to dummy types (X1,X2,...)
+val x = [] : ?.X1 list
+
+
+  What is this nonsense?
+  Now we can finally understand what this is for.
+
+--------------------------------------------------
+Value Restriction
+
+  val bindings in SML can be polymorphic:
+  (this is called "let-polymorphism")
+
+  val x : 'a list = nil
+
+  ... but only if the expression is 
+      a syntactic value.
+
+  Examples of values:
+
+  Datatype constructors (applied to values),
+  functions, tuples of values.
+
+  OK:
+
+  val z = (0, nil, [fn x => x])
+
+  NOT OK:
+
+  val z = (0 + 1, nil)
+
+--------------------------------------------------
+Value Restriction
+
+  But why?
+
+  Suppose we allowed expressions.
+
+  val r = ref nil
+
+  .. now r has type 'a list ref.
+
+  val _ = r := [1000]
+
+  .. r still has type 'a list ref!
+
+  (* yikes!! *)
+  val f = (hd (!r)) : unit -> unit
+
+  .. ok, we choose 'a = unit -> unit
+
+  val _ = f ()
+
+--------------------------------------------------
+Value Restriction
+
+  This causes the language to be unsafe!
+
+  The value restriction fixes the problem.
+
+
+  Why does the problem occur?
+
+
+  Let-polymorphism is justified by substitution.
+
+  let val x = nil
+  in
+     ...  0 :: x  ...
+
+     ...  true :: x  ...
+  end
+
+  Can be thought of as shorthand for:
+
+  ...  0 :: nil  ...
+  ...  true :: nil  ...
+
+--------------------------------------------------
+Value Restriction
+
+  What happens if we do this with ref?
+
+  let val r = ref nil
+  in
+      r := [1000];
+      (hd (!r))()
+  end
+
+     becomes
+
+  (ref nil) := [1000];
+  (hd (!(ref nil))) ()
+
+  This program is TYPE SAFE,
+  but not the same program as before!
+
+  Replicating an expression with effect
+  (creation of a reference cell) may change the
+  program by duplicating that effect. 
+
+  Because let doesn't replicate the behavior of
+  the program under substitution, we can't use
+  substitution as a justification for polymorphism.
+
+--------------------------------------------------
+Value Restriction: Demo
+
+
+
+
+--------------------------------------------------
+
+  Welcome to the end of the slide show.
+
+
+--------------------------------------------------
+
+
+
+
+--------------------------------------------------
+val r = ref nil;
+val r = magic r : 'a list ref;
+val _ = r := [1000];
+val x = (hd (!r)) ();
+--------------------------------------------------
