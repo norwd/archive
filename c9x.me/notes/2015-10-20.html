@@ -1,0 +1,63 @@
+<!doctype html>
+<meta name=viewport content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../assets/css/simple.css" type="text/css" />
+
+<link rel="stylesheet" href="assets/notes.css" type="text/css"/>
+<title>Notes from 2015-10-20</title>
+<article>
+<h1><img id="logo" src="assets/logo.png" alt="">Notes</h1>
+<h3>2015-10-20</h3>
+
+<p>
+I would like to share some thoughts I had about tagged data.  Sum types and
+such are getting really common in mainstream languages, they are usually
+implemented using what I'll call a <em>tag</em> field.  A tag is a small
+number that indicates what is the kind of the data considered.  For example,
+in C, we often use the following idiom to mimic sum types:
+</p>
+<pre>
+struct Fruit {
+	enum {
+		FruitNone, /* invalid fruit */
+		FruitApple,
+		FruitBanana,
+		FruitCherry,
+	} kind;
+	union {
+		struct Apple apple;
+		struct Banana banana;
+		struct Cherry cherry;
+	} u;
+};
+</pre>
+<p>
+Like in the example, most of the programming languages represent the tag
+using a machine integer.  However, if you are programming with high space
+constraints it might be worth thinking more about the appropriate
+representation of the tag field.
+</p>
+<p>
+Let's say that you want a tagged structure that can be either
+one integer of type A in the range [0-255] or integers of type
+B, C, and D that lie in the range [0-63], then, because there
+are 4 different cases, the tag field needs to be at least 2 bits
+long, and because the type A needs at least 8 bits (8 bits
+represent at most
+  2<sup>8</sup>
+= 256 values), the whole tagged
+data-structure would need at least 8+2 = 10 bits for storage.
+</p>
+<p>
+The point is now that the whole reasoning above assumes that
+the tag bit-width is <em>constant</em>, but in the above case it is
+actually smarter to have a variable bit-width for the tag.  Here
+is why: if we use the tag 0 to represent the kind of data A, and
+3, 5, 7 to represent respectively the kinds B, C, and D, then
+we use only 1 bit for the tag in the A case and 3 bits in all
+the other cases.  So instead of using 10 bits of storage as
+above we use max(8+1,6+3) = 9 bits!  (Note that the above works
+because 3, 5, and 7 have 1 as least significant bit, so they
+are never confused with the A kind.)
+</p>
+</article>
+<!-- analytics free! -->

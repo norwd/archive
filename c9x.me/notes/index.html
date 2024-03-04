@@ -1,0 +1,877 @@
+<!doctype html>
+<meta name=viewport content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../assets/css/simple.css" type="text/css" />
+
+<link rel="stylesheet" href="assets/notes.css" type="text/css"/>
+<title>Notes</title>
+<script>
+	(function() {
+		var y, m, d;
+		var match = window.location.search.match(
+			/^\?(\d+)\/(\d+)\/(\d+)$/
+		);
+		if (!match)
+			return;
+		[_, m, d, y] = match;
+		if (m.length == 1)
+			m = "0" + m;
+		if (d.length == 1)
+			d = "0" + d;
+		window.location.replace("/notes/" + y + "-" + m + "-" + d + ".html");
+	})();
+</script>
+<article>
+<h1><img id="logo" src="assets/logo.png" alt="">Notes</h1>
+<p>
+These are my personal opinions on various subjects, they are sorted in
+chronological order. I tried to keep them short. If you have any
+comments, I would be glad that you drop me a mail. 
+</p>
+
+<h3 class="date"><a href="2023-07-14.html">July 14, 2023</a></h3>
+<p>
+It is folklore that, under some conditions,
+open-addressed hash tables with quadratic
+probing do not miss free slots. This note
+explains why with a proof.
+</p>
+<p>
+Let me break things down a little. With hash
+tables, the prime problem to solve when
+implementing insertion is conflicts: You are
+handed a key value pair (K₁,V₁) and, after
+hasing the key K₁, you realize that the table
+slot designated by the hash value is already
+filled with a binding (K₂,V₂). Chaining
+implementations will just cram the binding
+in the slot anyway, hence creating a bucket
+with more than one binding in a single
+table slot. Open-addressing implementations
+will instead go look for another slot.
+One obvious strategy for searching is to
+go look at the next slot, and the next one,
+and so on, potentially wrapping around when the
+last slot of the table is visited.
+Quadratic probing offers an alternative scheme:
+instead of scanning slot <code>h+i mod N</code> at the
+i-th step, it scans the slot <code>h+P(i) mod N</code>
+where <code>P</code> is a polynomial function of degree 2.
+This strategy helps with the clustering problem
+that linear probing may create.
+</p>
+<p>
+The polynomial <code>P</code> of interest to us here is
+<code>P(X) = (X + X²)/2</code>.
+The polynomial <code>P</code> outputs so-called
+triangular numbers (they can be stacked in a
+triangle shape), and the sequence <code>P(0)</code>, <code>P(1)</code>,
+<code>P(2)</code>, ... is easily computed:
+</p>
+<pre>
+p_i = 0;
+for (i=0; i&lt;N; i++) {
+	assert(p_i == (i + i*i)/2);
+ 	p_i += i;
+}
+</pre>
+<p>
+But, more importantly, if the table size is a
+power of 2, and there is a single free slot,
+quadratic probing will find it. It is not an
+obvious fact and I prove it below.
+</p>
+<p>
+Formally, we want to show that as <code>i</code> ranges
+over the interval <code>I=[0,2ⁿ)</code>, <code>h+P(i) mod 2ⁿ</code>
+ranges over <code>I</code> as well. Said differently, we
+want to show that the function mapping <code>x</code> to
+<code>h+P(x) mod 2ⁿ</code> is a bijection over <code>I</code>.
+Since <code>I</code> is finite, it is sufficent to show
+that the map is injective; that is, it maps
+different values of <code>I</code> to different values.
+</p>
+<p>
+To prove injectivity we consider <code>i</code> and <code>j</code> in <code>I</code>
+such that <code>h+P(i) mod 2ⁿ</code> = <code>h+P(j) mod 2ⁿ</code> and show
+that <code>i</code> must be equal to <code>j</code>. We first reason by
+equivalence:
+</p>
+<pre>
+   (h + P(i) mod 2ⁿ) = (h + P(j) mod 2ⁿ)
+⟺ (h + (i + i²)/2) - (h + (j + j²)/2) = k2ⁿ
+⟺ (i + i²) - (j + j²) = k2ⁿ⁺¹
+⟺ (i - j)(1 + i + j) = k2ⁿ⁺¹
+</pre>
+<p>
+Breaking the products on both sides we get that
+there must be three integers <code>k₁</code>, <code>k₂</code>, and <code>m</code>
+such that:
+</p>
+<pre>
+A := i - j     = k₁2ᵐ           with k = k₁k₂
+B := 1 + i + j = k₂2ⁿ⁺¹⁻ᵐ        and 0 ≤ m ≤ n + 1
+</pre>
+<p>
+We now consider three cases:
+</p>
+<ul>
+<li> If <code>m</code> is not <code>0</code> nor <code>n+1</code> then it must be that
+    both <code>A</code> and <code>B</code> are even. That is however impossible
+    because <code>B = 1 + 2j + A</code>, so when <code>A</code> is even, <code>B</code> is
+    odd, and vice versa.
+<li> If <code>m</code>  is <code>n+1</code>, we must then have <code>i - j = k₁2ⁿ⁺¹</code>,
+    but since <code>i</code> and <code>j</code> are in the interval <code>I</code>, <code>i - j</code>
+    is in <code>(-2ⁿ,2ⁿ)</code>, so <code>k₁</code> can only be zero and thus
+    <code>i</code> equals <code>j</code>.
+<li> If <code>m</code> is <code>0</code>, we again use a size argument. Since <code>i</code>
+    and <code>j</code> are in <code>I</code>, we have that <code>1 + i + j</code> is in
+    <code>(0,2ⁿ⁺¹-1)</code>. So <code>k₂</code> must be positive and less
+    than 1; these requirements prove that the present
+    case is impossible.
+</ul>
+<p>
+The only possible outcome for the case analysis
+is thus that <code>i</code> equals <code>j</code>. Unwinding everything, the
+map <code>h+P(x) mod 2ⁿ</code> is injective on <code>I</code>, so it is
+also bijective on <code>I</code>, so when <code>i</code> ranges from <code>0</code>
+to <code>2ⁿ-1</code>, the map ranges over all of <code>I</code>, and thus
+quadratic probing indeed vists all slots!
+</p>
+<h3 class="date"><a href="2022-11-16.html">November 16, 2022</a></h3>
+<p>
+Say you are given two integer ranges [a, b) where a is inclusive
+and b is exclusive. We would like to write a function that returns
+whether the two ranges overlap or not. I suggest you try it out
+before reading the rest of the note.
+</p>
+<p>
+We are now going to take a viewpoint on the problem which I hope
+you will find original. Formally, the two intervals overlap if
+and only if they have (at least) one element in common. So we
+would like to decide if the following formula holds:
+</p>
+<pre>
+F := ∃x. x ∈ [a₁, b₁( &amp;&amp; x ∈ [a₂, b₂( 
+</pre>
+<p>
+However, programming languages are really only subsets of the
+mathematical language, and most of them won't let us express
+the existential quantification. What we would like to find is
+a formula <code>Fx</code> that is equivalent to <code>F</code> but free of constructs
+that cannot be used in typical programming languages. In
+particular, <code>Fx</code> must be free of the existential quantifier.
+</p>
+<p>
+It so happens that this business of eliminating quantifiers is
+a cornerstone of automated reasoning, where it goes by the
+unsurprising name of "quantifier elimination". Quite often
+the idea behind these procedures is to eliminate quantified
+variables by forming a conjunction of all the implicands.
+Let's see how this would work on our formula:
+</p>
+<pre>
+0: F := ∃x. x ∈ [a₁, b₁( &amp;&amp; x ∈ [a₂, b₂( 
+1:  &lt;=&gt; ∃x. (a₁ ≤ x &amp;&amp; x &lt; b₁) &amp;&amp; (a₂ ≤ x &amp;&amp; x &lt; b₂) 
+2:  ==&gt; a₁ &lt; b₁ &amp;&amp; a₁ &lt; b₂ &amp;&amp; a₂ &lt; b₂ &amp;&amp; a₂ &lt; b₁
+</pre>
+<p>
+In the last step we considered all pairs (a,b) that sandwich
+the variable x and formed the inequalities a &lt; b. By construction,
+and by transitivity of ≤,&lt;, the resulting conjunction is a
+consequence of our original formula <code>F</code>. In other words, if
+the two ranges overlap, then the formula on line 2 must hold.
+Interestingly for integers, and in fact for any <a href="https://en.wikipedia.org/wiki/Total_order">total order</a>, 
+the formula on line 2 is <em>equivalent</em> to <code>F</code> (take x to be
+max(a₁,a₂)). That's one thing we can easily formally verify
+using <a href="https://github.com/jrh13/hol-light/">HOL Light</a>:
+</p>
+<pre>
+prove
+ (`(?(x:int). (a1 &lt;= x /\ x &lt; b1) /\ (a2 &lt;= x /\ x &lt; b2)) &lt;=&gt;
+   a1 &lt; b1 /\ a1 &lt; b2 /\ a2 &lt; b2 /\ a2 &lt; b1`,
+  EQ_TAC THENL [ARITH_TAC; ALL_TAC] THEN STRIP_TAC THEN
+  EXISTS_TAC `max (a1:int) a2` THEN ASM_ARITH_TAC);;
+</pre>
+<p>
+Finally, note that the two conjuncts <code>a₁ &lt; b₁</code> and <code>a₂ &lt; b₂</code>
+are simply saying that the two input ranges are non-empty.
+If the two ranges are known to be non-empty, then the check
+degenerates to <code>a₁ &lt; b₂ &amp;&amp; a₂ &lt; b₁</code>.
+</p>
+<h3 class="date"><a href="2019-01-15.html">January 15, 2019</a></h3>
+<p>
+It has been forever since my last note!  I hereby take it as
+new year's resolution to share more about the interesting
+thought nuggets I come across.
+</p>
+<p>
+In computer hardware, arithmetic primitives are in fact <em>modular</em>
+primitives; this means that the result of <code>a+b</code> is defined as
+the mathematical sum of <code>a</code> and <code>b</code> modulo a power of 2
+(usually, 2³² or 2⁶⁴).  The mathematical structure obtained
+is a modular ring in which all operations "wrap around".
+It is only a ring and not a field because the multiplication
+operation does not have an inverse; to see why an inverse
+function for multiplication cannot be defined, observe that
+42 is the result of both 21×2 and (2³¹+21)×2!
+</p>
+<p>
+An elementary result equivalent to Bézout's identity
+is that any number co-prime with the modulus has a
+multiplicative inverse.  In a computer, this means that for
+any odd number <code>a</code>, a number <code>b</code> exists shuch that <code>a✕b = 1</code>.
+Now there is a particularly cute algorithm to find
+multiplicative inverses, and it is what motivated me to
+write this note.
+</p>
+<p>
+The core idea of the algorithm lies in an observation I
+found quite surprising: a multiplicative inverse <code>b</code> of <code>a</code>
+modulo 2ⁿ can be used to find an inverse <code>c</code> of <code>a</code> modulo
+2²ⁿ. Let's see how.
+</p>
+<pre>
+ab = 1 (mod 2ⁿ)
+  ⇒ ab - 1 = k2ⁿ
+  ⇒ (ab - 1)² = 0      (mod 2²ⁿ)
+  ⇒ a²b² - 2ab + 1 = 0 (mod 2²ⁿ)
+  ⇒ 2ab - a²b² = 1     (mod 2²ⁿ)
+  ⇒ a(2b - ab²) = 1    (mod 2²ⁿ)
+  ⇒ c = 2b - ab²       (mod 2²ⁿ)
+</pre>
+<p>
+This gives us the inductive step of the algorithm;
+to bootstrap it we simply need to find an inverse
+<code>b</code> of <code>a</code> modulo some small power of 2. To that
+end, one can check that all odd numbers are their
+own inverse modulo 4 (and 8).
+Putting it together in C.
+</p>
+<pre>
+uint32_t mulinv(uint32_t a) {
+    uint32_t b = a;   /* 1/a mod 2² */
+    b *= 2 - a*b;     /* 1/a mod 2⁴ */
+    b *= 2 - a*b;     /* 1/a mod 2⁸ */
+    b *= 2 - a*b;     /* 1/a mod 2¹⁶ */
+    b *= 2 - a*b;     /* 1/a mod 2³² */
+    return b;
+}
+</pre>
+<p>
+For those really eager for performance, it turns
+out that <code>b = 3*a ^ 2</code> is a cute initialization 
+by <a href="https://arxiv.org/abs/1303.0328">Peter Montgomery</a> which yields an inverse
+of <code>a</code> modulo 2⁵ and allows to cut one refinement
+step!
+</p>
+<h3 class="date"><a href="2017-02-15.html">February 15, 2017</a></h3>
+<p>
+Undefined behavior in C is a common source
+of bugs, and sometimes, of funny ones.
+Here is my story about one.
+A few months ago I was working on a
+function that looked like this.
+</p>
+<pre>
+for (i=0; arr[i]!=0 &amp;&amp; i&lt;2; ++i) {
+	/* do some work */
+}
+</pre>
+<p>
+When my program was compiled without
+optimizations it would behave correctly,
+but turning optimizations on made it
+incorrect.  I was able to quickly
+pinpoint the above loop as the root of
+my issues, but the symptom of the bug
+was quite unusual: Stepping in the
+debugger revealed that the loop body was
+only executed once, when it should have
+been running twice!  Indeed, the array
+<code>arr</code> contained two non-zero values.
+</p>
+<p>
+After a little bit of head scratching,
+I eventually realized what the compiler
+was doing. The variable <code>arr</code> was declared
+as <code>int arr[2]</code>, so accessing its third
+element is undefined
+behavior.  Because of this, a valid
+program <em>cannot</em> access <code>arr[2]</code>;
+but if the loop body is run twice, the
+test condition <em>will</em> check <code>arr[2]!=0</code>
+at the end of the second iteration.  The
+consequence of this reasoning is that,
+assuming the input program is valid, the
+second loop iteration will not be run
+and can be gotten rid of!
+</p>
+<p>
+I thought this was quite a remarkable
+use of undefined behavior: Invalid array
+accesses do not happen in valid programs,
+so if the compiler can prove such access
+happens in a branch, it means that the
+branch is dead code.
+</p>
+<h3 class="date"><a href="2017-02-09.html">February 9, 2017</a></h3>
+<p>
+The φ nodes of SSA form are often defined
+as taking one argument per predecessor block.
+In both my compiler and LLVM, the data
+structures are based on this definition.
+However, with some more experience, I think
+it is more sensible to require φ arguments
+to be linked with incoming <em>edges</em>, not
+predecessors. I will give two practical
+examples to prove this point, but first, let
+me clarify the concept of edge.
+</p>
+<p>
+In a control flow graph (CFG), I call edge a link
+between two basic blocks. An essential point is
+that edges to a block are <em>not</em> in one-to-one
+correspondence with the block's predecessors.
+This is because of jumps like <code>if(%cond) goto @b
+else @b</code>, where a conditional jump jumps to the
+same block in two (or more) cases. While such
+a jump may look contrived, it can result from
+optimizations, or even from lowering C-style
+<code>switch</code> statements where multiple cases have
+the same body.
+</p>
+<p>
+The program below will serve to illustrate my
+claim.
+</p>
+<pre>
+@src
+        %var = ....
+        %cond = ...
+        if(%cond) goto @dst else @dst
+@dst
+        %foo = φ(@src %var, ...)
+</pre>
+<p>
+Following the usual requirement, the φ
+node <code>%foo</code> has one argument for the <code>@src</code>
+predecessor block.  Assume now that the
+predecessor is dead code and gets deleted
+by this natural deletion code.
+</p>
+<pre>
+void blockdel(Block block) {
+        /* do stuff... */
+        foreach succ in block.successors {
+                foreach phi in succ.phis {
+                        phi.remove_arg(block)
+                }
+        }
+}
+</pre>
+<p>
+Stepping through this function reveals
+that the <code>remove_arg</code> method will erroneously be
+called twice.  In my compiler, the second
+invocation caused an assertion failure.  On the
+other hand, if φ nodes have one argument per
+incoming edge, the loop above is naturally changed
+to some correct code.
+</p>
+<p>
+Another case where things could go wrong is
+in a CFG simplification pass. Such a pass will
+likely remove spurious empty blocks and adjust
+links elsewhere in consequence.  But consider
+the following program.
+</p>
+<pre>
+@blk0
+        ...
+        if(%cond) goto @blk1 else @blk2
+@blk1
+        jmp @blk3
+@blk2
+        jmp @blk3
+@blk3
+        %foo = φ(@blk1 %v1, @blk2 %v2)
+</pre>
+<p>
+The simplification pass will remove both <code>@blk1</code>
+and <code>@blk2</code>. After deleting <code>@blk1</code> the block
+of the first φ argument will be updated to
+<code>@blk0</code>.  Now if the same thing happens to the
+second empty block, two arguments of the φ node
+will bogusly end up with the same incoming block.
+</p>
+<p>
+Solving these issues in my compiler required
+careful logic to handle the "multiplicity" of
+predecessors.  However I think the edge-based
+design is better, and I might adopt it in the
+future.
+</p>
+<h3 class="date"><a href="2016-01-05.html">January 5, 2016</a></h3>
+<p>
+Because of a misuse of an archiving command I had to delete more
+than 40,000 files polluting my home directory.  The <em>UNIX way</em>
+should make it easy because the decompression program can output
+the list of files it extracted.  Unfortunately, it turned out to
+be surprisingly hard for at least two reasons: first 40,000 files
+is a lot and second, files used funny characters (white-spaces,
+dashes at the beginning, patheseses, etc.). After some Googling,
+here is the final command I used, phew.
+</p>
+<pre>
+tr \\n \\0 &lt;list.txt | xargs -0 -n 1 rm -f --
+</pre>
+<h3 class="date"><a href="2015-11-13.html">November 13, 2015</a></h3>
+<p>
+While browsing information about compilers I found it difficult
+to find a formal definition of SSA form (Static Single Assignment).
+For whatever reason, it's often under-specified or simplifed.
+So anyway, if you are like me and like formal definitions, here it is.
+</p>
+<p>
+A program is in SSA form when:
+</p>
+<ul>
+<li> Variables are assigned only once.
+<li> All the uses of a variable are <em>dominated</em> by the unique definition.
+<li> The φ nodes are at the beginning basic blocks.
+<li> The φ nodes have one argument for each predecessor of their basic block.
+<li> Uses of φ arguments are counted at the end of the corresponding predecessor.
+</ul>
+<p>
+The concept of domination is from graph theory: an instruction A <em>dominates</em>
+another B when all the paths from the entry point of the program to B go
+through A.
+</p>
+<p>
+Please let me know if the definition above looks wrong to you.
+Finally, if you want informal examples, the <a href="https://en.wikipedia.org/wiki/Static_single_assignment_form">Wikipedia page</a> has
+plenty!
+</p>
+<h3 class="date"><a href="2015-10-20.html">October 20, 2015</a></h3>
+<p>
+I would like to share some thoughts I had about tagged data.  Sum types and
+such are getting really common in mainstream languages, they are usually
+implemented using what I'll call a <em>tag</em> field.  A tag is a small
+number that indicates what is the kind of the data considered.  For example,
+in C, we often use the following idiom to mimic sum types:
+</p>
+<pre>
+struct Fruit {
+	enum {
+		FruitNone, /* invalid fruit */
+		FruitApple,
+		FruitBanana,
+		FruitCherry,
+	} kind;
+	union {
+		struct Apple apple;
+		struct Banana banana;
+		struct Cherry cherry;
+	} u;
+};
+</pre>
+<p>
+Like in the example, most of the programming languages represent the tag
+using a machine integer.  However, if you are programming with high space
+constraints it might be worth thinking more about the appropriate
+representation of the tag field.
+</p>
+<p>
+Let's say that you want a tagged structure that can be either
+one integer of type A in the range [0-255] or integers of type
+B, C, and D that lie in the range [0-63], then, because there
+are 4 different cases, the tag field needs to be at least 2 bits
+long, and because the type A needs at least 8 bits (8 bits
+represent at most
+  2<sup>8</sup>
+= 256 values), the whole tagged
+data-structure would need at least 8+2 = 10 bits for storage.
+</p>
+<p>
+The point is now that the whole reasoning above assumes that
+the tag bit-width is <em>constant</em>, but in the above case it is
+actually smarter to have a variable bit-width for the tag.  Here
+is why: if we use the tag 0 to represent the kind of data A, and
+3, 5, 7 to represent respectively the kinds B, C, and D, then
+we use only 1 bit for the tag in the A case and 3 bits in all
+the other cases.  So instead of using 10 bits of storage as
+above we use max(8+1,6+3) = 9 bits!  (Note that the above works
+because 3, 5, and 7 have 1 as least significant bit, so they
+are never confused with the A kind.)
+</p>
+<h3 class="date"><a href="2015-09-19.html">September 19, 2015</a></h3>
+<p>
+The x64 architecture is better than i386 in many regards but one surprise
+it reserved to programmers
+is that <em>immediates</em> remain 32 bits constants instead of being
+promoted to 64 bits like everything else.  In case you do not know it
+already, an immediate is a constant in an instruction, for example,
+if you want to add N to the register rax, you would write
+<code>addq $N, %rax</code>. And in that case, we say that N is an immediate.
+</p>
+<p>
+Because immediates are restricted to be only 32 bits long, it is impossible
+to add
+  2<sup>33</sup>
+to rax using
+one instruction only.  One has to load the big constant in another register
+first (say rbx), and then perform the addition, like so:
+<code>addq %rbx, %rax</code>.
+This brings us to the following question, how does one load a constant into
+a 64 bits register?
+The answer to this is simple, if you do not care about the code size.
+But if you do, there are actually three different ways!
+</p>
+<p>
+First, like most 64 bits instruction sets that allow operating 32 bits
+sub-registers, x64 zeroes the high bits of the larger parent 64 bits
+register for any 32 bits operation.  (If you
+wonder why, lookup data-dependencies in computer architecture books.)
+So for instance, when the machine executes <code>movl $42, %eax</code>, the high
+bits of rax will be set to 0, and the full rax register will contain the
+value 42.  This is our first way to load a value, it is also the
+cheapest way and uses 5 bytes only.
+</p>
+<p>
+Because 32 bits operations are zero-extended, the previous technique
+is unsuitable to load a negative value into a 64 bits register.  In that
+case we have to mention rax explicitely in the instruction: <code>movq
+$-42, %rax</code>.  On x64, mentioning a full width register costs you
+two extra bytes (one of them is the REX prefix, required for all 64 bits
+instructions).  So that gives us the second most economical load
+instruction, it uses 7 bytes.
+</p>
+<p>
+Finally if the constant to load does not fit in 32 bits, one has to
+use the only x64 instruction with a 64 bits immediate.  In
+AT&amp;T syntax we write <code>movabsq $4294967296, %rax</code>.  It
+really is a last-resort option because that instruction uses 10 bytes!
+</p>
+<p>
+These three cases give us the following rules for compiling constant
+loads into rax on x64.  (The same works for any other integer register.)
+</p>
+<ul>
+<li> When
+    0 ≤ N &lt; 2<sup>32</sup>,
+    use <code>movl $N, %eax</code> (5 bytes).
+<li> When
+    -2<sup>31</sup> ≤ N &lt; 0,
+    use <code>movq $N, %rax</code> (7 bytes).
+<li> Otherwise, use <code>movabsq $N, %rax</code> (10 bytes).
+</ul>
+<p>
+Isn't that crazy?
+</p>
+<h3 class="date"><a href="2015-06-02.html">June 2, 2015</a></h3>
+<p>
+Here is a short note for those who have trouble remembering Russell's
+Paradox or the definition of the Y combinator in lambda-calculus.
+I will expose here one observation that allows you to remember just one of
+the two and recover the other.  The actual link between these two notions
+prevents the lambda-calculus from serving the purpose Church had for it: 
+giving a formal basis to mathematics.  Fortunately the lambda-calculus
+found another application not any less important than grounding mathematics:
+it describes universal computations.
+</p>
+<p>
+Russell's Paradox considers the set R = { X | X ∉ X }
+of sets that do not belong to themselves.  Now if such set exists, R ∈ R if and only
+if R ∉ R, and we have a contradiction.   Let us encode this reasoning
+in lambda-calculus, we start by observing that sets can
+be represented by their characteristic function: a function returning
+1 for all members of the set and 0 for the others.  Assume that
+we represent the negation using a function N.  Then, we can define
+the set R in lambda-calculus by the following characteristic function:
+</p>
+<pre>
+R = λ x. N (x x)
+</pre>
+<p>
+Let's observe what happens when we ask if R is in itself:
+We form <code>Y = R R</code> (that is exactly the Y combinator) and by one
+application of beta-reduction, we get <code>N (R R) ≡ N Y</code>.
+</p>
+<p>
+We just found a fixpoint of N.  In set theory we had a fixpoint of
+negation, but negation does not have fixpoint, hence the paradox.  In the
+lambda-calculus case, we get out of this with a trick: if N has no fixpoint,
+the computation we get by applying these characteristic functions never
+terminates, it <em>diverges</em> and we face an ever-running program that
+never gives us the answer if R is in itself or not.
+</p>
+<h3 class="date"><a href="2015-03-05.html">March 5, 2015</a></h3>
+<p>
+I recently hacked together a <a href="../yacc/index.html">small yacc</a> for C.  Initially, I was programming
+as if I lived in the future and performance was not a problem.
+However, with this LALR state generation you can't be <em>too</em>
+silly, as I soon discovered.  Processing this <a href="http://www.lysator.liu.se/c/ANSI-C-grammar-y.html">C89 grammar</a>
+took around 8 minutes, that was not really acceptable as bison could deal with
+it in a fraction of second!  After eliminating a few massive
+performance hogs (sorted array to represent a set, loop invariant
+in a loop), I was processing the above C grammar in 5 seconds.
+Much better!  Then comes my point, at that time the profiler was saying
+that my code was fairly fast and accounted for less than a second
+of runtime.  The issue turned out to be in my use of malloc/free
+in the libc.  I used the following pattern:
+</p>
+<ul>
+<li> Allocate initialize some memory to store a temporary,
+<li> if condition C is true, store the pointer
+<li> otherwise, free the memory.
+</ul>
+<p>
+The case 3 happened much more often than the case 2 so I thought
+that glibc's allocation code would simply give me the same
+block all the time.  Switching to the scheme below got
+me a 5x speedup, so I guess I was wrong!
+</p>
+<ul>
+<li> Initialize a statically allocated object A,
+<li> if condition C is true, allocate some memory and copy A to it,
+    then store the pointer
+<li> otherwise, do nothing.
+</ul>
+<p>
+The conclusion I can draw is
+that objects likely to be short-lived should really <em>not</em> be
+allocated dynamically.  This makes me wonder how, for instance,
+C++'s RAII and Rust's automatic liveness mechanisms handle this
+kind of performance problems.  The speed of my yacc is now similar
+to bison's after only 10% of the code was changed.  This proves
+the point that, instead of designing for speed, we should design
+for simplicity and then, improve.
+</p>
+<h3 class="date"><a href="2014-09-22.html">September 22, 2014</a></h3>
+<p>
+I am grading some verified code submitted by students and observe
+one interesting fact.  The code they have to verify is the classic
+inefficient bubble sort, they are given an array and need to convince
+Microsoft Research's Dafny verifier that the returned array is
+indeed sorted.
+</p>
+<p>
+Now comes the interesting bit.  It turns out that
+all students have in the precondition that the pointer to the array
+is not null, but most of them also require that <code>a.Length &gt; 1</code>
+or <code>a.Length &gt; 0</code>.  That is, their sorting function can
+only be called on arrays that are either two elements long (in the
+worst case) or, non empty.  This additional requirement helps
+the verifier going through but most of the time their code actually
+works for empty arrays!  In other words, the requirement is useless
+but they did not go through the pain of trying to eliminate or
+understand it.  I see this as disdain for small cases and would
+like to argue it is poor programming practice.
+</p>
+<p>
+Now that I think about it, it reminds me of a mail I read some
+time ago, somebody implemented a vi clone and in its first
+versions, editing commands at the end of the file would crash
+or misbehave in most cases.  To me, it is an indication of
+poor design.  This software is undoubtedly still flawed since
+the corner case was patched afterwards, good code and data
+design would have allowed uniform programming and probably made
+the program safer.
+</p>
+<p>
+I see going through the thinking to eliminate corner cases as
+an essential part of programming.  The more your function or
+data structure is general the easier and more comfortable it is
+to use.  By experience, adapting your code to the corner case will
+not make it unclear but more elegant and easier to read/use
+(assuming you don't dumbly patch it)!  So, next time you write
+some code, ask yourself what happens when the window is 0 pixels
+wide, or if the file you are reading contains a nul byte...
+</p>
+<h3 class="date"><a href="2014-09-19.html">September 19, 2014</a></h3>
+<p>
+While restructuring my simple IO multiplexing module I had to solve
+a problem that was not completely trivial.  It might make an
+instructive exercise so I will explain it here.
+</p>
+<p>
+The problem is that I am iterating over a collection (C array)
+that can be modified by the functions called during the iteration.
+More specifically, some elements could be removed during the
+iteration.  I thought the simplest way to do this is to have a
+flag that marks the validity of elements in my array.  This way,
+instead of deleting during the iteration I change a flag and,
+during the iteration, I skip flagged elements.
+</p>
+<p>
+After the iteration, we have to <em>compact</em> the array
+to remove flagged elements.  My first (mental) try was quadratic
+but with some more thought, I found a linear algorithm.  I let
+you meditate and find it, it's not so hard and pretty nice to
+hack (3 lines in my program).
+</p>
+<h3 class="date"><a href="2014-09-10.html">September 10, 2014</a></h3>
+<p>
+Here are my latest thoughts on compilers for low level languages
+(I think C).  I am a pretty big fan of the C language.  What I like
+with C is that when you write it and know your target platform you
+have pretty good idea what the code generated will be.  It is very
+predictable.  C was designed at a time where programs had to be very
+simple, and this includes compilers.  So C is trying to be as
+expressive as possible while remaining very easy to compile.
+</p>
+<p>
+It seems that this ideal is now slipping out of sight among
+language users and compiler writers.  Recently, a new family of
+bugs has emerged, compilers exploit <em>undefined behavior</em>
+as defined in the C standard to enable "optimizations".
+<a href="https://gcc.gnu.org/ml/gcc-help/2011-07/msg00219.html">This mail</a> shows how GCC removes a check for overflow that has
+undefined behavior without any warning.  In the same vein,
+<a href="http://lwn.net/Articles/342330/">this article</a> describes a bug in the Linux kernel that was aggravated by
+another undefined behavior based GCC optimization. Another <a href="http://www.daemonology.net/blog/2014-09-04-how-to-zero-a-buffer.html">recent article</a>
+tries to show how, in modern C, one should zero a piece
+of memory.  This problem is made hard by optimizing compilers
+that know the semantics of memset and will
+optimize it out if the it does not change the <em>observational
+behavior</em> of C programs.
+These different behaviors of compilers greatly impair the predictability,
+and I think this is a real deal breaker for many people.
+</p>
+<p>
+But why predictability is something important?  Well, consider
+the following function.  If the compiler is predictable, the
+memset call will be compiled down to assembly.
+</p>
+<pre>
+void f() {
+        char *p = malloc(512);
+        if (!p) return;
+        sensitivestuff(p);
+        memset(p, 0, 512);
+        free(p);
+}
+</pre>
+<p>
+If only standard C is using this function, it is perfectly
+fine to remove the memory clearing call to memset.  But we are
+not in a world where only well-behaved C calls C. This function
+could very well be called by some malicious code that tries to
+access back the memory just freed.  In that case, not zeroing
+the memory causes a security bug since sensitive information can
+be accessed.  So, "modern" compilers, when they do
+their job, assume that all code is written in C and well behaved.
+This is obviously not true in the real world, where abstraction
+leaps exist and can be exploited.
+</p>
+<p>
+The previous argument shows that predictability is essential
+for security.  Another important area where predictability is
+important is performance evaluation.  While basic optimizations
+are critical, when C is used for embedded applications,
+predictability of the compiler is usually preferred to crazy
+compiler tricks.  This is true for a simple reason, programmers
+want to evaluate the cost of their programs at the C level
+but what runs is the actual compiled code.  These two abstraction
+layers need to be related in some simple way for the analysis
+on the high level to be relevant.  Airbus, for example, uses
+a custom GCC version with all optimizations disabled.
+</p>
+<p>
+If I have to sum it up, I think simpler is better, and
+compiler writers are taking a slippery path that could very
+well lead their compilers to be unusable for many applications
+where C used to shine.  The focus is a lot more on a literal
+and probably misguided interpretation of the standard than it
+is on usability and relevance of compilers to today's
+problems.  And, to be honest, is any of the above
+"optimizations" critical to any application that is not
+a contrived benchmark?
+</p>
+<h3 class="date"><a href="2014-09-09.html">September 9, 2014</a></h3>
+<p>
+Don Knuth, in its Volume 1 of The Art of Computer Programming
+argues against garbage collection by saying that early freeing can
+lead to a more efficient usage of the memory by the allocator.
+</p>
+<p>
+In the following diagrams which represent a memory state, the
+heavy gray area is not used by the program but the garbage collector
+did not reclaim it yet, the black areas are in use, and the white
+areas are free to use.
+  <img class="imgblock" src="assets/gc1.png" alt="gc1">
+If the program tries to allocate one small block in the current
+state, the allocator will use some of the free space,
+  <img class="imgblock" src="assets/gc2.png" alt="gc2">
+Now the garbage collector reclaims the gray zone and we
+are left with two disjoint blocks of memory.
+  <img class="imgblock" src="assets/gc3.png" alt="gc3">
+On the other hand, if memory is managed manually the gray block
+has been freed eagerly,
+  <img class="imgblock" src="assets/nogc1.png" alt="nogc1">
+Thus, when the application needs some extra memory it can be tightly
+packed and only leaves one large hole in the memory.
+  <img class="imgblock" src="assets/nogc2.png" alt="nogc2">
+</p>
+<p>
+I guess this is all to be taken with a grain of salt since
+there are also easy arguments for garbage collection (for example
+fast allocation).  All in all I feel that programmers using languages
+with GC will advocate for it, and the converse for the others.
+The reasonable choice to make is probably application specific and
+even in this case it is likely to be hard and controversial making
+the right decision at the planning stage.
+</p>
+<h3 class="date"><a href="2014-09-04.html">September 4, 2014</a></h3>
+<p>
+Today's test revealed that fancy text data structures
+might very well not be necessary.
+
+  <blockquote class="twitter-tweet" lang="en"><p>Proved by experiment today: a linked list of hole buffers is enough to edit with no lag a file of 64 megs (1,000,000+ lines).</p>&mdash; Quentin Carbonneaux <a href="https://twitter.com/qcar_/status/507668206270840832">September 4, 2014</a></blockquote>
+  <script async src="http://platform.twitter.com/widgets.js" charset="utf-8"></script>
+  <p><!-- ooooogh, hacky! -->
+
+</p>
+<h3 class="date"><a href="2014-09-03.html">September 3, 2014</a></h3>
+<p>
+While hacking on my text editor I discovered
+a fun idiom.  Often, in a switch statement you have two
+cases that are very similar except in one or two points.
+In that situation it would be poor style to copy the big
+chunk of code that is common to the two cases, instead,
+you can use the following neat trick.
+</p>
+<pre>
+switch(type) {
+	...
+case X:
+	isx = 1;
+if (0) {
+case Y:
+	isx = 0;
+}
+	common code;
+	...
+	break;
+}
+</pre>
+<p>
+The line <code>isx = 0;</code> will only be executed when
+the type is Y because of the guard.  This is very similar
+and sort of dual to Duff's device.  For additional fun,
+the braces of <code>if (0)</code> can be removed!
+</p>
+<h3 class="date"><a href="2014-09-02.html">September 2, 2014</a></h3>
+<p>
+Here is a simple Awk program to check that your files
+respect the religious constraint of 80 characters per
+line.
+</p>
+<pre>
+{
+        gsub(/\t/, "        ");
+        if (length($0) &gt; 80)
+                printf("%d: %s\n", NR, $0);
+}
+</pre>
+</article>
+<!-- analytics free! -->

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link href="assets/bootstrap.css" rel="stylesheet">
+	<link href="assets/bootstrap-responsive.css" rel="stylesheet">
+	<link href="assets/prettify.css" rel="stylesheet">
+	<link href="assets/listing.css" rel="stylesheet">
+	<script src="assets/prettify.js"></script>
+	<script src="assets/lang-asm.js"></script>
+	<script type="text/javascript">
+		window.onload = prettyPrint;
+	</script>
+	<title> Green threads explained (code0)</title>
+	<style>
+	blockquote p {
+		/* The default bootstrap setting
+		 * is not very good looking with
+		 * what Markdown.pl generates.
+		 */
+		font-size: inherit;
+		font-style: italic;
+	}
+	.nav-pane {
+		width: inherit;
+		background-color: white;
+	}
+	@media (min-width: 768px) {
+		.nav-pane {
+			position: fixed;
+		}
+	}
+	@media (min-width: 768px) and (max-width: 979px) {
+		/* This fixes an issue with the title when
+		 * displayed on tablets and small desktops.
+		 */
+		h1 small {
+			font-size: 22px;
+		}
+	}
+	</style>
+</head>
+<body>
+	<div class="container" style="padding-bottom: 40px">
+	<div class="row">
+	<div class="span2"><!-- navigation bar -->
+	<div class="nav-pane">
+		<h1><small><span style="color: green">Green Threads Explained</span></small></h1>
+		<hr/>
+		<p>
+			A short and self contained explanation that
+			will guide you through an implementation
+			of user threads.
+		</p>
+		<ul class="nav nav-list">
+			<li><a href="intro.html">Introduction</a></li>
+<li><a href="mach.html">The x86-64 architecture and ABI</a></li>
+<li class="active"><a href="code0.html">Code 0: Foundations</a></li>
+
+		</ul>
+		<hr/>
+		<p>
+			<a class="btn" href="https://github.com/mpu/gthreads">Fork me on Github</a>
+		</p>
+	</div>
+	</div>
+	<div class="span10">
+<h2>Code 0: Foundations</h2>
+
+<p>Here we dive into the code to get a very small but effective implementation of green threads. We will use the knowledge of the ABI to craft a data structure representing an execution thread. This structure will then be used to interrupt and restore the control flow hence providing the base building block to get working user threads.</p>
+
+<p>The code described here can be found in the <a href="https://github.com/mpu/gthreads/tree/code0">code0</a> branch of the Github repository. A Makefile is included and should work on any platform having the GNU compilation toolkit installed.</p>
+
+<h3>Annotated listing (gthr.c)</h3>
+
+<p>For this first version of the threading library, we simply use a single C file to store both the code of the library and the example. This is quite reasonable since everything fits in 133 lines.</p>
+<div class="listing"><div class="descr"><p>To start with, let's include this bunch of headers. I use C99 so we have booleans and precise integer types. This will be convenient to explicit the size of variables used.</p>
+</div><div class="code">
+<pre class="prettyprint lang-c">#include &lt;assert.h&gt;
+#include &lt;stdbool.h&gt;
+#include &lt;stdint.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+</pre>
+</div></div>
+<div class="listing"><div class="descr"><p>We first need to declare some constants useful in the rest of the code. To simplify, the number of green threads available is currently fixed to 4. This number includes the <em>bootstrap thread</em> which will be the only thread available when the program starts. The <code>StackSize</code> constant gives the size of a thread stack, I choose 4Mb, this should be more than sufficient for many applications.</p>
+</div><div class="code">
+<pre class="prettyprint lang-c">enum {
+    MaxGThreads = 4,
+    StackSize = 0x400000,
+};
+
+</pre>
+</div></div>
+<div class="listing"><div class="descr"><p>This is getting serious, the structure gt describes what a green thread is from the threading library's point of view. The <code>ctx</code> member of a thread structure captures a CPU state. This member can be seen as a frozen execution context for the thread so it is meaningful only when the thread is in state <code>Ready</code>. You might have noticed that only callee save registers appear in a context;  more details about this will be given in <code>gtswtch</code> below.</p>
+
+<p>For the time being, a thread structure can be in three states.</p>
+
+<ul>
+<li><code>Unused</code> - this thread structure is available for use.</li>
+<li><code>Running</code> - this is the state of the thread currently being run, there can only be one in this state.</li>
+<li><code>Ready</code> - this describes a valid thread whose execution is currently suspended, our scheduler must resume it in the future.</li>
+</ul>
+</div><div class="code">
+<pre class="prettyprint lang-c">struct gt {
+    struct gtctx {
+        uint64_t rsp;
+        uint64_t r15;
+        uint64_t r14;
+        uint64_t r13;
+        uint64_t r12;
+        uint64_t rbx;
+        uint64_t rbp;
+    } ctx;
+    enum {
+        Unused,
+        Running,
+        Ready,
+    } st;
+};
+
+</pre>
+</div></div>
+<div class="listing"><div class="descr"><p>For simplicity, all the thread structures we will use will be stored in the <code>gttbl</code> array. At any point, when the library is initialized, the <code>gtcur</code> pointer points to the thread being currently executed.</p>
+</div><div class="code">
+<pre class="prettyprint lang-c">static struct gt gttbl[MaxGThreads];
+static struct gt *gtcur;
+
+</pre>
+</div></div>
+<div class="listing"><div class="descr"><p>This is the list of functions that we will implement in this article, they provide the base threading API we will start with.</p>
+</div><div class="code">
+<pre class="prettyprint lang-c">void        gtinit(void);
+void        gtret(int ret);
+void        gtswtch(struct gtctx *old, struct gtctx *new);
+bool        gtyield(void);
+static void gtstop(void);
+int         gtgo(void (*f)(void));
+
+</pre>
+</div></div>
+<div class="listing"><div class="descr"><p>The initialization of the library must be executed before any other task. It will simply allocate the thread 0 and mark it as running. This thread is a bit special because it is not created by the library: it exists from the very beginning of the execution of the program. You can see this as a bootstrap thread.</p>
+</div><div class="code">
+<pre class="prettyprint lang-c">void
+gtinit(void)
+{
+    gtcur = &amp;gttbl[0];
+    gtcur-&gt;st = Running;
+}
+
+</pre>
+</div></div>
+<div class="listing"><div class="descr"><p>When the user wants to stop the current thread, he calls the <code>gtret</code> function. This function must not return, so I give a hint to gcc.</p>
+
+<p>We use the <code>gtyield</code> function which returns a boolean indicating if another thread is in the <code>Ready</code> state.</p>
+
+<p>I decided to treat the main thread specially but this could be different. This thread will first wait to be the only runnable thread then exit the whole process with the passed return code.</p>
+
+<p>If the current thread is not the bootstrap thread we simply mark the thread structure as unused and yield the CPU to another process. Note that this <code>gtyield</code> call must not return because the scheduler must choose to run a process in <code>Ready</code> state and we are now <code>Unused</code>. The assertion is safe since we know that by design the main thread remains runnable until the end of the program so the scheduler can always switch to it.</p>
+</div><div class="code">
+<pre class="prettyprint lang-c">void __attribute__((noreturn))
+gtret(int ret)
+{
+    if (gtcur != &amp;gttbl[0]) {
+        gtcur-&gt;st = Unused;
+        gtyield();
+        assert(!"reachable");
+    }
+    while (gtyield())
+        ;
+    exit(ret);
+}
+
+</pre>
+</div></div>
+<div class="listing"><div class="descr"><p>The yielding function which is probably the most central and interesting is defined here. Its job can be divided in two parts.</p>
+
+<ol>
+<li>Find a new thread to run.</li>
+<li>Switch from the current thread to this new one.</li>
+</ol>
+
+<p>The first part is implemented very naively, we will simply enumerate all threads after the current one and stop when we find one which is ready to run. In the case we are the only thread which can be run we return <code>false</code> to indicate it.</p>
+
+<p>If a target thread is found, we store a pointer to its execution context in <code>new</code> and we store a pointer to ours in <code>old</code>. Then we set <code>gtcur</code> to the address of new thread gt structure. Finally we call the context switching function. This will store the current context in <code>old</code> and move to the <code>new</code> one.</p>
+
+<p>Note that, seen this way, <code>gtswtch</code> never "returns" in the same thread. Indeed we simply move to the new execution context. However, there is one possible way for this call to return, namely if we are switched to from another thread! This will happen if the state of the current thread is <code>Ready</code> since our scheduler is a simple round-robin algorithm. On the contrary if the state of the current thread was <code>Unused</code> (this happens when we are called from <code>gtret</code>) then this switch has no chance to "return".</p>
+
+<p>Basically if you got this, you grasped the essence of green threads!</p>
+</div><div class="code">
+<pre class="prettyprint lang-c">bool
+gtyield(void)
+{
+    struct gt *p;
+    struct gtctx *old, *new;
+
+    p = gtcur;
+    while (p-&gt;st != Ready) {
+        if (++p == &amp;gttbl[MaxGThreads])
+            p = &amp;gttbl[0];
+        if (p == gtcur)
+            return false;
+    }
+
+    if (gtcur-&gt;st != Unused)
+        gtcur-&gt;st = Ready;
+    p-&gt;st = Running;
+    old = &amp;gtcur-&gt;ctx;
+    new = &amp;p-&gt;ctx;
+    gtcur = p;
+    gtswtch(old, new);
+    return true;
+}
+
+</pre>
+</div></div>
+<div class="listing"><div class="descr"><p>This little static helper will be useful to create new threads in <code>gtgo</code>.</p>
+</div><div class="code">
+<pre class="prettyprint lang-c">static void
+gtstop(void) { gtret(0); }
+
+</pre>
+</div></div>
+<div class="listing"><div class="descr"><p>Here is defined the function creating new green threads. Its task can be decomposed in three steps.</p>
+
+<ol>
+<li>Find an unused slot in the thread table.</li>
+<li>Create and setup a private stack for the new thread.</li>
+<li>Setup the execution context of the new thread and mark it as ready to run.</li>
+</ol>
+
+<p>Finding an unused slot is a simple matter of linear search; if no slot is available we return -1 to the caller indicating a failure in the thread creation.</p>
+
+<p>The stack is allocated via the regular C <code>malloc</code> function &mdash; remember that the stack is a simple block of memory.</p>
+
+<p>What happens next is a bit tricky, we want the thread to start executing the function <code>f</code> when it will be scheduled. Since rip is not present in a context structure, we must use a trick. What we do is push the address of <code>f</code> on top of the stack &mdash; this way it will be used as return address for <code>gtswtch</code> and cause the desired jump. We will "return" directly into <code>f</code> after the first context switch!</p>
+
+<p>If <code>f</code> returns, we don't want any bad thing to happen so we make the CPU return into <code>gtstop</code>. This function defined above will simply call <code>gtret</code> which will yield control to another thread and never return.</p>
+</div><div class="code">
+<pre class="prettyprint lang-c">int
+gtgo(void (*f)(void))
+{
+    char *stack;
+    struct gt *p;
+
+    for (p = &amp;gttbl[0];; p++)
+        if (p == &amp;gttbl[MaxGThreads])
+            return -1;
+        else if (p-&gt;st == Unused)
+            break;
+
+    stack = malloc(StackSize);
+    if (!stack)
+        return -1;
+
+    *(uint64_t *)&amp;stack[StackSize -  8] = (uint64_t)gtstop;
+    *(uint64_t *)&amp;stack[StackSize - 16] = (uint64_t)f;
+    p-&gt;ctx.rsp = (uint64_t)&amp;stack[StackSize - 16];
+    p-&gt;st = Ready;
+
+    return 0;
+}
+
+</pre>
+</div></div>
+<div class="listing"><div class="descr"><p>And finally, the test code I promised you would be able to execute in the very first introduction article!</p>
+</div><div class="code">
+<pre class="prettyprint lang-c">void
+f(void)
+{
+    static int x;
+    int i, id;
+
+    id = ++x;
+    for (i = 0; i &lt; 10; i++) {
+        printf("%d %d\n", id, i);
+        gtyield();
+    }
+}
+
+int
+main(void)
+{
+    gtinit();
+    gtgo(f);
+    gtgo(f);
+    gtret(1);
+}
+
+</pre>
+</div></div>
+<h3>Annotated listing (gtswtch.S)</h3>
+
+<p>The switching function is written in assembly in a separate file for better control. From the C point of view it can be used as a regular function. Although, it is a special function since which manipulates control flow as first class objects (context structures). Two functions from the standard C also provide this kind of functionality <code>setjmp</code> and <code>longjmp</code>.</p>
+<div class="listing"><div class="descr"><p>It is a trivial sequence of move instructions from and to memory. There is nothing deep here. Note that the order of registers in a C context structure is reflected here by offsets.</p>
+
+<p>What is interesting is the set of registers we chose to represent a context. As noted above, they are the callee-save registers. Indeed, when the <code>gtswtch</code> function is called, the caller only relies on these registers, all the others can be trashed so they are not relevant to the current state. When we will be switched back, only these necessary registers will be restored &mdash; this is what allows the implementation of context switch to be super fast.</p>
+
+<p>If you think a bit about it, you will probably find out that what has the most impressive consequences is the loading of rsp. This changes the whole call stack &mdash; which is essentially what a green thread is.</p>
+</div><div class="code">
+<pre class="prettyprint lang-asm">gtswtch:
+
+        mov     %rsp, 0x00(%rdi)
+        mov     %r15, 0x08(%rdi)
+        mov     %r14, 0x10(%rdi)
+        mov     %r13, 0x18(%rdi)
+        mov     %r12, 0x20(%rdi)
+        mov     %rbx, 0x28(%rdi)
+        mov     %rbp, 0x30(%rdi)
+
+        mov     0x00(%rsi), %rsp
+        mov     0x08(%rsi), %r15
+        mov     0x10(%rsi), %r14
+        mov     0x18(%rsi), %r13
+        mov     0x20(%rsi), %r12
+        mov     0x28(%rsi), %rbx
+        mov     0x30(%rsi), %rbp
+
+        ret
+
+</pre>
+</div></div>
+<h2>Epilogue</h2>
+
+<p>That was a long and hard to digest ride. The context handling can take a little while to fully grasp and the code implementing it is pretty tricky. Anyway I think this hundred lines of code is an excellent summary of what user threads are in their purest essence.</p>
+
+<p>More complex libraries feature a better scheduler than ours (whose only virtue is to be 7 lines long). They have a more complex state for green threads and many concurrency abstractions. You are welcome to hack on this piece of code by cloning it in Github. The current code can be extended in many directions. I recommend trying to add exit codes in regular green threads (so the argument in <code>gtret</code> always makes sense) with some mechanism to get the exit code of a dead thread &mdash; you probably want to use something like Unix zombie processes for this. It is also a good challenge to add a parameter to the function started by <code>gtgo</code> to provide an API that looks a bit more like <code>pthread_create</code>.</p>
+
+<p>I hope you got something out of this. If not I think that playing with gdb and the code is an excellent way to understand the mechanics of context switching. You can try to trace the execution of <code>gtyield</code> and see what happens when you backtrace before and after the <code>gtswtch</code> call. In some special cases, gdb might get lost after the context switch, try to understand what they are and how it relates to the fact the this function call is the very last instruction of <code>gtyield</code>.</p>
+
+<p>Next time we will see what is at stake when we want to handle IO operations.</p>
+	<div>
+		<div style="float: left"><a href="mach.html">&lt; The x86-64 architecture and ABI</a></div><!-- navigation -->
+		<div style="float: right"></div>
+	</div>
+	</div><!-- span12 -->
+	</div><!-- row -->
+	</div><!-- container -->
+
+<!-- analytics-free! -->
+
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!doctype html>
+<meta name=viewport content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../assets/css/simple.css" type="text/css" />
+
+<title>QBE - Compiler Backend</title>
+
+<div class="container">
+
+<h1 style="display: flex; align-items: baseline; justify-content: space-between;">
+<span><img id="logo" src="logo.png" alt>QBE</span>
+<span style="font-weight: normal;">compiler backend</span>
+</h1>
+
+<nav>
+<ul>
+  <li><a class="here" href="index.html">Intro</a>
+  <li><a href="docs.html">Docs</a>
+  <li><a href="users.html">Users</a>
+  <li><a href="releases.html">Releases</a>
+  <li><a href="code.html">Code</a>
+</ul>
+</nav>
+
+<p>
+QBE is a compiler backend that aims to provide 70% of the
+performance of industrial optimizing compilers in 10% of the code.
+QBE fosters language innovation by offering a compact user-friendly
+and performant backend.
+The size limit constrains QBE to focus on the essential and
+prevents embarking on a never-ending path of diminishing returns.
+
+<h3>Overview</h3>
+
+<p>
+The C codebase of QBE is intended to remain hobby-scale
+and pleasant to hack on. Despite the small footprint, QBE provides
+a number of optimizations with good impact/weight ratio. It also
+facilitates integration with foreign systems by implementing the C
+ABI in full. This means that programs compiled by QBE can
+trivially call into C, and vice versa.
+The current version of QBE can target
+<em>amd64</em> (linux and osx),
+<em>arm64</em>, and
+<em>riscv64</em>.
+
+<details>
+<summary style="cursor: pointer;">More QBE features</summary>
+<ul>
+<li> Full support for the C ABI.
+<li> IEEE 32 and 64 bits floating point numbers.
+<li> Uniform and simple <a href="https://en.wikipedia.org/wiki/Static_single_assignment_form">SSA</a>-based
+     intermediate language (IL).
+<li> Same IL used at all compilation stages.
+<li> Copy elimination.
+<li> Sparse conditional constant propagation.
+<li> Dead instructions elimination.
+<li> Registerization of small stack slots.
+<li> Split spiller and register allocator thanks to SSA
+     form.  (Simpler and faster than graph coloring.)
+<li> Smart spilling heuristic based on loop analysis.
+<li> Linear register allocator with hinting.
+<li> Matching and use of amd64 addressing modes.
+<li> Super quick compile times (2 seconds on a Core 2 Duo with <code>CFLAGS=-O2</code>).
+</ul>
+</details>
+
+<h3>Get started</h3>
+
+<p> 
+The snippet below is a self-contained program written in
+QBE intermediate language that shows how to define
+simple functions, perform arithmetic on words, and call
+into a variadic C function.
+
+<pre>
+function w $add(w %a, w %b) {              # Define a function add
+@start
+	%c =w add %a, %b                   # Adds the 2 arguments
+	ret %c                             # Return the result
+}
+export function w $main() {                # Main function
+@start
+	%r =w call $add(w 1, w 1)          # Call add(1, 1)
+	call $printf(l $fmt, ..., w %r)    # Show the result
+	ret 0
+}
+data $fmt = { b "One and one make %d!\n", b 0 }
+</pre>
+
+<p> Copy the example in a file, then compile it with
+<code>qbe -o out.s file.ssa &amp;&amp; cc out.s</code>.
+The output binary should run smoothly, leaning on your
+local libc to print its output to the terminal.
+
+<p>
+To learn more about the QBE intermediate language,
+go read <a href="doc/il.html">the language documentation</a>.
+
+<h3>Community</h3>
+
+<ul>
+<li> For patches and discussions subscribe to
+     <a href="https://lists.sr.ht/~mpu/qbe/"><code>~mpu/qbe@lists.sr.ht</code></a>.
+<li> Come talk to us on <code>irc.eigenstate.org</code> in the
+     <code>#myrddin</code> channel.
+</ul>
+
+</div>
+
+<!--
+vi: tw=65
+-->
+<!-- analytics free! -->

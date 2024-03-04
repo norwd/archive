@@ -1,0 +1,85 @@
+<!doctype html>
+<meta name=viewport content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../assets/css/simple.css" type="text/css" />
+
+<title>irc.c - A Minimal Curses IRC Client</title>
+
+  <div class="container">
+
+    <h1>irc.c</h1> <h2>A Minimal Curses IRC Client</h2>
+
+    <p style="font-family: monospace; text-align: right">
+    <q> https://c9x.me/irc/ is boner-inducing to be honest </q><br/>
+    <span style="font-style: italic">Evil_Bob</span>
+
+    <p> Feeling the need to have a trivial IRC client usable in a tmux session
+    on remote servers I wrote <tt>irc.c</tt>. This client was designed
+    with simplicity in mind, yet it is complete enough to fulfill
+    my usability constraints.
+
+    <p> The suckless client <a href="http://tools.suckless.org/sic">sic</a>
+    provides a good tiny irc client but it is a bit too hardcore
+    to use it on a daily basis. First, sic input is driven by a
+    standard <code>fgets</code> and hence, no line editing goodies
+    are supported except the ones provided by the tty kernel driver (^U
+    ^H and friends). Second, sic will mess up the output if a
+    message appears while typing a line. Third, sic does not
+    multiplex channels (but it is a feature!). Finally, I wanted my
+    client to provide infinite scrollback.
+
+    <h3>Features</h3>
+
+    <p> The <tt>irc.c</tt> client is, as its name implies, a single C
+    file which implements a usable IRC client. The display mechanism
+    uses any standard curses library. It should work with any curses
+    implementation (I tested on Linux and BSD).
+
+    <p> The client currently features
+    <ul><li>infinite scrollback;
+        <li>automatic reconnection;
+        <li>utf8 support (inputting is still to do);
+        <li>line editing (emacs like keybindings);
+        <li>activity markers;
+        <li>logging;
+        <li>terminal resizes (inside an xterm).
+    </ul>
+
+    <p> Keeping feature set as small as possible and, yet, remaining
+    usable was the main challenge when designing this client.
+    Keeping it simple makes it safe and easy to understand and hack.
+
+    <p style="text-align: center">
+    <img style="max-width: 100%" src="irc.c.png" alt=""/>
+
+    <h3>Fetching</h3>
+
+    <ul><li><code>git clone git://c9x.me/<a href="http://c9x.me/git/irc.git">irc.git</a></code>
+    </ul>
+
+    <h3>Compiling</h3>
+
+    <p> It used to be simple to compile but lately I had to add a
+    bunch of flags to force various OSes to compile it.  After
+    cloning, you should be able to simply run
+<pre>
+ make
+</pre>
+
+    <p> If the linker complains, you might want to change
+    the curses library flag to <code>-lcurses</code>.  On
+    Debian/Ubuntu, some warnings might be displayed about
+    <code>setcchar</code> and <code>wadd_wch</code>, they are
+    harmless.
+
+    <h3>Copying</h3>
+
+    <p> I put this program in public domain, do whatever you want
+    with it.  Please let me know if by some unfotunate events, this
+    became your IRC client.
+
+  </div>
+
+<!--
+vi: tw=65
+-->
+<!-- analytics free! -->
