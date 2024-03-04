@@ -1,0 +1,279 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<title>Error and Warning Messages</title>
+</head>
+<body>
+<H1>Error and Warning Messages</H1>
+
+<UL><li>``syntax error''
+<br>
+<br>
+This is the granddaddy of all compiler error messages,
+although it can be less than useful.
+It means that there's something wrong
+with the <dfn>syntax</dfn> of your program
+(yes, I know, you figured that much out already).
+Roughly speaking,
+``syntax'' refers to
+the typographical characters
+you've used to express your program
+and the order you've arranged them in.
+If parts of your program are in the wrong order,
+or if some required punctuation
+(such as a comma, semicolon, brace, or parenthesis)
+is missing, you're liable to get this error.
+The actual error is not always on the line the compiler indicates;
+sometimes, a problem on one line isn't noticed right away but
+percolates down and triggers an error message a few lines later.
+<br>
+<br>
+You may also get this error
+if you're trying to use an old, pre-ANSI compiler
+(such as <TT>cc</TT> on many Unix systems)
+to compile a newer, ANSI-compatible program.
+(Try using <TT>acc</TT> or <TT>gcc</TT> instead.)
+<li>``undefined symbol <I>x</I>''
+<li>``undeclared variable <I>x</I>''
+<li>``<I>x</I> undefined''
+<br>
+<br>
+All of these mean that you have apparently tried to use
+a variable named <I>x</I>
+(or, of course, whatever name the compiler is complaining about)
+without declaring it.
+C requires that all variables be <dfn>declared</dfn> before use;
+the declaration informs the compiler in advance
+of the name and type of each variable that you will be using.
+(If the compiler is complaining about a variable
+which you <em>did</em> think you'd declared,
+it may be that you misspelled it
+either where you declared it or where you used it,
+or that you declared it in a different part of your program
+than the part where you're trying to use it.)
+<br>
+<br>
+(See also discussion about ``undefined external'' message below.)
+<li>``newline in string or character constant''
+<br>
+<br>
+This simply means that you've got an unbalanced
+single quote <TT>'</TT>
+or double quote <TT>"</TT>.
+Here is an example:
+<pre>
+	printf("hello, world!\n);
+</pre>
+You might wonder why it's illegal to have a newline in a string constant
+(and why it is that you have to use the <TT>\n</TT> sequence instead).
+The reason is precisely
+so that the compiler can give you this error message
+when you accidentally leave out a closing quote.
+Otherwise, the compiler might try to interpret
+the whole rest of your source file as one very long string constant.
+<li>``bad lvalue'' (or ``missing lvalue'')
+<br>
+<br>
+<dfn>lvalue</dfn> is a piece of compiler writer's jargon
+which refers to an object with a <B>l</B>ocation.
+(Actually, its original derivation had to do with the fact that
+lvalues are what appear on the
+<B>l</B>eft hand side of an assignment operator.)
+What this message means to you and me is
+that the compiler was trying to assign to or modify some variable,
+but there was no variable there for it to modify
+(or, perhaps, for some reason the particular variable
+could not be modified).
+For example, if you accidentally wrote
+<pre>
+	1 = a + b
+</pre>
+(that's a number <TT>1</TT> there, not a letter <TT>l</TT>),
+the compiler would complain,
+because the number 1 is not a variable
+which it's possible for you to assign a new value to.
+<li>``can't find header file <I>xxx</I><TT>.h</TT>''
+<br>
+<br>
+This message means that one of your source files
+contains a line like
+<pre>
+	#include &lt;<I>xxx</I>.h&gt;
+</pre>
+or
+<pre>
+	#include "<I>xxx</I>.h"
+</pre>
+but the compiler
+(specifically, the preprocessor)
+could not find the header file <I>xxx</I><TT>.h</TT>.
+<br>
+<br>
+If the header file is one of your own
+(usually one that you've used the <TT>#include ""</TT> form with),
+make sure that you have actually
+composed (written) the header file,
+and that it is in the correct directory--usually,
+the same directory as the rest of your source files.
+<br>
+<br>
+If the header file is a Standard one
+(usually one that you've used the <TT>#include &lt;&gt;</TT> form with),
+such as <TT>stdio.h</TT>,
+then there's something wrong with the way the compiler has been
+installed or configured.
+You may have to go into a configuration screen and set the
+directory name where the standard header files are kept.
+(Of course, to do this,
+<em>you</em> will have to know where that directory is!
+It usually has a name like ``<TT>include</TT>'',
+and is located somewhere within the compiler's installation tree.)
+<br>
+<br>
+(Finally,
+if the preprocessor is complaining about a misspelled header name,
+simply fix the misspelling.)
+<li>``undefined external: <I>xxx</I>''
+<br>
+<br>
+This message means that during the linking stage,
+a function
+(or, occasionally, a global variable)
+by the name of <I>xxx</I> could not be found.
+There can be several causes,
+depending on whether the function is one of your own,
+or was one which you had expected would be provided for you.
+<br>
+<br>
+If the function name is one of your own,
+you'll have to figure out why the linker couldn't find it.
+Did you provide a defining instance
+(not just an external declaration)
+for the function?
+Did you enter its source code
+into the same file(s) as the rest of the program?
+If not, did you tell the linker where to find it?
+You'll either have to write the function if you forgot to,
+or adjust the program's build procedure
+(perhaps by editing the ``Makefile''
+or adding a ``module'' to the ``project list'').
+<br>
+<br>
+If the function name is one from the Standard C library,
+such as <TT>printf</TT>, which was supposed to be provided for you,
+you'll have to figure out why the linker couldn't find it.
+Occasionally, the problem is that
+the compiler doesn't know where the Standard library is.
+You may have to go into a configuration screen
+and set the path or directory name of the library.
+(Of course, to do this,
+<em>you</em> will have to know where the library is!
+It usually has a name containing the string ``libc'',
+such as <TT>libc.a</TT> or <TT>SLIBC.LIB</TT>.
+The libraries--there may be several--are
+often located in a subdirectory named ``<TT>lib</TT>'',
+somewhere within the compiler's installation tree.)
+<br>
+<br>
+If the undefined function's name is
+close but not exactly the same as
+one of your own functions
+or one of the Standard library functions,
+it obviously means that you've mistyped its name
+in a function call somewhere.
+All you have to do is find that typo
+in whichever source file it's in,
+fix it, and recompile.
+<br>
+<br>
+If the function is a math-related one,
+such as <TT>sin</TT>, <TT>cos</TT>, or <TT>sqrt</TT>,
+and you're using a Unix system,
+make sure that you've used the <TT>-lm</TT> option,
+at the <em>end</em> of the command line,
+when compiling/linking.
+<br>
+<br>
+If the function name printed in the error message
+includes a leading underscore,
+don't worry about the underscore.
+(Under some compilers,
+the names manipulated by the linker
+have this underscore added by the compiler,
+although you continue to refer to the function
+by the name you thought you had given it.)
+In most cases,
+if the linker complains about ``<TT>_myfunc</TT>'' being undefined,
+it's ``<TT>myfunc</TT>'' you've got to worry about.
+<br>
+<br>
+If the name is ``<TT>_end</TT>'',
+you'll rarely have to worry about it;
+this is a symbol used internally by the traditional Unix linkers,
+and shows up as ``undefined''
+only when there are also other symbols undefined.
+If you fix all of the others,
+the mysterious undefined ``<TT>_end</TT>'' will also disappear.
+<br>
+<br>
+(See also discussion about ``undeclared variable'' message above.)
+<li>``call of function with no prototype in scope''
+<br>
+<br>
+This message means that the compiler has noticed you trying to call
+a function which the compiler has no
+(or only minimal) information about.
+Under most compilers,
+this is a warning message,
+not an error,
+because the compiler is willing to assume
+certain things about unknown functions,
+and will let you try to call them.
+However, the assumptions it makes might not be right,
+and the compiler won't be able to check
+that you've called the function
+with the correct number and type of arguments,
+which is why it issues the warning.
+<br>
+<br>
+If you'd like the compiler to keep checking function calls
+carefully for you,
+you must arrange to supply prototypes for the functions you call.
+For functions from the Standard C library,
+you almost always supply prototypes
+by using the <TT>#include</TT> directive.
+For example, in a source file where you call <TT>printf</TT>,
+you should always have the line
+<pre>
+	#include &lt;stdio.h&gt;
+</pre>
+near the top of the file,
+because <TT>&lt;stdio.h&gt;</TT> contains the prototype for <TT>printf</TT>
+(and many other functions).
+For your own functions,
+you will have to supply your own prototypes.
+(You may wish to place them in your own header files,
+and use <TT>#include ""</TT> to bring them in
+wherever they're needed.
+Using header files in this way
+is generally more reliable
+than manually typing copies of the prototype
+into each source file where a particular function of yours is called.)
+<br>
+<br>
+If, for whatever reason,
+you'd rather that the compiler not check function calls for you
+(that is, if you think that you can get them right yourself),
+you can usually configure a compiler not to complain
+about function calls with no prototype in scope.
+</UL><hr>
+<p>
+<a href="top.html">top</a>
+</p>
+<p>
+</p>
+</body>
+</html>

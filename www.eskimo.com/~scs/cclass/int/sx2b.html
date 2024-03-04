@@ -1,0 +1,175 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>16.2: Opening and Closing Files
+(<TT>fopen</TT>, <TT>fclose</TT>, etc.)</title>
+<link href="sx2a.html" rev=precedes>
+<link href="sx2c.html" rel=precedes>
+<link href="sx2.html" rev=subdocument>
+</head>
+<body>
+<H2>16.2: Opening and Closing Files
+(<TT>fopen</TT>, <TT>fclose</TT>, etc.)</H2>
+
+<p>As mentioned,
+the <TT>fopen</TT> function opens a file
+(or perhaps some other I/O object,
+if the operating system permits devices to be treated as if they were files)
+and returns a stream (<TT>FILE *</TT>)
+to be used with later I/O calls.
+<TT>fopen</TT>'s <dfn>prototype</dfn>
+is
+<pre>
+	FILE *fopen(char *filename, char *mode)
+</pre>
+For the rest of this chapter,
+we'll often use prototype notations like these to describe functions,
+since a prototype gives us just the information we need about a function:
+its name,
+its return type,
+and the
+types of its arguments
+(perhaps along with identifying names for the arguments).
+</p><p><TT>fopen</TT>'s prototype tells us
+that it returns a <TT>FILE *</TT>,
+as we expect,
+and that it takes two arguments,
+both of type <TT>char *</TT>
+(i.e. ``string'').
+The first string is the file name,
+which can be any string (simple filename or complicated pathname)
+which is acceptable to the underlying operating system.
+The second string
+is the <dfn>mode</dfn> in which the file should be opened.
+The simple mode arguments are
+</p><UL><li><cw>r</>
+open for reading
+<li><cw>w</>
+open for writing
+(truncate file before writing,
+if it exists already)
+<li><cw>a</>
+open for writing,
+appending to file if it exists already
+</UL>You can also tack two optional modifier characters onto the mode string:
+<UL><li><cw>+</>
+open for both reading and writing
+<li><cw>b</>
+open for ``binary'' I/O
+</UL>Modes <TT>"r+"</TT> and <TT>"w+"</TT> let you read <em>and</em>  write to the file.
+You can't read and write at the same time;
+between stints of reading and stints of writing
+you must explicitly reposition the read/write
+indicator
+(see
+
+section 16.9 below).
+<p>``Binary'' or <TT>"b"</TT> mode
+means that no translations are done by the <TT>stdio</TT> library
+when reading or writing the file.
+Normally,
+the newline character <TT>\n</TT>
+is translated to and from
+some operating system dependent end-of-line representation
+(LF on Unix,
+CR on the Macintosh,
+CRLF on MS-DOS,
+or an end-of-record mark on record-oriented operating systems).
+On MS-DOS systems,
+without binary mode,
+a control-Z character in a file is treated as an end-of-file indication;
+neither the control-Z nor any characters following it will be 
+seen by a program reading the file.
+
+In binary mode,
+on the other hand,
+characters are read and written verbatim;
+newline characters
+(and, in MS-DOS, control-Z characters)
+are not treated specially.
+You need to use binary mode when what you're reading and writing
+is arbitrary byte values
+which are not to be interpreted as text characters.
+</p><p>Of course,
+it's possible to use both optional modes:
+<TT>"r+b"</TT>, <TT>"w+b"</TT>, etc.
+(For
+maximum
+portability,
+it's preferable to put <TT>+</TT> before <TT>b</TT>
+in these cases.)
+
+</p><p>If, for any reason,
+<TT>fopen</TT> can't open the requested file in the requested mode,
+it returns a null pointer (<TT>NULL</TT>).
+Whenever you call <TT>fopen</TT>,
+you must check that the returned file pointer is not null
+<em>before</em> attempting to use
+the pointer
+for any I/O.
+</p><p>Most operating systems
+let you keep only a limited number of files open at a time.
+Also,
+many versions of the stdio library
+allocate only a limited number of <TT>FILE</TT> structures
+for <TT>fopen</TT> to return pointers to.
+Therefore,
+if a program opens many files in sequence,
+it's important for it to <dfn>close</dfn> them as it finishes with them.
+Closing a file <TT>fp</TT> simply requires calling <TT>fclose(fp)</TT>.
+(Any open streams are automatically closed when the program exits normally.)
+
+</p><p>The standard I/O library normally <dfn>buffers</dfn> 
+characters--that is,
+when you're writing, it saves up a chunk of characters and then 
+writes them to the actual file all at once;
+and when you're reading,
+it reads a chunk of characters from the file
+all at once
+and then parcels
+them out to the program one at a time
+(or as many characters at a time as
+the program asks for).
+The reasons for buffering have to do with efficiency--the
+calls to the underlying operating system which request it to 
+read and write files may be inefficient if called once for each 
+character or each few characters,
+and may be much more efficient if they're always called for large 
+blocks of characters.
+Normally, buffering is transparent to your program,
+but occasionally it's necessary to ensure that some characters 
+have actually been written.
+(One example is when you've printed a prompt to the standard 
+output, and you want to be sure that it's actually been written 
+to the screen.)
+In these cases, you can call <TT>fflush(fp)</TT>,
+which flushes
+a stream's
+buffered output to the underlying file
+(or screen, or other device).
+Naturally, the library automatically flushes output when you 
+call <TT>fclose</TT> on a stream,
+and also when your program exits.
+</p><p>(<TT>fflush</TT> is only defined for output streams.
+There is no standard way to discard unread, buffered input.)
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx2a.html" rev=precedes>prev</a>
+<a href="sx2c.html" rel=precedes>next</a>
+<a href="sx2.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1996-1999
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-03 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

@@ -1,0 +1,388 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>Assignment #7 Answers</title>
+</head>
+<body>
+<H1>Assignment #7 Answers</H1>
+
+
+
+
+
+<B>Introductory C Programming
+<br>
+<br>
+UW Experimental College
+<br>
+<br>
+Assignment #7 ANSWERS
+</B><br>
+<br>
+<p>Question 1.
+<I>What do we mean by the ``equivalence between pointers and arrays''
+in C?
+</I><p>The cornerstone of the equivalence is that whenever we mention
+an array in an expression where it might seem that the array's
+``value'' is needed,
+the compiler automatically generates a pointer to the array's
+first element.
+Other parts of the equivalence are that the array subscript
+notation <TT>[]</TT> works on both pointers and arrays,
+that an array can seemingly be assigned to a pointer,
+that when an array is seemingly passed to a function,
+a pointer to its first element is passed instead,
+and that when a function parameter is seemingly declared as an array,
+the compiler quietly declares it as a pointer, instead.
+<p>Question 2.
+<I>If <TT>p</TT> is a pointer, what does <TT>p[i]</TT> mean?
+</I><p>It means the same as <TT>*(p+i)</TT>, or, in other words,
+the contents of the object <TT>i</TT> locations past the one 
+pointed to by <TT>p</TT>.
+<p>Question 3.
+<I>Can you think of a few reasons why an I/O scheme
+which did not make you open a file
+and keep track of a ``file pointer,''
+but instead let you just mention
+the name of the file as you were reading it,
+might not work as well?
+</I><p>There are two main reasons.
+<p>The first is that an operating system typically has to do a
+fair amount of work when you access a file:
+parse the filename,
+determine the actual location of the file within the storage system
+(disk, etc.),
+determine if you have permission to access the file,
+etc.
+If the filename were re-specified with each read or write call,
+the operating system might have to re-do that work each time.
+If, instead, the file is ``opened'' just once,
+the operating system can easily remember where the file is and 
+everything it needs to know about it.
+It can
+arrange that the file descriptor or file pointer
+(which it returns to you from the open call
+and which it asks you to supply along with each read or write call)
+will
+serve as a reference
+to
+its memory of
+the necessary information.
+<p>The more important reason is that an open file needs some context:
+in particular, the location within the file where the next 
+reading or writing will take place.
+If each time you read from a file, you just specified the file name,
+how would
+the system
+know
+not to start reading from the beginning of the file each time?
+<p>Question 4.
+<I>If <TT>argc</TT> is 2, what is <TT>argv[1]</TT>?
+What if <TT>argc</TT> is 1?
+</I><p>If <TT>argc</TT> is 2,
+<TT>argv[1]</TT> is the first (and only) command line argument.
+If <TT>argc</TT> is 1,
+there are no command line arguments,
+so <TT>argv[1]</TT> doesn't point anywhere.
+<p>Exercise 1.
+<I>Rewrite the <TT>replace</TT> function from last week
+to remove the restriction that the replacement substring have the same size.
+</I><p>If the replacement substring is a different size,
+we'll have to move the rest of the string right or left,
+either to make room or to close up the gap.
+Here's code to do that,
+by shifting the characters,
+one at a time.
+(Notice that when we're shifting to the right,
+we have to work our way through the characters we're shifting
+from right to left,
+to avoid stepping on characters we haven't shifted yet.
+Notice that we also have to worry about
+the new position of the <TT>'\0'</TT> string terminator
+in each case.)
+<pre>
+void replace(char string[], char *from, char *to)
+{
+	int fromlen = strlen(from);
+	int tolen = strlen(to);
+	char *start, *p1, *p2;
+	for(start = string; *start != '\0'; start++)
+		{
+		p1 = from;
+		p2 = start;
+		while(*p1 != '\0')
+			{
+			if(*p1 != *p2)
+				break;
+			p1++;
+			p2++;
+			}
+		if(*p1 == '\0')
+			{
+			if(fromlen &gt; tolen)
+				{
+				/* move rest of string left */
+				p2 = start + tolen;
+				for(p1 = start + fromlen; *p1 != '\0'; p1++)
+					*p2++ = *p1;
+				*p2 = '\0';
+				}
+			else if(fromlen &lt; tolen)
+				{
+				/* move rest of string right */
+				int leftover = strlen(start);
+				p2 = start + leftover + (tolen - fromlen);
+				*p2-- = '\0';
+				for(p1 = start + leftover - 1;
+						p1 &gt;= start + fromlen; p1--)
+					*p2-- = *p1;
+				}
+			for(p1 = to; *p1 != '\0'; p1++)
+				*start++ = *p1;
+			return;
+			}
+		}
+}
+</pre>
+As it happens, there's a function in the standard library,
+<TT>memmove</TT>,
+whose job it is to move characters
+(which might be strings)
+from point a to point b,
+taking care to make the copy in the right order
+if the source and destination strings overlap.
+<TT>memmove</TT> is declared in <TT>&lt;string.h&gt;</TT>,
+and its prototype looks
+approximately
+like this:
+<pre>
+	memmove(char *dest, char *src, int n);
+</pre>
+<TT>memmove</TT> is therefore a lot like <TT>strcpy</TT>
+(the <TT>dest</TT> and <TT>src</TT> arguments are in that order
+so that a call mimics an assignment).
+We can simplify our new version of <TT>replace</TT>
+by calling <TT>memmove</TT> instead:
+<pre>
+#include &lt;string.h&gt;
+
+void replace(char string[], char *from, char *to)
+{
+	int fromlen = strlen(from);
+	int tolen = strlen(to);
+	char *start, *p1, *p2;
+	for(start = string; *start != '\0'; start++)
+		{
+		p1 = from;
+		p2 = start;
+		while(*p1 != '\0')
+			{
+			if(*p1 != *p2)
+				break;
+			p1++;
+			p2++;
+			}
+		if(*p1 == '\0')
+			{
+			if(fromlen != tolen)
+				{
+				memmove(start + tolen, start + fromlen,
+					strlen(start + fromlen) + 1);
+							     /* + 1 for \0 */
+				}
+			for(p1 = to; *p1 != '\0'; p1++)
+				*start++ = *p1;
+			return;
+			}
+		}
+}
+</pre>
+<p>Exercise 2.
+<I>Rewrite the pattern matching program
+to prompt the user.
+</I><p>We'll need to use <TT>fgetline</TT> (see the notes)
+instead of <TT>getline</TT>,
+so that we can read lines from the file pointer connected to the file we open.
+With <TT>fgetline</TT> in hand,
+we rewrite the pattern-matching program
+to prompt for the file name and pattern,
+open the file,
+and finally call <TT>fgetline</TT> instead of <TT>getline</TT>:
+<pre>
+#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+
+#define MAXLINE 100
+
+extern int getline(char [], int);
+extern int fgetline(FILE *, char [], int);
+
+int main()
+{
+	char line[MAXLINE];
+	char filename[MAXLINE];
+	char pat[MAXLINE];
+	FILE *ifp;
+
+	printf("file name? ");
+	fflush(stdout);
+	getline(filename, MAXLINE);
+
+	printf("pattern? ");
+	fflush(stdout);
+	getline(pat, MAXLINE);
+
+	ifp = fopen(filename, "r");
+	if(ifp == NULL)
+		{
+		fprintf(stderr, "can't open %s\n", filename);
+		exit(1);
+		}
+
+	while(fgetline(ifp, line, MAXLINE) != EOF)
+		{
+		if(strstr(line, pat) != NULL)
+			printf("%s\n", line);
+		}
+
+	return 0;
+}</pre>
+The calls to <TT>fflush(stdout)</TT>
+ensure that the prompts show on the screen
+before we start reading the reply.
+This program is imperfect
+in that it does not check the return value
+from the two <TT>getline</TT> calls.
+If the user doesn't type a file name or pattern,
+the program will misbehave.
+<p>Exercise 3.
+<I>Rewrite the pattern matching program
+to accept arguments from the command line.
+</I><br><pre>
+#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+
+#define MAXLINE 100
+
+extern int fgetline(FILE *, char [], int);
+
+int main(int argc, char *argv[])
+{
+	char line[MAXLINE];
+	char *filename;
+	char *pat;
+	FILE *ifp;
+
+	if(argc != 3)
+		{
+		fprintf(stderr, "missing search pattern or file name\n");
+		exit(1);
+		}
+
+	pat = argv[1];
+	filename = argv[2];
+
+	ifp = fopen(filename, "r");
+	if(ifp == NULL)
+		{
+		fprintf(stderr, "can't open %s\n", filename);
+		exit(1);
+		}
+
+	while(fgetline(ifp, line, MAXLINE) != EOF)
+		{
+		if(strstr(line, pat) != NULL)
+			printf("%s\n", line);
+		}
+
+	return 0;
+}</pre>
+<p>It is useful to allow the program to search for the pattern in 
+multiple files,
+or,
+if no file names are specified on the command line,
+to read from standard input.
+Here's how we might implement that.
+We break the read-lines-and-search loop out into a separate function,
+<TT>fsearchpat</TT>.
+We either call <TT>fsearchpat</TT> once, handing it 
+<TT>stdin</TT> as a file pointer,
+or else we loop over all of the file names on the command line,
+opening each one and calling <TT>fsearchpat</TT> with that 
+file pointer.
+<pre>
+#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+
+#define MAXLINE 100
+
+int fsearchpat(FILE *, char *);
+
+extern int fgetline(FILE *, char [], int);
+
+int main(int argc, char *argv[])
+{
+	char *filename;
+	char *pat;
+	FILE *ifp;
+
+	if(argc &lt; 2)
+		{
+		fprintf(stderr, "missing search pattern\n");
+		exit(1);
+		}
+
+	pat = argv[1];
+
+	if(argc == 2)
+		fsearchpat(stdin, pat);
+	else	{
+		int i;
+		for(i = 2; i &lt; argc; i++)
+			{
+			filename = argv[i];
+
+			ifp = fopen(filename, "r");
+			if(ifp == NULL)
+				{
+				fprintf(stderr, "can't open %s\n", filename);
+				exit(1);
+				}
+
+			fsearchpat(ifp, pat);
+
+			fclose(ifp);
+			}
+		}
+
+	return 0;
+}
+
+int fsearchpat(FILE *ifp, char *pat)
+{
+	char line[MAXLINE];
+
+	while(fgetline(ifp, line, MAXLINE) != EOF)
+		{
+		if(strstr(line, pat) != NULL)
+			printf("%s\n", line);
+		}
+
+	return 0;
+}
+</pre>
+<hr>
+<hr>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-9
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-04 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

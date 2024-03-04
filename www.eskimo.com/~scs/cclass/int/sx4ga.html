@@ -1,0 +1,210 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>18.1.7: Type Qualifiers</title>
+<link href="sx4fa.html" rev=precedes>
+<link href="sx4b.html" rel=precedes>
+<link href="sx4a.html" rev=subdocument>
+</head>
+<body>
+<H3>18.1.7: Type Qualifiers</H3>
+
+<p>[Type qualifiers are a fairly advanced feature
+which not all programs need.
+You may skip this section.]
+</p><p>Any type can be qualified by the type qualifiers
+<TT>const</TT> or <TT>volatile</TT>.
+Both of these were new with ANSI C,
+and
+there is a lot of
+older code
+which
+does not use them.
+Even in new code, you will see <TT>const</TT> fairly rarely,
+and <TT>volatile</TT> even less often.
+</p><p>In simple declarations,
+the type qualifier is simply another keyword in the type name,
+along with the basic type and the storage class.
+For example,
+<pre>
+	const int i;
+	const float f;
+	extern volatile unsigned long int ul;
+</pre>
+are all declarations involving type qualifiers.
+</p><p>A <TT>const</TT> value is one you promise not to modify.
+The compiler may therefore be able to make certain optimizations,
+such as placing a <TT>const</TT>-qualified variable in read-only memory.
+However,
+a <TT>const</TT>-qualified variable is not a true constant;
+that is, it does not qualify
+
+as a <dfn>constant expression</dfn>
+which C requires in certain situations,
+such as array dimensions,
+<TT>case</TT> labels
+(see
+
+section 18.3.1
+below),
+and initializers for variables with static duration
+(globals and <TT>static</TT> locals).
+</p><p>A <TT>volatile</TT> value
+
+is one that might change unexpectedly.
+This situation generally only arises
+when you're directly accessing special hardware registers,
+usually when writing device drivers.
+The compiler should not assume that a <TT>volatile</TT>-qualified variable
+contains the last value that was written to it,
+or that reading it again would yield the same result
+that reading it last time did.
+The compiler should therefore avoid making any optimizations
+which would
+suppress seemingly-redundant
+accesses to a <TT>volatile</TT>-qualified variable.
+Examples of <TT>volatile</TT> locations would be a clock register
+(which always gave an up-to-date time value each time you read it),
+or a device control/status register,
+which caused some peripheral device to perform an action
+each time the register was written to.
+</p><p>Type qualifiers become more interesting
+(or at least more complicated or confusing)
+when they modify pointer types.
+The placement of the qualifier in a pointer declaration
+determines whether it is the pointer itself,
+or the location pointed to,
+that is qualified.
+The declarations
+<pre>
+	int const *ci1;
+and
+	const int *ci2;
+</pre>
+declare pointers to constant <TT>int</TT>s,
+which means that although the pointers can be modified
+(to point to different locations),
+the locations pointed to
+(that is, <TT>*ci1</TT> and <TT>*ci2</TT>)
+can <em>not</em> be modified.
+The declaration
+<pre>
+	int * const cp;
+</pre>
+on the other hand,
+declares a pointer which cannot be modified
+(it cannot be set to point anywhere else),
+although the value it points to
+(<TT>*cp</TT>)
+can be modified.
+</p><p>Pointers to constants
+(such as <TT>ci1</TT> and <TT>ci2</TT> above)
+have a particularly important use:
+they can be used to document
+(and enforce)
+pointer parameters which a function promises <em>not</em> to use
+to modify locations in the caller.
+</p><p>Normally, C uses pass-by-value.
+A function receives copies of its arguments,
+which means that it cannot modify any variables in the caller
+(since copies of those variables were passed).
+If a function receives a pointer, however
+(including the pointer that results
+when the caller seems to ``pass'' an array),
+it <em>can</em> use that pointer
+(more precisely, it can
+use its copy of the pointer)
+to modify locations in the caller.
+Sometimes, this is just what is desired:
+when the caller ``passes'' an array
+which it wishes the function to fill in,
+or when the function wants to return one or more values via pointers
+rather than as the conventional return value,
+the function's modification of locations in the caller
+is deliberate and understood by the caller.
+However,
+when a function receives a pointer argument for some other reason,
+under circumstances in which the caller
+might not want the function to use
+the pointer to modify anything in the caller,
+the caller might appreciate a guarantee
+that the pointer
+(within the function)
+won't be used to modify anything.
+To make that guarantee,
+the function can declare
+the pointer as
+pointer-to-<TT>const</TT>.
+</p><p>For example,
+our old friend <TT>printf</TT>
+never scribbles on the string
+it's given
+as its format argument;
+it merely uses it to decide what to print.
+Therefore, the prototype for <TT>printf</TT> is
+<pre>
+	int printf(const char *fmt, ...)
+</pre>
+where the <TT>...</TT> represents
+<TT>printf</TT>'s optional arguments.
+If a caller writes something like
+<pre>
+	char mystring[] = "Hello, world!\n";
+	printf(mystring);
+</pre>
+it
+
+knows, from <TT>printf</TT>'s prototype,
+that <TT>printf</TT> won't be scribbling on <TT>mystring</TT>.
+Furthermore,
+with that prototype for <TT>printf</TT> in scope,
+the actual author of the <TT>printf</TT> code
+couldn't
+accidentally write a (buggy) version
+which inadvertently modified
+the format argument--since
+it's declared as <TT>const char *</TT>,
+the compiler will complain
+if any attempt is made to write to the location(s) it points to.
+</p><p><TT>const</TT> and <TT>volatile</TT> can also be used in combination.
+Theoretically, it's possible to have a single variable which is both:
+<pre>
+	const volatile int x;
+</pre>
+Also, both a pointer and what it points to can be qualified:
+<pre>
+	const char * const cpc;
+</pre>
+</p><p>Finally,
+as in several other situations,
+C tends to assume type <TT>int</TT>,
+so if you want to save a bit of typing,
+you can write
+<pre>
+	const i;
+</pre>
+instead of
+<pre>
+	const int i;
+</pre>
+etc.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx4fa.html" rev=precedes>prev</a>
+<a href="sx4b.html" rel=precedes>next</a>
+<a href="sx4a.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1996-1999
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

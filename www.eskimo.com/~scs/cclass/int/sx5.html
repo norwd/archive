@@ -1,0 +1,348 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>Chapter 19: Returning Arrays</title>
+<link href="sx4cc.html" rev=precedes>
+<link href="sx6.html" rel=precedes>
+<link href="top.html" rev=subdocument>
+</head>
+<body>
+<H1>Chapter 19: Returning Arrays</H1>
+
+<p>Arrays are ``second-class citizens'' in C.
+Related to the fact that arrays can't be assigned
+is the fact that
+they can't be returned by functions, either;
+that is,
+there is no such type as ``function returning array of ...''.
+In this chapter we'll study three workarounds,
+three ways to implement a function
+which attempts to return a string
+(that is, an array of <TT>char</TT>)
+or an array of some other type.
+</p><p>In the last chapter, we looked at some code for converting an integer
+into a string of digits representing its value.
+This operation is the inverse of the function performed
+by the standard function <TT>atoi</TT>.
+Suppose we wanted to wrap our digit-generating code
+up in a function and call it <TT>itoa</TT>.
+How would it return the generated string of digits?
+We'll use this example to demonstrate all three techniques.
+For simplicity, though,
+we won't repeat the <TT>do</TT>/<TT>while</TT> loop
+in each example function;
+instead, we'll simply call <TT>sprintf</TT>.
+(In fact, since calling <TT>sprintf</TT> is so easy,
+most C programs call it directly when they need to
+convert integers to strings,
+and consequently there is no standard <TT>itoa</TT> function.)
+</p><p>First, let's look at the way that <em>won't</em> work,
+so that we can set it aside and make sure we never use it.
+What if we wrote <TT>itoa</TT> like this?
+<pre>
+	char *itoa(int n)
+	{
+	char retbuf[25];
+	sprintf(retbuf, "%d", n);
+	return retbuf;
+	}
+</pre>
+This looks superficially reasonable,
+and it might well be what we'd write at first if we weren't
+being careful.
+(It might even seem to work, at first.)
+However, it has a serious, fatal flaw:
+let's think about that local array, <TT>retbuf</TT>.
+Since it's a regular local variable,
+it has <dfn>automatic</dfn> duration,
+which means that it springs into existence when the function is called
+<em>and disappears when the function returns</em>.
+Therefore,
+the pointer that this version of <TT>itoa</TT> returns
+is to an array which no longer exists by the time the caller
+receives the pointer.
+(Remember that the statement <TT>return retbuf;</TT>
+returns a pointer to the first character in <TT>retbuf</TT>;
+by the ``equivalence of arrays and pointers,''
+the mention of the array <TT>retbuf</TT> in this context
+is equivalent to <TT>&amp;retbuf[0]</TT>.)
+When the caller tries to use the pointer,
+the string
+created
+by <TT>itoa</TT> might still be there,
+or the memory might have been re-used by some other function.
+Therefore, this first version of <TT>itoa</TT> is <em>not</em>
+adequate and <em>not</em> acceptable.
+Functions must never return pointers to local,
+automatic-duration arrays.
+</p><p>Since the problem with returning a pointer to a local array
+is that the array has automatic duration by default,
+the simplest fix to the above non-functional version of <TT>itoa</TT>,
+and the first of our three working methods of returning arrays from functions,
+is to declare the array <TT>static</TT>, instead:
+<pre>
+	char *itoa(int n)
+	{
+	static char retbuf[25];
+	sprintf(retbuf, "%d", n);
+	return retbuf;
+	}
+</pre>
+Now, the <TT>retbuf</TT> array does not disappear when <TT>itoa</TT>
+returns, so the pointer is still valid by the time the caller uses it.
+</p><p>Returning a pointer to a <TT>static</TT> array
+is a practical and popular solution
+to the problem of ``returning'' an array,
+but it has one drawback.
+Each time you call the function,
+it re-uses the same array and returns the same pointer.
+Therefore,
+when you call the function a second time,
+whatever information it ``returned'' to you last time
+will be overwritten.
+(More precisely, the information,
+that the function returned a pointer to,
+will be overwritten.)
+For example,
+suppose we had occasion
+to save the pointer returned by <TT>itoa</TT> for a little while,
+with the intention of using it later,
+after calling <TT>itoa</TT> again in the meantime:
+<pre>
+	int i = 23;
+	char *p1, *p2;
+	p1 = itoa(i);
+	i = i + 10;
+	p2 = itoa(i);
+	printf("old i = %s, new i = %s\n", p1, p2);
+</pre>
+But this won't work as we
+expect--the
+second call to <TT>itoa</TT> will overwrite the string
+(stored in <TT>itoa</TT>'s
+static
+<TT>retbuf</TT> array)
+which was stored by the first call.
+Instead of printing <TT>i</TT>'s old and new value,
+the last line will print the new value, twice.
+Both <TT>p1</TT> and <TT>p2</TT> will point to the same place,
+to the <TT>retbuf</TT> array down inside <TT>itoa</TT>,
+because each call to <TT>itoa</TT> always returns
+the same pointer to that same array.
+</p><p>We can see the same problem in an even simpler example.
+Suppose we had never heard of
+the <TT>%d</TT> format specifier in <TT>printf</TT>.
+We might try to call something like this:
+<pre>
+	printf("i = %s, j = %s\n", itoa(i), itoa(j));
+</pre>
+where <TT>i</TT> and <TT>j</TT> are
+two different <TT>int</TT> variables.
+What will happen?
+Either the compiler will make
+the first call to <TT>itoa</TT> first,
+or the second.
+(It turns out that it's not specified
+which order the compiler will use;
+different compilers behave differently in this respect.)
+Whichever call to <TT>itoa</TT> happens <em>second</em>
+will be the one that
+gets to keep its return value in
+<TT>retbuf</TT>.
+The <TT>printf</TT> call will either print <TT>i</TT>'s value twice,
+or <TT>j</TT>'s value twice,
+but it won't be able to print two distinct values.
+</p><p>The moral is that
+although the <TT>static</TT> return array technique will work,
+the caller has to be a little bit careful,
+and must never expect the return pointer from one call to the function
+to be usable after a later call to the function.
+Sometimes this restriction is a real problem;
+other times it's perfectly acceptable.
+(Some of the functions in the standard C library use this technique;
+one example is <TT>ctime</TT>,
+which converts timestamp values to printable strings.
+When you see a cryptic sentence like
+``The returned pointer is to static data
+which is overwritten with each call''
+in the documentation for a library function,
+it means that the function is using this technique.)
+When this restriction <em>would</em> be too onerous on the caller,
+we should use one of the other two techniques, described next.
+</p><p>If the function can't use a local or local <TT>static</TT> array
+to hold the return value,
+the next option is to have the <em>caller</em> allocate an array,
+and use that.
+In this case,
+the function accepts
+at least one additional argument
+(in addition to any data to be operated on):
+a pointer to the location to write the result back to.
+Our familiar <TT>getline</TT> function has worked this way all along.
+If we rewrote <TT>itoa</TT>
+along these lines,
+it might look like this:
+<pre>
+	char *itoa(int n, char buf[])
+	{
+	sprintf(buf, "%d", n);
+	return buf;
+	}
+</pre>
+Now the caller must pass an <TT>int</TT> value to be converted
+<em>and</em> an array to hold the converted result:
+<pre>
+	int i = 23;
+	char buf[25];
+	char *str = itoa(i, buf);
+</pre>
+There are two differences between this
+version of <TT>itoa</TT> and our old <TT>getline</TT> function.
+(Well, three, really;
+of course
+the two functions do totally different things.)
+One difference is that
+<TT>getline</TT> accepted another extra argument
+which was the <em>size</em> of the array in the caller,
+so that <TT>getline</TT> could promise not to overflow that array.
+Our latest version of <TT>itoa</TT> does not accept such an argument,
+which is a deficiency.
+If the caller ever passes an array
+which is too small to hold all the digits of the converted integer,
+<TT>itoa</TT> (actually, <TT>sprintf</TT>)
+will sail off the end of the array
+and scribble on some other part of memory.
+(Needless to say, this can be a disaster.)
+</p><p>Another difference is that the return value
+of this latest version of <TT>itoa</TT>
+isn't terribly useful.
+The pointer which this version of <TT>itoa</TT> returns
+is always the same as the pointer you handed it.
+Even if this version of <TT>itoa</TT> didn't return anything
+as its formal return value,
+you could still get your hands on the string it created,
+since it would be sitting right there in your own array
+(the one that you passed
+to
+<TT>itoa</TT>).
+In the case of <TT>getline</TT>,
+we had a second thing to return as the formal return value,
+namely the length of the line we'd just read.
+</p><p>However, this second strategy is also popular and workable.
+Besides our own <TT>getline</TT> function,
+the standard library functions <TT>fgets</TT> and <TT>fread</TT>
+both use this technique.
+</p><p>When the limit of a single static return array within the function
+would be unacceptable,
+and when it would be a nuisance for the caller
+to have to declare or otherwise allocate return arrays,
+a third option
+is for the function to dynamically allocate some memory
+for the returned array
+by calling <TT>malloc</TT>.
+Here is our last version of <TT>itoa</TT>,
+demonstrating this technique:
+<pre>
+	char *itoa(int n)
+	{
+	char *retbuf = malloc(25);
+	if(retbuf == NULL)
+		return NULL;
+	sprintf(retbuf, "%d", n);
+	return retbuf;
+	}
+</pre>
+Now the caller can go back to saying simple things like
+<pre>
+	char *p = itoa(i);
+</pre>
+and it no longer has to worry about the possibility that
+a later call to <TT>itoa</TT>
+will overwrite the results of the first.
+However, the caller now has two <em>new</em> things to worry about:
+<OL><li>This version of <TT>itoa</TT> returns a null pointer if
+<TT>malloc</TT> fails to return the memory that <TT>itoa</TT> needs.
+The caller should really be checking for this null pointer return
+each time it calls <TT>itoa</TT>,
+before using the pointer.
+<li>If the caller calls <TT>itoa</TT> 10,000 times,
+we'll have allocated
+25 <TT>*</TT> 10,000 = 250,000 bytes of memory,
+or a quarter of a meg.
+Unless someone is careful to call <TT>free</TT>
+to deallocate all of that memory,
+it will be wasted.
+Few programs can afford to waste that much memory.
+(Once upon a time,
+few programs could get that much memory, period.)
+The ``someone''
+who is going to have to call <TT>free</TT>
+isn't <TT>itoa</TT>;
+it has no idea when the caller is done
+with the memory returned by a previous call to <TT>itoa</TT>,
+and in fact <TT>itoa</TT> might never get called again.
+So it will be the caller's responsibility
+to keep track of each pointer returned by <TT>itoa</TT>,
+and to free it when it's no longer needed,
+or else memory will gradually leak away.
+</OL>We can work around the first problem--if
+we expect that there will usually be enough memory,
+such that the call to <TT>malloc</TT> will rarely if ever fail,
+and if all the caller would do in an out-of-memory situation is
+print an error message and abort,
+we can move the test down into the function:
+<pre>
+	char *retbuf = malloc(25);
+	if(retbuf == NULL)
+		{
+		fprintf(stderr, "out of memory\n");
+		exit(EXIT_FAILURE);
+		}
+</pre>
+Now the function never returns a null pointer,
+so the caller doesn't have to check.
+(When <TT>malloc</TT> fails, the function doesn't return at all.)
+</p><p></p><p>In summary, we've seen three ways
+of ``returning'' arrays from functions,
+none of which is perfect.
+The <TT>static</TT> array technique is usually convenient for the caller,
+but only for functions
+which it's unlikely that the caller will be trying to call multiple times
+and retain multiple return values.
+(The <TT>static</TT> array technique is also definitely imperfect
+in that it violates the notion
+that calling code shouldn't need to know
+about the inner, implementation details of a called function.)
+The caller-passes-an-array technique
+is useful when the caller might have a number of calls to the function active,
+but when that number is small and fixed,
+so that the caller can easily declare and keep track
+of a number of return arrays
+(if necessary).
+Finally,
+when there might be an arbitrary number of calls to the function,
+or when maximum flexibility is otherwise needed,
+the function-calls-<TT>malloc</TT> technique is appropriate,
+but with its extra flexibility comes some costs,
+the most important of which is that the caller must remember to
+free the returned pointers.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx4cc.html" rev=precedes>prev</a>
+<a href="sx6.html" rel=precedes>next</a>
+<a href="top.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1996-1999
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

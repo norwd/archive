@@ -1,0 +1,237 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>3.2. University of Washington</title>
+<link href="sx3a.html" rev=precedes>
+<link href="sx3c.html" rel=precedes>
+<link href="sx3.html" rev=subdocument>
+</head>
+<body>
+<H2>3.2. University of Washington</H2>
+
+<p>If you're a student or staff member at the University of Washington,
+you have access to the Uniform Access computers,
+several of which
+give you
+command lines
+at
+which you can do programming
+and C compilers
+that
+you can invoke in the process.
+(There may also be Macs or PC's in some of the computing centers
+with C compilers installed on them.
+If you're using one of those
+compilers,
+see the appropriate section below.
+But if you're using
+a Mac or PC
+to log in to one of the Uniform Access computers,
+using a program such as telnet,
+then this section applies.)
+</p><p>Not all of the Uniform Access computers
+have shell prompts and C compilers available.
+If your primary login is on a machine such as homer or milton,
+that machine is intended primarily for reading e-mail and the like,
+and uses a dedicated menu user interface.
+(It may be possible to escape from those menus to a shell prompt,
+but I'm not sure how,
+or if there are C compilers included
+in the selection of programs underneath.)
+Therefore,
+you will need to have an account
+on one of the ``shell prompt'' machines,
+such as saul or mead.
+(You can request an account on one of these shell prompt machines,
+in addition to your existing account(s),
+at one of the support desks.
+Your login name and password will be the same;
+you'll just have
+another choice of
+machine to connect to.)
+</p><p>Step 1: entering or editing your source code
+</p><p>A popular text editor is <TT>pico</TT>,
+which is the ``composer'' from the PINE e-mail program,
+broken out as a separate program for
+use in
+editing arbitrary text files.
+If you use PINE for e-mail,
+you'll find <TT>pico</TT> easy to use as well;
+all of the commands you normally use
+when editing messages as you compose them
+(moving the cursor, cutting and pasting, etc.)
+will apply,
+except that you'll be editing a text file
+containing your C code
+instead of an e-mail message.
+</p><p>If you're doing this for the first time,
+just type
+<pre>
+	% pico
+</pre>
+at the shell prompt.
+(In this example,
+I'm using <TT>%</TT> as the shell prompt,
+yours may be different.)
+<TT>pico</TT> will clear the screen and give you a PINE-line menu,
+with some control-key commands listed at the bottom.
+(If you get error messages about your terminal type,
+or if the screen or the text you try to type doesn't appear correctly,
+you'll have to get this problem resolved somehow,
+but if you're logging in in the same way that you do
+when you read your e-mail,
+the terminal type and emulations
+are presumably already set up correctly,
+and <TT>pico</TT> should work just as well as PINE.)
+</p><p>Type in your program.
+If you're typing in an initial example from the class notes or from a book,
+type it in <em>exactly</em> as shown,
+including all punctuation,
+and with the lines laid out
+just
+as they are in the code you're typing in.
+(Later, we'll learn what does and doesn't matter
+in terms of program layout:
+where your degrees of freedom are,
+what the compiler does and doesn't care so much about,
+which syntax you have to get exactly right
+and which parts allow you to express some creativity.
+For now,
+though,
+just
+type everything verbatim.)
+</p><p>When you're done typing,
+
+type control-O
+to write the source code that you've just typed in
+
+out to a text file.
+<TT>pico</TT> will prompt you for a file name;
+use <TT>hello.c</TT>
+(assuming you're typing in
+the first ``Hello, world!'' example).
+Exit <TT>pico</TT> by typing control-X.
+
+</p><p>If you get compilation errors in step 2,
+or if the program doesn't work in step 3,
+such that you have to come back here to step 1,
+you will edit (modify) your program by typing
+<pre>
+	% pico hello.c
+</pre>
+(or whatever the filename is),
+making your changes,
+writing the file out again with control-O,
+and then quitting again with control-X.
+</p><p>Step 2: compiling the program
+</p><p>Type
+<pre>
+	% gcc -o hello hello.c
+</pre>
+(again, assuming you're working with a source file named <TT>hello.c</TT>).
+The <TT>-o hello</TT> part says that the <B>o</B>utput,
+the executable program which the compiler will build,
+should be named <TT>hello</TT>
+(that is, placed in a file of that name in the current directory).
+The C source file to be read and compiled is obviously <TT>hello.c</TT>.
+</p><p>(If you leave out the <TT>-o hello</TT> part,
+the default is usually to leave your executable program
+in a file named <TT>a.out</TT>,
+which is cryptic and somewhat less than perfectly useful.)
+</p><p>Later in the class,
+when it comes time to compile
+a program which uses any of the math functions
+declared in the header file <TT>&lt;math.h&gt;</TT>,
+such as <TT>sqrt</TT>, <TT>sin</TT>, <TT>cos</TT>, or <TT>pow</TT>,
+you'll have to request explicitly that <TT>gcc</TT>
+include the math library:
+<pre>
+	% gcc -o myprogram myprogram.c -lm
+</pre>
+Notice that,
+unlike most command-line options,
+the <TT>-lm</TT> option which requests the math library
+must be placed at the <em>end</em> of the command line.
+</p><p>It's also possible
+to compile multiple C source files,
+either at once or separately,
+and to link them all together into one program,
+but we'll cover those details later,
+when we start talking about separate compilation at all.
+
+</p><p>
+When I tested <TT>gcc</TT> on saul during the process of writing this handout,
+it gave me an unusual warning message of the form
+``as0: Warning: extraneous values on version stamp ignored''.
+I have a pretty good idea of what this message means,
+and it indicates a slight problem
+in the installation of one of the parts of the compiler,
+<em>not</em> a problem with my (or your) C program.
+You can ignore this message;
+the programs produced by the compiler seem to be just fine in spite of it.
+</p><p>Step 3: running the program
+</p><p>Assuming you did use the <TT>-o</TT> option
+to specify the output filename <TT>hello</TT> when compiling,
+you can now attempt to run your program by just typing its name:
+<pre>
+	% hello
+</pre>
+If you get a message like ``not found''
+or ``no such file or directory'',
+it probably indicates
+that the shell is not searching the current directory
+for commands that you type.
+You can either adjust your search path
+(the <TT>PATH</TT> environment variable),
+or else invoke
+<pre>
+	% ./hello
+</pre>
+to explicitly indicate
+that the <TT>hello</TT> you're trying to run
+is in the current directory,
+known as dot (<TT>.</TT>).
+</p><p>As mentioned in the Unix section above,
+you can capture your program's output in a file
+(instead of having it go to the screen)
+by typing
+<pre>
+	% hello &gt; hello.out
+</pre>
+The output appears in the file <TT>hello.out</TT>,
+which will be a plain text file.
+</p><p>Finally, one footnote about <TT>pico</TT>:
+If you invoke it with the name of a file that does not exist,
+e.g. by typing <TT>pico hello.c</TT> the very first time,
+<TT>pico</TT> assumes that you're about to create that file
+(as, in fact, you are).
+It gives you the same initially empty editing screen
+as if you'd invoked it
+
+with no filename argument at all,
+but when you type <TT>^O</TT> to write the file out,
+it remembers the filename from the command line,
+so you don't have to type it in again.
+That's all.
+(In other words, you get to do a ``Save''
+instead of ``Save As''.)
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx3a.html" rev=precedes>prev</a>
+<a href="sx3c.html" rel=precedes>next</a>
+<a href="sx3.html" rev=subdocument>up</a>
+<a href="index.html">top</a>
+</p>
+<p>
+This page by <a href="../../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-9
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

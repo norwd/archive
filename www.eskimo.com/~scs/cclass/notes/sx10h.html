@@ -1,0 +1,202 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>10.8 Example: Breaking a Line into ``Words''</title>
+<link href="sx10g.html" rev=precedes>
+<link href="sx11.html" rel=precedes>
+<link href="sx10.html" rev=subdocument>
+</head>
+<body>
+<H2>10.8 Example: Breaking a Line into ``Words''</H2>
+
+<p>In
+an earlier
+assignment,
+an ``extra credit'' version of a problem
+asked you to write a little checkbook balancing program
+that accepted a series of lines of the form
+<pre>
+	deposit 1000
+	check 10
+	check 12.34
+	deposit 50
+	check 20
+</pre>
+It was a surprising nuisance to do this
+in an <I>ad hoc</I> way,
+using only the tools we
+had at the time.
+It was easy to read each line, but it was cumbersome to break
+it up into the word (``deposit'' or ``check'')
+and the amount.
+</p><p>I find it very convenient
+to
+use a more general approach:
+first,
+break lines like these into
+a series of
+whitespace-separated words,
+then deal with each word separately.
+To do this,
+we will use an <em>array of pointers to</em> <TT>char</TT>,
+which we can also think of as an ``array of strings,''
+since a string is an array of <TT>char</TT>,
+and a pointer-to-<TT>char</TT> can easily point at a string.
+Here is the declaration of such an array:
+<pre>
+	char *words[10];
+</pre>
+This is the first complicated C declaration we've seen:
+it says that <TT>words</TT> is an array of 10 pointers to <TT>char</TT>.
+We're going to write a function,
+<TT>getwords</TT>,
+which we can call like this:
+<pre>
+	int nwords;
+	nwords = getwords(line, words, 10);
+</pre>
+where <TT>line</TT> is the line we're breaking into words,
+<TT>words</TT> is the array to be filled in with the
+(pointers to the)
+words,
+and <TT>nwords</TT> (the return value from <TT>getwords</TT>)
+is the number of words which the function finds.
+(As with <TT>getline</TT>,
+we tell the function the size of the array
+so that if the line should happen to contain more words than that,
+it won't overflow the array).
+</p><p>Here is the definition of the
+<TT>getwords</TT>
+function.
+It
+finds the beginning of each word,
+places a pointer to it in the array,
+finds the end of that word
+(which is signified by at least one whitespace character)
+and terminates the word by
+placing a <TT>'\0'</TT> character after it.
+(The <TT>'\0'</TT> character will overwrite
+the first whitespace character following the word.)
+Note that the original input string is therefore modified by <TT>getwords</TT>:
+if you were to try to print the input line after calling <TT>getwords</TT>,
+it would appear to contain only its first word
+(because of the first inserted <TT>'\0'</TT>).
+<pre>
+#include &lt;stddef.h&gt;
+#include &lt;ctype.h&gt;
+
+getwords(char *line, char *words[], int maxwords)
+{
+char *p = line;
+int nwords = 0;
+
+while(1)
+	{
+	while(isspace(*p))
+		p++;
+
+	if(*p == '\0')
+		return nwords;
+
+	words[nwords++] = p;
+
+	while(!isspace(*p) &amp;&amp; *p != '\0')
+		p++;
+
+	if(*p == '\0')
+		return nwords;
+
+	*p++ = '\0';
+
+	if(nwords &gt;= maxwords)
+		return nwords;
+	}
+}
+</pre>
+Each time through the outer <TT>while</TT> loop,
+the function tries to find another word.
+First it skips over whitespace
+(which might be leading spaces on the line,
+or the space(s) separating this word from the previous one).
+The <TT>isspace</TT> function is
+new:
+it's in the standard library,
+declared in the header file <TT>&lt;ctype.h&gt;</TT>,
+and it returns nonzero (``true'')
+if the character you hand it is a space character
+(a space or a tab, or any other whitespace character
+there might happen to be).
+</p><p>When the function finds a non-whitespace character,
+it has found the beginning of another word,
+so it places the pointer
+to that character
+in the next cell of the <TT>words</TT> array.
+Then it steps through the word,
+looking at non-whitespace characters,
+until it finds another whitespace character,
+or the <TT>\0</TT> at the end of the line.
+If it finds the <TT>\0</TT>,
+it's done
+with the entire line;
+otherwise,
+it changes the whitespace character to a <TT>\0</TT>,
+to terminate the word it's just found,
+and continues.
+(If it's found as many words as will fit in the <TT>words</TT> array,
+it returns prematurely.)
+</p><p>Each time it finds a word,
+the function increments the number of words (<TT>nwords</TT>)
+it has found.
+Since arrays
+in C
+start at <TT>[0]</TT>,
+the number of words the function has found so far
+is also the index of the cell in the <TT>words</TT> array
+where the next word should be stored.
+The function actually assigns the next word and increments 
+<TT>nwords</TT> in one expression:
+<pre>
+	words[nwords++] = p;
+</pre>
+You should convince yourself that this arrangement works,
+and that (in this case)
+the preincrement form
+<pre>
+	words[++nwords] = p;		/* WRONG */
+</pre>
+would <em>not</em> behave as desired.
+</p><p>When the function is done
+(when it finds the <TT>\0</TT> terminating the input line,
+or when it runs out of cells in the <TT>words</TT> array)
+it returns the number of words it has found.
+</p><p>Here is a complete example
+of calling <TT>getwords</TT>:
+<pre>
+	char line[] = "this is a test";
+	int i;
+
+	nwords = getwords(line, words, 10);
+	for(i = 0; i &lt; nwords; i++)
+		printf("%s\n", words[i]);
+</pre>
+</p><p></p><hr>
+<p>
+Read sequentially:
+<a href="sx10g.html" rev=precedes>prev</a>
+<a href="sx11.html" rel=precedes>next</a>
+<a href="sx10.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-03 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

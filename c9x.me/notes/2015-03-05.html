@@ -1,0 +1,53 @@
+<!doctype html>
+<meta name=viewport content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../assets/css/simple.css" type="text/css" />
+
+<link rel="stylesheet" href="assets/notes.css" type="text/css"/>
+<title>Notes from 2015-03-05</title>
+<article>
+<h1><img id="logo" src="assets/logo.png" alt="">Notes</h1>
+<h3>2015-03-05</h3>
+
+<p>
+I recently hacked together a <a href="../yacc/index.html">small yacc</a> for C.  Initially, I was programming
+as if I lived in the future and performance was not a problem.
+However, with this LALR state generation you can't be <em>too</em>
+silly, as I soon discovered.  Processing this <a href="http://www.lysator.liu.se/c/ANSI-C-grammar-y.html">C89 grammar</a>
+took around 8 minutes, that was not really acceptable as bison could deal with
+it in a fraction of second!  After eliminating a few massive
+performance hogs (sorted array to represent a set, loop invariant
+in a loop), I was processing the above C grammar in 5 seconds.
+Much better!  Then comes my point, at that time the profiler was saying
+that my code was fairly fast and accounted for less than a second
+of runtime.  The issue turned out to be in my use of malloc/free
+in the libc.  I used the following pattern:
+</p>
+<ul>
+<li> Allocate initialize some memory to store a temporary,
+<li> if condition C is true, store the pointer
+<li> otherwise, free the memory.
+</ul>
+<p>
+The case 3 happened much more often than the case 2 so I thought
+that glibc's allocation code would simply give me the same
+block all the time.  Switching to the scheme below got
+me a 5x speedup, so I guess I was wrong!
+</p>
+<ul>
+<li> Initialize a statically allocated object A,
+<li> if condition C is true, allocate some memory and copy A to it,
+    then store the pointer
+<li> otherwise, do nothing.
+</ul>
+<p>
+The conclusion I can draw is
+that objects likely to be short-lived should really <em>not</em> be
+allocated dynamically.  This makes me wonder how, for instance,
+C++'s RAII and Rust's automatic liveness mechanisms handle this
+kind of performance problems.  The speed of my yacc is now similar
+to bison's after only 10% of the code was changed.  This proves
+the point that, instead of designing for speed, we should design
+for simplicity and then, improve.
+</p>
+</article>
+<!-- analytics free! -->

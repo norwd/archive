@@ -1,0 +1,127 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>section 1.10: External Variables and Scope</title>
+<link href="sx4m.html" rev=precedes>
+<link href="sx5.html" rel=precedes>
+<link href="sx4.html" rev=subdocument>
+</head>
+<body>
+<H2>section 1.10: External Variables and Scope</H2>
+
+page 31
+<p>There's a bit of jargon in this section.
+An <dfn>external</dfn> variable is what is sometimes called a global 
+variable.
+The authors introduce the term <dfn>automatic</dfn> to refer to the 
+local variables we've seen so far; this is a good word to 
+remember, even if you never use it, because people will spring 
+it on you when they're being precise, and if you don't know 
+this usage you'll think they're talking about transmissions or 
+something.
+(To be precise,
+``local'' is a broader category than ``automatic'';
+there are both automatic and <TT>static</TT> local variables.)
+</p><p>Deep sentence:
+<blockquote>If [automatic variables] are not set,
+they will contain garbage.
+</blockquote>Actually,
+if automatic variables <em>always</em> contained garbage,
+the situation wouldn't be quite so bad.
+In practice,
+they often
+(though not always)
+do contain zero or some other predictable value,
+and this happens just often enough to lull you into the 
+occasional false sense of security,
+by making
+a program with an inadvertently uninitialized variable
+seem
+to work.
+
+</p><p>Deep sentence:
+<blockquote>An external variable must be <I>defined</I>,
+exactly once,
+outside of any function; this sets aside storage for it.
+The variable must also be <I>declared</I> in each function that 
+wants to access it;
+this states the type of the variable.
+</blockquote>The basic rule is ``define once; declare many times.''
+As we'll see just below,
+it is not necessary for a declaration of an external variable 
+to appear in every single function;
+it is possible for one external declaration to apply to many 
+functions.
+(In the clause
+``the variable must also be declared in each function'',
+the word ``declared'' is an adjective, not a verb.)
+
+</p><p>page 33
+</p><p>In fact, the ``common practice'' of placing
+``definitions of all external variables at the beginning of the source file''
+is so common that it's rare to see external declarations within functions,
+as in the functions on page 32.
+The authors are using the in-function <TT>extern</TT> 
+declarations partly because it is an alternative style, and 
+partly because we haven't talked about separate compilation
+(that is, building a single program from several separate 
+source files) yet.
+Rather than jumping the gun and discussing those two topics now,
+I'll just mention that the discussion in section 1.10
+might be a bit misleading,
+and that you should probably wait
+until we get to the complete description of the issue in section 4.4
+before you commit any of this to memory.
+</p><p>Deep sentence:
+<blockquote>You should note that we are using the words 
+<I>definition</I> and <I>declaration</I> carefully when we refer 
+to external variables in this section.
+``Definition'' refers to the place where the variable is created 
+or assigned storage;
+``declaration'' refers to places where the nature of the variable 
+is stated but no storage is allocated.
+</blockquote>Do note the careful distinction;
+it's an important one and one which I'll be using, too.
+</p><p>page 34
+</p><p>The authors' criticism of the second (page 32) version of the 
+longest-line program is accurate.
+The revision of the longest-line program to use external variables
+was done only to demonstrate the use of external variables,
+not to improve the program in any way
+(nor does it improve the program in any way).
+</p><p>As a general rule,
+external variables are acceptable for storing certain kinds of 
+global state information which never changes,
+which is needed in many functions,
+and which would be a nuisance to pass around.
+I don't think of external variables as
+``communicating between functions''
+but rather as
+``setting common state for the entire program.''
+When you start thinking of an external variables as being one 
+of the ways you communicate with a particular function,
+and in particular when you find yourself changing the value of 
+some external variable just before calling some function,
+to affect its operation in some way,
+you start getting into the troublesome uses of external variables,
+which you should avoid.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx4m.html" rev=precedes>prev</a>
+<a href="sx5.html" rel=precedes>next</a>
+<a href="sx4.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

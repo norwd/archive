@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>12.2 I/O with File Pointers</title>
+<link href="sx12a.html" rev=precedes>
+<link href="sx12c.html" rel=precedes>
+<link href="sx12.html" rev=subdocument>
+</head>
+<body>
+<H2>12.2 I/O with File Pointers</H2>
+
+<p>For each of the I/O library functions we've been using so far,
+there's a companion function
+which accepts an additional file pointer argument
+telling it where to read from or write to.
+The companion function to <TT>printf</TT> is <TT>fprintf</TT>,
+and the file pointer argument comes first.
+To print a string to the <TT>output.dat</TT> file
+we opened in the previous section,
+we might call
+<pre>
+	fprintf(ofp, "Hello, world!\n");
+</pre>
+</p><p>The companion function to <TT>getchar</TT> is <TT>getc</TT>,
+and the file pointer is its only argument.
+To read a character from the <TT>input.dat</TT> file
+we opened in the previous section,
+we might call
+<pre>
+	int c;
+	c = getc(ifp);
+</pre>
+</p><p>The companion function to <TT>putchar</TT> is <TT>putc</TT>,
+and the file pointer argument comes last.
+To write a character to <TT>output.dat</TT>,
+we could call
+<pre>
+	putc(c, ofp);
+</pre>
+</p><p>Our own <TT>getline</TT> function calls <TT>getchar</TT>
+and so always reads the standard input.
+We could write a companion <TT>fgetline</TT> function
+which reads from an arbitrary file pointer:
+<pre>
+#include &lt;stdio.h&gt;
+
+/* Read one line from fp, */
+/* copying it to line array (but no more than max chars). */
+/* Does not place terminating \n in line array. */
+/* Returns line length, or 0 for empty line, or EOF for end-of-file. */
+
+int fgetline(FILE *fp, char line[], int max)
+{
+int nch = 0;
+int c;
+max = max - 1;			/* leave room for '\0' */
+
+while((c = getc(fp)) != EOF)
+	{
+	if(c == '\n')
+		break;
+
+	if(nch &lt; max)
+		{
+		line[nch] = c;
+		nch = nch + 1;
+		}
+	}
+
+if(c == EOF &amp;&amp; nch == 0)
+	return EOF;
+
+line[nch] = '\0';
+return nch;
+}
+</pre>
+</p><p>Now we could read one line from <TT>ifp</TT> by calling
+<pre>
+	char line[MAXLINE];
+	...
+	fgetline(ifp, line, MAXLINE);
+</pre>
+
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx12a.html" rev=precedes>prev</a>
+<a href="sx12c.html" rel=precedes>next</a>
+<a href="sx12.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-1997
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

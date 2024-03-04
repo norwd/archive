@@ -1,0 +1,353 @@
+<html>
+<!-- from &lt;2003Nov17.0025.scs.005@box16.scs.ndip.eskimo.net&gt; -->
+<head>
+<title>Portability and ANSI C Compliance -- A comp.lang.c Perspective</title>
+</head>
+<body>
+[This essay is adapted from <a href="http://groups.google.com/group/comp.lang.c/msg/e1b2a49825136cd7">an article</a> I posted to comp.lang.c on
+November 17, 2003, under the subject "ANSI C compliance".
+Another version of this essay can be found on <a href="http://clc-wiki.net/wiki/Portability_and_ANSI_C_Compliance">the clc wiki</a>.]
+<h1>Portability and ANSI C Compliance -- a comp.lang.c Perspective</h1>
+<p>
+The general attitude in comp.lang.c is that portability and ANSI
+C compliance are very, very important.  This focus can sometimes
+seem overblown: commentators sometimes point out that in "the
+real world", portability and standards compliance are not
+necessarily paramount virtues, that a project under deadline
+pressure which is targeted at only one platform anyway might not
+be able to afford to worry about portability.
+<p>
+My own belief, which is consistent if not identical with the
+comp.lang.c consensus, is otherwise.  I do think portability and
+standards compliance matter a great deal, and furthermore that
+they matter in actual practice, although in the interests of
+strict intellectual honesty I have to confess that the plane I'm
+arguing from is not always quite "real-world".  In fact, I go to
+considerable lengths to maintain the self-imposed delusion that I
+live in a fantasy world, one in which software is easy and fun to
+write, and works right the first time; in which new features and
+other improvements are easy to make; in which debugging is a rare
+pastime.
+<p>
+It's also important to emphasize that we're talking about a lot
+more than "ANSI C compliance" here.  In fact -- though it may
+sound contradictory or even heretical -- strict ANSI C compliance
+is in some sense a red herring.  It's nevertheless at least an
+<em>important</em> red herring, however; more on this anon.
+<p>
+While I'm listing prefatory disclaimers, I'll also admit that I
+don't expect to fully convince everyone.  The counterarguments,
+which would suggest that portability and compliance don't matter
+so much, are in very good company out there in the real world,
+albeit it's that same real world where for whatever reason
+software is painful and expensive to write, where programs never
+work correctly the first time and in many cases never work
+perfectly at all, where bugs and gratuitous complexity tend
+inexorably to become so ossified that it's impossible to fix them
+or to add new features without adding yet more bugs, and where
+debugging tends to account for far more time than actually
+writing code.  Maybe I'm crazy, but I'd like to think we can do
+better...
+<p>
+<center>*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*</center>
+<p>
+First of all, no one is claiming that 100% of every useful
+program must be written in 100% strictly conforming ANSI/ISO C.
+The claims are merely that as much as possible should be written
+in ANSI/ISO C, that the system-dependent portions which cannot be
+written portably should be very cleanly separated, and finally
+that the proportion of system-independent to system-dependent
+code can be much larger than is necessarily always acknowledged.
+If you can't make all of a large program standards-compliant,
+with some effort you can make <em>most</em> of it compliant, and the
+effort is usually well worth it.
+<p>
+<center>*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*</center>
+<p>
+Even when portability is no market requirement, it can be hugely
+advantageous to write a program portably, anyway, if it makes the
+development easier.  I was once hired to make extensions to a
+piece of embedded software, and the first thing I did was to port
+it from its native environment (a stripped-down version of
+MS-DOS) to Linux, and write a quick-and-dirty curses-based
+replacement for its original machine-dependent user interface.
+That port probably cost me a day or two of work, but the payback
+was handsome and immediate, because it made <em>everything</em> else so
+much easier; I'm sure I worked 2-3 times as efficiently during
+the 6-8 weeks that the rest of the project lasted as I could have
+if I'd tried to do all my development under MS-DOS and all my
+testing on the actual embedded device.
+<p>
+This is another of those arguments which I'm sure seems utterly
+unconvincing (because it's so unbelievable) to many observers out
+there in the real world where software is painful and expensive
+to write.  If every line of code comes dear, it might seem
+inconceivable to spend additional time writing an entire
+Unix-compatible curses-based user interface for an embedded
+program, when that interface will be thrown away when the coding
+is complete, never to be seen by a paying customer.  "Why would
+you even think of wasting time writing it, when we're already so
+far behind on all the product-specific code we <em>have</em> to write?
+And of what benefit is being able to test the program under *nix,
+when obviously all of our formal testing has to be on the target
+device since that's where the end users will be using it?
+Why are you so het up about trying to do your development under
+Unix?  Are you one of those Unix bigots or something?  I think
+you're just too lazy and set in your ways to learn how to program
+in DOS."
+<p>
+Those counterarguments aren't completely invalid, and I'm probably
+poking a bit more fun at them here than is strictly fair, but
+they're made by people who don't understand the difference that
+a development environment can make, who don't appreciate the
+orders-of-magnitude differences in productivity between mediocre
+programmers using mediocre development environments versus good
+programmers using great ones.  (And, incidentally, they don't
+understand that a certain kind of motivated, directed laziness
+is a very great virtue in programming.  Me, I'll bend 'way over
+backwards, and run around the barn three times, and stay up all
+night coding, to set up some key piece of infrastructure that
+will let me be completely slack-off lazy for the entire rest of
+the project.)
+<p>
+<center>*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*</center>
+<p>
+Up above I admitted that ANSI C compliance was in some sense a red
+herring, albeit an important one.  Now I'll start trying to
+explain what I meant.
+<p>
+"ANSI C" is partly a code-word for "the high-quality code we
+advocate here, as opposed to the junk everybody else puts up
+with."  Now, on the one hand it's true that, strictly speaking,
+ANSI C compliance might not seem to be nearly as much of a "hard"
+market requirement as the "really important" market imperatives
+such as efficiency and featurefulness.  But there are
+nevertheless a number of things that thinking about ANSI C
+compliance forces you to do.
+<p>
+One is that it forces you to cleanly separate those parts of your
+program that can be portable from those that can't be.  And it
+turns out that this is quite often a <em>really</em> <em>good</em> exercise to
+go through anyway, even if the can-be-portable part never ends up
+being ported off of its initial development environment at all.
+The reason is that although everyone understands that Modularity
+is Good, not everyone always manages to actually write code that
+is particularly well modularized.  The user interface code tends
+to end up being tightly intertwined with the data processing
+code, and the data processing code tends to get all tangled up
+with the OS- or database-access code.  And the result is that
+there end up being all sorts of things that would be "nice"
+to do, that you can't.  You can't write a noninteractive test
+harness that exercises the 80-90% of the program that does
+involve data processing but doesn't involve the user interface,
+because you can't separate that portion of the program from the
+user interface.  When the database access code isn't working,
+you can't put in a single, simple debug printout at the one spot
+where all database access calls funnel through, because there
+isn't that one spot, because ad-hoc database access calls are
+scattered all over.  When focus group testing shows that the
+workflow implied by the existing user interface is awkward and
+confusing to users and should be significantly reworked, you
+can't afford to, because it would require rewriting too much of
+the intertwined, non-user-interface, data processing code as
+well.  And so on.
+<p>
+If, on the other hand, a project is developed with a "do as much
+of it as possible in ANSI C" mantra, it goes hand in hand with a
+"modularize it properly" mantra, because for the most part the
+pure data processing code, that it would be nice to keep
+separated from the user interface and the OS interface, is
+precisely the part that can be written strictly portably.
+<p>
+Abilities like bolting on an alternative, noninteractive user
+interface "just for testing", or tracing all database access
+calls "just for convenience during debugging", might seem like
+luxuries, or mere niceties.  But in successful projects,
+"luxuries" like these are easy to come by, because they are
+synergistic with -- simultaneously enabled by and further
+contributing to -- the very same high qualities that are making
+the project successful.  In other words, in successful projects,
+"expensive luxuries" like these are not expensive and not
+luxuries.  They are bona-fide requirements in order for the
+project to be successful, and their cost is therefore well,
+well worth it.
+<p>
+<center>*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*</center>
+<p>
+Though I hope it was at least somewhat convincing, the preceding
+argument has a bit of a disciplinarian, drink-your-cod-liver-oil-
+it's-good-for-you feel to it.  Dusty crusty academicians come up
+with all sorts of reasons why learning Latin is Good For You
+because it Clarifies your Thought Processes even though nobody
+speaks it any more.  Me, I don't know any Latin, but I'm afraid
+I might sound about as crusty for claiming that writing ANSI C
+is beneficial even if you don't care about portability, just
+because it will force you to write better, more modular code.
+Here's a perhaps more compelling argument.
+<p>
+Assume for the moment that we do care about ANSI C compliance
+in those parts of the program that can be made portable.  Assume
+that we're willing to tolerate nonportable system dependencies in
+the remainder of the program.  Assume that we have gone through
+the exercise of cleanly separating those parts of the program
+that can be made portable from those that can't be.  Now, what
+sorts of strict ANSI C violations, or other nonportabilities,
+is our finished program likely to contain?
+<p>
+Obviously, the can't-be-made-portable portions of the program
+will be full of nonportabilities, that's the whole point.
+In those parts of the code, for each noncompliant aspect that
+a nitpicker or naysayer might point at, there isn't an ANSI C
+alternative, so it's hardly worth complaining.
+<p>
+But in the allegedly-portable, system-independent parts of the
+program, the situation is obviously quite different.  If we find
+ourselves comparing two different ways of writing some piece of
+pure data processing code, what can we say about the
+possibilities, and about our preferences for choosing one over
+the other?  If one of the ways is not ANSI conforming, here we
+will usually find that there <em>is</em> a conforming alternative.
+Given that choice, why would anyone argue for the nonconforming
+alternative?  I'm sorry to sound harsh, but I think the arguments
+in favor of the nonconforming option here basically reduce to:
+ignorance.  If you don't know about the conforming alternative,
+that's one thing, but having been presented with it, if you
+insist on continuing to do it your old way, because it's "more
+efficient" or it's "what you're used to" or because the resulting
+alleged nonportability "doesn't matter in this case", you're
+probably being willfully stubborn.
+<p>
+But it's even worse than that.  In the nonportable parts of the
+program, you had no choice but to go with the system-dependent
+implementations; there were no alternatives.  Having gone with
+the necessarily system-dependent, unavoidably unportable
+alternative, the potential failure mode is only the one we
+already knew about: it's not portable.
+<p>
+In the nominally portable parts of the program, on the other
+hand, anything nonstandard you're making use of -- that is,
+any departure from Standard-conforming C -- is likely to be
+a compiler extension or an instance of undefined behavior.
+(Actually, by one definition they're the same thing.)
+You might make an informed decision to adopt and depend on a
+compiler extension, but far more worrisome are those instances
+of undefined behavior.
+<p>
+That instance of undefined behavior, that you thought you could
+live with, that worked fine for you last week, might stop working
+next week, for no reason at all, or because you installed a new
+release of the compiler, or changed a compilation option, or
+switched to daylight saving time, or tried to run the program on
+a bigger problem, or with more or less memory available to it,
+or for a million other but-what-difference-can-that-make reasons.
+That quirky aspect of C that you weren't sure about, that you
+empirically determined worked a certain way based on a quick test
+program that you wrote, and that you then made use of in 37
+different places in the larger system that you can't remember all
+of and can't definitively grep for, turns out not to always work
+the way you thought it did, after all, because your empirical
+testing was unwittingly incomplete.
+<p>
+(Me, I tend to be pretty paranoid about those nifty-keen but
+utterly nonstandard vendor extensions, too, because the more
+enticing and compelling they are, the easier it is for them to be
+be twisted by the vendor into a shackle that forces you to keep
+using that vendor after they've incongruously become Totally
+Evil, and you find you'd rather wean yourself from them after
+all, except now you can't.)
+<p>
+In any case, the point here is that when a departure from
+Standard conformance is an instance of undefined behavior, the
+potential failure mode is reasonably dire: the program could stop
+working tomorrow, for whatever reason, even though it seemed to
+pass its test suite with flying colors today, inspiring you to go
+ahead and release it to the customers tonight.  And it seems to
+me that if you say you don't care about the Standard and that you
+can live with departures from it, many of your departures will
+end up in this category.
+<p>
+<center>*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*</center>
+<p>
+Finally, here's the other half of the "red herring" explanation.
+To some extent, talking about ANSI C compliance is a
+<a href="http://en.wikipedia.org/wiki/Shibboleth">shibboleth</a>.
+There's a worrisome sort of class distinction in programming
+between programmers who are satisfied with code that seems to
+work, versus programmers who insist on code that works <em>for the
+right reasons</em>.  Unfortunately, of course, just because some code
+does work you don't necessarily know whether it's working for the
+right reasons or the wrong reasons.  Code that merely seems to
+work today can just as easily stop working tomorrow, leading to
+neverending bug-chasing.  Code that works for the right reasons,
+on the other hand, has some decent chance of continuing to work
+properly tomorrow and next week and next month and next year,
+<em>without</em> continual hands-on maintenance (meaning among other
+things that the programmers involved are free to move on to new
+and different projects).
+<p>
+Here's what I mean by the shibboleth: programmers who insist
+that code work for the right reasons can't help but be zealous
+advocates of the ANSI C Standard, because it's unquestionably
+the biggest and strongest Right Reason that there is for C code
+to work.  So programmers who care that code works for the right
+reasons also care about (and think about, and talk about)
+the C Standard, whether or not they have portability as a job
+requirement.  Programmers who are looking for excuses to ignore
+the Standard, on the other hand (because, they claim, it's
+irrelevant to their work), are likely to be the ones who are
+satisfied with code that seems to work at the end of the day --
+but that's an attitude that likely entails ignoring all sorts of
+other seemingly-irrelevant details, details that are irrelevant
+only because they have to do with something other than getting
+the code to work this minute.  And that's obviously an attitude
+that can end up causing all sorts of other problems, too.
+<p>
+<center>*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*</center>
+<p>
+Programmers who say that they "can't afford" to worry about
+portability may admit that it's theoretically important, but claim that
+it's overshadowed by other, more pressing concerns.  What with
+everything else they've got to worry about -- the schedule, the
+bug list, the difficulty of cleanly introducing new features into
+code that's been sullied by too many expediency-mandated hacks
+upon hacks -- it may seem like ANSI C compliance isn't even on
+the table.
+<p>
+To my way of thinking, though, there's a real connection here.
+Code which is sullied by hacks upon hacks, or which suffers from
+a lack of coherent design, is code which someone tried to get
+working by hook or by crook, and where the definition of
+"working" was probably "seems to work at the end of the day".
+The only way I know of to get out of that trap is to start paying
+attention to coding styles and development attitudes which
+feature the virtue of code that works for the right reasons --
+and ANSI C is very much on that table.
+<p>
+<center>*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*</center>
+<p>
+I'm sorry that the folks in comp.lang.c tend to come across as
+Standard-thumping fundamentalists, continuing to insist, with
+ramrod-straight demeanor, that all code be strictly conforming,
+as if it's only important for its own sake.  But the insistence
+is <em>not</em> merely for its own sake: much more importantly, it's for
+the sake of code that's <em>correct</em>, not just in the ANSI C Standard
+sense, but in the much more important "works reliably in the real
+world" sense.  As I had occasion to write once before when this
+issue came up, "I'm not a Standard-thumping fundamentalist who
+worships at the altar of X3J11 because I'm an anal-retentive
+dweeb who loves pouncing on people who innocently post code
+containing void main() to comp.lang.c; I'm a Standard-thumping
+fundamentalist who worships at the altar of X3J11 because it
+gives me eminently useful guarantees about the programs I write
+and helps me ensure that they'll work correctly next week and
+next month and next year, in environments I haven't heard of or
+can't imagine or that haven't been invented yet, and without
+continual hands-on bugfixing and coddling by me."
+</p>
+<address>
+<a href="../index.html">Steve Summit</a>
+<br>
+<a href="mailto:scs@eskimo.com">scs@eskimo.com</a>
+</address>
+</body>
+</html>

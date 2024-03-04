@@ -1,0 +1,1088 @@
+<html>
+<head>
+<title>How to Use the Plan 9 C Compiler</title>
+<link rel="made" rev="made" href="mailto:jutta@pobox.com">
+</head>
+<body>
+<ul>
+<ul>
+<h1>How to Use the Plan 9 C Compiler</h1>
+<ul>
+<ul>
+<ul>
+<address>
+<a href="rob/index.html">Rob Pike</a>
+</address>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+
+<h2>    Introduction
+</h2>
+
+        &#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>The C compiler on Plan 9 is a wholly new program;
+        in fact it was the first piece of software written
+        for what would eventually become Plan 9 from Bell Labs.&#160;<tt> </tt>
+        Programmers familiar with existing C compilers
+        will find a number of differences in both the language the
+        Plan 9 compiler accepts and in how the compiler
+        is used.&#160;<tt> </tt>
+<p>
+        &#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>The compiler is really a set of compilers, one for each
+        architecture - MIPS, SPARC, Motorola 68020, Intel 386, etc. -
+        that accept a dialect of ANSI C and efficiently produce fairly good
+        code for the target machine.&#160;<tt> </tt>
+        There is a packaging of the compiler that accepts strict ANSI C
+        for a POSIX environment, but this document instead focuses on
+        the native Plan 9 environment, that in which all the system source and
+        almost all the utilities are written.&#160;<tt> </tt>
+
+<h2>Source</h2>
+
+        &#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>The language accepted by the compilers is the core ANSI C language
+        with some modest extensions, a greatly simplified preprocessor,
+        a smaller library that includes system calls and related facilities,
+        and a completely different structure for include files.&#160;<tt> </tt>
+<p>
+        &#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>Official ANSI C accepts the old (K&amp;R)  style of declarations for 
+        functions; the Plan 9 compilers are more demanding.&#160;<tt> </tt>
+	Without an explicit run&#173;time flag (<code>-B</code>) whose use is discouraged, the compilers insist on new&#173;style function declarations, that is, prototypes for function arguments.&#160;<tt> </tt>The function declarations in the
+        libraries' include files are all in the new style so the
+        interfaces are checked at compile time.&#160;<tt> </tt>
+        For C programmers who have not yet switched to function
+        prototypes the clumsy syntax may seem repellent but the
+        payoff in stronger typing is substantial.&#160;<tt> </tt>
+        Those who wish to import existing software to Plan 9
+        are urged to use the opportunity to update their code.&#160;<tt> </tt>
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+        The compilers include an integrated preprocessor that accepts
+        the familiar <code>#include</code>, <code>#define</code> for
+        macros both with and without arguments, <code>#undef</code>,
+        <code>#line</code>, <code>#ifdef</code>, <code>#ifndef</code>,
+        and <code>#endif</code>.&#160;<tt> </tt>
+        It supports neither <code>#if</code>
+        nor <code>##</code> and honors a single <code>#pragma</code>.&#160;<tt> </tt>
+        The <code>#if</code> directive was omitted because it greatly
+        complicates the preprocessor, is never necessary, and is
+        usually abused.&#160;<tt> </tt>
+        Conditional compilation in general makes code
+        hard to understand;
+        the Plan 9 source uses it very sparingly.&#160;<tt> </tt>
+
+        Also, because the compilers remove dead code, regular
+        <code>if</code> statements with constant conditions are more
+        readable equivalents to many <code>#ifs</code>.&#160;<tt> </tt>
+        To compile imported code ineluctably fouled by <code>#if</code>
+        there is a separate command, <code>/bin/cpp</code>,
+        that implements the complete ANSI C preprocessor specification.&#160;<tt> </tt>
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+        Include files fall into two groups: machine&#173;dependent and
+        machine&#173;independent.&#160;<tt> </tt>
+        The machine&#173;independent files occupy the directory
+        <code>/sys/include</code>; the others are placed in a
+        directory appropriate to the machine,
+        such as <code>/mips/include</code>.&#160;<tt> </tt>
+        The compiler searches for include files first in the machine&#173;dependent
+        directory and then in the machine&#173;independent directory.&#160;<tt> </tt>
+        At the time of writing there are eighteen machine&#173;independent
+        include files and three (per machine) dependent ones:
+        <code>&lt;ureg.h&gt;</code>, <code>&lt;stdarg.h&gt;</code>, and
+        <code>&lt;u.h&gt;</code>.&#160;<tt> </tt>
+        The first describes the layout of registers on the system stack,
+        for use by the debugger; the second, as in ANSI C, defines
+        a portable way to declare variadic functions.&#160;<tt> </tt>
+        The third defines some architecture&#173;dependent types such as
+        <code>jmp_buf</code> for <code>setjmp</code> and also a set
+        of <code>typedef</code> abbreviations
+        for <code>unsigned short</code> and so on.&#160;<tt> </tt>
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+        Here is an excerpt from <code>/68020/include/u.h</code>:
+<pre>
+   typedef unsigned short ushort;
+   typedef unsigned char uchar;
+   typedef unsigned long ulong;
+   typedef unsigned int uint;
+   typedef signed char schar;
+   typedef long vlong;
+   typedef long jmp_buf[2];
+   #define JMPBUFSP 0
+   #define JMPBUFPC 1
+   #define JMPBUFDPC 0
+</pre>The type <code>vlong</code> is the largest integer type available;
+        on some architectures it is a 64&#173;bit value.&#160;<tt> </tt>
+        The <code>#define</code> constants permit an architecture&#173;independent
+        (but compiler&#173;dependent) implementation of stack&#173;switching using
+        <code>setjmp</code> and <code>longjmp</code>.&#160;<tt> </tt>
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+        Every Plan 9 C program begins
+<pre>
+        #include &lt;u.h&gt;
+</pre>because all the other installed header files use
+        the <code>typedefs</code> declared in <code>&lt;u.h&gt;</code>.&#160;<tt> </tt>
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+        In strict ANSI C, include files are grouped to collect related
+        functions in a single file: one for string functions, one
+        for memory functions, one for I/O, and none for system calls.&#160;<tt> </tt>
+        Each include file is protected by
+        an <code>#ifdef</code> to guarantee its contents are seen by
+        the compiler only once.&#160;<tt> </tt>Plan 9 takes a completely different approach.&#160;<tt> </tt>
+        Other than a few include files that define external formats such
+        as archives, the files in <code>/sys/include</code> correspond to
+        <em>libraries.</em>
+
+        If a program is using a library, it includes the corresponding
+        header.&#160;<tt> </tt>
+        The default C library comprises string functions, memory functions,
+        and so on, largely as in ANSI C, some formatted I/O routines,
+        plus all the system calls and related functions.&#160;<tt> </tt>
+        To use these functions, one must <code>#include</code>
+        the file <code>&lt;libc.h&gt;</code>, which in turn must
+        follow <code>&lt;u.h&gt;</code>, to define their prototypes
+        for the compiler.&#160;<tt> </tt>
+        Here is the complete source to the traditional first C program:
+<pre>
+   #include &lt;u.h&gt;
+   #include &lt;libc.h&gt;
+
+   void
+   main(void)
+   {
+           print(&quot;hello world\\n&quot;);
+           exits(0);
+   }
+</pre>
+
+        The <code>print</code> routine and its relatives <code>fprint</code>
+        and <code>sprint</code> resemble the similarly&#173;named functions in
+        Standard I/O but are not attached to a specific I/O library.&#160;<tt> </tt>
+        In Plan 9 <code>main</code> is not integer&#173;valued; it should
+        call <code>exits</code>, which takes a string (or null; here ANSI C
+        promotes the 0 to a <code>char*</code>) argument.&#160;<tt> </tt>
+        All these functions are, of course, documented in the Programmer's
+        Manual.&#160;<tt> </tt>
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+        To use <code>printf</code>, <code>&lt;stdio.h&gt;</code>
+        must be included to define the function prototype for
+        <code>printf</code>:
+<pre>
+   #include &lt;u.h&gt;
+   #include &lt;libc.h&gt;
+   #include &lt;stdio.h&gt;
+
+   void
+   main(int argc, char *argv[])
+   {
+           printf(&quot;%s: hello world with %d arguments\n&quot;, argv[0], argc-1);
+           exits(0);
+   }
+</pre> In fact Standard I/O is not used much in Plan 9.&#160;<tt> </tt>
+        I/O libraries are discussed in a later section of this document.&#160;<tt> </tt>
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+        There are libraries for handling regular expressions, bitmap
+        graphics, windows, and so on, and each has an associated include file.&#160;<tt> </tt>
+        The manual for each library states which include files are needed.&#160;<tt> </tt>
+        The files are not protected against multiple inclusion and
+        themselves contain no nested <code>#includes</code>.&#160;<tt> </tt>
+        Instead the programmer is expected to sort out the requirements
+        and to <code>#include</code> the necessary files once at the top
+        of each source file.&#160;<tt> </tt>
+        In practice this is trivial: this way of handling include files
+        is so straightforward that it is rare for a source file to
+        contain more than half a dozen <code>#includes</code>.&#160;<tt> </tt>
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+        The compilers do their own register allocation so
+        the <code>register</code> keyword is ignored.&#160;<tt> </tt>
+        For different reasons, <code>volatile</code> and <code>const</code> are
+        also ignored.&#160;<tt> </tt>
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+        To make it easier to share code with other systems, Plan 9 has a
+        version of the compiler, <code>pcc</code>, that provides the
+        standard ANSI C preprocessor, headers, and libraries with POSIX
+        extensions.&#160;<tt> </tt> <code>Pcc</code> is recommended only when broad
+        external portability is mandated.&#160;<tt> </tt>
+        It compiles slower, produces slower code (it takes extra work to
+        simulate POSIX on Plan 9), eliminates those parts of the Plan 9
+        interface not related to POSIX, and illustrates the clumsiness of
+        an environment designed by committee.&#160;<tt> </tt>
+        <code>Pcc</code> is described in more detail in
+        <i>``APE - The ANSI/POSIX Environment'',</i> by Howard Trickey.&#160;<tt> </tt>
+
+<h2>    Process
+</h2>
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+        Each CPU architecture supported by Plan 9 is identified by a single,
+        arbitrary, alphanumeric
+	character:<code> v </code>for
+        MIPS,<code> k </code>for SPARC,<code> z </code>
+        for Hobbit,<code> 2 </code>for Motorola 68020 and
+	68040,<code> 8 </code>for Intel 386, and<code> 6 </code>for
+        Intel 960.&#160;<tt> </tt>(This list is sure to grow.)&#160;<tt> </tt>
+
+        The character labels the support tools and files for that architecture.&#160;<tt> </tt>
+        For instance, for the 68020 the compiler
+	is<code> 2c</code>,<tt> </tt>
+        the assembler is<code> 2a</code>,<tt> </tt>the link editor/loader
+	is<code> 2l</code>,<tt> </tt>the object
+	files are suffixed<code> .2</code>,<tt> </tt>
+	and the default name for an executable file
+	is<code> 2.out</code>.&#160;<tt> </tt>
+        Before we can use the compiler we therefore need to
+        know which machine we are compiling for.&#160;<tt> </tt>
+        The next section explains how this decision is made;
+        for the moment assume we are building 68020 binaries and make
+        the mental substitution
+        for <code>2</code> appropriate
+        to the machine you are actually using.&#160;<tt> </tt>
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+        To convert source to an executable binary is a two&#173;step process.&#160;<tt> </tt>
+        First run the compiler,<code> 2c</code>, on the
+        source, say <code>file.c</code>, to generate
+        an object file<code> file.2 </code>.&#160;<tt> </tt>
+        Then run the loader,<code> 2l</code>,
+        to generate an executable<code> 2.out </code>that may be run
+        (on a 680X0 machine):
+
+<pre>
+   2c file.c
+   2l file.2
+   2.out
+</pre>
+
+The loader automatically links with whatever libraries the program needs, usually including the standard C
+library as defined
+by<code> &lt;libc.h&gt;</code>.&#160;<tt> </tt>
+Of course the compiler and loader have lots of options, both familiar and
+new; see the manual for details.&#160;<tt> </tt>
+The compiler does not generate an executable automatically; the output of
+the compiler must be given to the loader.&#160;<tt> </tt>
+Since most compilation is done under the control of<code> mk </code>(<a href="plan9c.html#mk">see
+below</a>), this is rarely an inconvenience.&#160;<tt> </tt>
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+        The distribution of work between the compiler and loader is unusual.&#160;<tt> </tt>
+        The compiler integrates preprocessing, parsing, register allocation,
+        code generation and some assembly.&#160;<tt> </tt>
+        Combining these tasks in a single program is part of the reason
+        for the compiler's efficiency.&#160;<tt> </tt>
+        The loader does instruction selection, branch folding,
+        instruction scheduling, and writes the final executable.&#160;<tt> </tt>
+        There is no separate C preprocessor and no assembler in
+        the usual pipeline.&#160;<tt> </tt>
+        Instead the intermediate object file here a<code> .2 </code>file)
+        is a type of binary assembly language, similar to very regular assembly language but in binary form for quick I/O.&#160;<tt> </tt>
+        The instructions in the intermediate format are not exactly
+        those in the machine.&#160;<tt> </tt>
+        For example, on the 68020 the object file may specify a
+        MOVE instruction but the loader will decide just which variant
+        of the MOVE instruction - 
+        MOVE immediate, MOVE quick, MOVE address, etc. - 
+        is most efficient.&#160;<tt> </tt>
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+The assembler,<code> 2a</code>,<tt> </tt>is just a translator between the textual and binary representations of the object file
+format.&#160;<tt> </tt>
+It is not an assembler in the traditional sense.&#160;<tt> </tt>
+It has limited macro capabilities (the same as the
+integral C preprocessor in the compiler), clumsy syntax, and minimal
+error checking.&#160;<tt> </tt>
+For instance, the
+assembler will accept an instruction (such as memory&#173;to&#173;memory MOVE on
+the MIPS) that the machine
+does not actually support;
+only when the output of the assembler is passed to the loader will the error be
+discovered.&#160;<tt> </tt>
+The assembler is intended only for writing things,
+such as the machine&#173;dependent part of an
+operating system, that need access to instructions invisible from C; very little code in Plan 9 is in assembly
+language.&#160;<tt> </tt>
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+The compilers take an option<code> -S </code>that causes them to print
+on their standard output the generated code in a format
+acceptable as input to the assemblers.&#160;<tt> </tt>
+This is of course merely a formatting of the data in the object file;
+therefore the assembler is just an<code> ASCII</code>&#173;to&#173;binary converter
+for this format.&#160;<tt> </tt>
+Near the end of this document is a brief introduction
+to the format of the assembly language.&#160;<tt> </tt>
+Other than the specific instructions,
+the input to the assemblers is largely architecture&#173;independent.&#160;<tt> </tt>
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+The loader is an integral part of the compilation process.&#160;<tt> </tt>
+Each library header file contains a<code> #pragma </code>that
+tells the loader the name of the associated archive;
+it is not necessary to tell the loader which libraries a program uses.&#160;<tt> </tt>
+The C run&#173;time startup is found, by default, in the C library.&#160;<tt> </tt>
+The loader starts
+with an undefined symbol,<code> _main</code>,
+that is resolved by pulling in the run&#173;time startup code from the library.&#160;<tt> </tt>
+(The loader undefines<code> _mainp </code>when profiling is enabled,
+to force loading of the profiling start&#173;up instead.)
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+Unlike its counterpart on other systems, the Plan 9 loader rearranges data
+to optimize access.&#160;<tt> </tt>
+This means the order of variables in the loaded program is unrelated
+to its order in the source.&#160;<tt> </tt>
+Most programs don't care, but some assume that, for example, the
+variables declared by
+<pre>
+   int a;
+   int b;
+</pre>
+will appear at adjacent addresses in memory.&#160;<tt> </tt>
+On Plan 9, they won't.&#160;<tt> </tt>
+
+<h2>Heterogeneity
+</h2>
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+When the system starts or a user logs in
+the environment is configured so the appropriate binaries are
+available in<code> /bin</code>.&#160;<tt> </tt>
+The configuration process is controlled by an environment
+variable,<code> $cputype</code>,<tt> </tt>with
+value such as<code> mips</code>,<tt> </tt>
+<code> 68020</code>,<tt> </tt>
+or <code> sparc</code>.&#160;<tt> </tt>
+For each architecture there is a directory in root,
+with the appropriate name, that holds the binary and library files
+for that architecture.&#160;<tt> </tt>
+Thus<code> /mips/lib </code>contains the
+object code libraries for MIPS programs,<code> /mips/include </code>holds
+MIPS&#173;specific include files,
+and <code> /mips/bin </code>has the MIPS binaries.&#160;<tt> </tt>
+These binaries are attached to <code> /bin </code>at boot time
+by binding <code> /$cputype/bin </code>to <code> /bin</code>,<tt> </tt>
+so<code> /bin </code>always contains the correct files.&#160;<tt> </tt>
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+The MIPS compiler,<code> vc</code>,<tt> </tt>by definition produces object
+files for the MIPS architecture, regardless of the architecture of
+the machine on which the compiler is running.&#160;<tt> </tt>
+There is a version of<code> vc </code>compiled for
+each architecture:<code> /mips/bin/vc</code>, <code> /68020/bin/vc</code>,
+<code> /sparc/bin/vc</code>,
+and so on, each capable of
+producing MIPS object files regardless of the native instruction set.&#160;<tt> </tt>
+If one is running on a SPARC,<code> /sparc/bin/vc </code>will compile
+programs for the MIPS;
+if one is running on machine <code> $cputype</code>,
+<code> /$cputype/bin/vc </code>will compile programs for the MIPS.&#160;<tt> </tt>
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+In Plan 9 the directory<code> /$cputype/bin </code>is bound to
+<code> /bin </code>so that the appropriate version of commands such
+as<code> date </code>are found by the shell:
+the shell looks for <code> date </code>in <code> /bin/date </code>and
+automatically finds the file<code> /$cputype/bin/date</code>.&#160;<tt> </tt>
+Therefore the MIPS compiler is known as just <code> vc</code>;<tt> </tt>
+the shell will invoke<code> /bin/vc </code>and that is guaranteed
+to be the version of the MIPS compiler appropriate for the
+machine running the command.&#160;<tt> </tt>
+Regardless of the architecture of the compiling
+machine,<code> /bin/vc </code>is <em>always</em>
+the MIPS compiler.&#160;<tt> </tt>
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+Also, the output of<code> vc </code>and <code> vl </code>is completely
+independent of <code> $cputype</code>: <code> .v </code>files compiled
+(with <code> vc</code>) on a SPARC may be linked (with <code> vl </code>)
+on a 386.&#160;<tt> </tt>
+(The resulting<code> v.out </code>will run, of course, only on a
+MIPS.)
+Similarly, the MIPS libraries in<code> /mips/lib </code>are suitable
+for loading with<code> vl </code>on any machine;
+there is only one set of MIPS libraries,
+not one set for each architecture that supports the MIPS compiler.&#160;<tt> </tt>
+(In other systems it is common for the intermediate format to be compiling&#173;machine&#173;dependent.)
+
+<h2>    <a name="mk">Heterogeneity and mk</a>
+</h2>
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+Most software on Plan 9 is compiled under the control of<code> mk</code>,<tt> </tt>
+a descendant of<code> make </code>that is documented in the
+Programmer's Manual.&#160;<tt> </tt>
+A convention used throughout the<code> mkfiles </code>makes it easy to
+compile the source into binary suitable for any architecture.&#160;<tt> </tt>
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+The variable<code> $cputype </code>is advisory: it reports
+the architecture of the current environment, and
+should not be modified.&#160;<tt> </tt>
+A second variable,<code> $objtype</code>,<tt> </tt>
+is used to set which architecture is being
+<em>compiled</em> for.&#160;<tt> </tt>
+The value of<code> $objtype </code>can be used by a<code> mkfile </code>to
+configure the compilation environment.&#160;<tt> </tt>
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+In each machine's root directory there is a short<code> mkfile </code>that
+just defines a set of macros for the compiler, loader, etc.&#160;<tt> </tt>
+Here is<code> /mips/mkfile </code>:
+<pre>
+   CC=vc
+   LD=vl
+   O=v
+   RL=rl
+   AS=va
+   OS=2kovz86
+   CPUS=mips 68020 sparc 386 hobbit
+   CFLAGS=
+</pre>
+
+<code>CC </code>is obviously the compiler,
+<code> AS </code>the assembler,
+and <code> LD </code>the loader.&#160;<tt> </tt>
+<code>O </code>is the suffix for the object files
+and<code> RL </code>is the program that inserts
+a table of contents into a library file (a dreg, really; the
+program<code> rl </code>works for all supported
+architectures).&#160;<tt> </tt> <code>CPUS </code>and<code> OS </code>are used
+in special rules described below.&#160;<tt> </tt>
+
+        Here is a<code> mkfile </code>to build the installed
+        source for<code> sam</code>:
+<pre>
+   &lt;/$objtype/mkfile
+   OBJ=sam.$O address.$O buffer.$O cmd.$O disc.$O error.$O file.$O \\
+           io.$O list.$O mesg.$O moveto.$O multi.$O plan9.$O rasp.$O regexp.$O \\
+           string.$O sys.$O xec.$O
+
+   $O.out: $OBJ
+           $LD $OBJ
+
+   install: $O.out
+           cp $O.out /$objtype/bin/sam
+
+   installall:
+           for(objtype in $CPUS) mk install
+
+   %.$O: %.c
+           $CC $CFLAGS $stem.c
+
+   $OBJ:                                        sam.h errors.h mesg.h
+   address.$O cmd.$O parse.$O xec.$O unix.$O:   parse.h
+
+   clean:V:
+           rm -f [$OS].out *.[$OS] y.tab.?
+</pre>
+(The actual<code> mkfile </code>imports most of its rules from other
+secondary files, but this example works and is not misleading.)&#160;<tt> </tt>
+The first line causes<code> mk </code>to include the contents
+of<code> /$objtype/mkfile </code>in the current<code> mkfile</code>.&#160;<tt> </tt>
+If<code> $objtype </code>is<code> mips</code>,<tt> </tt>this inserts the
+macro definitions above into the<code> mkfile</code>.&#160;<tt> </tt>
+In this case the rule for<code> $O.out </code>will therefore use
+the MIPS tools to build<code> v.out</code>.&#160;<tt> </tt>
+The<code> %.$O </code>rule in the file uses<code> mk</code>'s pattern
+matching facilities to connect the source files to the object
+files through a run of the compiler.&#160;<tt> </tt>
+(The text of the rules is passed directly to the shell,<code> rc</code>,<tt> </tt>
+without further translation.&#160;<tt> </tt>
+See the<code> mk </code>manual if any of this is unfamiliar.)<tt> </tt>
+Because the default rule builds<code> $O.out </code>rather
+than<code> sam</code>,<tt> </tt>it is possible to maintain binaries for
+multiple machines in the same source directory without conflict.&#160;<tt> </tt>
+This is also, of course,
+why the output files from the various compilers and loaders has distinct names.&#160;<tt> </tt>
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+The rest of the<code> mkfile </code>should be easy to follow;
+notice how the rules for<code> clean </code>and<code> installall </code>
+(that is, install versions for all architectures) use the other
+macros defined in<code> /$objtype/mkfile</code>.&#160;<tt> </tt>
+In Plan 9,<code> mkfiles </code>for commands conventionally
+contain rules to<code> install </code>(compile and install the version
+for<code> $objtype</code>),<code> installall </code>(compile and
+install for all<code> $objtypes</code>) and<code> clean </code>(remove
+all object files, binaries, etc.).&#160;<tt> </tt>
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+The<code> mkfile </code>is easy to use.&#160;<tt> </tt>
+To build a MIPS binary,<code> v.out</code>:
+<pre>
+   % objtype=mips
+   % mk
+</pre>
+To build and install a MIPS binary:
+<pre>
+   % objtype=mips
+   % mk install
+</pre>
+To build and install all versions:
+<pre>
+   % mk installall
+</pre>
+These conventions make cross&#173;compilation as easy to manage
+as traditional native compilation.&#160;<tt> </tt>
+Plan 9 programs compile and run without change on machines from
+large mulitprocessors to laptops.&#160;<tt> </tt>
+
+<h2>
+Portability
+</h2>
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+Within Plan 9, it is painless to write portable programs,
+programs whose source is independent of the machine on which they execute.&#160;<tt> </tt>
+The operating system is fixed and the compiler, headers and libraries are
+constant so most of the stumbling blocks to portability are removed.&#160;<tt> </tt>
+Attention to a few details can avoid
+those that remain.&#160;<tt> </tt>
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+Plan 9 is a heterogeneous environment, so programs must
+<em>expect</em>
+that external files will be written by
+programs on machines of different architectures.&#160;<tt> </tt>
+The compilers, for instance, must handle without
+confusion object files written by other machines.&#160;<tt> </tt>
+The traditional approach to this problem is to pepper the source
+with<code> #ifdefs </code>to turn byte&#173;swapping on and off.&#160;<tt> </tt>
+Plan 9 takes a different approach; there are no
+machine&#173;dependent<code> #ifdefs </code>in any of the source.&#160;<tt> </tt>
+Instead the programs read and write files in a defined format,
+either (for low volume applications) as formatted text, or
+(for high volume applications) as binary in a known byte order.&#160;<tt> </tt>
+If the external data was written with the most significant byte first,
+the following code will read a 4&#173;byte integer correctly
+regardless of the architecture of the executing machine 
+(assuming an unsigned long will hold 4 bytes)
+<pre>
+   ulong
+   getlong(void)
+   {
+           ulong l;
+
+           l = (getchar() &amp; 0xFF) &lt;&lt; 24;
+           l |= (getchar() &amp; 0xFF) &lt;&lt; 16;
+           l |= (getchar() &amp; 0xFF) &lt;&lt; 8;
+           l |= (getchar() &amp; 0xFF) &lt;&lt; 0;
+           return l;
+   }
+</pre>
+Note that this code does not `swap' the bytes;
+instead it just reads them in the correct order.&#160;<tt> </tt>
+Variations of this code will handle any binary format
+and also avoid problems involving how structures are padded,
+how words are aligned, and other impediments to portability.&#160;<tt> </tt>
+Be aware, though, that extra care is needed to handle
+floating point data.&#160;<tt> </tt>
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+Efficiency hounds will argue that this method is unnecessarily
+slow and clumsy when the executing machine has the same byte
+order (and padding and alignment) as the data.&#160;<tt> </tt>
+I/O speed is rarely the bottleneck for an application, however,
+and the gain in simplicity of porting and maintaining the code
+greatly outweighs the minor speed loss from handling data
+in this general way.&#160;<tt> </tt>
+This method is how the Plan 9 compilers,
+the window system,
+and even the file servers transmit data between programs.&#160;<tt> </tt>
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+To port programs beyond Plan 9, where the system interface
+is more variable, it is probably necessary to use<code> pcc </code>and
+hope that the target machine supports ANSI C and POSIX.&#160;<tt> </tt>
+
+<h2>    I/O
+</h2>
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+The default C library,
+defined by the include file<code> &lt;libc.h&gt;</code>,<tt> </tt>
+contains no buffered I/O package.&#160;<tt> </tt>
+It does have several entry points for printing formatted
+text:<code> print </code>outputs text to the standard
+output,<code> fprint </code>outputs text to a specified
+integer file descriptor, and<code> sprint </code>places text
+in a character array.&#160;<tt> </tt>
+But to access library routines for buffered I/O, a program
+must explicitly mention an appropriate library.
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+The recommended I/O library, used by most Plan 9 utilities,
+is<code> bio </code> (buffered I/O), defined by <code> &lt;bio.h&gt; </code>and
+accessed by appending<code> -lbio </code>to the command line for the loader.&#160;<tt> </tt>
+There also exists an implementation of ANSI Standard
+I/O,<code> stdio</code>.
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+<code>Bio </code>is small and very efficient, particularly
+for buffer&#173;at&#173;a&#173;time or line&#173;at&#173;a&#173;time I/O.&#160;<tt> </tt>
+Even for character&#173;at&#173;a&#173;time I/O, however,
+it is significantly faster than the Standard I/O library,<code> stdio</code>.&#160;<tt> </tt>
+Its interface is compact and regular,
+although it lacks a couple of conveniences.&#160;<tt> </tt>
+The most noticeable is that one
+must explicitly define buffers for standard input
+and output;<code> bio </code>does not predefine them.&#160;<tt> </tt>
+Here is a program to copy input to output a character
+at a time using<code> bio</code>: <pre>
+   #include &lt;u.h&gt;
+   #include &lt;libc.h&gt;
+   #include &lt;bio.h&gt;
+
+   Biobuf bin;
+   Biobuf bout;
+
+   main(void)
+   {
+           int c;
+
+           Binit(&amp;bin, 0, OREAD);
+           Binit(&amp;bout, 1, OWRITE);
+
+           while((c=Bgetc(&amp;bin)) != Beof)
+                   Bputc(&amp;bout, c);
+           exits(0);
+   }
+</pre>
+For peak performance, we could replace<code> Bgetc </code>
+and<code> Bputc </code>by their equivalent in&#173;line
+macros<code> BGETC </code>and<code> BPUTC </code>but
+the performance gain would be modest.&#160;<tt> </tt>
+For more information on<code> bio</code>,<tt> </tt>see the Programmer's Manual.
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+Perhaps the most dramatic difference in the I/O interface of
+Plan 9 from other systems' is that text is not<code> ASCII</code>.&#160;<tt> </tt>
+The format for text in Plan 9 is a byte&#173;stream encoding of 16&#173;bit characters.&#160;<tt> </tt>
+The character set is based on Unicode and is backward compatible with
+<code>ASCII</code>:
+characters with value 0 through 127 are the same
+in both sets.&#160;<tt> </tt>
+The 16&#173;bit characters, called
+<em>runes</em> in Plan 9, are encoded using a representation
+called<code> UTF</code>, a encoding we proposed and expect to be
+accepted by X&#173;Open.&#160;<tt> </tt>
+<code>UTF</code>
+defines multibyte sequences to represent
+character values from 0 to 65535.&#160;<tt> </tt>In
+<code>UTF</code>,
+character values up to 127 decimal,
+7F hexadecimal, represent
+themselves, so straight<code> ASCII </code> files are also
+valid <code> UTF</code>.&#160;<tt> </tt>
+Also,<code> UTF </code> guarantees that bytes with values 0 to 127
+(NUL to DEL, inclusive) will appear only when they represent 
+themselves, so programs that read bytes looking for plain
+ASCII characters will continue to work.&#160;<tt> </tt>
+Any program that expects a one&#173;to&#173;one correspondence between
+bytes and characters will, however, need to be modified.&#160;<tt> </tt>
+An example is parsing file names.&#160;<tt> </tt>
+File names, like all text, are in<code> UTF</code>, so it
+is incorrect to search for a character in a string
+by<code> strchr(filename, c) </code>because the character
+might have a multi&#173;byte encoding.&#160;<tt> </tt>
+The correct method is to call<code> utfrune(filename, c)</code>,
+defined in <em> rune</em>(2), which interprets the filename as
+a sequence of encoded characters rather than bytes.&#160;<tt> </tt>
+In fact, even when you know the character is a single byte that can
+represent only itself, it is safer to use<code> utfrune </code>because
+that assumes nothing about the character set and
+its representation.&#160;<tt> </tt>
+The representation may change - Plan 9 has already changed it several times.&#160;<tt> </tt>
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+The library defines several symbols relevant to the representation of
+characters.&#160;<tt> </tt>
+Any byte with unsigned value less than<code> Runesync </code>will not
+appear in any multi&#173;byte encoding of a character.&#160;<tt> </tt>
+<code>Utfrune </code>compares the character being searched
+against<code> Runesync </code>to see if it is sufficient to
+call<code> strchr </code>or if the byte stream must be interpreted.&#160;<tt> </tt>
+Any byte with unsigned value less than<code> Runeself </code>is represented
+by a single byte with the same value.&#160;<tt> </tt>
+Finally, when errors are encountered converting to runes from a byte stream,
+the library returns the rune value<code> Runeerror </code>and advances
+a single byte.&#160;<tt> </tt>
+This permits programs to find runes embedded in binary data.
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+<code>Bio </code>includes routines<code> Bgetrune </code>and<code>
+Bputrune </code>to transform the external byte stream<code> UTF </code>
+format to and from internal 16&#173;bit runes.&#160;<tt> </tt>
+Also, the<code> %s </code>format to<code> print </code>
+accepts<code> UTF</code>;<code> %c </code>prints a character after
+narrowing it to 8 bits.&#160;<tt> </tt>
+The<code> %S </code>format prints a null&#173;terminated sequence
+of runes;<code> %C </code>prints a character
+after narrowing it to 16 bits.&#160;<tt> </tt>
+For more information, see the Programmer's Manual,
+in particular<em> utf</em>(6) and <em> rune</em>(2); there is not room
+for the full story here.&#160;<tt> </tt>
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+These issues affect the compiler in several ways.&#160;<tt> </tt>
+First, the C source is in<code> UTF</code>.&#160;<tt> </tt>
+Although C variables are formed from<code> ASCII </code>alphanumerics,
+comments and literal strings may contain any characters encoded
+in<code> UTF</code>.&#160;<tt> </tt>
+The declaration
+<pre>
+   char *cp = &quot;abc&yuml;&quot;;
+</pre>
+initializes the variable<code> cp </code>to point to an array of
+bytes holding the<code> UTF </code> representation of the
+characters<code> abc&yuml;</code>.&#160;<tt> </tt>
+The type<code> Rune </code>is defined in<code> &lt;u.h&gt; </code>to
+be<code> ushort</code>,<tt> </tt>which is also the `wide character' type
+in the compiler.&#160;<tt> </tt>
+Therefore the declaration
+<pre>
+   Rune *rp = L&quot;abc&yuml;&quot;;
+</pre>
+initializes the variable<code> rp </code>to point to
+an array of unsigned short integers holding the 16&#173;bit values of the
+characters<code> abc&yuml; </code>.&#160;<tt> </tt>
+Note that in both these declarations the characters in the source
+that represent<code> abc&yuml; </code>are the same;
+what changes is how those characters are represented in memory
+in the program.&#160;<tt> </tt>
+The following two lines:
+<pre>
+   print(&quot;%s\n&quot;, &quot;abc&yuml;&quot;);
+   print(&quot;%S\n&quot;, L&quot;abc&yuml;&quot;);
+</pre>
+produce the same<code> UTF </code>string on their output,
+the first by copying the bytes, the second by converting from
+runes to bytes.&#160;<tt> </tt>
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+In C, character constants are integers but narrowed through
+the<code> char </code>type.&#160;<tt> </tt>
+The Unicode character<code> &yuml; </code>has value 255, so if the<code> char </code>type is signed, the constant<code> '&yuml;' </code>has value -1
+(which is equal to EOF).&#160;<tt> </tt>
+On the other hand,<code> L'&yuml;' </code>narrows through the wide
+character type,<code> ushort</code>, and therefore has value 255.&#160;<tt> </tt>
+
+<h2>	Arguments
+</h2>
+
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+Defined in<code> &lt;libc.h&gt; </code>are some macros for parsing
+the arguments to<code> main()</code>.&#160;<tt> </tt>
+They are described in <em>ARG</em>(2) but are fairly self&#173;explanatory.&#160;<tt> </tt>
+There are four macros:<code> ARGBEGIN </code>and<code> ARGEND </code>are
+used to bracket a hidden<code> switch </code>statement within
+which<code> ARGC </code>returns the current option
+character (rune) being
+processed and<code> ARGF </code>returns the argument
+to the option, as in the loader option<code> -o file </code>.&#160;<tt> </tt>
+Here, for example, is the
+beginning of<code> main() </code>in<code> mount.c </code> (see
+<em>bind</em>(1)) that cracks its arguments:
+<pre>
+   void
+   main(int argc, char *argv[])
+   {
+           char *spec, *srv;
+           ulong flag = 0;
+
+           srv = &quot;&quot;;
+           ARGBEGIN{
+           case 'a':
+                   flag |= MAFTER;
+                   break;
+           case 'b':
+                   flag |= MBEFORE;
+                   break;
+           case 'c':
+                   flag |= MCREATE;
+                   break;
+           case 't':
+                   srv = &quot;any&quot;;
+                   break;
+           case 's':
+                   srv = ARGF();
+                   if(srv == 0)
+                           usage();
+                   break;
+           default:
+                   usage();
+           }ARGEND
+           if(argc == 2)
+                   spec = &quot;&quot;;
+           else if(argc == 3)
+                   spec = argv[2];
+           else
+                   usage();
+</pre>
+
+<h2>	<a name="extensions">Extensions</a>
+</h2>
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+The compiler has several extensions to ANSI C,
+all of which are used extensively in the system
+source.&#160;<tt> </tt>
+First, <em>structure displays</em> permit<code> struct </code>expressions
+to be formed dynamically.&#160;<tt> </tt>
+Given these declarations:
+<pre>
+   typedef struct Point Point;
+   typedef struct Rectangle Rectangle;
+
+   struct Point
+   {
+           int x, y;
+   };
+
+   struct Rectangle
+   {
+           Point min, max;
+   };
+
+   Point p, q, add(Point, Point)
+   Rectangle r;
+   int x, y;
+</pre>
+this assignment may appear anywhere an assignment is legal:
+<pre>
+   r = (Rectangle) {add(p,q), (Point){x, y+3}};
+</pre>
+The syntax is the same as for initializing a structure but
+with a leading cast.&#160;<tt> </tt>
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+If an <em>anonymous structure</em> or <em>union</em> declared
+within another structure or union, the members of the
+internal structure or union are addressable without prefix
+in the outer structure.&#160;<tt> </tt>
+
+This feature eliminates the clumsy naming of nested structures
+and, particularly, unions.&#160;<tt> </tt>
+For example, after these declarations,
+<pre>
+   struct Lock
+   {
+           int locked;
+   };
+
+   struct Node
+   {
+           int type;
+           union{
+                   double dval;
+                   double fval;
+                   long lval;
+           };
+           struct Lock; /* anonymous structure */
+   } *node;
+
+   void lock(struct Lock*);
+</pre>
+one may refer to<code> node-&gt;type</code>,<code> node-&gt;dval</code>,<code>
+node-&gt;fval</code>,<code> node-&gt;lval</code>, and<code>
+node-&gt;locked</code>.&#160;<tt> </tt>
+Moreover, the address of a<code> struct Node </code>may be used without
+a cast anywhere that the address of a<code> struct Lock </code>is used,
+such as in argument lists.&#160;<tt> </tt>
+The compiler will automatically promote the type and
+adjust the address.&#160;<tt> </tt>
+Thus one may invoke<code> lock(node)</code>.&#160;<tt> </tt>
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+Anonymous structures and unions may be accessed by type name if (and only if)
+they are declared using a<code> typedef </code>name.&#160;<tt> </tt>
+For example, using the above declaration for<code> Point</code>,
+one may declare
+<pre>
+   struct
+   {
+           int type;
+           Point;
+   }p;
+</pre>
+and refer to<code> p.Point</code>.&#160;<tt> </tt>
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+In the initialization of arrays,
+a number in square brackets before an element sets the index for the
+initialization.&#160;<tt> </tt>
+For example, to initialize some elements in a table of function
+pointers indexed by<code> ASCII </code>character,
+<pre>
+   void percent(void), slash(void);
+
+   void (*func[128])(void) =
+   {
+           ['%'] percent,
+           ['/'] slash,
+   };
+</pre>
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+Finally, the declaration
+<pre>
+   extern register reg;
+</pre>
+(<em>this</em> appearance of the register keyword is not ignored) 
+allocates a global register to hold the variable<code> reg</code>.&#160;<tt> </tt>
+External registers must be used carefully: they need to be
+declared in <em>all</em> source files and libraries in the
+program to guarantee the register is not allocated temporarily
+for other purposes.&#160;<tt> </tt>
+Especially on machines with few registers,
+such as the i386,
+it is easy to link accidentally with code that has already usurped the
+global registers and there is no diagnostic when this happens.&#160;<tt> </tt>
+Used wisely, though, external registers are powerful.&#160;<tt> </tt>
+The Plan 9 operating system uses them to access per&#173;process and
+per&#173;machine data structures on a multiprocessor.&#160;<tt> </tt>
+The storage class they provide is hard to create in other ways.&#160;<tt> </tt>
+
+<h2>	The compile&#173;time environment
+</h2>
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+The code generated by the compilers is `optimized' by default:
+variables are placed in registers and peephole optimizations are performed.&#160;<tt> </tt>
+The compiler flag<code> -N </code>disables these optimizations.&#160;<tt> </tt>
+Registerization is done locally rather than throughout a function:
+whether a variable occupies a register or the memory location identified
+in the symbol table depends on the activity of the variable and may
+change throughout the life of the variable.&#160;<tt> </tt>
+The<code> -N </code>flag is rarely needed;
+its main use is to simplify debugging.&#160;<tt> </tt>
+There is no information in the symbol table to identify
+the registerization of a variable, so<code> -N </code>guarantees
+the variable is always where the symbol table says it is.&#160;<tt> </tt>
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+Another flag,<code> -w</code>,<tt> </tt>turns<em> on </em>warnings about
+portability and problems detected in flow analysis.&#160;<tt> </tt>
+Most code in Plan 9 is compiled with warnings enabled;
+these warnings plus the type checking offered by function prototypes
+provide most of the support of the Unix tool<code> lint </code>more
+accurately and with less chatter.&#160;<tt> </tt>
+Two of the warnings, `used and not set' and `set and not used',
+are almost always accurate but may be triggered spuriously
+by code with invisible control flow,
+such as in routines that call<code> longjmp</code>.&#160;<tt> </tt>
+The compiler statements
+<pre>
+   SET(v1);
+   USED(v2);
+</pre>
+decorate the flow graph to silence the compiler.&#160;<tt> </tt>
+Either statement accepts a comma&#173;separated list of variables.&#160;<tt> </tt>
+Use them carefully; they may silence real errors.&#160;<tt> </tt>
+
+<h2>	Debugging
+</h2>
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+The debugger on Plan 9 is<code> db</code>,<tt> </tt>
+a revision of Unix<code> adb </code>that supports
+multiple architectures in a single program.&#160;<tt> </tt>
+There is room for a good source&#173;level debugger but
+until the compiler emits a symbol table with types<code> db </code>will
+have to serve.&#160;<tt> </tt>
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+<code>Db </code>has several improvements over<code> adb</code>.&#160;<tt> </tt>
+Most important is that it reports C source line numbers with
+the<code> z </code> command.&#160;<tt> </tt>
+Breakpointing, and in particular conditional breakpointing, work well.&#160;<tt> </tt>
+Finally, it supports cross&#173;architecture debugging comfortably.&#160;<tt> </tt>
+
+For simple debugging, however,<code> db </code>is fine.&#160;<tt> </tt>
+Imagine a program has crashed mysteriously:
+<pre>
+   % X11/X
+   Fatal server bug!
+   failed to create default stipple
+   X 106: suicide: sys: trap: fault read addr=0x0 pc=0x00060a82
+   %
+</pre>
+When a process dies on Plan 9 it hangs in the `broken' state for
+debugging.&#160;<tt> </tt>
+<code>Db </code>takes the process id of the
+broken process and reports the type of the binary,
+the last trap it executed, and the failing instruction:
+<pre>
+   % db 106
+   68020 binary
+   bus error
+   abort.c:8 abort+#2? TSTL #0($0)
+</pre>
+The<code> $C </code>(capital<code> C</code>) command to<code> db </code>reports
+the stack traceback:
+<pre>
+   $C
+   abort() abort.c:4 called from FatalError+#4e misc.c:421
+   FatalError(s9=#e02, s8=#4901d200, s7=#2, s6=#72701, s5=#1,
+       s4=#7270d, s3=#6, s2=#12, s1=#ff37f1c, s0=#6, f=#7270f)
+       misc.c:416 called from gnotscreeninit+#4ce gnot.c:792
+           gnotscreeninit.buf/   #4901b300
+   gnotscreeninit(snum=#0, sc=#80db0) gnot.c:766 called from
+       AddScreen+#16e main.c:610
+   AddScreen(argv=#ff37fec, argc=#1, pfnInit=#23bc) main.c:531
+       called from InitOutput+#16 gnot.c:924
+           AddScreen.i/          #0
+           AddScreen.pScreen/    #80db0
+   InitOutput(argv=#ff37fec, argc=#1, si=#72cd4) gnot.c:920
+       called from main+#1e2 main.c:227
+   main(argc=#1, argv=#ff37fec) main.c:137 called from _main+#1e
+       plan968020/MAIN.s:8
+           main.alwaysCheckForInput/       #0
+           main.i/    #80
+   _main(inargv=#ff37ff6, inargc=#1) plan968020/MAIN.s:1 called from #1
+</pre>
+The command<code> $c </code>(lower case<code> c</code>) omits the
+local variables.&#160;<tt> </tt>
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+The compiler does not place in the executable information describing
+the types of variables, but a compile&#173;time flag
+provides crude support for symbolic debugging.&#160;<tt> </tt>
+The<code> -s </code>flag to the compiler suppresses
+code generation and identifies a structure or union in the
+program whose layout is to be printed on standard
+output.&#160;<tt> </tt>
+The command<code> dbfmt </code>translates this output
+into<code> db </code>commands to display the data structure.&#160;<tt> </tt>
+The easiest way to use this feature is to put a rule in the mkfile:
+<pre>
+   %.db: main.$O
+   $CC -s$stem main.c | dbfmt &gt; $stem.db
+</pre>Making<code> Dir.db </code>for example will produce a file by
+that name containing commands to print the contents
+of a<code> struct Dir </code>(a type in<code> &lt;libc.h&gt; </code>).&#160;<tt> </tt>
+The<code> $&lt; </code>command of<code> db </code>will
+read the file as commands.&#160;<tt> </tt>
+For example,
+<pre>
+   main.dirbuf$&lt;Dir.db
+</pre>
+will format the contents of<code> main</code>'s local
+variable<code> dirbuf</code>.&#160;<tt> </tt>
+These format files can of course be edited to
+improve the output.&#160;<tt> </tt>
+
+<p>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+For more information, see the
+manual page.&#160;<tt> </tt>
+<hr>
+This document is based on the PostScript file
+02comp.ps from the plan 9 manual set.&#160;<tt> </tt>
+The papers are copyrighted by AT&amp;T, are unpublished,
+and not for publication.&#160;<tt> </tt>(Consequently, this
+document should not be considered a publication either.)&#160;<tt> </tt>
+Markup, etc. by jutta@pobox.com.
+</body>
+</html>

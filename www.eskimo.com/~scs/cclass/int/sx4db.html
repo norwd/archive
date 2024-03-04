@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>18.2.4: The Comma Operator</title>
+<link href="sx4cb.html" rev=precedes>
+<link href="sx4eb.html" rel=precedes>
+<link href="sx4b.html" rev=subdocument>
+</head>
+<body>
+<H3>18.2.4: The Comma Operator</H3>
+
+<p>Once in a while,
+you find yourself in a situation
+in which C expects a single expression,
+but you have two things you want to say.
+The most common
+(and in fact the only common)
+example is
+in a
+<TT>for</TT> loop,
+specifically
+the first and third controlling expressions.
+What if
+(for example)
+you want to have a loop
+in which <TT>i</TT> counts up from 0 to 10
+at the same time that <TT>j</TT> is counting down from 10 to 0?
+You could manipulate <TT>i</TT> in the loop header
+and <TT>j</TT> ``by hand'':
+<pre>
+	j = 10;
+	for(i = 0; i &lt; 10; i++)
+		{
+		<I>... rest of loop ...</I>
+		j--;
+		}
+</pre>
+but here it's harder to see
+the parallel nature of <TT>i</TT> and <TT>j</TT>,
+and it also turns out that this won't work right
+if the loop contains a <TT>continue</TT> statement.
+(A <TT>continue</TT> would jump back to the top of the loop,
+and <TT>i</TT> would be incremented
+but <TT>j</TT> would <em>not</em> be decremented.)
+You could compute <TT>j</TT> in terms of <TT>i</TT>:
+<pre>
+	for(i = 0; i &lt; 10; i++)
+		{
+		j = 10 - i;
+		<I>... rest of loop ...</I>
+		}
+</pre>
+but this also makes <TT>j</TT> needlessly subservient.
+
+The usual way to write this loop in C would be
+<pre>
+	for(i = 0, j = 10; i &lt; 10; i++, j--)
+		{
+		<I>... rest of loop ...</I>
+		}
+</pre>
+Here, the first (initialization) expression is
+<pre>
+	i = 0, j = 10
+</pre>
+The comma is the <dfn>comma operator</dfn>,
+which simply evaluates the first subexpression <TT>i = 0</TT>,
+then the second <TT>j = 10</TT>.
+The third controlling expression,
+<pre>
+	i++, j--
+</pre>
+also contains a comma operator,
+and again,
+performs first <TT>i++</TT> and then <TT>j--</TT>.
+</p><p>Precisely stated,
+the meaning of the comma operator in the general expression
+<pre>
+	<I>e1</I> , <I>e2</I>
+</pre>
+is ``evaluate the subexpression <I>e1</I>, then evaluate <I>e2</I>;
+the value of the expression is the value of <I>e2</I>.''
+Therefore,
+<I>e1</I> had better involve an assignment
+or an increment <TT>++</TT> or decrement <TT>--</TT>
+or function call
+or some other kind of <dfn>side effect</dfn>,
+because otherwise it would calculate a value which would be discarded.
+</p><p>There's hardly any reason to use a comma operator
+anywhere other than
+in the first and third controlling expressions of a <TT>for</TT> loop,
+and in fact most of the commas you see in C programs
+are <em>not</em> comma operators.
+In particular,
+the commas between the arguments in a function call
+are not comma operators;
+they are just punctuation
+which separate several argument expressions.
+It's pretty easy to see that they
+cannot be comma operators,
+otherwise in a call like
+<pre>
+	printf("Hello, %s!\n", "world");
+</pre>
+the action would be ``evaluate the string <TT>"Hello, %s!\n"</TT>,
+discard it,
+and pass only the string <TT>"world"</TT> to <TT>printf</TT>.''
+This is of course <em>not</em> what we want;
+we expect both strings to be passed to <TT>printf</TT>
+as two separate arguments
+(which is, of course, what happens).
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx4cb.html" rev=precedes>prev</a>
+<a href="sx4eb.html" rel=precedes>next</a>
+<a href="sx4b.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1996-1999
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

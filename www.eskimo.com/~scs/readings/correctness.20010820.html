@@ -1,0 +1,125 @@
+<html>
+<head>
+<title>Testing and Standards conformance</title>
+<!-- from &lt;9lq07u$clm$1@eskinews.eskimo.com&gt; -->
+</head>
+<body>
+<h1>Testing and Standards conformance</h1>
+<p>
+[This essay was posted to comp.lang.c on 2001-08-21, in the midst of
+ a thread about the relative importance of standards conformance,
+and specifically, whether writing code which conformed to a standard
+resulted in useful guarantees about the code's eventual performance,
+as opposed to other assurances about the program's performance,
+such as, for example, those assurances which might be arrived at by testing.
+Someone had asked, "if testing cannot convince you that something
+is ready to ship, what can?", and this was my reply.]
+<p>
+[What can convince you that something is ready to ship?]
+The knowledge that you wrote the code carefully, where one
+important component of "writing carefully" is that you believe it
+works for the right reasons.  And, of course, one key component
+of "works for the right reasons" is in turn the knowledge that
+you've availed yourself of as many actual guarantees about
+behavior, such as the dictates of an International Standard,
+as you can get your hands on.
+<p>
+Different people have different definitions of "ready to ship",
+but mere testing absolutely does not convince me that a piece of
+code is bug-free.  Testing proves only that the code passes the
+test cases which have so far been defined, and then only when
+the code is run in the same environment as used during testing.
+If you throw some coverage analysis into the mix, you can
+convince yourself that you've at least tested every (simple)
+path through the code, but you still can't be sure that your
+suite of test cases is complete, or that the code won't break
+tomorrow when some aspect of its environment changes.
+<p>
+I'm not being a paranoid kneejerker here and talking about <TT>void&nbsp;main()</TT>,
+although I am talking about things <em>like</em> <TT>void&nbsp;main()</TT>,
+namely things that the original programmer imagines will work,
+or that do actually seem to work, but that are not guaranteed to
+work.  Unfortunately, many programmers are satisfied with "seems
+to work", and they imagine that testing will catch any remaining
+bugs.  Perhaps worse, the more rigorous an organization's test
+procedures are, the more cavalier a programmer may think he can
+be in this regard, imagining that any demented hackery he coughs
+up is "correct" as long as it somehow passes the test suite.
+But this is a dangerous attitude which leads rapidly to a
+precarious situation, because of course there are lots and lots
+of ways (probably too many, but that's another story) that code
+can "work" by pure accident.  (Many of these ways involve the
+dread specter of "undefined behavior", though there are plenty
+of others.)
+<p>
+Me, I have to admit to being pretty cavalier in the other
+direction.  Others here have talked about the absolute
+necessity of rerunning a complete, exhaustive test suite
+whenever the tiniest change is made to a program, and I think
+that's madness.  For code that I'm in control of, that I know
+has been written properly, I'd be perfectly comfortable shipping
+a partially-tested release, where the partial tests covered only
+those parts of the code which have changed since the last release
+(or since the last full test pass).  Or, if I can't always be
+"perfectly comfortable" in this mode, I can at least be as
+comfortable as I would be even if a complete test pass had
+been run, because for well-written code, the chances that an
+unintended interaction has crept in (i.e. which a partial test
+won't catch) are no higher than the chances that there's some
+lurking bug which the allegedly comprehensive test suite is not
+(and has in fact never been) sensitive to at all.
+<p>
+To be honest, Mark, I agree with you that the narrow issue of
+<TT>void&nbsp;main()</TT> isn't as big a deal as its treatment in comp.lang.c
+might suggest.  In fact, for many compilers, you could probably
+convince yourself both that <TT>void&nbsp;main()</TT> truly doesn't matter,
+and that a change from <TT>void&nbsp;main()</TT> to <TT>int&nbsp;main()</TT> hasn't changed
+anything (and therefore doesn't mandate a complete test pass),
+by doing a simple binary compare of the resulting object files --
+they're likely to be identical.  But I also agree, very very
+strongly, that <TT>void&nbsp;main()</TT> is a useful and alarmingly accurate
+litmus test when it comes to divining people's attitudes about
+careful, correct, responsible programming.
+<p>
+The exhaustive testing we in this industry believe we have to do 
+is a crutch to cover up the fact that the rest of our development 
+practices are so embarrassingly shoddy.  Dann Corbit opined that 
+it's criminally negligent not to run a complete test pass after 
+changing <TT>void&nbsp;main()</TT> to <TT>int&nbsp;main()</TT>, but what I think is 
+criminally negligent is to have been so unaware of or cavalier 
+about the relevant Standards as to have written <TT>void&nbsp;main()</TT> in 
+the first place.  (Read that sentence carefully: I did not say 
+that writing <TT>void&nbsp;main()</TT> was criminally negligent, I said that 
+being unaware of or cavalier about the Standard is.)
+<p>
+There aren't a lot of guarantees in our industry; much of
+what we deal with is empirical and arbitrary.  But we should
+be appreciative, if not jealously guarding, of what few
+guarantees we do have, such as the International Standards which
+define the programming languages we're using.  Me, I'm not a
+Standard-thumping fundamentalist who worships at the altar of
+X3J11 because I'm an anal-retentive dweeb who loves pouncing
+on people who innocently post code containing <TT>void&nbsp;main()</TT> to
+comp.lang.c; I'm a Standard-thumping fundamentalist who worships
+at the altar of X3J11 because it gives me eminently useful
+guarantees about the programs I write and helps me ensure that
+they'll work correctly next week and next month and next year,
+in environments I haven't heard of or can't imagine or that
+haven't been invented yet, and without continual hands-on
+bugfixing and coddling by me.  I like code I can write once and
+forget about; I'd like to be working on new and different and
+more interesting projects next week and next month and next year.
+Why write something that just happens to work today, when it
+might break and need fixing tomorrow, when there's an
+equally-easy alternative which is guaranteed to work?  And even
+if you don't, yourself, write code which "just happens to work",
+why condone the practice in others, and especially when you may
+be the one stuck picking up the pieces later?
+</p>
+<address>
+<a href="../index.html">Steve Summit</a>
+<br>
+<a href="mailto:scs@eskimo.com">scs@eskimo.com</a>
+</address>
+</body>
+</html>

@@ -1,0 +1,223 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>20.2 Nested Header Files</title>
+<link href="sx6a.html" rev=precedes>
+<link href="sx7.html" rel=precedes>
+<link href="sx6.html" rev=subdocument>
+</head>
+<body>
+<H2>20.2 Nested Header Files</H2>
+
+<p>Suppose you have written a little set of functions
+which you expect that other parts of your program
+(or other parts of <em>other</em> people's programs)
+will call.
+And, so that it will be easier for you
+(and them)
+to call the functions correctly,
+suppose that you have written a header file
+containing external prototype declarations for the functions.
+And,
+suppose that the prototypes look like this:
+<pre>
+	extern int f1(int);
+	extern double f2(int, double);
+	extern int f3(int, FILE *);
+</pre>
+You might put these three declarations in a file called <TT>funcs.h</TT>.
+</p><p>For now,
+we don't need to worry about
+what these three functions
+might
+do,
+other than
+to notice
+that <TT>f3</TT> obviously reads from or writes to
+a <TT>FILE *</TT> stdio stream.
+</p><p>Now, suppose that you have a source file
+containing a function which calls <TT>f1</TT> and/or <TT>f2</TT>.
+At the top of that source file,
+you would put the line
+<pre>
+	#include "funcs.h"
+</pre>
+However,
+if you were unlucky,
+the compiler would get down to the line
+<pre>
+	extern int f3(int, FILE *);
+</pre>
+within <TT>funcs.h</TT> and complain,
+because it would not know what a <TT>FILE</TT> is
+and so would not know how to think about
+a function that accepts a pointer to one.
+If the calling program
+(that is, the source file that included <TT>"funcs.h"</TT>)
+didn't call <TT>f3</TT> or <TT>printf</TT> or <TT>fopen</TT>
+or any of the other stdio functions,
+it would have no reason to include <TT>&lt;stdio.h&gt;</TT>,
+and <TT>FILE</TT> would remain undefined.
+(If, on the other hand,
+the source file in question did happen to include <TT>&lt;stdio.h&gt;</TT>,
+and if it included it before it included <TT>"funcs.h"</TT>,
+there would be no problem.)
+</p><p>What's the right thing to do here?
+We could say that anyone who included <TT>"funcs.h"</TT>
+always had to include <TT>&lt;stdio.h&gt;</TT>, first.
+But you can think of header files a little bit like you think of functions:
+it's nice if they're ``black boxes'',
+if you don't have to worry about what's inside them,
+if you don't have to worry about including them in a certain order.
+</p><p>Another way to think about the situation is this:
+since the prototype for <TT>f3</TT> inside of <TT>funcs.h</TT>
+needs stdio.h,
+maybe we should put the line
+<pre>
+	#include &lt;stdio.h&gt;
+</pre>
+right there at the top of <TT>funcs.h</TT>!
+Is that legal?
+Can the preprocessor handle
+seeing an <TT>#include</TT> directive
+when it's already in the middle
+of processing another <TT>#include</TT> directive?
+The answer is that yes, it can;
+header files
+(that is, <TT>#include</TT> directives)
+may be nested.
+(They may be nested up to a depth of at least 8,
+although many compilers probably allow more.)
+Once <TT>funcs.h</TT> takes care of its own needs,
+by including <TT>&lt;stdio.h&gt;</TT> itself,
+the eventual top-level file
+(that is, the one you compile,
+the one that includes <TT>"funcs.h"</TT>)
+won't get error messages about <TT>FILE</TT> being undefined,
+and won't have to worry about
+whether it includes <TT>&lt;stdio.h&gt;</TT> or not.
+</p><p>Or will it?
+What if the top-level source file
+<em>does</em> include <TT>&lt;stdio.h&gt;</TT>?
+Now <TT>&lt;stdio.h&gt;</TT> will end up being processed twice,
+once when the top-level source file asks for it,
+and once when <TT>funcs.h</TT> asks for it.
+Will everything work correctly
+if <TT>&lt;stdio.h&gt;</TT> is included twice?
+Again, the answer is yes;
+the Standard requires that the standard header files
+protect themselves against multiple inclusion.
+</p><p>It's good that the standard header files are protected in this way.
+But how do they protect themselves?
+Suppose that we'd like to protect our own header files
+(such as <TT>funcs.h</TT>)
+in the same sort of way.
+How would we do it?
+</p><p>Here's the usual trick.
+We rewrite <TT>funcs.h</TT> like this:
+<pre>
+	#ifndef FUNCS_H
+	#define FUNCS_H
+
+	#include &lt;stdio.h&gt;
+
+	extern int f1(int);
+	extern double f2(int, double);
+	extern int f3(int, FILE *);
+
+	#endif
+</pre>
+All we've done is
+added the <TT>#ifndef</TT> and <TT>#define</TT> lines at the top,
+and the <TT>#endif</TT> line at the bottom.
+(The macro name <TT>FUNCS_H</TT> doesn't really mean anything,
+it's just one we don't
+and won't
+use anywhere else,
+so we
+use the convention
+of having
+its name mimic the name of the header file we're protecting.)
+Now, here's what happens:
+the first time the compiler processes <TT>funcs.h</TT>,
+it comes across the line
+<pre>
+	#ifndef FUNCS_H
+</pre>
+and <TT>FUNCS_H</TT> is not defined,
+so it proceeds.
+The very next thing it does
+is to <TT>#define</TT> the macro <TT>FUNCS_H</TT>
+(with a replacement text of nothing, but that's okay,
+because we're never going to expand <TT>FUNCS_H</TT>,
+just test whether it's defined or not).
+Then it processes the rest of <TT>funcs.h</TT>, as usual.
+But,
+if that same run of the compiler ever
+comes across <TT>funcs.h</TT> for a second time,
+when it comes to the first <TT>#ifndef FUNCS_H</TT> line again,
+<TT>FUNCS_H</TT> <em>will</em> at that point be defined,
+so the preprocessor will skip down to the <TT>#endif</TT> line,
+which will skip the whole header file.
+Nothing in the file will be processed a second time.
+</p><p>(You might wonder what would tend to go wrong
+if a header file were processed multiple times.
+It's okay to issue
+multiple external declarations for the same function or global variable,
+as long as they're all consistent,
+so those wouldn't cause any problems.
+And the preprocessor also isn't supposed to complain
+if you <TT>#define</TT> a macro which is already defined,
+as long as it has the same value,
+that is,
+the same replacement text.
+But the compiler <em>will</em> complain
+if you try to define a structure type you've already defined,
+or a typedef you've already defined
+(see section 18.1.6),
+etc.
+So the protection against multiple inclusion
+is important in the general case.)
+</p><p>When header files are protected against multiple inclusion
+by the <TT>#ifndef</TT> trick,
+then header files can include other files
+to get the declarations and definitions they need,
+and no errors will arise because one file forgot to
+(or didn't know that it had to)
+include one header before another,
+and no multiple-definition errors will arise because of multiple inclusion.
+I recommend this technique.
+</p><p>In closing, though,
+I might mention that this technique is
+somewhat controversial.
+When header files include other header files,
+it can be hard to track down the chain of who includes what
+and who defines what,
+if for some reason you need to know.
+Therefore,
+some style guides disallow nested header files.
+(I don't know how these style guides recommend that you
+address the issue of having to require
+that certain files be included before others.)
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx6a.html" rev=precedes>prev</a>
+<a href="sx7.html" rel=precedes>next</a>
+<a href="sx6.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1996-1999
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-03 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+<!-- patched 2023-04-13 per &lt;AS8PR03MB97955A33C62602B2C88255BFBD939@AS8PR03MB9795.eurprd03.prod.outlook.com&gt; -->
+</p>
+</body>
+</html>

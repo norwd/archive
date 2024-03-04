@@ -1,0 +1,258 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>16.6: Formatted Input (<TT>scanf</TT>)</title>
+<link href="sx2e.html" rev=precedes>
+<link href="sx2g.html" rel=precedes>
+<link href="sx2.html" rev=subdocument>
+</head>
+<body>
+<H2>16.6: Formatted Input (<TT>scanf</TT>)</H2>
+
+<p>Just as <TT>putchar</TT> has its <TT>getchar</TT>
+and <TT>fputs</TT> has its <TT>fgets</TT>,
+there's an input analog to <TT>printf</TT>,
+namely <TT>scanf</TT>.
+<TT>scanf</TT> reads characters
+from standard input,
+under control of a format string,
+perhaps converting some components of the string
+and storing them into variables.
+For example,
+just as you could use the call
+<pre>
+	printf("(%d, %d)", x, y);
+</pre>
+to print two integer values and some surrounding punctuation,
+you could use the call
+<pre>
+	scanf("(%d, %d)", &amp;x, &amp;y);
+</pre>
+to attempt to extract two integer values
+from some input containing similar punctuation.
+</p><p><TT>scanf</TT> interprets a format string,
+much like <TT>printf</TT>,
+with the first difference being
+that <TT>scanf</TT> attempts to read characters
+and match them against the format string,
+rather than printing under control of the format string.
+For each ordinary character in the format string,
+<TT>scanf</TT> expects to see that character on the input;
+if not, it fails.
+For each format specifier in the input string,
+<TT>scanf</TT> attempts to match and convert
+a string appropriate to the format specifier,
+storing the converted result into a variable
+pointed to by the corresponding argument.
+If it can't find any characters matching the format specifier,
+it fails.
+</p><p>Since <TT>scanf</TT> ``returns'' many values
+(one for each format specifier in the format string),
+it must do so using pointers which the caller passes.
+For each value to be converted,
+the caller passes a pointer to the variable
+(or other location)
+where <TT>scanf</TT> should write the converted value.
+All arguments passed to <TT>scanf</TT> must be pointers.
+</p><p>The format strings used by <TT>scanf</TT>
+are similar to those used by <TT>printf</TT>,
+but there are several differences.
+</p><p>The optional <I>width</I>
+gives the maximum number of characters to read
+while performing the conversion requested by a particular format specifier.
+(If there are many adjacent characters which could satisfy
+a request--many
+digits for one of the numeric conversions,
+or many characters for <TT>%s</TT>
+conversion--the
+<I>width</I> keeps <TT>scanf</TT> from gobbling all of them up at once.)
+</p><p>There is no equivalent to the <I>precision</I> modifier.
+</p><p>If the <TT>*</TT> flag appears,
+it indicates that the converted value should be discarded,
+not written to a location
+pointed to by one
+
+of the pointers in the argument list.
+(In other words,
+there is no corresponding argument.)
+Since <TT>*</TT> is usurped for this function,
+there is no way to use a variable field width
+from the argument list
+with <TT>scanf</TT>.
+There are no other <I>flags</I>.
+</p><p>The <I>modifier</I> characters are more significant.
+An <TT>h</TT> indicates that the corresponding integer pointer argument
+(for <TT>%d</TT>, <TT>%u</TT>, <TT>%o</TT>, or <TT>%x</TT>)
+is a <TT>short int *</TT> or <TT>unsigned short int *</TT>.
+An <TT>l</TT> indicates that the corresponding integer pointer argument
+(for <TT>%d</TT>, <TT>%u</TT>, <TT>%o</TT>, or <TT>%x</TT>)
+is a <TT>long int *</TT> or
+<TT>unsigned long int *</TT>,
+or that the floating-point pointer argument
+(for <TT>%e</TT>, <TT>%f</TT>, or <TT>%g</TT>)
+is a <TT>double *</TT> rather than a <TT>float *</TT>.
+(Similarly,
+an <TT>L</TT> indicates a <TT>long double *</TT>.)
+</p><p>The <TT>%c</TT> format will read more than one character
+if an explicit <I>width</I> greater than 1 is specified.
+The corresponding argument must be a pointer to enough space
+to hold all the characters read.
+</p><p>The <TT>%e</TT>, <TT>%f</TT>, and <TT>%g</TT> formats
+all read strings in either scientific notation
+or conventional decimal fraction <TT>m.n</TT> notation.
+(In other words,
+the three formats
+act
+just
+the same.)
+However,
+they assume a <TT>float *</TT> argument
+unless the <TT>l</TT> modifier appears,
+in which case they expect a <TT>double *</TT>.
+(This is in contrast to <TT>printf</TT>,
+which accepts either <TT>float</TT> or <TT>double</TT> arguments
+for <TT>%e</TT>, <TT>%f</TT>, and <TT>%g</TT>,
+due to the default argument promotions.)
+</p><p>The <TT>%i</TT> format
+will read a number in decimal, octal, or hexadecimal,
+taking a leading <TT>0</TT> to indicate octal
+and a leading <TT>0x</TT> (or <TT>0X</TT>) to indicate hexadecimal,
+i.e. the same rules as used by C constants.
+</p><p>The <TT>%n</TT> format causes the number of characters read so far
+(by this call to <TT>scanf</TT>)
+to be stored in the integer pointed to by the corresponding argument.
+</p><p>The <TT>%s</TT> format will read a string,
+up to the next whitespace character,
+and copy the string,
+terminated by a <TT>\0</TT>,
+to the corresponding argument,
+which must be a <TT>char *</TT>.
+The caller must ensure (perhaps by using an explicit <I>width</I>)
+that there is enough space to hold the received characters.
+</p><p><TT>scanf</TT> has a special format specifier <TT>%[</TT>...<TT>]</TT>,
+which matches any string composed of characters specified in the <TT>[]</TT>.
+For example,
+<TT>%[abc]</TT>
+would match any string composed of a's, b's, and c's.
+The corresponding argument is a <TT>char *</TT>;
+the matched string is written to the location pointed to,
+followed by a <TT>\0</TT>.
+The caller must ensure
+(perhaps by using an explicit <I>width</I>)
+that there is enough space to hold the received characters.
+A second form,
+<TT>%[^</TT>...<TT>]</TT>,
+matches a string of characters <em>not</em> found in the set.
+For example,
+<TT>scanf("(%[^)])", s)</TT> reads, into the string <TT>s</TT>,
+a string of characters (possibly including whitespace)
+from an input in which the string appears enclosed in parentheses.
+It may also be possible to specify ranges of characters
+(e.g. <TT>%[a-z]</TT>, <TT>%[0-9]</TT>, etc.),
+but these are not as portable.
+</p><p>With the exception of <TT>%c</TT>, <TT>%n</TT>, and <TT>%[</TT>,
+all of the conversion specifiers skip any leading whitespace
+(spaces, tabs, or newlines)
+which might precede the value or string converted.
+Also,
+any whitespace character in the format string
+matches any number of whitespace characters in the input.
+Therefore,
+the format <TT>"%d %d"</TT>
+would match the input <TT>"12 34"</TT>
+or <TT>"12&nbsp;&nbsp;34"</TT>
+or <TT>"12\t34"</TT>.
+However,
+the format <TT>"%d%d"</TT> would match all of these inputs as well,
+since the second <TT>%d</TT> first
+
+scans past any whitespace preceding the <TT>34</TT>.
+</p><p><TT>scanf</TT> returns the number of items
+it successfully converts and stores.
+It will return a number less than expected
+(less than the number of format specifiers not containing <TT>*</TT>,
+or less than the number of corresponding pointer arguments)
+if the conversion fails at any point,
+and it will leave any unrecognized characters
+(i.e. the ones that caused the last match to fail)
+waiting in the input for next time.
+<TT>scanf</TT> returns <TT>EOF</TT>
+if it encounters end-of-file before converting anything.
+</p><p>If you want to read characters from an arbitrary stream,
+you can use <TT>fscanf</TT>,
+which takes an initial <TT>FILE *</TT> argument.
+</p><p>You can scan and convert characters from a string
+(rather than from a stream)
+using <TT>sscanf</TT>.
+For example,
+<pre>
+	int x, y;
+	sscanf("12 34", "%d %d", &amp;x, &amp;y);
+</pre>
+would place 12 in <TT>x</TT> and 34 in <TT>y</TT>.
+</p><p><TT>scanf</TT> and <TT>fscanf</TT> are seductively useful,
+but they have a number of drawbacks in practice.
+They seem to make it very easy to,
+say,
+prompt the user for a number:
+<pre>
+	int x;
+	printf("Type a number:\n");
+	scanf("%d", &amp;x);
+</pre>
+But what happens if the user fumbles,
+and types something other than a number?
+Even if the code checks <TT>scanf</TT>'s return value,
+and prompts the user again if <TT>scanf</TT> returns 0,
+the non-numeric input remains on the input,
+and will be encountered by the next call to <TT>scanf</TT>
+unless some other steps are taken.
+(That is,
+<TT>scanf</TT> will rediscover the user's old, bad input
+before it gets to any new input.)
+It's also easy to write things like
+<pre>
+	scanf("%d\n", &amp;x);
+</pre>
+but this code does <em>not</em> work as intended;
+the <TT>\n</TT> in the format string is a whitespace character,
+which asks <TT>scanf</TT> to discard one or more whitespace characters,
+so it will <em>keep reading</em> characters
+as long as they are whitespace characters,
+that is,
+it will read characters
+until it finds something that is not a whitespace character.
+It won't read that eventual non-whitespace character once it finds it,
+but in the process of looking for it
+it will seem to jam your program,
+since the call to <TT>scanf</TT> won't return
+right after the user types a number.
+
+</p><p>Therefore,
+it's much better to read interactive user input
+a line at a time,
+and then use functions like <TT>atoi</TT>
+(or perhaps <TT>sscanf</TT>)
+to interpret the line that the user typed.
+
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx2e.html" rev=precedes>prev</a>
+<a href="sx2g.html" rel=precedes>next</a>
+<a href="sx2.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1996-1999
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-03 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

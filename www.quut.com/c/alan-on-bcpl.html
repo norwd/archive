@@ -1,0 +1,122 @@
+<html>
+<head>
+<title>Alan Watson on BCPL</title>
+<link rel="made" rev="made" href="mailto:jutta@pobox.com">
+</head><body>
+BCPL to B to C: other articles by
+<a href="msb-on-b.html">Mark Brader</a>,
+<a href="clive-on-history.html">Clive Feather</a>, and
+<a href="dmr-on-histories.html">Dennis Ritchie</a>
+<hr>
+From: alan@oldp.astro.wisc.edu (Alan Watson)<br>
+Newsgroups: comp.lang.c<br>
+Subject: Re: int main() (was SUMMARY: CW poll: exit vs. return)<br>
+Date: 6 Sep 1993 06:50:21 GMT<br>
+Organization: University of Wisconsin - Astronomy Department<br>
+Message-ID: <26emjd$jhe@news.doit.wisc.edu><br>
+<p>
+In article &lt;26doorINNqvl@umbc7.umbc.edu&gt; schlein@umbc.edu (Jonas Schlein) wrote:<br>
+&gt;Tell me more about this predecessor language. From the rest of the post which<br>
+&gt;was deleted it seems that this 'B' was even worse than old-style C on<br>
+&gt;type-checking.<br>
+<p>
+<a name="cpl">During</a> the early 1960s, <i>CPL</i> (Cambridge, or Combined, Programming
+Language) which was jointly designed by people from the Computer Lab at
+Cambridge University and people from London University.&#160;<tt> </tt>It was
+somewhat like Ada in scope, supposedly all things to all problems, and
+I'm not sure it was ever fully implemented.
+<p>
+<a name="bcpl-main">
+In the late 1960s, Martin Richards, while at Cambridge, implemented a
+</a>
+simplified version of CPL called Basic CPL or <i>BCPL</i> on the
+370.&#160;<tt> </tt>Objects are typeless in BCPL, in as much as their type
+is inferred from the context in which they are used (i.e., in a redirection
+context an object is assumed to be an address, and in an arithmetic it
+is assumed to be a signed integer).&#160;<tt> </tt>BCPL is similar to C
+in that is all arguments are passed by value, although the language
+tokens are much more wordy than C and is has local functions.&#160;<tt> </tt>
+Character escapes in BCPL strings are denoted by, for
+example, &quot;<code>*N</code>&quot; for newline.&#160;<tt> </tt>
+<p>
+As an illustration, the following programs prints the factorials of
+the first 10 natural numbers:
+<p>
+<pre>
+   // FACTORIAL
+   GET &quot;LIBHDR&quot;
+   LET START () BE $(
+      LET F(N) = N=0 -&gt; 1, N*F(N-1)
+      FOR I = 1 TO 10 DO WRITEF(&quot;F(%N), = %N*N&quot;, I, F(I))
+      FINISH 
+   $)
+</pre>
+<p>
+Translated into very old C, this is:
+<p>
+<pre>
+   /* Factorial */
+   #include &lt;stdio.h&gt;
+   static f(n) /* in the BCPL version, this was local to main */
+   {
+      return n == 0 ? 1 : n*f(n-1);
+   }
+   main()
+   {
+      auto i;
+      for (i = 1; i &lt;= 10; i++)
+	 printf(&quot;f(%d), = %d\n&quot;, i, f(i));
+      return 0;
+   }
+</pre>
+<p>
+Note that comments in BCPL begin with <code>//</code> and end with newline,
+like those in C++.&#160;<tt> </tt>Further trivia is that on IBM mainframes
+(or at least those running Phoenix),<br>&quot;<code>/*</code>&quot; serves
+the same purpose as ctrl-d on a Unix system -- it terminates input from
+the terminal.&#160;<tt> </tt>Was the adoption of this as a comment delimiter
+an inside joke by <a href="https://www.bell-labs.com/usr/dmr/www/index.html" name="dmr">Ritchie</a>?
+<p>
+<a name="the-book">
+BCPL is described in the book</a>&#160;<tt> </tt>`BCPL: The Language and Its Compiler'&#160;<tt> </tt>by
+Martin Richards and Colin Whitby-Strevens, which also includes the full
+source code for a portable compiler for BCPL.&#160;<tt> </tt>The book is interesting
+not just from the point of view of the language, but also because it
+provides a view of compiler technology and approaches to program
+portability in the late 60s and early 70s.  I would recommend checking
+this book out of the library.&#160;<tt> </tt>
+<p>
+BCPL was in use in Cambridge for years.&#160;<tt> </tt>Much of the software for the
+Phoenix system (layered over MVT and then MVS on the IBM 3081s and
+3084s at Cambridge and London) was written in BCPL (most of the rest
+was in assembler, although Algol68 was used for a mailer and the
+infamous job scheduler -- I think there must be something in the water
+in Cambridge).&#160;<tt> </tt>BCPL was still in use as recently as the late 1980s,
+when it was used to implement a portable full-screen editor.&#160;<tt> </tt>In the
+late 1980s, the Computer Lab obtained a C compiler for the 370 and
+wrote a C library for MVS, and C usurped BCPL even in its home
+environment.
+<p>
+At some point early in BCPL's life, Richards brought his compiler over
+the pond, I believe to either MIT or Bell Labs.&#160;<tt> </tt>Ritchie obviously
+spent some time studying the language (he is given joint credit for a
+summary of the language, which forms the basis for an appendix to
+Richards and Whitby-Strevens), and was impressed by the concept of a
+portable, high-level language.&#160;<tt> </tt>He designed and implemented B, which
+has been described as a typeless version of C.
+<p>
+And here I'm going to stop.&#160;<tt> </tt><a href="msb-on-b.html#after-bcpl">Someone who knows more about B can
+continue</a>.&#160;<tt> </tt>In particular, I am interested in <a href="dmr-on-histories.html#why-reform">why Ritchie chose to
+reform BCPL into B</a> -- the semantics seem very similar (other than scope
+and linkage issues), but the syntax and tokens are very different.&#160;<tt> </tt>
+Does it come down to the speed of terminal technology at that time?&#160;<tt> </tt>I
+think the BCPL grammar and lexical structure is a mess, but I came to
+it after learning C, so I am not really in a position to give an
+unbiased opinion.
+<hr>
+BCPL to B to C: other articles by
+<a href="msb-on-b.html">Mark Brader</a>,
+<a href="clive-on-history.html">Clive Feather</a>, and
+<a href="dmr-on-histories.html">Dennis Ritchie</a>
+</body>
+</html>

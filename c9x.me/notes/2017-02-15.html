@@ -1,0 +1,61 @@
+<!doctype html>
+<meta name=viewport content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../assets/css/simple.css" type="text/css" />
+
+<link rel="stylesheet" href="assets/notes.css" type="text/css"/>
+<title>Notes from 2017-02-15</title>
+<article>
+<h1><img id="logo" src="assets/logo.png" alt="">Notes</h1>
+<h3>2017-02-15</h3>
+
+<p>
+Undefined behavior in C is a common source
+of bugs, and sometimes, of funny ones.
+Here is my story about one.
+A few months ago I was working on a
+function that looked like this.
+</p>
+<pre>
+for (i=0; arr[i]!=0 &amp;&amp; i&lt;2; ++i) {
+	/* do some work */
+}
+</pre>
+<p>
+When my program was compiled without
+optimizations it would behave correctly,
+but turning optimizations on made it
+incorrect.  I was able to quickly
+pinpoint the above loop as the root of
+my issues, but the symptom of the bug
+was quite unusual: Stepping in the
+debugger revealed that the loop body was
+only executed once, when it should have
+been running twice!  Indeed, the array
+<code>arr</code> contained two non-zero values.
+</p>
+<p>
+After a little bit of head scratching,
+I eventually realized what the compiler
+was doing. The variable <code>arr</code> was declared
+as <code>int arr[2]</code>, so accessing its third
+element is undefined
+behavior.  Because of this, a valid
+program <em>cannot</em> access <code>arr[2]</code>;
+but if the loop body is run twice, the
+test condition <em>will</em> check <code>arr[2]!=0</code>
+at the end of the second iteration.  The
+consequence of this reasoning is that,
+assuming the input program is valid, the
+second loop iteration will not be run
+and can be gotten rid of!
+</p>
+<p>
+I thought this was quite a remarkable
+use of undefined behavior: Invalid array
+accesses do not happen in valid programs,
+so if the compiler can prove such access
+happens in a branch, it means that the
+branch is dead code.
+</p>
+</article>
+<!-- analytics free! -->

@@ -1,0 +1,120 @@
+<!doctype html>
+<meta name=viewport content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../assets/css/simple.css" type="text/css" />
+
+<link rel="stylesheet" href="assets/notes.css" type="text/css"/>
+<title>Notes from 2023-07-14</title>
+<article>
+<h1><img id="logo" src="assets/logo.png" alt="">Notes</h1>
+<h3>2023-07-14</h3>
+
+<p>
+It is folklore that, under some conditions,
+open-addressed hash tables with quadratic
+probing do not miss free slots. This note
+explains why with a proof.
+</p>
+<p>
+Let me break things down a little. With hash
+tables, the prime problem to solve when
+implementing insertion is conflicts: You are
+handed a key value pair (K₁,V₁) and, after
+hasing the key K₁, you realize that the table
+slot designated by the hash value is already
+filled with a binding (K₂,V₂). Chaining
+implementations will just cram the binding
+in the slot anyway, hence creating a bucket
+with more than one binding in a single
+table slot. Open-addressing implementations
+will instead go look for another slot.
+One obvious strategy for searching is to
+go look at the next slot, and the next one,
+and so on, potentially wrapping around when the
+last slot of the table is visited.
+Quadratic probing offers an alternative scheme:
+instead of scanning slot <code>h+i mod N</code> at the
+i-th step, it scans the slot <code>h+P(i) mod N</code>
+where <code>P</code> is a polynomial function of degree 2.
+This strategy helps with the clustering problem
+that linear probing may create.
+</p>
+<p>
+The polynomial <code>P</code> of interest to us here is
+<code>P(X) = (X + X²)/2</code>.
+The polynomial <code>P</code> outputs so-called
+triangular numbers (they can be stacked in a
+triangle shape), and the sequence <code>P(0)</code>, <code>P(1)</code>,
+<code>P(2)</code>, ... is easily computed:
+</p>
+<pre>
+p_i = 0;
+for (i=0; i&lt;N; i++) {
+	assert(p_i == (i + i*i)/2);
+ 	p_i += i;
+}
+</pre>
+<p>
+But, more importantly, if the table size is a
+power of 2, and there is a single free slot,
+quadratic probing will find it. It is not an
+obvious fact and I prove it below.
+</p>
+<p>
+Formally, we want to show that as <code>i</code> ranges
+over the interval <code>I=[0,2ⁿ)</code>, <code>h+P(i) mod 2ⁿ</code>
+ranges over <code>I</code> as well. Said differently, we
+want to show that the function mapping <code>x</code> to
+<code>h+P(x) mod 2ⁿ</code> is a bijection over <code>I</code>.
+Since <code>I</code> is finite, it is sufficent to show
+that the map is injective; that is, it maps
+different values of <code>I</code> to different values.
+</p>
+<p>
+To prove injectivity we consider <code>i</code> and <code>j</code> in <code>I</code>
+such that <code>h+P(i) mod 2ⁿ</code> = <code>h+P(j) mod 2ⁿ</code> and show
+that <code>i</code> must be equal to <code>j</code>. We first reason by
+equivalence:
+</p>
+<pre>
+   (h + P(i) mod 2ⁿ) = (h + P(j) mod 2ⁿ)
+⟺ (h + (i + i²)/2) - (h + (j + j²)/2) = k2ⁿ
+⟺ (i + i²) - (j + j²) = k2ⁿ⁺¹
+⟺ (i - j)(1 + i + j) = k2ⁿ⁺¹
+</pre>
+<p>
+Breaking the products on both sides we get that
+there must be three integers <code>k₁</code>, <code>k₂</code>, and <code>m</code>
+such that:
+</p>
+<pre>
+A := i - j     = k₁2ᵐ           with k = k₁k₂
+B := 1 + i + j = k₂2ⁿ⁺¹⁻ᵐ        and 0 ≤ m ≤ n + 1
+</pre>
+<p>
+We now consider three cases:
+</p>
+<ul>
+<li> If <code>m</code> is not <code>0</code> nor <code>n+1</code> then it must be that
+    both <code>A</code> and <code>B</code> are even. That is however impossible
+    because <code>B = 1 + 2j + A</code>, so when <code>A</code> is even, <code>B</code> is
+    odd, and vice versa.
+<li> If <code>m</code>  is <code>n+1</code>, we must then have <code>i - j = k₁2ⁿ⁺¹</code>,
+    but since <code>i</code> and <code>j</code> are in the interval <code>I</code>, <code>i - j</code>
+    is in <code>(-2ⁿ,2ⁿ)</code>, so <code>k₁</code> can only be zero and thus
+    <code>i</code> equals <code>j</code>.
+<li> If <code>m</code> is <code>0</code>, we again use a size argument. Since <code>i</code>
+    and <code>j</code> are in <code>I</code>, we have that <code>1 + i + j</code> is in
+    <code>(0,2ⁿ⁺¹-1)</code>. So <code>k₂</code> must be positive and less
+    than 1; these requirements prove that the present
+    case is impossible.
+</ul>
+<p>
+The only possible outcome for the case analysis
+is thus that <code>i</code> equals <code>j</code>. Unwinding everything, the
+map <code>h+P(x) mod 2ⁿ</code> is injective on <code>I</code>, so it is
+also bijective on <code>I</code>, so when <code>i</code> ranges from <code>0</code>
+to <code>2ⁿ-1</code>, the map ranges over all of <code>I</code>, and thus
+quadratic probing indeed vists all slots!
+</p>
+</article>
+<!-- analytics free! -->

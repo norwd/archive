@@ -1,0 +1,160 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>section 1.5.1: File Copying</title>
+<link href="sx4e.html" rev=precedes>
+<link href="sx4g.html" rel=precedes>
+<link href="sx4.html" rev=subdocument>
+</head>
+<body>
+<H2>section 1.5.1: File Copying</H2>
+
+page 16
+
+<p>Pay particular attention to the discussion of why the variable 
+to hold <TT>getchar</TT>'s return value is declared as an 
+<TT>int</TT> rather than a <TT>char</TT>.
+The distinction may not seem terribly significant
+now,
+but it is important.
+If you use a <TT>char</TT>, it may seem to work,
+but it may break down mysteriously later.
+Always remember to use an <TT>int</TT> for anything you assign 
+<TT>getchar</TT>'s return value to.
+</p><p>page 17
+</p><p>The line
+<pre>	while ((c = getchar()) != EOF)
+</pre>epitomizes the cryptic brevity which C is notorious for.
+You may find this terseness infuriating
+(and you're not alone!),
+and it can certainly be carried too far,
+but bear with me for a moment while I defend it.
+</p><p>The simple example on pages 16 and 17 illustrates the tradeoffs 
+well.
+We have four things to do:
+<OL><li>call <TT>getchar</TT>,
+<li>assign its return value to a variable,
+<li>test the return value against EOF,
+and
+<li>process the character
+(in this case, print it again).
+</OL>We can't eliminate any of these steps.
+We have to assign <TT>getchar</TT>'s value to a variable
+(we can't just use it directly)
+because we have to do two different things with it
+(test, and print).
+Therefore, compressing the assignment and test into the same line
+(as on page 17)
+is the only
+
+good
+way of avoiding two distinct calls to <TT>getchar</TT>
+(as on page 16).
+You may not agree that the compressed idiom is better for being 
+more compact or easier to read,
+but the fact that there is now only one call to 
+<TT>getchar</TT> <em>is</em> a real virtue.
+</p><p>In a tiny program like this,
+the repeated call to <TT>getchar</TT> isn't much of a problem.
+But in a real program,
+if the thing being read is at all complicated
+(not just a single character read with <TT>getchar</TT>),
+and if the processing is at all complicated
+(such that the input call before the loop and the input call 
+at the end of the loop become widely separated),
+and if the way that input is done is ever changed some day,
+it's just too likely that one of the input calls will get 
+changed but not the other.
+</p><p>(Also,
+note that when an assignment like
+<TT>c = getchar()</TT> appears within a larger expression,
+the surrounding expression receives the same value that is assigned.
+Using an assignment as a subexpression in this way
+is perfectly legal
+and quite common
+in C.)
+</p><p>When you run the character copying program,
+and it begins copying its input (your typing) to its output (your screen),
+you may find yourself wondering how to stop it.
+It stops when it receives end-of-file (EOF), but how do you send EOF?
+The answer depends on what kind of computer you're using.
+On Unix and Unix-related systems, it's almost always control-D.
+On MS-DOS machines, it's control-Z followed by the RETURN key.
+Under Think C on the Macintosh, it's control-D, just like Unix.
+On other systems, you may have to do some research to learn how to send EOF.
+</p><p>(Note, too, that
+the character you type to generate an end-of-file condition from the keyboard
+has nothing to do with the <TT>EOF</TT> value returned by <TT>getchar</TT>.
+The <TT>EOF</TT> value returned by <TT>getchar</TT> is a code
+indicating that the input system has detected an end-of-file condition,
+whether it's reading the keyboard or a file
+or a magnetic tape or a network connection or anything else.)
+</p><p>Another excellent thing to know when doing any kind of programming
+is how to terminate a runaway program.
+If a program is running forever waiting for input,
+you can usually stop it by sending it an end-of-file, as above,
+but if it's running forever <em>not</em> waiting for something
+(i.e. if it's in an infinite loop)
+you'll have to take more drastic measures.
+Under Unix, control-C will terminate the current program,
+almost no matter what.
+Under MS-DOS, control-C or control-BREAK will sometimes
+terminate the current program,
+but by default MS-DOS only checks for control-C when it's looking for input,
+so an infinite loop can be unkillable.
+There's a DOS command,
+I think it's
+<pre>	break on
+</pre>which tells DOS to look for control-C more often,
+and I recommend using this command if you're doing any programming.
+(If a program is in a really tight infinite loop under MS-DOS, 
+there can be no way of killing it short of rebooting.)
+On the Mac, try command-period or command-option-ESCAPE.
+</p><p>Finally, don't be disappointed
+(as I was)
+the first time you run
+the character copying program.
+You'll type a character, and see it on the screen right away,
+and assume it's your program working,
+but it's only your computer echoing every key you type,
+as it always does.
+When you hit RETURN,
+a full line of characters is made available to your program,
+which it reads all at once,
+and then copies to the screen
+(again).
+In other words, when you run this program,
+it will probably seem to echo the input a line at a time,
+rather than a character at a time.
+You may wonder how a program can read a character right away,
+without waiting for the user to hit RETURN.
+That's an excellent question,
+but unfortunately the answer is rather complicated,
+and
+beyond the scope of this introduction.
+(Among other things,
+how to read a character right away is one of the things that's 
+not defined by the C language,
+and it's not defined by any of the standard library functions, 
+either.
+How to do it depends on which operating system you're using.)
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx4e.html" rev=precedes>prev</a>
+<a href="sx4g.html" rel=precedes>next</a>
+<a href="sx4.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

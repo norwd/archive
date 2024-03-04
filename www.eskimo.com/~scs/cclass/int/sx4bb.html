@@ -1,0 +1,153 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>18.2.2: Cast Operators</title>
+<link href="sx4ab.html" rev=precedes>
+<link href="sx4cb.html" rel=precedes>
+<link href="sx4b.html" rev=subdocument>
+</head>
+<body>
+<H3>18.2.2: Cast Operators</H3>
+
+<p>[This section corresponds to the second half of K&amp;R Sec. 2.7]
+</p><p>Most of the time,
+C performs conversions between related types automatically.
+(See
+
+section 18.2.3
+for the complete story.)
+When you assign an <TT>int</TT> value to a <TT>float</TT> variable
+or vice versa,
+or perform calculations involving mixtures of arithmetic types,
+the types are converted automatically, as necessary.
+C even performs some pointer conversions automatically:
+<TT>malloc</TT> returns type <TT>void *</TT>
+(pointer-to-<TT>void</TT>),
+but a <TT>void *</TT> is automatically converted
+to whatever pointer type you assign
+(say)
+<TT>malloc</TT>'s return value to.
+</p><p>Occasionally, you need to request a type conversion explicitly.
+Consider the code
+<pre>
+	int i = 1, j = 2;
+	float f;
+	f = i / j;
+</pre>
+Recall that the division operator <TT>/</TT>
+results in an integer division,
+discarding the remainder,
+when both operands are integral.
+It performs a floating-point division,
+yielding a possibly fractional result,
+when one or both operands have floating-point types.
+What happens here?
+Both operands are <TT>int</TT>,
+but the result of the division is assigned to a <TT>float</TT>,
+which would be able to hold a fractional result.
+Is the compiler smart enough to notice,
+and perform a floating-point division?
+No, it is not.
+The rule is, ``if both operands are integral,
+division is integer division and discards any remainder'',
+and this is the rule the compiler follows.
+In this case, then,
+we must manually and explicitly force one of the operands
+to be of floating-point type.
+</p><p>Explicit type conversions are requested in C
+using a <dfn>cast operator</dfn>.
+(The name of the operator comes from the term <dfn>typecast</dfn>;
+``typecasting'' is another term for explicit type conversion,
+and some languages have ``typecast operators.''
+Yet another term for type conversion is <dfn>coercion</dfn>.)
+A cast operator consists of a type name, in parentheses.
+One way to fix the example above would be to rewrite it as
+<pre>
+	f = (float)i / j;
+</pre>
+The construction <TT>(float)i</TT> involves a cast;
+it says, ``take <TT>i</TT>'s value,
+and convert it to a <TT>float</TT>.''
+(The only thing being converted is the value fetched from <TT>i</TT>;
+we're not changing <TT>i</TT>'s type or anything.)
+Now, one operand of the <TT>/</TT> operator <em>is</em> floating-point,
+so we perform a floating-point division,
+and <TT>f</TT> receives the value 0.5.
+</p><p>Equivalently, we could write
+<pre>
+	f = i / (float)j;
+</pre>
+or
+<pre>
+	f = (float)i / (float)j;
+</pre>
+It's sufficient to use a cast on one of the operands,
+but
+it
+certainly
+doesn't hurt to cast both.
+
+</p><p>A similar situation is
+<pre>
+	int i = 32000, j = 32000;
+	long int li;
+	li = i + j;
+</pre>
+An <TT>int</TT> is only guaranteed to hold values up to 32,767.
+Here, the result <TT>i + j</TT> is 64,000,
+which is not guaranteed to fit into an int.
+Even though the eventual destination is a <TT>long int</TT>,
+the compiler does not look ahead to see this.
+The addition is performed using <TT>int</TT> arithmetic,
+and it may overflow.
+Again,
+the solution is to use a cast
+to explicitly convert one of the operands to a <TT>long int</TT>:
+<pre>
+	li = (long int)i + j;
+</pre>
+Now, since one of the operands is a <TT>long int</TT>,
+the addition is performed using <TT>long int</TT> arithmetic,
+and does not overflow.
+</p><p>Cast operators do not have to involve simple types;
+they can also involve pointer or structure or more complicated types.
+Once upon a time,
+before the <TT>void *</TT> type had been invented,
+<TT>malloc</TT> returned a <TT>char *</TT>,
+which had to be converted to the type you were using.
+
+For example,
+one used to write things like
+<pre>
+	int *iarray = (int *)malloc(100 * sizeof(int));
+</pre>
+and
+<pre>
+	struct list *lp = (struct list *)malloc(sizeof(struct list));
+</pre>
+These casts are not necessary under an ANSI C compiler
+(because <TT>malloc</TT> returns <TT>void *</TT>
+which the compiler converts automatically),
+but you may still see them in older code.
+
+
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx4ab.html" rev=precedes>prev</a>
+<a href="sx4cb.html" rel=precedes>next</a>
+<a href="sx4b.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1996-1999
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

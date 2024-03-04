@@ -1,0 +1,211 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>18.3.1: <TT>switch</TT></title>
+<link href="sx4c.html" rev=precedes>
+<link href="sx4bc.html" rel=precedes>
+<link href="sx4c.html" rev=subdocument>
+</head>
+<body>
+<H3>18.3.1: <TT>switch</TT></H3>
+
+<p>[This section corresponds to K&amp;R Sec. 3.4]
+</p><p>A frequent sort of pattern is exemplified by
+the sequence
+<pre>
+	if(x == e1)
+		/* some code */
+	else if(x == e2)
+		/* other code */
+	else if(x == e3)
+		/* some more code */
+	else if(x == e4)
+		/* yet more code */
+	else
+		/* default code */
+</pre>
+Depending on the value of <TT>x</TT>,
+we have one of several chunks of code to execute,
+which we select with a long
+<TT>if</TT>/<TT>else</TT>/<TT>if</TT>/<TT>else</TT>... chain.
+When the value we're selecting on is an integer,
+and when the values we're selecting among are all constant,
+we can use a <TT>switch</TT> statement, instead.
+The <TT>switch</TT> statement evaluates an expression
+and matches the result against a series of
+``<TT>case</TT> labels''.
+The code
+beginning
+with the matching <TT>case</TT> label (if any) is executed.
+A <TT>switch</TT> statement can also have a <TT>default</TT> case
+which is executed if none of the explicit <TT>case</TT>s match.
+</p><p>A <TT>switch</TT> statement looks like this:
+<pre>
+	switch( <I>expr</I> )
+		{
+		case <I>c1</I> :
+			<I>... code ...</I>
+			break;
+		case <I>c2</I> :
+			<I>... code ...</I>
+			break;
+		case <I>c3</I> :
+			<I>... code ...</I>
+			break;
+		...
+		default:
+			<I>... code ...</I>
+			break;
+		}
+</pre>
+The expression <I>expr</I>
+is evaluated.
+If one of the <TT>case</TT> labels
+(<I>c1</I>, <I>c2</I>, <I>c3</I>, etc.,
+which must all be integral constants)
+matches,
+execution jumps to there,
+and continues
+until
+the
+next
+<TT>break</TT> statement.
+Otherwise,
+if there is a <TT>default</TT> label,
+execution jumps to there
+(and continues to the
+next
+<TT>break</TT> statement).
+Otherwise,
+none of the code in the <TT>switch</TT> statement is executed.
+(Yes, the <TT>break</TT> statement is also used to break out of loops.
+It breaks out of the nearest enclosing loop
+or <TT>switch</TT> statement it finds itself in.)
+</p><p>The <TT>switch</TT> statement only works on
+integral arguments and expressions
+(<TT>char</TT>, the various sizes of <TT>int</TT>,
+and <TT>enum</TT>s,
+though we haven't met <TT>enum</TT>s yet).
+There is no direct way to switch on strings,
+or on floating-point values.
+The target <TT>case</TT> labels must be specified explicitly;
+there is no general way to
+specify a case which
+corresponds to
+a range of values.
+</p><p>One peculiarity of the <TT>switch</TT> statement
+is that the <TT>break</TT>
+at the end of one case's block of code
+is
+optional.
+If you leave it out, control will ``fall through''
+from one case to the next.
+Occasionally, this is what you want, but usually not,
+so remember to put a <TT>break</TT> statement after most cases.
+(Since falling through is so rare,
+many programmers highlight it,
+when they do
+mean to
+use it,
+with a comment like <TT>/* FALL THROUGH */</TT>,
+to indicate that it's not a mistake.)
+One way to make use of ``fallthrough''
+is when you have a small set or range of cases
+which should all map to the same code.
+Since the <TT>case</TT> labels are just labels,
+and since there doesn't have to be a statement
+immediately following a <TT>case</TT> label,
+you can associate several <TT>case</TT> labels with one block of
+code:
+<pre>
+	switch(x)
+		{
+		case 1:
+			<I>... code ...</I>
+			break;
+		case 2:
+			<I>... code ...</I>
+			break;
+		case 3:
+		case 4:
+		case 5:
+			<I>... code ...</I>
+			break;
+		default:
+			<I>... code ...</I>
+			break;
+		}
+</pre>
+Here, the same chunk of code is executed when <TT>x</TT> is 3, 4, or 5.
+</p><p>The <TT>case</TT> labels do not have to be in any particular order;
+the compiler is smart enough to find the matching one if it's
+there.
+The <TT>default</TT> case doesn't have to go at the end, either.
+</p><p>It's common to switch on characters:
+<pre>
+	switch(c)
+		{
+		case '+':
+			/* code for + */
+			break;
+		case '-':
+			/* code for - */
+			break;
+		case '\n':
+			/* code for newline */
+			/* FALL THROUGH */
+		case ' ':
+		case '\t':
+			/* code for other whitespace */
+			break;
+		case '0': case '1': case '2': case '3': case '4':
+		case '5': case '6': case '7': case '8': case '9':
+			/* code for digits */
+			break;
+		default:
+			/* code for all other characters */
+			break;
+		}
+</pre>
+It's also common to have a set of <TT>#define</TT>d values,
+and to switch on those:
+<pre>
+	#define APPLE    1
+	#define ORANGE   2
+	#define CHERRY   3
+	#define BROCCOLI 4
+
+	...
+
+	switch(fruit)
+		{
+		case APPLE:
+			printf("turnover"); break;
+		case ORANGE:
+			printf("marmalade"); break;
+		case CHERRY:
+			printf("pie"); break;
+		case BROCCOLI:
+			printf("wait a minute... that's not a fruit"); break;
+		}
+
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx4c.html" rev=precedes>prev</a>
+<a href="sx4bc.html" rel=precedes>next</a>
+<a href="sx4c.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1996-1999
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

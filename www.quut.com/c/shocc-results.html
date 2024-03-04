@@ -1,0 +1,422 @@
+<html>
+<head>
+<title>Results of the 1. ShoCC</title>
+<link rel="made" rev="made" href="mailto:jutta@pobox.com">
+</head><body>
+<h1>
+Results of the 1. Int'l Kaiserslautern<br>
+Shortest C Contest (ShoCC)
+</h1>
+
+
+We  are  terribly sorry   that we needed   so much  time  to get  this
+posted.&#160;<tt> </tt>Our  apologies go to all  the people who have
+waited patiently
+for this announcement.&#160;<tt> </tt>(And also to
+those who were less patient.)
+<p>
+On February, 13th, 1995 the 1. Int'l Kaiserslautern Shortest C Contest
+(ShoCC) was  announced.&#160;<tt> </tt> Its subject  was to write   a C program  that
+counts from a given number  i1 upto or  downto  a second given  number
+i2.&#160;<tt> </tt> The program consisting of  the fewest characters (including space
+and newline chars) was  to win the contest.&#160;<tt> </tt>For  full details  see the
+contest rules at
+<blockquote>
+	<a href="http://www.unix-ag.uni-kl.de/~conrad/shocc/shocc_en.html"
+		>http://www.unix-ag.uni-kl.de/~conrad/shocc/shocc_en.html</a>
+</blockquote>
+
+Until the deadline of Wednesday, February, 23rd, 1995, 23:59:59 MET we
+received 375 submissions from 184 participants.&#160;<tt> </tt>Six of the 375 entries
+did not compile on  our testsuite and  45 had runtime errors  during a
+test process.
+<p>
+Unfortunately  most    of the programs  did   not  fulfil one   of the
+specifications made  in  the  announcement, but our    automated check
+script did not  discover this  violation  of the rules: Many  programs
+computed a difference   of i1 and i2,  decremented   or incremented it
+according to the sign  of this difference   and terminated their  loop
+when  this difference  was zero.&#160;<tt> </tt>  As you can  see   the sign of  this
+difference is important.&#160;<tt> </tt>Unfortunately the difference of two signed
+integers does not in every case fit into a signed int: Obviously
+<pre><tt>   (MAXINT - -5) &gt; MAXINT
+</tt></pre>
+
+and does not fit into a signed integer variable, but is interpreted as
+a negative number and will break the  program.&#160;<tt> </tt>
+This is especially true
+if the program is invoked with
+<pre><tt> $ foo MAXINT MININT
+</tt></pre>
+
+We  didn't include this case  in our test scripts  because of the long
+running    time     of      this      command.&#160;<tt> </tt>
+Michael     Bischoff
+&lt;mbi@mo.math.nat.tu-bs.de&gt;  even asked   if the  program had  to  work
+correctly  when the difference was greater  than MAXINT.&#160;<tt> </tt>
+We confirmed
+this, not overseeing the implications  of this question.&#160;<tt> </tt>
+We discovered this pathologic case only when the contest deadline was over.
+<p>
+Since we  had   already  confirmed the  successful   testing  of these
+programs we finally decided   to declare submissions correct even   if
+this overflow error occured.&#160;<tt> </tt>
+We apologize to Michael  that we have to
+contradict our former answer in this case.
+<p>
+With this in mind,   there are 19  victorious  submissions all  with a
+length of 69 bytes of code (including a trailing newline):
+<p>
+In no particular order:
+<pre>
+[01] main(a,y,d)int*y;{for(a=atoi(y[1]);o(a),d=atoi(y[2])-a;)a+=(d|1)%2;}
+[02] main(c,v,x)int*v;{for(c=atoi(v[1]);o(c),x=atoi(v[2])-c;c+=(x|1)%2);}
+[03] main(a,v)int*v;{for(a=atoi(*++v);o(a),*v=atoi(v[1])-a;a+=*v&gt;&gt;31|1);}
+[04] main(i,v,j)int*v;{for(i=atoi(v[1]);o(i),j=atoi(v[2])-i;i+=(j|1)%2);}
+[05] main(c,d){int*v=d;for(c=atoi(v[1]);o(c),d=atoi(v[2])-c;c+=d&gt;&gt;31|1);}
+[06] main(d,O,_)int*O;{for(_=atoi(O[1]);o(_),d=_-atoi(O[2]);_-=d&gt;&gt;-1|1);}
+[07] main(a,v)int*v;{for(a=atoi(v[1]);o(a),*v=atoi(v[2])-a;a+=*v&gt;&gt;31|1);}
+[08] main(a,b)int*b;{for(a=atoi(*++b);o(a),*b=atoi(b[1])-a;a+=(*b|1)%2);}
+[09] main(a,b)int*b;{for(a=atoi(b[1]);o(a),*b=atoi(b[2])-a;a+=*b&gt;&gt;31|1);}
+[10] main(J,_)int*_;{for(J=atoi(*++_);o(J),*_=atoi(_[1])-J;J+=(*_|1)%2);}
+[11] main(i,b,j)int*b;{for(i=atoi(b[1]);o(i),j=i-atoi(b[2]);i-=j&gt;&gt;31|1);}
+[12] main(k,j,i)int*j;{for(k=atoi(j[1]);o(k),i=atoi(j[2])-k;k+=(i|1)%2);}
+[13] main(n,a,e)int*a;{for(n=atoi(a[1]);o(n),e=atoi(a[2])-n;n+=e&gt;&gt;31|1);}
+[14] a;main(c,d)int*d;{for(a=atoi(d[1]);o(a),c=atoi(d[2])-a;a+=(c|1)%2);}
+[15] main(n,c,d)int*c;{for(n=atoi(c[1]);o(n),d=atoi(c[2])-n;n+=d&gt;&gt;31|1);}
+[16] main(d,a)int*a;{for(d=atoi(a[1]);o(d),*a=atoi(a[2])-d;d+=(*a|1)%2);}
+[17] *p;main(i,x){for(i=atoi((p=x)[1]);o(i),x=atoi(p[2])-i;x&gt;0?i++:i--);}
+[18] main(c,v,d)int*v;{for(c=atoi(v[1]);o(c),d=atoi(v[2])-c;c+=d&gt;&gt;31|1);}
+[19] main(c,v,d)int*v;{for(c=atoi(v[1]);d;o(d&gt;0?c++:c--))d=atoi(v[2])-c;}
+</pre>
+
+These are the winners of the 1. Int'l Kaiserslautern Shortest C Contest
+(the numbers refer to the programs above):
+
+<pre>
+[01] Lars C. Hassing &lt;lch@cci.dk&gt;
+[02] Stefan Bock &lt;sbock@informatik.uni-kl.de&gt;
+[03] Heather Downs &lt;heathbar@natasha.tele.iastate.edu&gt;
+[04] Patrick Seemann &lt;tele@tubul.limmat.net.ch&gt;
+[05] Roland Nagel &lt;nagel@informatik.uni-kl.de&gt;
+[06] Klaus Singvogel &lt;kssingvo@immd4.informatik.uni-erlangen.de&gt;,
+     Michael Schroeder &lt;mlschroe@faui43.informatik.uni-erlangen.de&gt;,
+     Markus Kuhn &lt;mskuhn@cip.informatik.uni-erlangen.de&gt;
+[07] Markus Simmer &lt;simmer@iml.fhg.de&gt;
+[08] Willy Seibert &lt;ws@osix.materna.de&gt;
+[09] Oliver Bianzano &lt;oli@ap-pc818c.physik.uni-karlsruhe.de&gt;
+[10] Jens Schweikhardt &lt;jenssch@ibhinfo.hemminger-gdv.de&gt;
+[11] Thomas Omerzu &lt;omerzu@quantum.de&gt;,
+     Matthias Sachs &lt;sachs@quantum.de&gt;,
+     Udo Salewski &lt;salewski@quantum.de&gt;
+[12] Jahn Rentmeister &lt;WIJARE@wi.uni-muenster.de&gt;
+[13] Gregor Hoffleit &lt;flight@mathi.uni-heidelberg.de&gt;
+[14] John Rochester &lt;jr@cs.mun.ca&gt;
+[15] Markus Siegert &lt;siegertm@nemeter.dinoco.de&gt;
+[16] Siegmar Zaeske &lt;zaeske@detlef.informatik.uni-dortmund.de&gt;
+[17] Arnd Gerns &lt;gerns@informatik.uni-hildesheim.de&gt;,
+     Dirk Eiden &lt;eiden@informatik.uni-hildesheim.de&gt;,
+     Steffen Moeller &lt;moeller@informatik.uni-hildesheim.de&gt;
+[18] James C. Hu &lt;jxh@pride.cs.wustl.edu&gt;
+[19] Frank Neblung &lt;neblung@informatik.uni-kl.de&gt;
+</pre>
+
+Congratulations to the winners and  all other contestants for the very
+inspiring submissions.&#160;<tt> </tt>Here is the distribution of the TOP 15 ranks:
+<pre>
+               RANK  # PROGRAMS  LENGTH
+               --------------------------
+                 1      19      69 Bytes
+                 2      21      70 Bytes
+                 3       6      71 Bytes
+                 4      14      72 Bytes
+                 5      15      73 Bytes
+                 6      10      74 Bytes
+                 7       3      75 Bytes
+                 8       9      76 Bytes
+                 9       5      77 Bytes
+                10       6      78 Bytes
+                11      10      79 Bytes
+                12       7      80 Bytes
+                13       4      82 Bytes
+                14       6      83 Bytes
+                15       1      84 Bytes
+</pre>
+
+We  hope   we did  not   forget <em>your</em>  submission.&#160;<tt> </tt> If  you  mailed a
+submission to us but got no ack, mail us again and we'll try to figure
+out what happened.
+
+
+<h2>Origin of the contestants</h2>
+
+The participants came from at least 14 countries:
+<pre>
+ 274 de   Germany
+  35 com  all over the world, mostly USA and Germany
+  20 net  dito
+  19 edu  mostly USA
+  18 org  all over the world, mostly Germany and USA
+   8 dk   Denmark
+   7 uk   United Kingdom
+   6 su   Former Sovjet Union, here: Usbekistan
+   5 fr   France
+   4 nl   Netherlands
+   4 ch   Switzerland
+   4 ca   Canada
+   2 it   Italy
+   2 gov  USA
+   2 at   Austria
+   2 se   Sweden
+   1 sg   Singapore
+</pre>
+
+
+<h2>Quick Analysis of All Entries</h2>
+
+This analysis looks over  365 submissions to  the ShoCC contest.&#160;<tt> </tt>There
+may  be more than  one entry of  one  author/team.&#160;<tt> </tt>All values are some
+kind of approximate  as  I  grep'ed, sed'ed  sort'ed and   uniq'ed all
+submissions by hand.&#160;<tt> </tt>I hope this gives a quick overview to the variety
+of submissions.
+<p>
+
+Total number of analyzed entries:       365
+
+<h3>Type of looping</h3>
+<pre>
+for                                     277
+while                                   50
+do                                      7
+goto                                    6
+
+other                                   16
+</pre>
+
+<h3>Reading commandline parameters</h3>
+
+<pre>
+atoi                                    99%
+atol                                    1
+scanf                                   5
+
+*++v                                    57
+v[1]                                    301
+1[v]                                    8
+</pre>
+
+
+<h3>Declaring functions, parameters and variables</h3>
+
+<pre>
+int main()                              11
+void main()                             7
+
+main(int c, ...                         127
+     ..., char **)                      90
+     ..., int **)                       28
+
+k&amp;r char **v                            51
+k&amp;r int  **v                            47
+
+k&amp;r int   *v                            120
+  used *v as int                        35
+k&amp;r long  *v                            1
+
+no explicit type declaration            1
+
+global int variables                    18
+global *int variables                   1
+
+additional functions (recursion):       4
+declaration of o()                      2
+</pre>
+
+
+
+<h3>Usage of the preprocessor</h3>
+
+<pre>
+#include &lt;stdio.h                       16
+#include &lt;stdlib.h&gt;                     16
+
+#define i=atoi(T[1]) and variants       12
+other defines                           3
+</pre>
+
+
+<h3>Analysis of the &quot;for&quot;-single-line entries:</h3>
+<pre>
+Total                                   271
+
+Definitions of positions: for (A; B; C) D;
+
+A: called atoi() once                   120
+   called atoi() twice                  67
+   called o()                           65
+
+B: o(a), b=atoi(v[2])-a construct       70
+   no atoi(), a-b termination           99
+   no atoi(), o(a)                      87
+
+C: empty                                15
+   a&lt;b?a++:a-- variants                 92
+   a&lt;0?d++:d-- variants                 29
+   l+=l&lt;i?1:-1 variants                 69
+</pre>
+
+
+<h3>Library functions used</h3>
+
+<pre>
+atoi()                                  355
+printf()                                40
+abs()                                   13
+scanf()                                 4
+exit()                                  2
+system()                                1
+atol()                                  1
+</pre>
+
+<h3>Other C-constructs used</h3>
+<pre>
+if                                      39
+else                                    13
+return                                  13
+</pre>
+
+<h3>C-operators</h3>
+<pre>
+^                                       15
+%2                                      14
+&gt;&gt;                                      17
+|1                                      32
+?:                                      283
+/, /=                                   8
++=                                      141
+-=                                      22
+</pre>
+
+<h3>Hitlist of variable names</h3>
+
+<pre>
+ 200 v     15 s         3 X
+ 193 a     12 z         2 g
+ 170 c     11 O         2 S
+ 161 b     10 p         2 L
+ 103 i      9 f         2 I
+  92 d      9 argv      2 B
+  80 j      9 argc      2 A
+  39 n      8 l         1 nr
+  36 x      6 t         1 arg
+  32 y      5 J         1 T
+  25 k      3 w         1 K
+  24 h      3 r
+  23 _      3 q
+  17 e      3 m
+</pre>
+
+Note that there are all lower case characters used except of 'u'!
+
+<h2>Shortest known solution</h2>
+
+Composing from  all submissions there  are now  even shorter solutions
+available.&#160;<tt> </tt>A nice one with only 66 characters comes from Heather Downs
+&lt;relayer@netcom.com&gt;:
+
+<pre>    *v;main(a,b){for(a=atoi(1[v=b]);o(a),b=atoi(v[2])-a;a+=(b|1)%2);}
+</pre>
+
+
+<h2>Most obfuscated solutions</h2>
+
+We got  many obfuscated  submissions, but  naming   a variable '_'  or
+writing 1[v] instead  of v[1] was not enough.&#160;<tt> </tt>
+Since it was quite hard
+to decide which one to select for &quot;most obfuscated code&quot; we decided to
+give this prize to the following people for their submissions:
+<p>
+1st price: Markus Freericks &lt;mfx@cs.tu-berlin.de&gt;
+<pre>
+main(b,v,a)char**v;{b=atoi(v[2]);o(b+((a=atoi(v[1]))^b&amp;&amp;sprintf(*v,
+&quot;%s %d %d&quot;,*v,a,b+(b&gt;a?-1:1))&amp;&amp;system(*v),0));}
+</pre>
+
+
+2nd price: Hans-Christoph Wirth &lt;hansi@dianoia.mayn.sub.de&gt;
+<pre>
+#define m(x,y)x=atoi(y[(int*)b]),
+main(a,b,i){a-3?(o(i),(i-b)&amp;&amp;main(a,b,i+a)):(m(i,1)m(b,2)
+main(i&lt;b?1:-1,b,i));} 
+</pre>
+
+
+3rd price: Arnd Gerns, Steffen Moeller, Dirk Eiden
+<pre>
+*p;main(i,x){for(i=atoi((p=x)[1]);o(i),x=atoi(p[2])-i;x&gt;0?i++:i--);}
+</pre>
+
+
+4th price: Jens Gebhard &lt;gebharj@goedel.uni-muenster.de&gt;
+<pre>
+main(c,v,i)int*v;{c-i?main(v?atoi(v[1]):c+2*(o(c),c&lt;i)-1,0,
+v?atoi(v[2]):i):o(c);}
+</pre>
+
+Note that  the line breaks  at the obvious places  were inserted by us
+for better readability in newsreaders only.
+
+
+<h2>Web Server</h2>
+
+This summary of  the results  will be  mailed to all  participants and
+will also be   posted   to the   newsgroups  where the    announcement
+appeared.&#160;<tt> </tt>For more   details including more  detailed statistics,  ALL
+sent-in programs and more check out our web page at
+<blockquote>
+        <a href="http://www.unix-ag.uni-kl.de/~conrad/shocc/shocc.html"
+	>URL: http://www.unix-ag.uni-kl.de/~conrad/shocc/shocc.html</a>
+</blockquote>
+
+We will also make a tar archive containing this information along with
+some   more or less useful &quot;AI&quot;-scripts   that helped  us evaluate the
+submissions.
+
+<h2>Your Feedback</h2>
+
+Since this was the first contest we organized and  since some aspects were
+not so well thought through (as no doubt some  of you may have noticed
+:-), we'd  appreciate  some  feedback  from you   with respect to  the
+following questions:
+
+<ul>
+ <li> Did you receive an acknowledgement for every submission you sent?
+ <li> Were you content with our 'service'?
+ <li> Where did you hear/read about the contest?
+ <li> What further suggestions/ideas do you have?
+</ul>
+
+Thank you for your answers and submissions.&#160;<tt> </tt>We had one and a half week
+of fun and extreme stress.&#160;<tt> </tt>We hope you enjoyed the contest.&#160;<tt> </tt>We did.
+
+<dl><dt>
+Signed,
+<dd>
+        The Contest Comittee of the 1. Int'l Kaiserslautern ShoCC
+	<p>
+        <a href="mailto:n_magnus@informatik.uni-kl.de">Nils Magnus</a>
+	&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+	&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+	&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+	&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+	<a href="mailto:conrad@unix-ag.uni-kl.de">Peter Conrad</a>
+</dl>
+<p>
+Disclaimer: And now kids, be nice and go back to your normal
+programming habits that you learned from Uncle Dijkstra and the SE
+courses ;-}
+<p>
+<hr>
+Markup March 1995 by jutta@pobox.com.
+</body>
+</html>

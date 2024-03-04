@@ -1,0 +1,892 @@
+<html>
+<head>
+	<title>A brief(ish) description of BCPL</title>
+<link rel="made" rev="made" href="mailto:jutta@pobox.com">
+</head>
+<body>
+<h1>A brief(ish) description of BCPL</h1>
+<p>
+Everyone and their pet cats know about C, but relatively few people
+realize that C was indirectly derived from a language called BCPL, which
+stands for "Basic CPL";
+CPL in turn stands for "Combined Programming Language".
+<p>
+I first encountered BCPL when I was at Cambridge University, the home of the
+language and its designer, 
+<a href="http://www.cl.cam.ac.uk/users/mr/">Martin Richards.</a><tt> </tt>
+BCPL was the systems programming language of choice at Cambridge,
+because it generated code better than the IBM Fortran compilers while
+not requiring the agony of Assembler.&#160;<tt> </tt>
+In turn, Computer Science students were taught it as their first "serious"
+language (interestingly enough, <i>not</i> by Martin Richards).&#160;<tt> </tt>
+For many (myself not included) it was their first introduction to
+anything more advanced than Fortran 66.&#160;<tt> </tt>
+<p>
+After graduation, I went to work for a local manufacturer of Z80-based systems
+that did almost all of its systems programming in BCPL.&#160;<tt> </tt>
+Only after the move to Unix did we in turn move to C.&#160;<tt> </tt>
+As a result, I find myself with several years of
+practical BCPL programming experience.
+<p>
+When the topic came up once again on the net, I wrote this summary
+of the language for some readers who already know C.&#160;<tt> </tt>
+It is in no sense a comparison or a historical survey
+but simply a high-speed description.&#160;<tt> </tt>
+Feedback on this description is welcome; I have no doubt that there are
+parts which are still unduly terse and would benefit from expansion, but
+I'd like to know which !
+<p>
+    BCPL implementations are available from 
+    <A HREF="http://www.cl.cam.ac.uk/users/mr/BCPL.html">Martin
+    Richards</A>, or from the old BCPL distribution.
+<p>
+<address><a href="clive/index.html">Clive D.W. Feather</a></address>
+<hr>
+<h2>Types</h2>
+
+BCPL is an &quot;operator-typed&quot; language, rather
+than a &quot;declaration-typed&quot; language.&#160;<tt> </tt>That is, each object in the language
+can be viewed as having any type, and can change type at any time.&#160;<tt> </tt>It is
+the <a href="clive-on-bcpl.html#operators">operators</a> used to manipulate the object
+that determine the type it has at that moment, and nothing else.
+<p>
+The memory of a BCPL program is divided into <em>cells</em>.&#160;<tt> </tt>
+All cells have the same size.&#160;<tt> </tt>
+A cell stores a single value which can be treated as any of:
+<ul>
+<li> an integer - binary is not assumed by the language definition
+<li> a bit pattern
+<li> an address
+<li> a procedure designator
+<li> a floating point number
+<li> a selector
+<li> a jump target
+<li> a jump closure
+<li> a stream designator.
+</ul>
+Except where stated, the conversion between these types is implementation
+defined.
+<p>
+Every cell has an address.&#160;<tt> </tt>Under certain circumstances, two
+or more cells are required to be adjacent in memory.&#160;<tt> </tt>In this
+case, their addresses, if treated as integers, are consecutive.
+<p>
+In addition, a group of adjacent cells may be treated as a character
+buffer.&#160;<tt> </tt>There are at least
+<a href="clive-on-bcpl.html#libhdr"><code>BYTESPERWORD</code></a> characters
+for every cell (though possibly more).
+<p>
+Cells have a storage duration, which can be static, dynamic (associated with
+a <em>scope</em>), or heap.
+<p>
+<h2><a name="identifiers">Identifiers</a></h2>
+
+Identifiers are comprised of letters, digits, and dots, and begin with a
+letter.&#160;<tt> </tt>There is no limit on the length of names.&#160;<tt> </tt>Case sensitivity is
+implementation-defined.
+<p>
+<h2>Constants</h2>
+
+<p>	Integer constants are decimal; prefix <code>#</code> means octal,
+	and <code>#x</code> hexadecimal.
+
+<p>	<code>TRUE</code> and <code>FALSE</code> are reserved words.
+
+<p>	<a name="ques"><code>?</code></a> is a constant with an indeterminate value (which
+    	may be different each time it is evaluated); any <a href="clive-on-bcpl.html#constant-expressions">constant expression</a>
+    	containing an evaluated <code>?</code> is itself a <code>?</code> .
+
+<p>	Character constants are of the form <code>'a'</code>; there are
+	no multi-character constants.
+
+<p>	<a name="string-constants">String constants</a> are of
+	the form <code>&quot;abc&quot;</code>; they contain between
+	0 and 255 characters.
+
+<p>	Escape sequences in both string and character constants are
+	<code>*&quot;</code>, <code>*'</code>, <code>**</code>
+	(representing the second character) and
+	*N (newline),
+	*T (tab),
+	*S (space),
+	*B (backspace), and
+	*P (pagethrow).&#160;<tt> </tt>
+	In addition, a string can be extended over more than one line; the
+	sequence *&lt;white space&gt;* is ignored within a string.
+
+<p>	A string constant is replaced by the address of a large enough
+	number of contiguous cells initialized so that:
+<pre>
+    &quot;abc&quot; % 0 = 3
+    &quot;abc&quot; % 1 = 'a'
+    &quot;abc&quot; % 2 = 'b'
+    &quot;abc&quot; % 3 = 'c'
+</pre>
+	The cells have static storage duration.
+<p>
+	<a name="constant-expressions">A constant expression</a> may use
+	any <a href="clive-on-bcpl.html#operators">operator</a>, any constants other
+	than <a href="clive-on-bcpl.html#string-constants"> string constants</a>, and any
+	identifier declared as a <a href="clive-on-bcpl.html#manifest-constant">manifest</a>.
+<p>
+Floating-point constants are of the form <code>1.2</code>, <code>1.2e-3</code>,
+	or <code>1e+2</code>.
+<p>
+<h2><a name="operators">Operators</a></h2>
+
+	Parentheses may group expressions to control
+  precedence.&#160;<tt> </tt><a href="clive-on-bcpl.html#procedure-calls">Function call</a> has
+  higher precedence than all operators.&#160;<tt> </tt>The operators are:
+<pre>
+   ! (dyadic) % ::           highest precedence
+   @ ! (monadic)
+   * / REM #* #/
+   + - #+ #- (dyadic and monadic)
+   = ~= &lt; &lt;= &gt; &gt;= #= #~= #&lt; #&lt;= #&gt; #&gt;=
+   &lt;&lt; &gt;&gt;
+   ~
+   &amp;
+   |
+   EQV NEQV
+   -&gt;
+   TABLE
+   VALOF                     lowest precedence
+   SLCT                      precedence not described in <a href="alan-on-bcpl.html#the-book">R&amp;W-S</a>
+</pre>
+<p>
+	Operators associate left-to-right except for -&gt; and TABLE.
+<p>
+	Except where stated, an identifier on the left of an <a href=
+	"clive-on-bcpl.html#assignments">assignment</a> means that the result of the right
+	hand side is to be stored in the cell named by that identifier,
+	while an identifier in any other location represents the content
+	of the cell it names.&#160;<tt> </tt>
+	
+	Statements like &quot;<i>a</i> is an address&quot; or &quot;the
+	integer <i>a</i>&quot; mean &quot;the value of the
+	expression <i>a</i>, now taken as an address&quot; or &quot;the
+	value of the expression <i>a</i>, now taken as an integer&quot;.
+<p>
+<dl>
+<dt><i>a</i><code>!</code><i>b</i>
+<dd>	is equivalent to
+	<code>!(</code><i>a</i><code>+</code><i>b</i><code>)</code>.
+
+<dt><code>!</code><i>a</i>
+<dd>	is the content of the cell whose address is given by <i>a</i>; it can
+	appear on the left of an <a href="clive-on-bcpl.html#assignments">assignment</a>.
+
+<dt><a name="modop"><i>a</i></a><code>%</code><i>b</i>
+<dd>	<i>a</i> is the address of 1 or more contiguous cells; these cells are
+          treated as a character buffer.&#160;<tt> </tt>On the left of an
+	  <a href="clive-on-bcpl.html#assignments">assignment</a>,
+	  the <i>b</i>th character in the buffer is set to the least
+	  significant <a href="clive-on-bcpl.html#bitsperbyte"><code>BITSPERBYTE</code></a>
+	  bits of the result of the right side.&#160;<tt> </tt>In all
+	  other contexts, the value is that of the <i>b</i>th character
+	  padded to the left with zeroes (that is, characters are unsigned).
+
+<dt><code>@</code><i>a</i>
+<dd>	if <i>a</i> is an identifier not declared as
+	a <a href="clive-on-bcpl.html#manifest-constant">manifest constant</a>, then the
+	address of the cell that that identifier names (<code>@</code>
+	may only be used in this way or in the following two special ways).
+
+<dt><code>@!</code><i>a</i>
+<dd>	is equivalent to <i>a</i>.
+
+<dt><code>@</code><i>a</i><code>!</code><i>b</i>
+<dd>	is equivalent to
+	<code>(</code><i>a</i><code>+</code><i>b</i><code>)</code>.
+<p>
+<dt><i>a</i><code>*</code><i>b</i>&#160;<tt> </tt>and&#160;<tt> </tt>
+	<i>a</i><code>/</code><i>b</i>,&#160;<tt> </tt>
+	<i>a</i> <code>REM</code> <i>b</i>,&#160;<tt> </tt>
+	<i>a</i><code>+</code><i>b</i>,&#160;<tt> </tt>
+	<code>+</code><i>a</i>,&#160;<tt> </tt>
+	<i>a</i><code>-</code><i>b</i>,&#160;<tt> </tt>
+	<code>-</code><i>a</i>
+<dd>	are integer arithmetic operators.&#160;<tt> </tt>Arithmetic overflow
+	is undefined.
+<p>
+<dt><i>a</i><code>#*</code><i>b</i>&#160;<tt> </tt>and&#160;<tt> </tt>
+	<i>a</i><code>#/</code><i>b</i>,&#160;<tt> </tt>
+	<i>a</i><code>#+</code><i>b</i>,&#160;<tt> </tt>
+	<code>#+</code><i>a</i>,&#160;<tt> </tt>
+	<i>a</i><code>#-</code><i>b</i>,&#160;<tt> </tt>
+	<code>#-</code><i>a</i>
+<dd>	are their floating-point equivalents.
+<p>
+<dt><i>a</i><code>=</code><i>b</i>&#160;<tt> </tt>etc.
+<dd>	are integer comparisons, and return <code>TRUE</code>
+	or <code>FALSE</code>.
+<p>
+<dt><i>a</i><code>&lt;</code><i>b</i><code>&lt;=</code><i>c</i>&#160;<tt> </tt>etc.
+<dd>	is equivalent to
+	<i>a</i><code>&lt;</code><i>b</i>
+	<code>&amp;</code> <i>b</i>&lt;=<i>c</i>.
+<p>
+<dt><i>a</i><code>#=</code><i>b</i>&#160;<tt> </tt>etc.
+<dd>	are floating-point comparisons with the same rules.
+<p>
+<dt><i>a</i><code>&lt;&lt;</code><i>b</i>&#160;<tt> </tt>and<tt>
+	</tt><i>a</i><code>&gt;&gt;</code><i>b</i>
+<dd>
+	shift the bit-pattern <i>a</i> left or right <i>b</i> (integer)
+	bits.&#160;<tt> </tt>Zeroes are shifted in, and <i>b</i> must be non-negative.
+
+<dt><code>~</code><i>a</i> 
+
+<dd>	logical not - see below for the meaning of
+	&quot;<a href="clive-on-bcpl.html#logical">logical</a>&quot;.
+
+<dt><i>a</i><code>&amp;</code><i>b</i>
+<dd>	logical and.
+
+<dt><i>a</i><code>|</code><i>b</i>
+<dd>	logical or
+
+<dt><i>a</i> <code>NEQV</code> <i>b</i>
+<dd>	logical xor.
+
+<dt><i>a</i> <code>EQV</code> <i>b</i>
+<dd>	is equivalent to <code>~(</code><i>a</i> <code>NEQV</code>
+	<i>b</i><code>)</code>.
+
+<dt><i>a</i>-&gt;<i>b</i><code>,</code><i>c</i>
+<dd>	if <i>a</i> is true, evaluate <i>b</i>, else evaluate <i>c</i>.
+<p>
+<dt><a name="slct"><code>SLCT</code></a> <i>a</i>&#160;<tt> </tt>and&#160;<tt> </tt>
+	<code>SLCT</code> <i>a</i><code>:</code><i>b</i>&#160;<tt> </tt>and&#160;<tt> </tt>
+	<code>SLCT</code> <i>a</i><code>:</code><i>b</i><code>:</code><i>c</i>,
+<dd>	where <i>a</i>, <i>b</i>, and <i>c</i> are all non-negative
+       <a href="clive-on-bcpl.html#constant-expressions">constant expressions</a>,
+       and <i>b</i> and <i>c</i> default to 0, is a selector.
+
+<dt><i>a</i> <code>OF</code> <i>b</i>
+<dd>	<code>(SLCT</code> <i>x</i><code>:</code><i>y</i><code>)</code>
+	<code>OF</code> <i>b</i>&#160;<tt> </tt>
+		selects a bitfield from within <code>!</code><i>b</i>:
+	<ul>
+	<li>
+          on the left side of an <a href="clive-on-bcpl.html#assignments">assignment</a>,
+	  sets <i>x</i> bits of <code>!</code><i>b</i> to
+	  the bottom <i>x</i> bits of the right hand
+	  side.&#160;<tt> </tt>The bits set are bits <i>y</i> to
+	  <i>y+x-1</i>, where bit 0 is the rightmost bit;
+	  if <i>x</i> is 0, they are all bits except the rightmost <i>y</i>.
+	<li> in all other contexts, yields the bottom <i>x</i> bits of 
+	(if <i>x</i> is zero, then is equal to)&#160;<tt> </tt>
+	  <code>(!</code><i>b</i> <code>&gt;&gt;</code> <i>y</i><code>)</code>.
+	</ul>
+<code>(SLCT</code> <i>x</i><code>:</code><i>y</i><code>:</code><i>z</i><code>)</code>
+		<code>OF</code> <i>b</i>&#160;<tt> </tt>is equivalent to&#160;<tt> </tt>
+		<code>(SLCT</code> <i>x</i><code>:</code><i>y</i><code>)</code>
+		<code>OF</code>
+		<code>(</code><i>b</i><code>+</code><i>z</i><code>)</code>.
+<p>
+<dt><code>TABLE</code> <i>k1,k2,...kn</i>, where all the <i>ki</i> are
+	<a href="clive-on-bcpl.html#constant-expressions">constant expressions</a>,
+<dd>	is the address of <i>n</i>
+          contiguous cells initialized to <i>ki</i> in order.&#160;<tt> </tt>The
+	  cells have static storage duration.
+<p>
+<dt><a name="valof"><code>VALOF</code></a> <i>c</i>
+<dd>	where <i>c</i> is a command, causes <i>c</i> to be
+	executed.&#160;<tt> </tt>If, during the execution of <i>c</i>, a
+	<code>RESULTIS</code> command is reached, that controls the
+        value of the expression.&#160;<tt> </tt>Otherwise the value is
+	unspecified.
+</dl>
+<p>
+	<a name="logical">Logical</a> operations are evaluated
+	according to one of two rules.&#160;<tt> </tt>If the result of
+	the operator is in &quot;truth context&quot;, then &quot;truth
+	rules&quot; are used.&#160;<tt> </tt>Otherwise the operator takes
+	bit-patterns as argument(s) and operates on each bit
+	separately.&#160;<tt> </tt>Truth context is:
+<ul>
+<li> left side of <code>-&gt;</code>;
+<li> outermost operator in the controlling expression of a conditional command;
+<li> a direct operand of an operator evaluated using truth rules.
+</ul>
+Under truth rules, all operands must be either <code>TRUE</code> or <code>FALSE</code>.&#160;<tt> </tt>For dyadic
+operators, the left operand is evaluated.&#160;<tt> </tt>If and only if this does
+not determine the result, then the right operand is evaluated.
+<p>
+<code>TRUE</code> and <code>FALSE</code> have values such that logical
+operations not using truth rules evaluate correctly to <code>TRUE</code>
+or <code>FALSE</code>.
+<p>
+<h2><a name="procedure-calls">Procedure calls</a></h2>
+
+The syntax is:
+<pre>
+    <i>e1</i> ()
+    <i>e1</i> (<i>e2</i>, <i>e3</i>, ..., <i>ex</i>)
+</pre>
+and associates from left to right.&#160;<tt> </tt><i>e1</i> to <i>ex</i> are all
+evaluated, and <i>e1</i> must
+result in a procedure designator; the procedure is called
+with the appropriate arguments.&#160;<tt> </tt>
+If the procedure is a function, the value of the call is that of the
+evaluated function body; if it is a routine, the value is
+<a href="clive-on-bcpl.html#ques"><code>?</code></a>.&#160;<tt> </tt>
+The number of arguments does not have to match the number
+of parameters of the procedure.&#160;<tt> </tt>
+Arguments are passed strictly by value.
+<p>
+<h2><a name="blocks">Blocks</a></h2>
+
+	A block is zero or more <a href="clive-on-bcpl.html#declarations">declarations</a>
+	followed by one or more <a href="clive-on-bcpl.html#commands">commands</a>, all
+	within section brackets.&#160;<tt> </tt>These are separated (<em>not</em>
+	terminated) by semicolons.
+<p>
+<h2>Sections</h2>
+
+	A section is any construction within section brackets.&#160;<tt> </tt>These
+	are <code>$(</code> and <code>$)</code> optionally followed by a
+	tag - which is a sequence of letters, digits, and dots (not
+	necessarily beginning with a letter) - without an intervening
+	space.&#160;<tt> </tt>
+	If the tag of the closing bracket does not match that of the
+	opening one, it also closes any intermediate open section.&#160;<tt> </tt>
+	For example, the following is valid BCPL:
+<pre>
+    $(1
+        <i>some code</i>
+        $(1.1
+            <i>some code</i>
+        $)1.1
+        $(1.2
+            <i>some code</i>
+            $(
+                <i>some code</i>
+    $)1 // Also closes 1.2 and the untagged block
+</pre>
+<p>
+<h2><a name="commands">Commands</a></h2>
+
+	A command is a <a href="clive-on-bcpl.html#procedure-calls">call</a>, an <a href=
+	"clive-on-bcpl.html#assignments">assignment</a>, a <a href="clive-on-bcpl.html#blocks">block</a>, or
+	any of the following (<i>ei</i> are expressions and <i>ci</i>
+	are commands):
+<pre>
+    <i>c</i> REPEAT
+    <i>c</i> REPEATWHILE <i>e</i>
+    <i>c</i> REPEATUNTIL <i>e</i>
+    IF <i>e</i> THEN <i>c</i>
+    UNLESS <i>e</i> DO <i>c</i>
+    TEST <i>e</i> THEN <i>c1</i> ELSE <i>c2</i>
+    WHILE <i>e</i> DO <i>c</i>
+    UNTIL <i>e</i> DO <i>c</i>
+    FOR <i>i</i> = <i>e1</i> TO <i>e2</i> BY <i>e3</i> DO <i>c</i>
+    RESULTIS <i>e</i>
+    SWITCHON <i>e</i> INTO <i>c</i>
+    GOTO <i>e</i>
+    FINISH
+    RETURN
+    BREAK
+    LOOP
+    ENDCASE
+</pre>
+<p>
+<a name="assignments">Assignments</a> have the form:
+<pre>
+    <i>a1</i>, <i>a2</i>, ..., <i>an</i> := <i>e1</i>, <i>e2</i>, ..., <i>en</i>
+</pre>
+	where the lists on the two sides must have the same length,
+	and <i>ai</i> must be valid on the left side.&#160;<tt> </tt>The order
+	of the assignments is unspecified; they may be
+	interleaved.&#160;<tt> </tt>Most recent implementations
+	allow the assignment symbol to be prefixed with any dyadic
+	operator, as in:
+<pre>
+    a1, a2, a3 &lt;&lt;:= e1, e2, e3
+</pre>
+
+This is equivalent to:
+<pre>
+    a1, a2, a3 := a1 &lt;&lt; e1, a2 &lt;&lt; e2, a3 &lt;&lt; e3
+</pre>
+	except that the expressions <code>a1</code>, <code>a2</code>,
+	<code>a3</code> are evaluated only once, and the <code>&lt;&lt;</code>
+	has lower precedence than any operators in the six expressions.
+<p>
+	A call has the same form as in an expression, except that any
+	result is ignored.
+<p>
+	The contained command of a <code>REPEAT</code> command is the smallest
+	possible; in particular, in:
+<pre>
+    I := VALOF F () REPEATWHILE J
+</pre>
+	the repeated command is the call to <code>F</code>.&#160;<tt> </tt>The
+	unconditional <code>REPEAT</code> command repeats forever.&#160;<tt> </tt>
+	<code>REPEAT</code> commands always execute the contained
+	command at least once.
+<p>
+	<a name="for">In the</a> <code>FOR</code> statement,
+	the <code>BY</code> <i>e3</i> part is optional (equivalent
+	to <code>BY</code> <i>1</i>); <i>e3</i> must be a
+	<a href="clive-on-bcpl.html#constant-expressions">constant expression</a>.&#160;<tt> </tt>
+	The identifier <i>i</i> is declared as a new dynamic cell
+	whose scope is the contained command.&#160;<tt> </tt>The command
+	is executed zero or more times with the cell taking values
+	<i>e1</i>, <i>e1</i><code>+</code><i>e3</i>,
+	<i>e1</i><code>+2*</code><i>e3</i>, ...&#160;<tt> </tt>so long as
+	the value is less than (greater if <i>e3</i> is negative)
+	<i>e2</i>.&#160;<tt> </tt>The expressions are evaluated before the
+	first iteration, and not re-evaluated each time.
+<p>
+In the <code>SWITCHON</code> command, the contained command must be a
+block which cannot contain declarations, but can contain case
+labels.&#160;<tt> </tt>These have the form
+<pre>
+    CASE <i>e</i>:
+    DEFAULT:
+</pre>
+where <i>e</i> is a <a href="clive-on-bcpl.html#constant-expressions">constant expression</a>.&#160;<tt> </tt>Note that case labels
+can only be in that block, and not in inner blocks (except for nested
+<code>SWITCHON</code>s).
+<p>
+<code>FINISH</code> terminates the program; <code>RETURN</code> terminates
+the current procedure (with an undefined result if it is a function); 
+<code>BREAK</code> terminates, and <code>LOOP</code> ends the
+current iteration of, the textually surrounding <code>WHILE</code>,
+<code>UNTIL</code>, <code>REPEAT</code>, or <code>FOR</code>.
+<code>ENDCASE</code> similarly exits the textually
+surrounding <code>SWITCHON</code>.&#160;<tt> </tt><code>RESULTIS</code> cannot
+terminate the current procedure.
+<p>
+<h2><a name="declarations">Declarations</a></h2>
+
+A program is a sequence of declarations, separated by
+semicolons.&#160;<tt> </tt>Each declaration declares one or
+more <a href="clive-on-bcpl.html#identifiers">identifiers</a>.&#160;<tt> </tt>There are
+two basic kinds of declarations:
+	<a href="clive-on-bcpl.html#section-decl">section declarations</a> and
+	<a href="clive-on-bcpl.html#simultaneous-decl">simultaneous declarations</a>.&#160;<tt> </tt>
+
+Identifiers declared in section declarations have a scope that starts at the
+end of that identifier's declaration; identifiers declared in simultaneous
+declarations have a scope that starts at the first of the set of simultaneous
+declarations (hence the name).&#160;<tt> </tt>In each case, the scope ends at the
+end of the <a href="clive-on-bcpl.html#blocks">block</a> the declaration occurs in, or the
+end of the file if not in a block.
+<p>
+Each declaration that creates a cell with dynamic storage duration causes a
+new cell to be created each time the declaration is executed; the cell is
+(notionally) destroyed when the block containing the declaration
+terminates.&#160;<tt> </tt>The order that the cells declared in the same
+simultaneous declaration are initialized is undefined; they may be interleaved.
+<p>
+	<a name="section-decl">There are three</a> types of section
+	declarations.&#160;<tt> </tt>In each case, <i>vi</i> stands for
+	an <a href="clive-on-bcpl.html#identifiers">identifier</a> not declared at the
+	current level, and <i>ki</i> for a <a href=
+	"clive-on-bcpl.html#constant-expressions">constant expression</a>.
+
+<dl>
+<dt>
+<a name="manifest-constant"><code>MANIFEST</code></a><code> $(
+	   </code><i>v1</i><code> = </code><i>k1</i><code>;
+	   </code><i>v2</i><code> = </code><i>k2</i><code>;
+	   </code><i>v3</i><code> = </code><i>k3</i><code>;
+	   ... ;
+	   </code><i>vn</i><code> = </code><i>kn</i><code> $)</code>
+<dd>
+    Declares <i>vi</i> as a <a href="clive-on-bcpl.html#constant-expressions">constant</a> whose
+    value is <i>ki</i>.
+<p>
+<dt>
+<code>STATIC $(
+	</code><i>v1</i><code> = </code><i>k1</i><code>;
+	</code><i>v2</i><code> = </code><i>k2</i><code>;
+	</code><i>v3</i><code> = </code><i>k3</i><code>;
+	... ;
+	</code><i>vn</i><code> = </code><i>kn</i><code> $) </code>
+<dd>
+    Creates one cell with static storage duration for each identifier; the
+    cell is initialized to the expression before the program starts executing.
+<p>
+<dt>
+<a name="global"><code>GLOBAL</code></a><code> $(
+	</code><i>v1</i><code> : </code><i>k1</i><code>;
+	</code><i>v2</i><code> : </code><i>k2</i><code>;
+	</code><i>v3</i><code> : </code><i>k3</i><code>;
+	... ;
+	</code><i>vn</i><code> : </code><i>kn</i><code> $)</code>
+<dd>
+    The <i>ki</i> must be non-negative.&#160;<tt> </tt>A block of consecutive cells
+    exists available to all modules of the program, called the global
+    vector.&#160;<tt> </tt><i>vi</i> designates the <i>ki</i>'th cell of the global
+    vector; enough cells are allocated to cope with all declarations in
+    all modules.
+</dl>
+<p>
+
+<a name="simultaneous-decl">Simultaneous declarations</a> take the form:
+<pre>
+    <code>LET </code><i>d1</i><code> AND </code><i>d2</i><code> AND ... AND </code><i>dn</i>
+</pre>
+There are four types of declaration that can be used; they are shown
+here with <code>LET</code>, but of course can also occur with
+<code>AND</code>.&#160;<tt> </tt>The types may be freely mixed within one
+simultaneous declaration.
+<p>
+<dl>
+<dt><code>LET </code><i>v1</i><code>, </code><i>v2</i><code>, </code><i>v3</i><code>, ..., </code><i>vn</i><code> = </code><i>e1</i><code>, </code><i>e2</i><code>, </code><i>e3</i><code>, ..., </code><i>en</i><code></code>
+<dd>
+    One cell with dynamic
+    storage duration is created for each identifier, and initialized to the
+    corresponding expression, which need not be constant.
+<p>
+<dt><code>LET </code><i>v</i><code> = VEC </code><i>k</i><code></code>
+<dd>
+    One cell with dynamic
+    storage duration is created for the identifier.&#160;<tt> </tt>Another <i>k+1</i>
+    contiguous cells (the original cell is not necessarily contiguous with
+    them) with the same duration are also created, and the first cell is
+    initialized with the address of the first of the other cells.
+<p>
+<dt><code>LET </code><i>v</i><code> (</code><i>v1</i><code>,
+	</code><i>v2</i><code>,
+	...,
+	</code><i>vn</i><code>) BE </code><i>command</i><br>
+<code>LET </code><i>v</i><code> (</code><i>v1</i><code>,
+	</code><i>v2</i><code>,
+	...,
+	</code><i>vn</i><code>) = </code><i>e</i>
+<dd>
+    These create a procedure body; the <i>vi</i> are the formal
+    parameters.&#160;<tt> </tt>
+    If this lies within the scope of
+    a <a href="clive-on-bcpl.html#global"><code>GLOBAL</code></a> declaration for
+    <i>v</i>, then it continues to designate the cell of the global
+    vector.&#160;<tt> </tt>Otherwise it designates a cell with static storage
+    duration.&#160;<tt> </tt>Before the program starts, the cell
+    is initialized to a procedure designator that invokes
+    the appropriate body.
+    <p>
+    The first form generates a routine (which has no result), and the
+    second a function (which does).&#160;<tt> </tt>
+    In effect, the following are equivalent:
+<dl><dt><dd>
+<code>
+    LET </code><i>v</i><code> (</code><i>v1</i><code>, </code><i>v2</i><code>, ..., </code><i>vn</i><code>) BE </code><i>command</i><code>
+</code><dt>
+and<dd><code>
+    LET </code><i>v</i><code> (</code><i>v1</i><code>,
+	</code><i>v2</i><code>,
+	...,
+	</code><i>vn</i><code>) = </code>
+<br>
+    <code>VALOF $( </code><i>command</i><code> ;
+    RESULTIS </code><a href="clive-on-bcpl.html#ques"><code>?</code></a><code> $)</code>
+</dl>
+</dl>
+<p>
+	The first two forms may only occur within blocks.&#160;<tt> </tt>
+	This isn't a formal constraint written in the
+	<a href="alan-on-bcpl.html#the-book">BCPL book by Richards and
+	Whitby-Strevens</a>, but I've <em>never</em>
+	seen file-scope <code>LET</code> declarations of variables.&#160;<tt> </tt>In
+	particular, if I wanted a static or global array, I would always
+	declare the array within <code>START</code>, and then assign it to
+	the static or global variable.
+<p>
+The parameters of a function or routine designate contiguous cells, with
+adjacent parameters being adjacent.&#160;<tt> </tt>It is implementation defined
+whether the first parameter has the lowest or highest address.&#160;<tt> </tt>It
+is implementation-defined whether the values of arguments in excess of the
+number of parameters are stored in further contiguous cells or are discarded.
+<p>
+	Functions and routines may be declared inside <a href="clive-on-bcpl.html#blocks"
+	>blocks</a>.&#160;<tt> </tt>A function or routine may not refer to an
+	identifier which designates a cell with dynamic storage duration
+	and is not declared in that function or routine.
+<p>
+<h2>Labels</h2>
+
+	Labels have the form of an <a href="clive-on-bcpl.html#identifiers">identifier</a>
+	followed by a colon; any number of labels may precede a
+	<a href="clive-on-bcpl.html#commands">command</a>.&#160;<tt> </tt>
+	Each identifier designates a cell with static storage duration
+	(as with functions and routines, if a <a
+	href="clive-on-bcpl.html#global"><code>GLOBAL</code></a> declaration of
+	the identifier is in scope, that cell is used) which is
+	initialized, before the program starts, to a jump target
+	referring to the location of the label.&#160;<tt> </tt>A label is
+	in scope within the smallest of:
+<ul>
+<li> the commands (but not declarations) of the textually
+	surrounding <a href="clive-on-bcpl.html#blocks">block</a>
+<li> the body of the textually surrounding routine (if any)
+<li> the body of the textually surrounding <a href="clive-on-bcpl.html#valof">VALOF</a> (if any)
+<li> the body of the textually surrounding <a href="clive-on-bcpl.html#for">FOR</a> (if any)
+</ul>
+<p>
+	<a name="jump-closure">A jump closure</a> is a value which refers to
+	a particular invocation of a function or routine.&#160;<tt> </tt>The closure
+	of the current invocation can be determined by calling the library
+	routine <code>LEVEL()</code>; this value is no longer valid when
+	the invocation terminates.
+<p>
+	There are two ways to jump to a label: <code>GOTO</code> <i>t</i>,
+	and calling the library routine
+	<code>LONGJUMP(</code><i>c</i><code>,</code><i>t</i><code>)</code>;
+	<i>t</i> is an expression which evaluates to a jump target,
+	and <i>c</i> is an expression evaluating to a jump closure.&#160;<tt> </tt>
+	The jump must be made either from the scope of the target label,
+	or from a function or routine called (possibly indirectly) from
+	within that scope.&#160;<tt> </tt>
+	In the latter case, <i>c</i> must evaluate to the closure of
+	an invocation of the function containing the label and which is
+	still active.
+<p>
+<h2>System Library</h2>
+
+	This has been built up by consensus.&#160;<tt> </tt>All routines and
+	functions are accessed via the global vector via
+	<a href="clive-on-bcpl.html#global"><code>GLOBAL</code></a> declarations in
+	the header <code>LIBHDR</code>.&#160;<tt> </tt>The allocation of
+	routines and functions to particular cells is implementation
+	defined, but only cells less than <code>FIRSTFREEGLOBAL</code>
+	are used.
+<p>
+	Note that input and output goes via the designators held in
+	the global vector cells designated by <a href=
+	"clive-on-bcpl.html#rdch"><code>RDCH</code></a> and <a href=
+	"clive-on-bcpl.html#wrch"><code>WRCH</code></a>.&#160;<tt> </tt>
+	Altering those cells will alter the behaviour of all
+	I/O operations.
+<p>
+<a name="libhdr"><code>LIBHDR</code></a> contains the <a href="clive-on-bcpl.html#manifest-constant">manifests</a>:
+
+<pre><tt>    <a name="bitsperbyte">BITSPERBYTE</a>
+    BYTESPERWORD
+    ENDSTREAMCH
+    FIRSTFREEGLOBAL
+</tt></pre>
+<p>
+
+<dl>
+<dt><code>
+START</code> <code>(</code><i>implementation-defined parameters</i><code>)
+</code><dd>
+	This is not a library routine, but an identifier of a global
+	vector cell which the program must initialize; the routine
+	designator in that cell is called by the system to execute the
+	program.
+<p>
+<dt><a name="rdch"><code>character</code></a>
+	<code>=</code> <code>RDCH</code> <code>()
+</code><dd>
+Returns the next character from the selected input stream.&#160;<tt> </tt>Returns
+<code>ENDSTREAMCH</code> at end of file.
+
+<p>
+<dt><a name="wrch"><code>WRCH</code></a> <code>(character)
+</code><dd>
+Writes the character to the selected output stream.
+
+<p>
+<dt><code>
+	SELECTINPUT</code> <code>(stream.designator)
+</code><dd>
+Selects the designated stream as the new input stream.&#160;<tt> </tt>At program
+start, the standard input stream is selected.
+
+<p>
+<dt><code>
+	SELECTOUTPUT</code> <code>(stream.designator)
+</code><dd>
+Selects the designated stream as the new output stream.&#160;<tt> </tt>At program
+start, the standard output stream is selected.
+<p>
+<dt><code>
+	stream.designator</code> <code>=</code> <code>FINDINPUT</code> <code>(string)
+</code><dd>
+Returns a stream designator for the indicated file or device (read-only).
+
+<p>
+<dt><code>
+	stream.designator</code> <code>=</code> <code>FINDOUTPUT</code> <code>(string)
+</code><dd>
+Returns a stream designator for the indicated file or device (write-only).
+
+<p>
+<dt><code>
+stream.designator</code> <code>=</code> <code>FINDFILE</code> <code>(string)
+</code><dd>
+Returns a stream designator for the indicated file (read-write and seekable).
+
+<p>
+<dt><code>
+stream.designator</code> <code>=</code> <code>CURRENTINPUT</code>
+	<code>()</code>
+<br>
+<code>stream.designator</code> <code>=</code> <code>CURRENTOUTPUT</code>
+	<code>()</code>
+<dd>
+Return the designator of the selected stream.&#160;<tt> </tt>[I think these are
+routines, but the designators might just be stored in the
+<a href="clive-on-bcpl.html#global">global vector</a>; I can't remember.]
+<p>
+<dt>
+[I forget the routines for seeking on a stream.]
+<dd>
+
+<p>
+<dt><code>integer</code> <code>=</code> <code>READN</code> <code>()</code><dd>
+Reads an integer via <a href="clive-on-bcpl.html#rdch"><code>RDCH</code></a> and returns it.
+
+<p>
+<dt>
+<code>WRITES</code> <code>(string)</code><br>
+<code>WRITEN</code> <code>(integer)</code><br>
+<code>WRITED</code> <code>(integer,</code> <code>minimum.width)</code><br>
+<code>WRITEOCT</code> <code>(integer,</code> <code>minimum.width)</code><br>
+<code>WRITEHEX</code> <code>(integer,</code> <code>minimum.width)</code><dd>
+Writes the string or integer via <a href="clive-on-bcpl.html#wrch"><code>WRCH</code></a>.<tt>
+</tt>Padding is done with spaces on the left.
+
+<p>
+<dt><code>
+WRITEF</code> <code>(format,</code> <i>args</i> <code>...)</code>
+<dd>
+Does a formatted write via <a href="clive-on-bcpl.html#wrch"><code>WRCH</code></a>.<tt>
+</tt>The format is a string which can contain:
+<pre>
+    %%  call WRCH('%')
+    %S  call WRITES   with the next argument
+    %C  call WRCH     with the next argument
+    %O1 call WRITEOCT with the next argument
+    %X1 call WRITEHEX with the next argument
+    %I1 call WRITED   with the next argument
+    %N  call WRITEN   with the next argument
+</pre>
+where <code>1</code> can be any single base-36 digit (i.e.  <code>A</code>
+means 10, <code>B</code> means 11, and so on), and is passed as the
+second argument of the call.
+<p>
+Other formats are implementation-defined.&#160;<tt> </tt>Note that these calls go
+via the <a href="clive-on-bcpl.html#global">global vector</a> (normally twice, since each
+then calls <a href="clive-on-bcpl.html#wrch"><code>WRCH</code></a>).
+
+<p>
+<dt><code>
+character</code> <code>=</code> <code>GETBYTE</code> <code>(s,</code> <code>i)</code><dd>
+Equivalent to <code>s%i</code>; used when <a href="clive-on-bcpl.html#modop"><code>%</code></a> is not supported.
+
+<p>
+<dt><code>
+PUTBYTE</code> <code>(s,</code> <code>i,</code> <code>c)
+</code><dd>
+Equivalent to <code>s%i:=c</code>; used when <a href="clive-on-bcpl.html#modop"><code>%</code></a> is not supported.
+
+<p>
+<dt><code>
+integer</code> <code>=</code> <code>PACKSTRING</code> <code>(v,</code> <code>s)
+</code><dd>
+Equivalent to: <code>FOR i</code> <code>=</code> <code>0 TO v!0 DO s%i</code> <code>=</code> <code>v!i</code>&#160;<tt> </tt>except that it returns the
+offset from <code>v</code> of the cell holding <code>s%(v!0)</code>.
+
+<p>
+<dt><code>
+UNPACKSTRING</code> <code>(s,</code> <code>v)
+</code><dd>
+Equivalent to: <code>FOR i</code> <code>=</code> <code>0 TO s%0 DO v!i</code> <code>=</code> <code>s%i</code>.
+
+<p>
+<dt><code>
+integer</code> <code>=</code> <code>MULDIV</code> <code>(x,</code> <code>y,</code> <code>z)
+</code><dd>
+Returns <code>(x*y/z)</code> evaluated without overflow if the final
+result fits in a cell.
+
+<p>
+<dt><code>
+integer</code> <code>=</code> <code>RANDOM</code> <code>(seed)
+</code><dd>
+Returns a random number generated from the seed.&#160;<tt> </tt>It is common to
+use the result as the seed for the next call.
+
+<p>
+<dt><code>
+closure</code> <code>=</code> <code>LEVEL</code> <code>()</code><br>
+<code>LONGJUMP</code> <code>(closure,</code> <code>target)
+</code><dd>
+Described <a href="clive-on-bcpl.html#jump-closure">above</a>.
+
+<p>
+<dt><code>
+value</code> <code>=</code> <code>APTOVEC</code> <code>(function,</code> <i>n</i><code>)
+</code><dd>
+Allocates <i>n+1</i> cells with dynamic storage duration, and then calls the function
+with two arguments: the address of the first cell, and <i>n</i>.&#160;<tt> </tt>Returns the
+result of the function.
+
+<p>
+<dt><code>
+address</code> <code>=</code> <code>GETBLK</code> <code>(</code><i>n</i><code>)
+</code><dd>
+Allocates <i>n+1</i> contiguous cells with heap storage duration, and returns the
+address of the first.
+
+<p>
+<dt><code>
+FREEBLK</code> <code>(address)
+</code><dd>
+Frees a block of heap cells.
+</dl>
+
+<h2>Syntactic sugar</h2>
+<ul>
+
+<li> 
+	<a name="comments">Comments</a> extend either from <code>//</code> or <code>||</code>
+	or <code>\\</code> to end of line, or from <code>/*</code> or
+	<code>|*</code> or <code>\*</code> to the corresponding close symbol
+  	(the two characters reversed);
+  	comments do not nest, and all comment symbols other than the
+	required close symbol are ignored in a comment.
+<li>
+	If a semicolon is syntactically sensible at the end of a line,
+	and one is not already there, it will be inserted.&#160;<tt> </tt>As a
+	corollary, a line cannot begin with a dyadic operator.
+<li>
+	The keywords <code>THEN</code> and <code>DO</code> are
+	interchangeable in all circumstances, as are <code>OR</code>
+	and <code>ELSE</code>.&#160;<tt> </tt>
+	<code>THEN</code>/<code>DO</code> may be omitted if followed
+	by another keyword or a block.
+<li> 
+	The keyword <code>GET</code> followed by a <a
+	href="clive-on-bcpl.html#string-constants">string constant</a> causes the
+	file indicated by the string to be textually included at
+	this point.&#160;<tt> </tt>The keyword and string (possibly
+	followed by a comment) should form a source line of their own.
+</ul>
+<p>
+<h2>Extensions</h2>
+<p>
+The following parts of the language are not supported by all compilers:
+<ul>
+<li> floating-point
+<li> the <a href="clive-on-bcpl.html#modop"><code>%</code></a> operator
+	(but <a href="clive-on-bcpl.html#string-constants">string constants</a> are
+	part of the core language)
+<li> the <a href="clive-on-bcpl.html#slct"><code>SLCT</code></a> and <code>::</code> operators
+<li> styles of <a href="clive-on-bcpl.html#comments">comment</a> other than <code>//</code>
+<li> <a href="clive-on-bcpl.html#assignments">operator-assignments</a> such as <code>+:=</code>
+</ul>
+<p>
+<hr>
+Copyright 1994 by <a href="clive/index.html">Clive Feather</a>, markup by
+jutta@pobox.com.
+</body>
+</html>
+

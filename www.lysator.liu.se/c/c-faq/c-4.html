@@ -1,0 +1,152 @@
+<html><head>
+<link rel="made" rev="made" href="mailto:jutta@cs.tu-berlin.de">
+<title>Expressions</title></head>
+<body>
+<a href="c-3.html"><img SRC="prev.xbm" ALT="[prev]"></a>
+<a href="index.html#comp-lang-c-faq"><img SRC="up.xbm" ALT="[up]"></a>
+<a href="c-faq-toc.html#c-4"><img SRC="overview.xbm" alt="[overview]"></a>
+<a href="c-5.html"><img SRC="next.xbm" ALT="[next]"></a>
+<hr>
+
+<h2>Section 4. Expressions</h2>
+<p>
+<h3>
+<a name="4-1">
+4.1:	Why doesn't this code:
+</a></h3><p>
+<pre>
+	a[i] = i++;
+</pre>
+<p><h3>
+	work?
+</h3><p>
+  	The subexpression <code>i++</code> causes a side effect -- it modifies <code>i</code>'s
+	value -- which leads to undefined behavior if <code>i</code> is also
+        referenced elsewhere in the same expression.&#160;<tt> </tt>(Note that
+        although the language in K&amp;R suggests that the behavior of this
+        expression is unspecified, the ANSI/ISO C Standard makes the
+        stronger statement that it is undefined -- see <a href="c-5.html#5-23">question 5.23</a>.)
+<p>
+	References: <a href="index.html#ANSI">ANSI</a> Sec. 3.3 p. 39.
+<p>
+
+<h3>
+<a name="4-2">
+4.2:	Under my compiler, the code
+</a></h3><p>
+<pre>
+	int i = 7;
+	printf(&quot;%d\n&quot;, i++ * i++);
+</pre>
+<h3>
+	prints 49.&#160;<tt> </tt>Regardless of the order of evaluation, shouldn't it
+	print 56?
+</h3><p>
+  	Although the postincrement and postdecrement operators <code>++</code> and <code>--</code>
+	perform the operations after yielding the former value, the
+	implication of &quot;after&quot; is often misunderstood.&#160;<tt> </tt>It is <em>not</em>
+	guaranteed that the operation is performed immediately after
+	giving up the previous value and before any other part of the
+	expression is evaluated.&#160;<tt> </tt>It is merely guaranteed that the
+	update will be performed sometime before the expression is
+	considered &quot;finished&quot; (before the next &quot;sequence point,&quot; in <a href="index.html#ANSI">ANSI</a>
+	C's terminology).&#160;<tt> </tt>In the example, the compiler chose to
+	multiply the previous value by itself and to perform both
+	increments afterwards.
+<p>
+	The behavior of code which contains multiple, ambiguous side
+	effects has always been undefined (see <a href="c-5.html#5-23">question 5.23</a>).&#160;<tt> </tt>
+Don't even try to find out
+	how your compiler implements such things (contrary to the
+	ill-advised exercises in many C textbooks); as K&amp;R wisely point out,
+	&quot;if you don't know <em>how</em> they are done on various machines, that
+	innocence may help to protect you.&quot;
+<p>
+	References: <a href="index.html#K-amp-RI">K&amp;R I</a> Sec. 2.12 p. 50; <a href="index.html#K-amp-RII">K&amp;R II</a> Sec. 2.12 p. 54; <a href="index.html#ANSI">ANSI</a>
+	Sec. 3.3 p. 39; <a href="index.html#CT-amp-P">CT&amp;P</a> Sec. 3.7 p. 47; <a href="index.html#PCS">PCS</a> Sec. 9.5 pp. 120-1.
+	(Ignore <a href="index.html#H-amp-S">H&amp;S</a> Sec. 7.12 pp. 190-1, which is obsolete.)
+<p>
+<h3><a name="4-3">
+4.3:  I've experimented with the code</a>
+</h3><pre>
+              int i = 2;
+              i = i++;
+</pre><h3>
+      on several compilers.&#160;<tt> </tt>Some gave i the value 2, some gave 3, but
+      one gave 4.&#160;<tt> </tt>I know the behavior is undefined, but how could it
+      give 4?
+</h3><p>
+      Undefined behavior means <em>anything</em> can happen.&#160;<tt> </tt>See <a href="c-5.html#5-23">question 5.23</a>.
+<p>
+<h3><a name="4-4">
+4.4:  People keep saying the behavior is undefined, but I just tried
+      it on an ANSI-conforming compiler, and got the results I
+      expected.</a>
+</h3><p>
+      A compiler may do anything it likes when faced with undefined
+      behavior (and, within limits, with implementation-defined and
+      unspecified behavior), including doing what you expect.&#160;<tt> </tt>It's
+      unwise to depend on it, though.&#160;<tt> </tt>See also <a href="c-5.html#5-18">question 5.18</a>.
+<p>
+<h3><a name="4-5">
+4.5:  Can I use explicit parentheses to force the order of evaluation
+      I want?</a>&#160;<tt> </tt>Even if I don't, doesn't precedence dictate it?
+</h3><p>
+      Operator precedence and explicit parentheses impose only a
+     partial ordering on the evaluation of an expression.  Consider
+     the expression
+<pre>
+             f() + g() * h()
+</pre>
+     -- although we know that the multiplication will happen before
+     the addition, there is no telling which of the three functions
+     will be called first.
+<p>
+<h3>
+<a name="4-6">
+4.6:	But what about the </a><code>&amp;&amp;,</code> <code>||,</code> and comma operators?
+	I see code like &quot;<code>if((c = getchar()) == EOF || c == '\n')</code>&quot; ...
+</h3><p>
+  	There is a special exception for those operators, (as well as the <code>?:</code> operator); each of them does imply a sequence point (i.e. left-to-right evaluation is guaranteed).&#160;<tt> </tt>Any book on C should make this
+	clear.
+<p>
+	References: <a href="index.html#K-amp-RI">K&amp;R I</a> Sec. 2.6 p. 38, Secs. A7.11-12 pp. 190-1;
+	<a href="index.html#K-amp-RII">K&amp;R II</a> Sec. 2.6 p. 41, Secs. A7.14-15 pp. 207-8; <a href="index.html#ANSI">ANSI</a>
+	Secs. 3.3.13 p. 52, 3.3.14 p. 52, 3.3.15 p. 53, 3.3.17 p. 55,
+	<a href="index.html#CT-amp-P">CT&amp;P</a> Sec. 3.7 pp. 46-7.
+<p>
+<h3>
+<a name="4-7">
+4.7:	If I'm not using the value of the expression, should I use </a><code>i++</code>
+	or <code>++i</code> to increment a variable?
+</h3><p>
+  	Since the two forms differ only in the value yielded, they are
+	entirely equivalent when only their side effect is needed.
+
+<p>
+<h3>
+<a name="4-8">
+4.8:	Why doesn't the code
+</a></h3><p>
+<pre>
+	int a = 1000, b = 1000;
+	long int c = a * b;
+</pre><h3>
+	work?
+</h3><p>
+  	Under C's integral promotion rules, the multiplication is
+	carried out using <code>int</code> arithmetic, and the result may overflow
+	and/or be truncated before being assigned to the <code>long int</code> left-
+	hand-side.&#160;<tt> </tt>Use an explicit cast to force <code>long</code> arithmetic:
+<p>
+<pre>
+	long int c = (long int)a * b;
+</pre>
+        Note that the code <code>(long int)(a * b)</code> would <em>not</em>
+	have the desired effect.
+<p>
+<hr>
+<a href="c-3.html"><img SRC="prev.xbm" ALT="[prev]"></a>
+<a href="index.html#comp-lang-c-faq"><img SRC="up.xbm" ALT="[up]"></a>
+<a href="c-faq-toc.html#c-4"><img SRC="overview.xbm" alt="[overview]"></a>
+<a href="c-5.html"><img SRC="next.xbm" ALT="[next]"></a></body></html>

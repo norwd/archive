@@ -1,0 +1,178 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>10.5 ``Equivalence'' between Pointers and Arrays</title>
+<link href="sx10d.html" rev=precedes>
+<link href="sx10f.html" rel=precedes>
+<link href="sx10.html" rev=subdocument>
+</head>
+<body>
+<H2>10.5 ``Equivalence'' between Pointers and Arrays</H2>
+
+<p>There are a number of similarities between arrays and pointers in C.
+If you have an array
+<pre>
+	int a[10];
+</pre>
+you can refer to <TT>a[0]</TT>, <TT>a[1]</TT>, <TT>a[2]</TT>, etc.,
+or to <TT>a[i]</TT> where <TT>i</TT> is an <TT>int</TT>.
+If you declare a pointer variable <TT>ip</TT>
+and set it to point to the beginning of an array:
+<pre>
+	int *ip = &amp;a[0];
+</pre>
+you can refer to <TT>*ip</TT>, <TT>*(ip+1)</TT>, <TT>*(ip+2)</TT>, etc.,
+or to <TT>*(ip+i)</TT> where <TT>i</TT> is an <TT>int</TT>.
+</p><p>There are also differences, of course.
+You cannot assign two arrays; the code
+<pre>
+	int a[10], b[10];
+	a = b;				/* WRONG */
+</pre>
+is illegal.
+As we've seen, though,
+you <em>can</em> assign two pointer variables:
+<pre>
+	int *ip1, *ip2;
+	ip1 = &amp;a[0];
+	ip2 = ip1;
+</pre>
+
+Pointer assignment is straightforward;
+the pointer on the left is simply made to point wherever the
+pointer on the right does.
+We haven't copied the data pointed to
+(there's still just one copy, in the same place);
+we've just made two pointers point to that one place.
+</p><p>The similarities between arrays and pointers
+end up being quite useful,
+and in fact C builds on the similarities,
+leading to what is called
+``the equivalence of arrays and pointers in C.''
+When we speak of this ``equivalence''
+we do not mean that
+arrays and pointers are
+the same thing
+(they are in fact quite different),
+but
+rather
+that they can be used in related ways,
+and that certain operations may be used between
+
+them.
+</p><p>The first such operation is that it is possible
+to (apparently) assign an array to a pointer:
+<pre>
+	int a[10];
+	int *ip;
+	ip = a;
+</pre>
+What can this mean?
+In that last assignment
+<TT>ip = a</TT>,
+aren't we mixing apples and oranges again?
+It turns out that we are not;
+C defines the result of this assignment
+to be
+that
+<TT>ip</TT> receives a pointer to the first element of <TT>a</TT>.
+In other words,
+it is as if you had written
+<pre>
+	ip = &amp;a[0];
+</pre>
+</p><p>The second facet of the equivalence
+is that you can use the ``array subscripting'' notation <TT>[i]</TT>
+on pointers, too.
+If you write
+<pre>
+	ip[3]
+</pre>
+it is just as if you had written
+<pre>
+	*(ip + 3)
+</pre>
+So when you have a pointer that points to a block of memory,
+such as an array or a part of an array,
+you can treat that pointer
+``as if'' it <em>were</em>
+
+an array,
+using the convenient <TT>[i]</TT> notation.
+In other words,
+at the beginning of this section when we talked about
+<TT>*ip</TT>, <TT>*(ip+1)</TT>, <TT>*(ip+2)</TT>,
+and <TT>*(ip+i)</TT>,
+we could have written
+<TT>ip[0]</TT>, <TT>ip[1]</TT>, <TT>ip[2]</TT>,
+and <TT>ip[i]</TT>.
+As we'll see, this can be quite useful
+(or at least convenient).
+</p><p>The third facet of the equivalence
+(which is actually a more general version of the first one we mentioned)
+is that <em>whenever</em> you mention the name of an array
+in a context where the ``value'' of the array would be needed,
+C automatically generates a pointer to the first element of the array,
+as if you had written <TT>&amp;array[0]</TT>.
+When you write something like
+<pre>
+	int a[10];
+	int *ip;
+	ip = a + 3;
+</pre>
+it is as if you had written
+<pre>
+	ip = &amp;a[0] + 3;
+</pre>
+which
+(and you might like to convince yourself of this)
+gives the same result as if you had written
+<pre>
+	ip = &amp;a[3];
+</pre>
+</p><p>For example,
+if the character array
+<pre>
+	char string[100];
+</pre>
+contains some string,
+here is another way to find its length:
+<pre>
+	int len;
+	char *p;
+
+	for(p = string; *p != '\0'; p++)
+		;
+
+	len = p - string;
+</pre>
+After the loop, <TT>p</TT> points to the <TT>'\0'</TT>
+terminating the string.
+The expression
+<TT>p - string</TT>
+is equivalent to
+<TT>p - &amp;string[0]</TT>,
+and gives the length of the string.
+(Of course, we could also call <TT>strlen</TT>;
+in fact here we've essentially written
+another implementation of <TT>strlen</TT>.)
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx10d.html" rev=precedes>prev</a>
+<a href="sx10f.html" rel=precedes>next</a>
+<a href="sx10.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

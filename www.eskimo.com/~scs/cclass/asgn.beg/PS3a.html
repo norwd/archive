@@ -1,0 +1,610 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>Assignment #3 Answers</title>
+</head>
+<body>
+<H1>Assignment #3 Answers</H1>
+
+
+
+
+
+<B>Introductory C Programming
+<br>
+<br>
+UW Experimental College
+<br>
+<br>
+Assignment #3 ANSWERS
+</B><br>
+<br>
+<p>Question 1.
+<I>How many elements does the array
+</I><TT>int a[5]
+</TT><I>contain?
+Which is the first element?
+The last?
+</I><p>The array has 5 elements.
+The first is <TT>a[0]</TT>;
+the last is <TT>a[4]</TT>.
+<p>Question 2.
+<I>What's wrong with the scrap of code in the question?
+</I><p>The array is of size 5, but the loop is from 1 to 5,
+so an attempt will be made to access the nonexistent element <TT>a[5]</TT>.
+A correct loop over this array would run from 0 to 4.
+<p>Question 3.
+<I>How might you rewrite the dice-rolling program
+without arrays?
+</I><p>About all I can think of would be to declare 11 different variables:
+<pre>
+	int roll2, roll3, roll4, roll5, roll6, roll7, roll8, roll9, 
+		roll10, roll11, roll12;
+
+	sum = d1 + d2;	/* sum two die rolls */
+
+	if(sum == 2)
+		roll2 = roll2 + 1;
+	else (sum == 3)
+		roll3 = roll3 + 1;
+	else (sum == 4)
+		roll4 = roll4 + 1;
+	else (sum == 5)
+		roll5 = roll5 + 1;
+	...
+</pre>
+What a nuisance!
+(Fortunately, we never have to write code like this;
+we just use arrays,
+since this
+sort of
+situation
+is exactly what arrays are for.)
+<p>Question 4.
+<I>What is the difference between a defining instance and an external declaration?
+</I><p>A <dfn>defining instance</dfn>
+is a declaration of a variable or function
+that actually defines and allocates space for that variable or function.
+In the case of a variable,
+the defining instance may also supply an initial value,
+using an <dfn>initializer</dfn> in the declaration.
+In the case of a function,
+the defining instance supplies the body of the function.
+<p>An <dfn>external declaration</dfn>
+is a declaration which mentions the name and type of a variable 
+or function which is defined elsewhere.
+An external declaration does not allocate space;
+it cannot supply the initial value of a variable;
+it does not need to supply the size of an array;
+it does not supply the body of a function.
+(In the case of functions, however,
+an external declaration may include argument type information;
+in this case it is an <dfn>external prototype declaration</dfn>.)
+<p>Question 5.
+<I>What are the four important parts of a function?
+Which three does a caller need to know?
+</I><p>The name, the number and type of the arguments,
+the return type,
+and the body.
+The caller needs to know the first three.
+<p>Tutorial 3.
+<I>Modify the array-of-squares program to also print cubes.
+</I><p><pre>
+#include &lt;stdio.h&gt;
+
+int main()
+{
+	int i;
+	int squares[11];	/* [0..10]; [0] ignored */
+	int cubes[11];
+	/* fill arrays: */
+	for(i = 1; i &lt;= 10; i = i + 1)
+		{
+		squares[i] = i * i;
+		cubes[i] = i * i * i;
+		}
+	/* print table: */
+	printf("n\tsquare\tcube\n");
+	for(i = 1; i &lt;= 10; i = i + 1)
+		printf("%d\t%d\t%d\n", i, squares[i], cubes[i]);
+	return 0;
+}
+</pre>
+
+<p>Tutorial 4.
+<I>Rewrite the simple graphics program to print ``open'' boxes.
+</I><p>I made a new version of the original <TT>printsquare</TT> function
+called <TT>printbox</TT>, like this:
+<pre>
+int printbox(int n)
+{
+	int i, j;
+	for(j = 0; j &lt; n; j = j + 1)
+		printf("*");
+	printf("\n");
+	for(i = 0; i &lt; n-2; i = i + 1)
+		{
+		printf("*");
+		for(j = 0; j &lt; n-2; j = j + 1)
+			printf(" ");
+		printf("*\n");
+		}
+	for(j = 0; j &lt; n; j = j + 1)
+		printf("*");
+	printf("\n");
+	return 0;
+}
+</pre>
+A box of size 1 or 2 doesn't have all three parts.
+If you want the function to handle those sizes more appropriately,
+here are the
+necessary
+
+modifications:
+<pre>
+int printbox(int n)
+{
+	int i, j;
+	for(j = 0; j &lt; n; j = j + 1)
+		printf("*");
+	printf("\n");
+	for(i = 0; i &lt; n-2; i = i + 1)
+		{
+		printf("*");
+		for(j = 0; j &lt; n-2; j = j + 1)
+			printf(" ");
+		if(n &gt; 1)
+			printf("*\n");
+		}
+	if(n &gt; 1)
+		{
+		for(j = 0; j &lt; n; j = j + 1)
+			printf("*");
+		printf("\n");
+		}
+	return 0;
+}
+</pre>
+<p>Exercise 1.
+<I>Write code to sum the elements of an array of <TT>int</TT>.
+</I><p>Here is a little array-summing function:
+<pre>
+int sumnum(int a[], int n)
+{
+	int i;
+	int sum = 0;
+	for(i = 0; i &lt; n; i = i + 1)
+		sum = sum + a[i];
+	return sum;
+}
+</pre>
+Here is a test program to call it:
+<pre>
+#include &lt;stdio.h&gt;
+
+int a[] = {1, 2, 3, 4, 5, 6};
+
+int sumnum(int [], int);
+
+int main()
+{
+	printf("%d\n", sumnum(a, 6));
+	return 0;
+}
+</pre>
+<p>Exercise 2.
+<I>Write a loop to call the <TT>multbytwo</TT> function
+on the numbers 1-10.
+</I><br><pre>
+#include &lt;stdio.h&gt;
+
+int multbytwo(int);
+
+int main()
+{
+	int i;
+	for(i = 1; i &lt;= 10; i++)
+		printf("%d  %d\n", i, multbytwo(i));
+	return 0;
+}
+</pre>
+<p>Exercise 3.
+<I>Write a <TT>square()</TT> function
+and use it to print the squares of the numbers 1-10.
+</I><p>The squaring function is quite simple:
+<pre>
+int square(int x)
+{
+	return x * x;
+}
+</pre>
+Here is a loop and main program to call it:
+<pre>
+#include &lt;stdio.h&gt;
+
+int square(int);
+
+int main()
+{
+	int i;
+
+	for(i = 1; i &lt;= 10; i = i + 1)
+		printf("%d  %d\n", i, square(i));
+
+	return 0;
+}
+</pre>
+<p>Exercise 4.
+<I>Write a <TT>printnchars</TT> function,
+and use it to rewrite the triangle-printing program.
+</I><p>Here is the function:
+<pre>
+void printnchars(int ch, int n)
+{
+	int i;
+
+	for(i = 0; i &lt; n; i++)
+		printf("%c", ch);
+}
+</pre>
+Here is the rewritten triangle-printing program:
+<pre>
+#include &lt;stdio.h&gt;
+
+int main()
+{
+	int i;
+
+	for(i = 1; i &lt;= 10; i = i + 1)
+		{
+		printnchars('*', i);
+		printf("\n");
+		}
+
+	return 0;
+}
+</pre>
+<p>Exercise 5.
+<I>Write a function to compute the factorial of a number,
+and use it to print the factorials of the numbers 1-7.
+</I><p>Here is the function:
+<pre>
+int factorial(int x)
+{
+	int i;
+	int fact = 1;
+	for(i = 2; i &lt;= x; i = i + 1)
+		fact = fact * i;
+	return fact;
+}
+</pre>
+Here is a driver program:
+<pre>
+#include &lt;stdio.h&gt;
+
+int factorial(int);
+
+int main()
+{
+	int i;
+
+	for(i = 1; i &lt;= 7; i = i + 1)
+		printf("%d   %d\n", i, factorial(i));
+
+	return 0;
+}
+</pre>
+<p>The answer to the ``extra credit'' problem is that to
+portably compute factorials beyond <TT>factorial(7)</TT>,
+it would be necessary to declare the <TT>factorial()</TT>
+function as returning <TT>long int</TT>
+(and to declare its local <TT>fact</TT> variable as 
+<TT>long int</TT> as well,
+and to use <TT>%ld</TT> in the call to <TT>printf</TT>).
+8! (``eight factorial'') is 40320,
+but remember,
+type <TT>int</TT> is only guaranteed to hold integers up to 32767.
+<p>(Some machines, but not all,
+have <TT>int</TT>s that can hold more than 32767,
+so computing larger factorials on those machines would happen to work,
+but not portably.
+Some textbooks would tell you to
+``use <TT>long int</TT>
+if your machine has 16-bit <TT>int</TT>s,''
+but why write code two different ways depending on what kind of 
+machine you happen to be using today?
+I prefer to say,
+``Use <TT>long int</TT>
+if you would like results greater than 32767.'')
+<p>Exercise 6.
+<I>Write a function <TT>celsius()</TT>
+to convert degrees Fahrenheit to degrees Celsius.
+Use it to print a Fahrenheit-to-Centigrade table
+for -40 to 220 degrees Fahrenheit, in increments of 10 degrees.
+</I><p>Here is the function:
+<pre>
+double celsius(double f)
+{
+	return 5. / 9. * (f - 32);
+}
+</pre>
+Here is the driver program:
+<pre>
+#include &lt;stdio.h&gt;
+
+double celsius(double);
+
+int main()
+{
+	double f;
+
+	for(f = -40; f &lt;= 220; f = f + 10)
+		printf("%f\t%f\n", f, celsius(f));
+
+	return 0;
+}
+</pre>
+<p>Exercise 7.
+<I>Modify the dice-rolling program
+so that it computes the average
+(and, optionally, the standard deviation)
+of all the rolls of the pair of dice.
+</I><p>The new code involves declaring new variables
+<TT>sum</TT>, <TT>n</TT>, and <TT>mean</TT>
+(and, for the extra credit problem, <TT>sumsq</TT> and <TT>stdev</TT>),
+adding code in the main dice-rolling loop to update <TT>sum</TT> and <TT>n</TT>
+(and maybe also <TT>sumsq</TT>),
+and finally adding code at the end to compute the mean
+(and standard deviation)
+and print them out.
+<pre>
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;math.h&gt;
+
+int main()
+{
+	int i;
+	int d1, d2;
+	int a[13];	/* uses [2..12] */
+	double sum = 0;
+	double sumsq = 0;
+	int n = 0;
+	double mean;
+	double stdev;
+
+	for(i = 2; i &lt;= 12; i = i + 1)
+		a[i] = 0;
+
+	for(i = 0; i &lt; 100; i = i + 1)
+		{
+		d1 = rand() % 6 + 1;
+		d2 = rand() % 6 + 1;
+		a[d1 + d2] = a[d1 + d2] + 1;
+		sum = sum + d1 + d2;
+		sumsq = sumsq + (d1 + d2) * (d1 + d2);
+		n = n + 1;
+		}
+
+	for(i = 2; i &lt;= 12; i = i + 1)
+		printf("%d: %d\n", i, a[i]);
+
+	printf("\n");
+	mean = sum / n;
+	stdev = sqrt((sumsq - sum * sum / n) / (n - 1));
+	printf("average: %f\n", mean);
+	printf("std. dev.: %f\n", stdev);
+
+	return 0;
+}
+</pre>
+<p>Exercise 8.
+<I>Write a <TT>randrange</TT> function.
+</I><p>Here is a straightforward implementation
+of <TT>randrange2</TT>:
+<pre>
+#include &lt;stdlib.h&gt;
+
+int randrange2(int m, int n)
+{
+	return rand() % (n - m + 1) + m;
+}
+</pre>
+Here is one using the suggested ``better way of reducing the 
+range of the <TT>rand</TT> function'':
+<pre>
+#include &lt;stdlib.h&gt;
+
+int randrange2(int m, int n)
+{
+	return rand() / (RAND_MAX / (n - m + 1) + 1) + m;
+}
+</pre>
+Notice that I've replaced N in the suggested general form
+with the expression <TT>n - m + 1</TT>.
+<p>You could implement the simpler <TT>randrange</TT> function either as
+<pre>
+	int randrange(int n)
+	{
+		return rand() % n + 1;
+	}
+</pre>
+or, using the improvement,
+<pre>
+	int randrange(int n)
+	{
+		return rand() / (RAND_MAX / n + 1) + 1;
+	}
+</pre>
+or,
+by writing it ``on top of''
+the more general <TT>randrange2</TT>
+you already wrote,
+<pre>
+	int randrange(int n)
+	{
+		return randrange2(1, n);
+	}
+</pre>
+<p>The various ``fudge factors'' in these expressions
+deserve some explanation.
+The first
+one is straightforward:
+The <TT>+ 1</TT> in <TT>(n - m + 1)</TT>
+simply gives us the number of numbers in the range <TT>m</TT> to 
+<TT>n</TT>, <em>including</em> <TT>m</TT> and <TT>n</TT>.
+(Leaving out the <TT>+ 1</TT> in this case is the classic 
+example of a <dfn>fencepost error</dfn>,
+named after the old puzzle,
+
+``How many pickets are there in 
+a picket fence ten feet long, with the pickets one foot apart?'')
+<p>The other <TT>+1</TT> is a bit trickier.
+First let's consider the second implementation of <TT>randrange</TT>.
+We want to divide <TT>rand</TT>'s output by some number
+so that the results will come out in the range 0 to <TT>n - </TT>1.
+(Then we'll add in 1 to get numbers in the range 1
+through <TT>n</TT>.)
+Left to its own devices,
+<TT>rand</TT> will return numbers in the range 0 to <TT>RAND_MAX</TT>
+(where <TT>RAND_MAX</TT> is a
+
+constant defined for us in <TT>&lt;stdlib.h&gt;</TT>).
+The division, remember, is going to be integer division,
+which will truncate.
+So numbers which would have come out in the range
+0.0 to 0.99999... (if the division were exact) will all truncate to 0,
+numbers which would have come out in the range
+1.0 to 1.99999... will all truncate to 1,
+2.0 to 2.99999... will all truncate to 2,
+etc.
+If we were to divide <TT>rand</TT>'s output
+by the quantity
+<pre>
+	RAND_MAX / n
+</pre>
+that is, if we were to write
+<pre>
+	rand() / (RAND_MAX / n)
+</pre>
+then when <TT>rand</TT> returned <TT>RAND_MAX</TT>,
+the division
+could
+yield exactly
+<TT>n</TT>,
+which is one too many.
+(This wouldn't happen too often--only when <TT>rand</TT> 
+returned that one value, its maximum value--but it would be a 
+bug, and a hard one to find, because it wouldn't show up very 
+often.)
+So if we add one to the denominator,
+that is,
+divide by the quantity
+<pre>
+	RAND_MAX / n + 1
+</pre>
+then when <TT>rand</TT> returns <TT>RAND_MAX</TT>,
+the division will yield a number just shy of
+<TT>n</TT>,
+which will then be truncated to
+<TT>n - </TT>1,
+which is just what we want.
+We add in 1, and we're done.
+<p>In the case of the more general <TT>randrange2</TT>,
+everything we've said applies,
+with <TT>n</TT> replaced by <TT>n - m + 1</TT>.
+Dividing by
+<pre>
+	RAND_MAX / (n - m + 1)
+</pre>
+would occasionally give us a number one too big
+(<TT>n + 1</TT>, after adding in <TT>m</TT>),
+so we divide by
+<pre>
+	RAND_MAX / (n - m + 1) + 1
+</pre>
+instead.
+<p>Finally, just two lines in the dice-rolling program would need 
+to be changed
+to make use of the new function:
+<pre>
+		d1 = randrange(6);
+		d2 = randrange(6);
+</pre>
+or
+<pre>
+		d1 = randrange2(1, 6);
+		d2 = randrange2(1, 6);
+</pre>
+<p>The answer to the extra-credit portion of the exercise
+is that under some compilers,
+the output of the <TT>rand</TT> function
+is not quite as random as you might wish.
+In particular, it's not uncommon for the <TT>rand</TT> function 
+to produce alternately even and odd numbers,
+such that if you repeatedly compute <TT>rand % 2</TT>,
+you'll get the decidedly non-random sequence 0, 1, 0, 1, 0, 1, 0, 1... .
+It's for this reason that
+the slightly more elaborate range-reduction techniques
+involving the constant <TT>RAND_MAX</TT>
+are recommended.
+<p>Exercise 9.
+<I>Rewrite the dice-rolling program to also print a histogram.
+</I><br><pre>
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+int main()
+{
+	int i;
+	int d1, d2;
+	int a[13];	/* uses [2..12] */
+
+	for(i = 2; i &lt;= 12; i = i + 1)
+		a[i] = 0;
+
+	for(i = 0; i &lt; 100; i = i + 1)
+		{
+		d1 = rand() % 6 + 1;
+		d2 = rand() % 6 + 1;
+		a[d1 + d2] = a[d1 + d2] + 1;
+		}
+
+	for(i = 2; i &lt;= 12; i = i + 1)
+		{
+		printf("%d: %d\t", i, a[i]);
+		printnchars('*', a[i]);
+		printf("\n");
+		}
+
+	return 0;
+}
+</pre>
+The <TT>\t</TT> in the second-to-last call to <TT>printf</TT>
+prints a tab character,
+so that the histogram bars will all be lined up,
+regardless of the number of digits
+in the particular values of <TT>i</TT> or <TT>a[i]</TT>.
+Another possibility would be to use <TT>printf</TT>'s
+width specifier
+(which we haven't really covered yet)
+to keep the digits lined up.
+That approach might look like this:
+<pre>
+			printf("%2d: %3d  ", i, a[i])
+</pre>
+<hr>
+<hr>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-9
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-04 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

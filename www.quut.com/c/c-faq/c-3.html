@@ -1,0 +1,277 @@
+<html><head>
+<link rel="made" rev="made" href="mailto:jutta@cs.tu-berlin.de">
+<title>Memory Allocation</title></head>
+<body>
+<a href="c-2.html"><img SRC="prev.xbm" ALT="[prev]"></a>
+<a href="index.html#comp-lang-c-faq"><img SRC="up.xbm" ALT="[up]"></a>
+<a href="c-faq-toc.html#c-3"><img SRC="overview.xbm" alt="[overview]"></a>
+<a href="c-4.html"><img SRC="next.xbm" ALT="[next]"></a>
+<hr>
+<h2>Section 3. Memory Allocation</h2>
+<p>
+<h3>
+<a name="3-1">
+3.1:	Why doesn't this fragment work?</a></h3>
+<pre>
+	char *answer;
+	printf(&quot;Type something:\n&quot;);
+	gets(answer);
+	printf(&quot;You typed \&quot;%s\&quot;\n&quot;, answer);
+</pre>
+<p>
+  	The pointer variable &quot;answer,&quot; which is handed to the gets
+	function as the location into which the response should be
+	stored, has not been set to point to any valid storage.&#160;<tt> </tt>That
+	is, we cannot say where the pointer &quot;answer&quot; points.&#160;<tt> </tt>(Since
+	local variables are not initialized, and typically contain
+	garbage, it is not even guaranteed that &quot;answer&quot; starts out as a
+	null pointer.&#160;<tt> </tt>See <a href="c-17.html#17-1">question 17.1</a>.)
+<p>
+	The simplest way to correct the question-asking program is to
+	use a local array, instead of a pointer, and let the compiler
+	worry about allocation:
+<p>
+<pre>
+	#include &lt;string.h&gt;
+
+	char answer[100], *p;
+	printf(&quot;Type something:\n&quot;);
+        fgets(answer, sizeof(answer), stdin);
+	if((p = strchr(answer, '\n')) != NULL)
+		*p = '\0';
+	printf(&quot;You typed \&quot;%s\&quot;\n&quot;, answer);
+</pre>
+<p>
+        Note that this example also uses <code>fgets()</code> instead of <code>gets()</code> (always a
+        good idea; see <a href="c-11.html#11-6">question 11.6</a>), allowing the size of the array to
+        be specified, so that the end of the array will not be
+        overwritten if the user types an overly-long line.
+        (Unfortunately for this example,<code> fgets() </code>does not automatically
+        delete the trailing<code> \n</code>, as<code> gets() </code>would.)  It would also be
+        possible to use<code> malloc() </code>to allocate the answer buffer.
+<p>
+<h3>
+<a name="3-2">
+3.2:	I can't get</a><code> strcat </code>to work.&#160;<tt> </tt>I tried</h3>
+<pre>
+
+	char *s1 = &quot;Hello, &quot;;
+	char *s2 = &quot;world!&quot;;
+	char *s3 = strcat(s1, s2);
+
+</pre><h3>
+	but I got strange results.
+</h3><p>
+  	Again, the problem is that space for the concatenated result is
+	not properly allocated.&#160;<tt> </tt>C does not provide an automatically-
+	managed string type.&#160;<tt> </tt>C compilers only allocate memory for
+	objects explicitly mentioned in the source code (in the case of
+	&quot;strings,&quot; this includes character arrays and string literals).
+	The programmer must arrange (explicitly) for sufficient space
+	for the results of run-time operations such as string
+	concatenation, typically by declaring arrays, or by calling
+	<code>malloc</code>.&#160;<tt> </tt>(See also question <a href="c-17.html#17-20">17.20</a>.)
+<p>
+	strcat performs no allocation; the second string is appended to
+	the first one, in place.&#160;<tt> </tt>Therefore, one fix would be to declare
+	the first string as an array with sufficient space:
+<p>
+<pre>
+	char s1[20] = &quot;Hello, &quot;;
+</pre>
+<p>
+	Since strcat returns the value of its first argument (s1, in
+	this case), the s3 variable is superfluous.
+<p>
+	References: <a href="index.html#CT-amp-P">CT&amp;P</a> Sec. 3.2 p. 32.
+<p>
+<h3>
+<a name="3-3">
+3.3:	But the man page for</a><code> strcat </code>says that it takes two<code> char</code> <code>*</code>'s as
+	arguments.&#160;<tt> </tt>How am I supposed to know to allocate things?
+</h3><p>
+  	In general, when using pointers you <em>always</em> have to consider
+	memory allocation, at least to make sure that the compiler is
+	doing it for you.&#160;<tt> </tt>If a library routine's documentation does not
+	explicitly mention allocation, it is usually the caller's
+	problem.
+<p>
+	The Synopsis section at the top of a Unix-style man page can be
+	misleading.&#160;<tt> </tt>The code fragments presented there are closer to
+	the function definition used by the call's implementor than the
+	invocation used by the caller.&#160;<tt> </tt>In particular, many routines
+	which accept pointers (e.g. to structs or strings), are usually
+	called with the address of some object (a struct, or an array --
+	see questions <a href="c-2.html#2-3">2.3</a> and <a href="c-2.html#2-4">2.4</a>.)&#160;<tt> </tt>Another common example is<code> stat()</code>.
+<p>
+<h3>
+<a name="3-4">
+3.4:	I have a function that is supposed to return a string, but when
+	it returns to its caller, the returned string is garbage.
+</a></h3><p>
+  	Make sure that the memory to which the function returns a
+	pointer is correctly allocated.&#160;<tt> </tt>The returned pointer should be
+	to a statically-allocated buffer, or to a buffer passed in by
+	the caller, or to memory obtained with<code> malloc()</code>,
+	but <em>not</em> to a local (auto) array.&#160;<tt> </tt>
+In other words,
+        never do something like
+<pre>
+        char *f()
+        {
+                char buf[10];
+                /* ... */
+                return buf;
+        }
+</pre>
+       One fix (which is imperfect, especially if <code>f()</code> is called
+       recursively, or if several of its return values are needed
+       simultaneously) would to to declare the buffer as
+<pre>
+                static char buf[10];
+</pre>
+        See also <a href="c-17.html#17-5">question 17.5</a>.
+<p>
+<h3>
+<a name="3-5">
+3.5:  Why does some code carefully cast the values returned by</a><code> malloc
+      </code>to the pointer type being allocated?</h3><p>
+      Before ANSI/ISO Standard C introduced the<code> void</code> <code>* </code>generic pointer
+      type, these casts were typically required to silence warnings
+      about assignment between incompatible pointer types.&#160;<tt> </tt>(Under
+      ANSI/ISO Standard C, these casts are not required.)
+<p>
+<h3>
+<a name="3-6">
+3.6:	You can't use dynamically-allocated memory after you free it,
+	can you?
+</a></h3><p>
+  	No.&#160;<tt> </tt>Some early documentation for<code> malloc </code>stated that the contents of
+	freed memory was &quot;left undisturbed;&quot; this ill-advised guarantee
+	was never universal and is not required by <a href="index.html#ANSI">ANSI</a>.
+<p>
+	Few programmers would use the contents of freed memory
+	deliberately, but it is easy to do so accidentally.&#160;<tt> </tt>Consider
+	the following (correct) code for freeing a singly-linked list:
+<p>
+<pre>
+	struct list *listp, *nextp;
+	for(listp = base; listp != NULL; listp = nextp) {
+		nextp = listp-&gt;next;
+		free((char *)listp);
+	}
+</pre>
+<p>
+	and notice what would happen if the more-obvious loop iteration
+	expression<code> listp = listp-&gt;next </code>were used, without the temporary
+	<code>nextp </code>pointer.
+<p>
+	References:
+   <a href="../rat/d10.html#4-10-3-2">ANSI Rationale Sec. 4.10.3.2 p. 102</a>;
+	<a href="index.html#CT-amp-P">CT&amp;P</a> Sec. 7.10
+	p. 95.
+<p>
+<h3>
+<a name="3-7">
+3.7:	How does</a><code> free() </code>know how many bytes to free?
+</h3><p>
+  	The<code> malloc</code>/<code>free </code>package remembers the size of each block it
+	allocates and returns, so it is not necessary to remind it of
+	the size when freeing.
+<p>
+<h3>
+<a name="3-8">
+3.8:	So can I query the</a><code> malloc </code>package to find out how big an
+	allocated block is?
+</h3><p>
+  	Not portably.
+<p>
+<h3>
+<a name="3-9">
+3.9:	I'm allocating structures which contain pointers to other
+	dynamically-allocated objects.</a>&#160;<tt> </tt>When I free a structure, do I
+	have to free each subsidiary pointer first?
+</h3><p>
+  	Yes.&#160;<tt> </tt>In general, you must arrange that each pointer returned
+	from<code> malloc </code>be individually passed to<code> free</code>,&#160;<tt> </tt>exactly once (if it
+	is freed at all).
+<p>
+<h3>
+<a name="3-10">
+3.10:	I have a program which mallocs but then frees a lot of memory,
+	but memory usage (as reported by ps) doesn't seem to go back
+	down</a>.
+</h3><p>
+  	Most implementations of<code> malloc</code>/<code>free </code>do not return freed memory
+	to the operating system (if there is one), but merely make it
+	available for future<code> malloc </code>calls within the same process.
+<p>
+<h3><a name="3-11">
+3.11:   Must I</a><code> free </code>allocated memory before the program exits?</h3>
+      You shouldn't have to.&#160;<tt> </tt>A real operating system definitively
+      reclaims all memory when a program exits.&#160;<tt> </tt>Nevertheless, some
+      personal computers are said not to reliably recover memory, and
+      all that can be inferred from the ANSI/ISO C Standard is that it
+      is a &quot;quality of implementation issue.&quot;
+<p> 
+      References: <a href="index.html#ANSI">ANSI</a> Sec. 4.10.3.2 .
+<h3>
+<a name="3-12">
+3.12:	Is it legal to pass a null pointer as the first argument
+	to</a><code> realloc()</code>?&#160;<tt> </tt>Why would you want to?
+</h3><p>
+  	<a href="index.html#ANSI">ANSI</a> C sanctions this usage (and the related<code> realloc(..., 0)</code>,
+	which frees), but several earlier implementations do not support
+	it, so it is not widely portable.&#160;<tt> </tt>Passing an initially-null
+	pointer to<code> realloc </code>can make it easier to write a self-starting
+	incremental allocation algorithm.
+<p>
+	References: <a href="index.html#ANSI">ANSI</a> Sec. 4.10.3.4 .
+<p>
+<h3>
+<a name="3-13">
+3.13:	What is the difference between</a><code> calloc </code>and<code> malloc</code>?&#160;<tt> </tt>Is it safe to
+	use<code> calloc</code>'s zero-fill guarantee for pointer and floating-point
+	values?&#160;<tt> </tt>Does<code> free </code>work on memory allocated with<code> calloc</code>,&#160;<tt> </tt>or do
+	you need a<code> cfree</code>?
+</h3><p>
+  	<code>calloc(m, n) </code>is essentially equivalent to
+<p>
+<pre>
+	p = malloc(m * n);
+	memset(p, 0, m * n);
+</pre>
+<p>
+	The zero fill is all-bits-zero, and does not therefore guarantee
+	useful zero values for pointers (see section 1 of this list) or
+	floating-point values.&#160;<tt> </tt><code>free </code>can (and should) be used to<code> free </code>the memory allocated by<code> calloc</code>.
+<p>
+	References: <a href="index.html#ANSI">ANSI</a> Secs. 4.10.3 to 4.10.3.2 .
+<p>
+<h3>
+<a name="3-14">
+3.14:	What is</a><code> alloca </code>and why is its use discouraged?
+</h3><p>
+  	<code>alloca </code>allocates memory which is automatically freed when the
+	function which called<code> alloca </code>returns.&#160;<tt> </tt>That is, memory allocated
+	with<code> alloca </code>is local to a particular function's &quot;stack frame&quot; or
+	context.
+<p>
+	<code>alloca </code>cannot be written portably, and is difficult to implement
+	on machines without a stack.&#160;<tt> </tt>Its use is problematical (and the
+	obvious implementation on a stack-based machine fails) when its
+	return value is passed directly to another function, as in
+	<code>fgets(alloca(100), 100, stdin)</code>.
+<p>
+	For these reasons,<code> alloca </code>cannot be used in programs which must
+	be widely portable, no matter how useful it might be.
+<p>
+	References:
+  <a href="../rat/d10.html#alloca-4-10-3">ANSI Rationale Sec. 4.10.3 p. 102</a>.
+<p>
+<hr>
+<a href="c-2.html"><img SRC="prev.xbm" ALT="[prev]"></a>
+<a href="index.html#comp-lang-c-faq"><img SRC="up.xbm" ALT="[up]"></a>
+<a href="c-faq-toc.html#c-3"><img SRC="overview.xbm" alt="[overview]"></a>
+<a href="c-4.html"><img SRC="next.xbm" ALT="[next]"></a>
+</body></html>

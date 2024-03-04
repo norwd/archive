@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>24.3 Function Pointers and Prototypes</title>
+<link href="sx10b.html" rev=precedes>
+<link href="sx11.html" rel=precedes>
+<link href="sx10.html" rev=subdocument>
+</head>
+<body>
+<H2>24.3 Function Pointers and Prototypes</H2>
+
+<p>It's generally a good idea to have a function prototype in scope
+whenever you call a function.
+Function prototypes allow the compiler to generate
+correct code for function calls,
+and to verify that you've called a function with the correct
+number and type of arguments.
+Standard library functions are prototyped
+by including the relevant standard header files,
+and it's generally recommended
+that you write prototype declarations for your own functions, too,
+usually placing
+those declarations
+in your own header files.
+But what prototype can be used
+for an indirect function call using a function pointer,
+such as
+<pre>
+	(*pfi)(arg1, arg2)
+</pre>
+In general, it won't be known until run time
+what function <TT>pfi</TT> actually points to,
+so there's no way for the compiler to check the call
+against the prototype of the actually-called function.
+(We may know that <TT>pfi</TT> points to
+<TT>f1</TT>, <TT>f2</TT>, or <TT>f3</TT>,
+and we may have supplied prototypes for those functions,
+but that's immaterial.)
+</p><p>We've seen that when you declare a function pointer,
+you must declare what the return value
+of the pointed-to function will be.
+It's also possible to specify what the prototype
+of the pointed-to function will be.
+Here's our earlier declaration of <TT>pfi</TT>,
+beefed up with a prototype for the arguments:
+<pre>
+	int (*pfi)(int, int);
+</pre>
+Now we know that <TT>pfi</TT> is a pointer to a function,
+that the function (whatever it is) accepts two <TT>int</TT> arguments,
+and that the function returns an <TT>int</TT>.
+Having specified this,
+the compiler will now be able to do some more checking for us.
+If we call
+<pre>
+	(*pfi)(1, 2, 3)
+</pre>
+the compiler will complain,
+because it knows that the function pointed to by <TT>pfi</TT>
+is supposed to receive
+two arguments,
+but we've passed three.
+The compiler is also in a position to verify
+that we actually <em>set</em> <TT>pfi</TT>
+to point to functions that accept two <TT>int</TT> arguments.
+Our examples so far were in terms of functions which we declared as
+<pre>
+	extern int f1();
+	extern int f2();
+	extern int f3();
+</pre>
+that is, as functions taking unspecified arguments and returning <TT>int</TT>.
+(Remember, empty parentheses in an external function declaration indicate
+that the function accepts
+unspecified arguments,
+while empty parentheses in a function definition
+indicate that the function accepts no arguments.)
+So the compiler won't be able to check the assignments
+unless we also provide prototypes:
+<pre>
+	extern int f1(int, int);
+	extern int f2(int, int);
+	extern int f3(int, int);
+</pre>
+Now, when we assign
+<pre>
+	pfi = f1;
+</pre>
+the compiler can verify that the function pointer being assigned
+is to a function which accepts two <TT>int</TT> arguments,
+as <TT>pfi</TT> expects.
+If, on the other hand, we declared and assigned
+<pre>
+	extern int x(int);
+	pfi = x;
+</pre>
+the compiler would complain,
+because <TT>pfi</TT> is supposed to point
+to a function which accepts two <TT>int</TT> arguments,
+and the eventual call to <TT>(*pfi)()</TT>
+is going to be verified to be a call passing two arguments,
+so assigning <TT>pfi</TT> to point to <TT>x</TT>
+(which accepts a single argument)
+is
+incorrect.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx10b.html" rev=precedes>prev</a>
+<a href="sx11.html" rel=precedes>next</a>
+<a href="sx10.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1996-1999
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

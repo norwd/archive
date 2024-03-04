@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<html>
+<head>
+<meta name=GENERATOR content="faqproc">
+<title>FILTER(1)</title>
+</head>
+<body>
+<H1>FILTER(1)</H1>
+<!-- This program and its documentation are Public Domain. -->
+<!-- Steve Summit, scs@eskimo.com -->
+<!-- See http://www.eskimo.com/~scs/src/#filter for possible updates. -->
+<H2>NAME</H2>
+
+filter - apply a filter to a set of files, in-place
+<H2>SYNOPSIS</H2>
+
+<B>filter</B>
+[
+<B>-bpsv</B>
+]
+command
+files
+<H2>DESCRIPTION</H2>
+
+<p><I>filter</I>
+applies <I>command</I> to each of the listed <I>files</I>,
+replacing each file with
+the output of <I>command</I>
+when run with that file as input.
+The <I>command</I> must, therefore,
+(and as this program's name suggests)
+be a filter,
+reading standard input
+and writing some usefully modified rendition of it to standard output.
+Typical <I>command</I>s are sed and tr.
+</p><p><I>filter</I> pays attention to
+the exit status of <I>command</I>
+and does not replace an original file
+if <I>command</I>
+exits with an error status.
+<I>filter</I> also attempts to preserve
+the original file's permissions, ownership, and hard links,
+although its ability to do so is somewhat dependent on
+ancillary utilities which may not be universally available.
+</p><p><I>filter</I>'s interpretation of its command line
+is rather blunt:
+the first argument is the command to be invoked;
+the remaining argument(s) are the file(s) to be filtered.
+</p><p>This syntax presents an obvious difficulty:
+what if the command to be invoked itself takes some option flags or arguments,
+or is otherwise multi-word?
+The solution is simple: enclose the command string in quotes.
+But this solution presents a further difficulty:
+what if one of the command's arguments needs to be quoted?
+The solution to <em>that</em> is either to quote some of the quotes,
+or use two different kinds of quotes.
+</p><p>For example,
+suppose that <I>filter</I> is to be used
+to invoke sed on a series of files,
+where the sed command to be invoked must be quoted
+(as it of course usually must be).
+The complete invocation might look like this:
+<pre>
+	filter "sed 's/cannot/can not/g'" file1 file2 file3
+</pre>
+</p><p>(In extreme cases,
+it may be easier to encapsulate a complicated filtering command
+as a shell script
+which can then be invoked as a single word,
+although this is admittedly a nuisance.)
+</p><p><I>filter</I> invokes
+the specified <I>command</I> within
+an extra shell <TT>eval</TT> layer,
+meaning that an exotic invocation such as
+<pre>
+	filter "rev | sort | rev" file1 file2 file3
+</pre>
+will work as expected
+(that is, each file will be filtered through the pipeline
+``<TT>rev | sort | rev</TT>'').
+</p><H2>OPTIONS</H2>
+
+<I>filter</I> accepts a few options of its own:
+<dl>
+<dt><B>-b</B>
+</dt><dd>Save a backup copy of each original input file,
+before modification,
+as <I>filename</I><TT>.bak</TT>.
+</dd><dt><B>-i</B>
+</dt><dd>Ignore any errors returned by <I>command</I>;
+always replace the input file with the output.
+</dd><dt><B>-p</B>
+</dt><dd>Preserve the original modification times
+of the files being filtered.
+(This option may not be available in all versions of the program,
+as it depends on ancillary utilities which may not be universally available.)
+</dd><dt><B>-s</B>
+</dt><dd>Do not replace an input file if the output of <I>command</I>
+is no different from the input.
+</dd><dt><B>-v</B>
+</dt><dd>Verbose: print messages about all files filtered.
+</dd><dt><B>-?, -h</B>
+</dt><dd>Print a brief help/usage message.
+</dd></dl>
+<H2>AUTHOR</H2>
+
+<p>Steve Summit,
+<TT>scs@eskimo.com</TT>
+</p><p>See
+<a href="index.html#filter"><TT>http://www.eskimo.com/~scs/src/#filter</TT></a>
+for possible updates.
+</p><hr>
+<hr>
+<p>
+</p>
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>9.3 Conditional Compilation</title>
+<link href="sx9b.html" rev=precedes>
+<link href="sx10.html" rel=precedes>
+<link href="sx9.html" rev=subdocument>
+</head>
+<body>
+<H2>9.3 Conditional Compilation</H2>
+
+<p>[This section corresponds to K&amp;R Sec. 4.11.3]
+</p><p>The last preprocessor directive we're going to look at is 
+<TT>#ifdef</TT>.
+If you have the sequence
+<pre>
+	#ifdef <I>name</I>
+	<I>program text</I>
+	#else
+	<I>more program text</I>
+	#endif
+</pre>
+in your program,
+the code that gets compiled depends on whether a preprocessor macro by that 
+<I>name</I> is defined or not.
+If it is
+(that is, if there has been a <TT>#define</TT> line
+
+for a macro called <I>name</I>),
+then
+``<I>program text</I>'' is compiled and 
+``<I>more program text</I>'' is ignored.
+If the macro is not defined,
+``<I>more program text</I>'' is compiled and 
+``<I>program text</I>'' is ignored.
+This looks a lot like an <TT>if</TT> statement,
+but it behaves completely differently:
+an <TT>if</TT> statement controls which statements of your 
+program are executed at run time,
+but <TT>#ifdef</TT> controls which parts of your program actually 
+get compiled.
+</p><p>Just as for the <TT>if</TT> statement, the <TT>#else</TT> in an 
+<TT>#ifdef</TT> is optional.
+There is a companion directive <TT>#ifndef</TT>, which compiles 
+code if the macro is <em>not</em> defined
+(although the ``<TT>#else</TT> clause''
+of an <TT>#ifndef</TT> directive will then be compiled if the 
+macro <em>is</em> defined).
+There is also an <TT>#if</TT> directive which compiles code 
+depending on whether a compile-time expression is true or false.
+(The expressions which are allowed in an <TT>#if</TT> directive 
+are somewhat restricted,
+however, so we won't talk much
+
+about <TT>#if</TT> here.)
+</p><p>Conditional compilation is useful in two general classes of 
+situations:
+<UL><li>You are trying to write a portable program,
+but the way you do something is different depending on what 
+compiler, operating system, or computer you're using.
+You place different versions of your code,
+one for each situation,
+between suitable <TT>#ifdef</TT> directives,
+and when you compile the program in a particular environment,
+you arrange to have the macro names defined which select the variants you 
+need in that environment.
+(For this reason, compilers usually have ways of letting you 
+define macros from the invocation command line or in a 
+configuration file,
+and many also predefine certain macro names related to
+the operating system, processor, or compiler in use.
+That way, you don't have to change the code to change the 
+<TT>#define</TT> lines each time you compile it in a different 
+environment.)
+<br>
+<br>
+For example, in ANSI C, the function to delete a file is <TT>remove</TT>.
+On older Unix systems, however, the function was called 
+<TT>unlink</TT>.
+So if <TT>filename</TT> is a variable containing the name of a 
+file you want to delete,
+and if you want to be able to compile the program under these
+older Unix systems, you might write
+<pre>
+	#ifdef unix
+		unlink(filename);
+	#else
+		remove(filename);
+	#endif
+</pre>
+Then, you could place the line
+<pre>
+	#define unix
+</pre>
+at the top of the file when compiling under an old Unix system.
+(Since all you're using the macro <TT>unix</TT> for is to control 
+the <TT>#ifdef</TT>,
+you don't need to give it any replacement text at all.
+<em>Any</em> definition for a macro,
+even if the replacement text is empty,
+causes an <TT>#ifdef</TT> to succeed.)
+<br>
+<br>
+(In fact, in this example,
+you wouldn't even need to define the macro <TT>unix</TT> at all,
+because C compilers on old Unix systems tend to predefine it for you,
+precisely so you can make tests like these.)
+<li>You want to compile several different versions of your program,
+with different features present in the different versions.
+You bracket the code for each feature with <TT>#ifdef</TT> 
+directives,
+and (as for the previous case)
+arrange to have the right macros defined or not to build the 
+version you want to build
+at any given time.
+This way, you can build the several different versions from the 
+same source code.
+(One common example is whether you turn debugging statements on 
+or off.
+You can bracket each debugging printout with 
+<TT>#ifdef DEBUG</TT> and <TT>#endif</TT>,
+and then turn on debugging only when you need it.)
+<br>
+<br>
+For example, you might use lines like this:
+<pre>
+	#ifdef DEBUG
+	printf("x is %d\n", x);
+	#endif
+</pre>
+to print out the value of the variable <TT>x</TT> at some point in 
+your program to see if it's what you expect.
+To enable debugging printouts, you insert the line
+<pre>
+	#define DEBUG
+</pre>
+at the top of the file,
+and to turn them off, you delete that line,
+but the debugging printouts quietly remain in your code,
+temporarily deactivated,
+but ready to reactivate if you find yourself needing them again later.
+(Also, instead of inserting and deleting the <TT>#define</TT> line,
+you might use a compiler flag such as <TT>-DDEBUG</TT> to define 
+the macro <TT>DEBUG</TT> from the compiler invocation 
+line.)
+</UL>Conditional compilation can be very handy, but it can also get 
+out of hand.
+When large chunks of the program are completely different depending on,
+say, what operating system the program is being compiled for,
+it's often better to place the different versions in separate 
+source files,
+and then only use one of the files
+(corresponding to one of the versions)
+to build the program on any given system.
+Also, if you are using an ANSI Standard compiler and you are 
+writing ANSI-compatible code,
+you usually won't need so much conditional compilation,
+because the Standard specifies exactly how the compiler must do certain things,
+and exactly which library functions it must provide,
+so you don't have to work so hard to accommodate the old 
+variations among compilers and libraries.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx9b.html" rev=precedes>prev</a>
+<a href="sx10.html" rel=precedes>next</a>
+<a href="sx9.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-1997
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-03 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

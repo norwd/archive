@@ -1,0 +1,203 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>18.3.2: <TT>do</TT>/<TT>while</TT></title>
+<link href="sx4ac.html" rev=precedes>
+<link href="sx4cc.html" rel=precedes>
+<link href="sx4c.html" rev=subdocument>
+</head>
+<body>
+<H3>18.3.2: <TT>do</TT>/<TT>while</TT></H3>
+
+<p>[This section corresponds to K&amp;R Sec. 3.6]
+</p><p>Briefly stated, a <TT>do</TT>/<TT>while</TT> loop
+is like a <TT>while</TT> loop,
+except that the body of the loop is always executed at least once,
+even if the condition is initially false.
+We'll motivate the usefulness of this loop with a slightly long example.
+</p><p>We know that the digit character <TT>'1'</TT>
+is not the same as the
+<TT>int</TT> value 1,
+and that the string <TT>"123"</TT> is not the same as the
+<TT>int</TT> value 123.
+We've learned that the <TT>atoi</TT> function
+will convert a string (containing digits) to the corresponding integer,
+and that we can use the <TT>sprintf</TT> function
+to generate a string of digits corresponding to an integer.
+Now let's see how we could convert an integer
+to a string of digits by hand,
+if for some reason we couldn't use <TT>sprintf</TT>
+but had to do it ourselves.
+</p><p>If the number were less than 10 and not negative,
+it would be easy.
+Since we know that the digit characters <TT>'0'</TT> to <TT>'9'</TT>
+have consecutive character set values,
+the expression <TT>i + '0'</TT>
+gives the character corresponding to <TT>i</TT>'s value
+if <TT>i</TT> is an integer between 0 and 9, inclusive.
+So our very first stab at an integer-to-string routine,
+which would only work for one-digit numbers,
+might look like this:
+<pre>
+	char string[2];
+	string[0] = i + '0';
+	string[1] = '\0';
+</pre>
+(Remember, the null character <TT>\0</TT>
+is required to terminate strings in C.)
+</p><p>The limitation to single-digit numbers is obviously not acceptable.
+Suppose we went a little further,
+and arranged to handle numbers less than 100,
+by using an <TT>if</TT> statement
+to choose between the 1-digit case and the 2-digit case:
+<pre>
+	char string[3];
+	if(i &lt; 10)
+		{
+		string[0] = i + '0';
+		string[1] = '\0';
+		}
+	else	{
+		string[0] = (i / 10) + '0';
+		string[1] = (i % 10) + '0';
+		string[2] = '\0';
+		}
+</pre>
+In the two-digit case, the subexpression <TT>i % 10</TT>
+gives us the value of the low-order (1's) digit of the result,
+and <TT>i / 10</TT> gives us the high-order (10's) digit.
+</p><p>We've still got a pretty limited piece of code,
+and if we kept extending it in this way,
+with explicit <TT>if</TT> statements
+depending on how many digits the number could have,
+we'd duplicate a lot of code and end up with
+quite
+a mess,
+and we wouldn't necessarily know how many cases we'll need
+(at least 5,
+because type <TT>int</TT> is guaranteed to hold
+integers up to at least 32,767,
+but on some systems it can hold more).
+The right solution to this problem,
+therefore,
+involves a loop.
+</p><p>One way of thinking about
+<TT>if</TT> statements and <TT>while</TT> loops
+is that an <TT>if</TT> statement allows you to
+select a chunk of code which,
+if required,
+will complete some step towards the accomplishment of an overall task,
+while a <TT>while</TT> loop selects a chunk of code
+that will whittle away at some task or subtask,
+but without necessarily completing it on the first go,
+such that several trips through the loop might be required.
+Since the operation <TT>i % 10</TT>
+does give us one digit of our answer,
+but since we may end up having many digits,
+our next attempt
+is to wrap the <TT>i % 10</TT>
+and <TT>i / 10</TT> code up
+in a <TT>while</TT> loop:
+<pre>
+	char string[25];
+	int j = 24;
+	string[j] = '\0';
+	while(i &gt; 0)
+		{
+		string[--j] = (i % 10) + '0';
+		i /= 10;
+		}
+</pre>
+Here we use an auxiliary variable <TT>j</TT>
+to keep track of which element of the <TT>string</TT> array
+we're filling in.
+We fill in the array from the end back towards the beginning,
+because successive remainders when dividing <TT>i</TT> by 10
+give us digits in the reverse order
+(the reverse, that is, of the order we'd write the digits left-to-right).
+In this code,
+<TT>j</TT>
+holds the index
+of the element we've just filled in,
+so we use the predecrement form <TT>--j</TT>
+to decrement <TT>j</TT> before filling in the next digit.
+When we're done, <TT>string[j]</TT>
+will be the first (leftmost) digit of our result.
+(For the <TT>string</TT> array as declared,
+<TT>i</TT> had better have fewer than 25 digits,
+but this is a safe assumption
+even for 64-bit machines.)
+</p><p>The third try just above,
+using a <TT>while</TT> loop,
+will work just fine
+<em>except</em> in the case when <TT>i == 0</TT>.
+If <TT>i</TT> is 0,
+the controlling expression <TT>i &gt; 0</TT>
+of the <TT>while</TT> loop
+will immediately be false,
+and no trips through the loop will be taken.
+This means that the integer 0
+will be converted to the empty string <TT>""</TT>,
+not the string <TT>"0"</TT>.
+In this case, we <em>would</em> like to take
+one trip through the loop
+(to generate the digit 0)
+even though the condition is initially false.
+</p><p>For loops like these,
+C has the <TT>do</TT>/<TT>while</TT> loop,
+which tests the condition at the bottom of the loop,
+after making the first
+
+trip through without checking.
+The syntax of the <TT>do</TT>/<TT>while</TT> loop is
+<pre>
+	do <I>statement</I>
+	while( <I>expression</I> );
+</pre>
+The <I>statement</I> is almost always a brace-enclosed block of statements,
+because a <TT>do</TT>/<TT>while</TT> loop without braces looks odd
+even if there's only one statement in the body.
+Notice that there is a semicolon
+after the close parenthesis
+after the controlling expression.
+</p><p>Using a <TT>do</TT>/<TT>while</TT> loop,
+we can write
+our final
+version of the integer-to-string converter:
+<pre>
+	char string[25];
+	int j = 24;
+	string[j] = '\0';
+	do	{
+		string[--j] = (i % 10) + '0';
+		i /= 10;
+		} while(i &gt; 0);
+</pre>
+This version is now almost perfect;
+its only deficiency is that it has no provision for negative numbers.
+
+</p><p>C's <TT>do</TT>/<TT>while</TT> loop is analogous to the
+<TT>repeat</TT>/<TT>until</TT> loop in Pascal.
+(C's <TT>while</TT> loop, on the other hand,
+is like Pascal's <TT>while</TT>/<TT>do</TT> loop.)
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx4ac.html" rev=precedes>prev</a>
+<a href="sx4cc.html" rel=precedes>next</a>
+<a href="sx4c.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1996-1999
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-03 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

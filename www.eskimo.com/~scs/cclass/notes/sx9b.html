@@ -1,0 +1,177 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>9.2 Macro Definition and Substitution</title>
+<link href="sx9a.html" rev=precedes>
+<link href="sx9c.html" rel=precedes>
+<link href="sx9.html" rev=subdocument>
+</head>
+<body>
+<H2>9.2 Macro Definition and Substitution</H2>
+
+<p>[This section corresponds to K&amp;R Sec. 4.11.2]
+</p><p>A preprocessor line of the form
+<pre>
+	#define <I>name</I> <I>text</I>
+</pre>
+defines a <dfn>macro</dfn> with the given name,
+having as its <dfn>value</dfn> the given replacement text.
+After that
+(for the rest of the current source file),
+wherever the preprocessor sees that name,
+it will replace it with the replacement text.
+The name follows the same rules as ordinary identifiers
+(it can contain only letters, digits, and underscores,
+and may not begin with a digit).
+Since macros behave quite differently from normal variables (or 
+functions),
+it is customary to give them names which are all capital letters
+(or at least which begin with a capital letter).
+The replacement text
+can be absolutely
+anything--it's
+not restricted to numbers,
+or simple strings,
+or anything.
+</p><p>The most common use for macros is to propagate various 
+constants around and to make them more self-documenting.
+We've been saying things like
+<pre>
+	char line[100];
+	...
+	getline(line, 100);
+</pre>
+but this
+is neither readable nor reliable;
+it's not necessarily obvious
+what all those 100's scattered around the program are,
+and
+if we ever decide that 100 is too small for the size of the 
+array to hold lines,
+we'll have to remember to change the number in two
+(or more)
+places.
+A much better solution is to use a macro:
+<pre>
+	#define MAXLINE 100
+	char line[MAXLINE];
+	...
+	getline(line, MAXLINE);
+</pre>
+Now,
+if we ever want to change the size, we only have to do it in one place,
+and it's more obvious what the words <TT>MAXLINE</TT> sprinkled 
+through the program mean than the magic numbers 100 did.
+
+</p><p>Since the replacement text of a preprocessor macro can be anything,
+it can also be an expression,
+although you have to realize that,
+as always,
+the text is substituted (and perhaps evaluated) later.
+No evaluation is performed when the macro is defined.
+For example, suppose that you write something like
+<pre>
+	#define A 2
+	#define B 3
+	#define C A + B
+</pre>
+(this is a pretty meaningless example,
+but the situation does come up in practice).
+Then, later,
+suppose that you write
+<pre>
+	int x = C * 2;
+</pre>
+If <TT>A</TT>, <TT>B</TT>, and <TT>C</TT> were ordinary variables,
+you'd expect <TT>x</TT> to end up with the value 10.
+But let's see what happens.
+</p><p>The preprocessor always substitutes text for macros
+exactly as you have written it.
+So it first substitutes the replacement text for the macro <TT>C</TT>,
+resulting in
+<pre>
+	int x = A + B * 2;
+</pre>
+Then it substitutes the macros <TT>A</TT> and <TT>B</TT>,
+resulting in
+<pre>
+	int x = 2 + 3 * 2;
+</pre>
+Only when the preprocessor is done doing all this substituting
+does the compiler get into the act.
+But when it evaluates that expression
+(using the normal precedence of multiplication over addition),
+it ends up initializing <TT>x</TT> with the value 8!
+</p><p>To guard against this sort of problem,
+it is always a good idea to include explicit parentheses
+in the definitions of macros which contain expressions.
+If we were to define the macro <TT>C</TT> as
+<pre>
+	#define C (A + B)
+</pre>
+then the declaration of <TT>x</TT> would
+ultimately
+expand to
+<pre>
+	int x = (2 + 3) * 2;
+</pre>
+and <TT>x</TT> would be initialized to 10,
+as we probably expected.
+</p><p>Notice that there does not have to be
+(and in fact there usually is <em>not</em>)
+a semicolon at the end of
+a <TT>#define</TT> line.
+(This is just one of the ways that the syntax of the 
+preprocessor is different from the rest of C.)
+If you accidentally type
+<pre>
+	#define MAXLINE 100;			/* WRONG */
+</pre>
+then when you later declare
+<pre>
+	char line[MAXLINE];
+</pre>
+the preprocessor will expand it to
+<pre>
+	char line[100;];			/* WRONG */
+</pre>
+which is a syntax error.
+
+This is what we mean when we say that the preprocessor doesn't 
+know much of anything about the syntax of C--in this last example,
+the <dfn>value</dfn> or replacement text for the macro 
+<TT>MAXLINE</TT> was the 4 characters 
+<TT>1 0 0 ; </TT>, and that's exactly what the 
+preprocessor substituted
+(even though it didn't make any sense).
+</p><p>Simple macros like <TT>MAXLINE</TT> act sort of like little variables,
+whose values are constant
+(or constant expressions).
+It's also possible to have macros which look like little functions
+(that is,
+you invoke them with what looks like function call syntax,
+and they expand to replacement text which is a function 
+of the actual arguments they are invoked with)
+but we won't be looking at these yet.
+
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx9a.html" rev=precedes>prev</a>
+<a href="sx9c.html" rel=precedes>next</a>
+<a href="sx9.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-1997
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-03 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

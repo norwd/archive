@@ -1,0 +1,230 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>section 3.5: Loops -- While and For</title>
+<link href="sx6d.html" rev=precedes>
+<link href="sx6f.html" rel=precedes>
+<link href="sx6.html" rev=subdocument>
+</head>
+<body>
+<H2>section 3.5: Loops -- While and For</H2>
+
+<p>page 60
+</p><p>Remember that,
+as always,
+the <I>statement</I> can be a brace-enclosed block.
+</p><p>Make sure you understand how the <TT>for</TT> loop
+<pre>	for (<I>expr</I><sub>1<sub>; <I>expr</I><sub>2<sub>; <I>expr</I><sub>3<sub>)
+		<I>statement</I>
+</pre>is equivalent to the while loop
+<pre>	<I>expr</I><sub>1<sub>;
+	while (<I>expr</I><sub>2<sub>) {
+		<I>statement</I>
+		<I>expr</I><sub>3<sub> ;
+	}
+</pre>There is nothing magical
+about the three expressions at the top of a <TT>for</TT> loop;
+they can be arbitrary expressions,
+and they're evaluated just as the expansion into the equivalent 
+<TT>while</TT> loop would suggest.
+(Actually, there are two tiny differences:
+the behavior of <TT>continue</TT>,
+which we'll get to in a bit,
+and the fact that the test expression, <I>expr</I><sub>2<sub>,
+is optional and defaults to ``true'' for a <TT>for</TT> loop,
+but is required for a <TT>while</TT> loop.)
+</p><p><TT>for(;;)</TT> is one way of writing an infinite loop in C;
+the other common one is <TT>while(1)</TT>.
+Don't worry about what a <TT>break</TT> would mean in a loop,
+we'll be seeing it in a few more pages.
+</p><p>pages 60-61
+</p><p>Deep sentences:
+<blockquote>Whether to use <TT>while</TT> or <TT>for</TT>
+is largely a matter of personal preference...
+<br>Nonetheless,
+it is bad style to force unrelated computations
+into the initialization and increment of a <TT>for</TT>,
+which are better reserved for loop control operations.
+</blockquote>In general,
+the three expressions in a <TT>for</TT> loop should all 
+manipulate (initialize, test, and increment)
+the same variable or data structure.
+If they don't,
+they are ``unrelated computations,''
+and a <TT>while</TT> loop would probably be clearer.
+(The reason that one loop or the other can be clearer is simply that,
+when you see a <TT>for</TT> loop,
+you <em>expect</em> to see an idiomatic 
+initialize/test/increment of a single variable or data structure,
+and if the <TT>for</TT> loop you're looking at
+doesn't end up matching that pattern,
+you've been momentarily misled.)
+</p><p>page 61
+</p><p>When the authors
+say that ``the index and limit of a C <TT>for</TT> loop 
+can be altered from within the loop,''
+they mean that a loop like
+<pre>	int i, n = 10;
+	for(i = 0; i &lt; n; i++) {
+		if(i == 5)
+			i++;
+		printf("%d\n", i);
+		if(i == 8)
+			n++;
+	}
+</pre>where <TT>i</TT> and <TT>n</TT> are modified within the loop,
+is legal.
+(Obviously, such a loop can be very confusing,
+so you'll probably be better off not making use of this freedom too much.)
+</p><p>When they say that
+``the index variable... retains its value when the loop 
+terminates for any reason,''
+you may not find this too surprising,
+unless you've used other languages where it's <em>not</em> the case.
+The fact that loop control variables retain their values after a loop
+can make some code
+much easier to write;
+for example,
+the <TT>atoi</TT> function at the bottom of this page
+depends on having its <TT>i</TT> counter manipulated by several loops
+as it steps over three different parts of the string
+(whitespace, sign, digits)
+with <TT>i</TT>'s value preserved between each step.
+</p><p>Deep sentence:
+<blockquote>Each step does its part,
+and leaves things in a clean state for the next.
+</blockquote>This is an extremely important observation on how to write 
+clean code.
+As you
+study
+the <TT>atoi</TT> code,
+notice that
+it falls into three parts,
+each implementing one step of the pseudocode description:
+<I>skip white space</I>,
+<I>get sign</I>,
+<I>get integer part and convert it</I>.
+At each step, <TT>i</TT> points at the next character which
+that step is to inspect.
+(If a step is skipped,
+because there is no leading whitespace or no sign,
+the later steps don't care.)
+
+</p><p>You may hear the term <dfn>invariant</dfn> used:
+this
+
+refers to some condition which exists at all stages of a 
+program or function.
+In this case,
+the invariant is that <TT>i</TT> always points
+to the next character to be inspected.
+Having
+some well-chosen invariants can make code <em>much</em> 
+easier to write and maintain.
+If there aren't enough invariants--if
+<TT>i</TT> is sometimes the next character to look at
+and sometimes the character
+that was just looked
+at--debugging and maintaining the code can be a nightmare.
+</p><p>In the <TT>atoi</TT> example,
+the lines
+<pre>	for (i = 0; isspace(s[i]); i++)	/* skip white space */
+		;
+</pre>are about at the brink of
+``forcing unrelated computations into the initialization and increment,''
+especially since so much has been forced into the loop header
+that there's nothing left in the body.
+It would be equally clear to write this part as
+<pre>	i = 0;
+	while (isspace(s[i]))
+		i++;			/* skip white space */
+</pre></p><p>The line
+<pre>	sign = (s[i] == '-') ? -1 : 1;
+</pre>may seem a bit cryptic at first,
+though it's a textbook example of the use of <TT>?:</TT>
+.
+The line is equivalent to
+<pre>	sign = 1;
+	if(s[i] == '-')
+		sign = -1;
+</pre></p><p>pages 61-62
+</p><p>It's instructive to study this Shell or ``gap'' sort,
+but don't worry if you find it a bit bewildering.
+</p><p>Deep sentence:
+<blockquote>Notice how the generality of <TT>for</TT>
+makes the outer loop fit the same form as the others,
+even though it is not an arithmetic progression.
+</blockquote>The point is that loops don't have to count 0, 1, 2... or 1, 2, 3... .
+(This one counts <TT>n/2</TT>, <TT>n/4</TT>, <TT>n/8</TT>... .
+Later we'll see loops which don't step over numbers at all.)
+</p><p>page 63
+</p><p>Deep sentence:
+<blockquote>The commas that separate function arguments,
+variables in declarations, etc. are
+<em>not</em> comma operators...
+</blockquote>This looks strange,
+but it's true.
+If you say
+<pre>	for (i = 0, j = strlen(s)-1; i &lt; j; i++, j--)
+</pre>the first comma says to do <TT>i = 0</TT> <em>then</em>
+do <TT>j = strlen(s)-1</TT>,
+and
+the second comma says to do <TT>i++</TT> <em>then</em> do <TT>j--</TT>.
+However,
+when you say
+<pre>	getline(line, MAXLINE);
+</pre>the comma just separates the two arguments <TT>line</TT> and <TT>MAXLINE</TT>;
+they both have to be evaluated, but it doesn't matter in which order,
+and they're both passed to <TT>getline</TT>.
+(If the comma in a function call were interpreted as a comma operator,
+the function would only receive one argument,
+since the value of the first operand of the comma operator is 
+discarded.)
+
+Since the comma operator discards the value of its first operand,
+its first operand had better have a side effect.
+The expression
+<pre>	++a,++b
+</pre>increments <TT>a</TT> and increments <TT>b</TT> and
+(if anyone cares)
+returns <TT>b</TT>'s value,
+but the expression
+<pre>	a+1,b+1
+</pre>adds 1 to <TT>a</TT>, discards it,
+and returns <TT>b+1</TT>.
+</p><p>If the comma operator isn't making perfect sense,
+don't worry about it for now.
+You're most likely to see it in the first or third expression 
+of a <TT>for</TT> statement, where it has the obvious meaning of 
+separating two
+(or more)
+things to do during the initialization or increment step.
+Just
+be careful that you don't accidentally write things like
+<pre>	for(i = 0; j = 0; i &lt; n &amp;&amp; j &lt; j; i++; j++)	/* WRONG */
+</pre>or
+<pre>	for(i = 0, j = 0, i &lt; n &amp;&amp; j &lt; j, i++, j++)	/* WRONG */
+</pre>The correct form of a multi-index loop is something like
+<pre>	for(i = 0, j = 0; i &lt; n &amp;&amp; j &lt; j; i++, j++)
+</pre>Semicolons always separate the initialization, test, and increment parts;
+commas may appear <em>within</em> the initialization and increment parts.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx6d.html" rev=precedes>prev</a>
+<a href="sx6f.html" rel=precedes>next</a>
+<a href="sx6.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

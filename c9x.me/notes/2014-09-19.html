@@ -1,0 +1,33 @@
+<!doctype html>
+<meta name=viewport content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../assets/css/simple.css" type="text/css" />
+
+<link rel="stylesheet" href="assets/notes.css" type="text/css"/>
+<title>Notes from 2014-09-19</title>
+<article>
+<h1><img id="logo" src="assets/logo.png" alt="">Notes</h1>
+<h3>2014-09-19</h3>
+
+<p>
+While restructuring my simple IO multiplexing module I had to solve
+a problem that was not completely trivial.  It might make an
+instructive exercise so I will explain it here.
+</p>
+<p>
+The problem is that I am iterating over a collection (C array)
+that can be modified by the functions called during the iteration.
+More specifically, some elements could be removed during the
+iteration.  I thought the simplest way to do this is to have a
+flag that marks the validity of elements in my array.  This way,
+instead of deleting during the iteration I change a flag and,
+during the iteration, I skip flagged elements.
+</p>
+<p>
+After the iteration, we have to <em>compact</em> the array
+to remove flagged elements.  My first (mental) try was quadratic
+but with some more thought, I found a linear algorithm.  I let
+you meditate and find it, it's not so hard and pretty nice to
+hack (3 lines in my program).
+</p>
+</article>
+<!-- analytics free! -->

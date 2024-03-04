@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>section 2.6: Relational and Logical Operators</title>
+<link href="sx5e.html" rev=precedes>
+<link href="sx5g.html" rel=precedes>
+<link href="sx5.html" rev=subdocument>
+</head>
+<body>
+<H2>section 2.6: Relational and Logical Operators</H2>
+
+<p>If it isn't obvious, <TT>&gt;=</TT> is greater-than-or-equal-to,
+<TT>&lt;=</TT> is less-than-or-equal-to,
+<TT>==</TT> is equal-to,
+and
+<TT>!=</TT> is not-equal-to.
+We use <TT>&gt;=</TT>, <TT>&lt;=</TT>, and <TT>!=</TT> because the 
+symbols >=, <=, and != are not common on computer keyboards,
+and we use <TT>==</TT> because equality testing and assignment 
+are two completely different operations, but <TT>=</TT> is 
+already taken for assignment.
+(Obviously, typing <TT>=</TT> when you mean <TT>==</TT> is a very 
+easy mistake to make, so watch for it.
+Some compilers will warn you when you use one but seem to want 
+the other.)
+</p><p>The fact that evaluation of the logical operators
+<TT>&amp;&amp;</TT> and <TT>||</TT>
+``stops as soon as the truth or falsehood of the result is known''
+refers to the fact that
+<blockquote>``false'' AND anything	is false
+</blockquote>or, in C,
+<blockquote><TT>(0 &amp;&amp; </TT><I>anything</I><TT>) == 0</TT>
+</blockquote>while, on the other hand,
+<blockquote>``true'' OR anything	is true
+</blockquote>or, in C,
+<blockquote><TT>(1 || </TT><I>anything</I><TT>) == 1</TT>
+</blockquote>Looking at these another way,
+if you want to do something if thing1 is true and thing2 is true,
+and you've just noticed that thing1 is false,
+you don't even need to check thing2.
+Similarly,
+if you're supposed to do something if thing3 is true or thing4 is true,
+and you notice that thing3 is true,
+you can go ahead and do whatever it is you're supposed to do
+without checking thing4.
+</p><p>C works the same way, and if it's not true that
+``most C programs rely on these properties,''
+it's certainly true that many do.
+</p><p>For another example of the usefulness of this ``short-circuiting'' behavior,
+suppose we're taking the average of <TT>n</TT> numbers.
+If <TT>n</TT> is zero, that is,
+if we don't have any numbers to take the average of,
+we don't want to divide by zero.
+Code like
+<pre>	if(n != 0 &amp;&amp; sum / n &gt; 1)
+</pre>is common:
+it tests whether <TT>n</TT> is nonzero and the average is greater than 1,
+but it does not have to worry about dividing by zero.
+(If,
+on the other hand,
+the compiler always evaluated both sides of the <TT>&amp;&amp;</TT>
+before checking to see whether they were both true,
+the code above <em>could</em> divide by zero.)
+</p><p>page 42
+</p><p>Note the extra parentheses in
+<pre>	(c = getchar()) != '\n'
+</pre>Since this is a common idiom,
+you'll need to remember the parentheses.
+What would
+<pre>	c = getchar() != '\n'
+</pre>do?
+</p><p>C's treatment of Boolean values
+(that is, those where we only care whether they're true or false)
+is straightforward.
+We'll have more to say about it later,
+but for now,
+note that a value of zero is ``false,''
+and any nonzero value is ``true.''
+You might
+also note that there is no necessary connection
+between statements like <TT>if()</TT> which expect a true/false value
+and operators like <TT>&gt;=</TT> and <TT>&amp;&amp;</TT>
+which generate true/false values.
+You can use operators like <TT>&gt;=</TT> and <TT>&amp;&amp;</TT>
+in any expression,
+and you can use any expression in an <TT>if()</TT> statement.
+</p><p>The authors make a good point about style:
+if <TT>valid</TT> is conceptually a Boolean variable
+(that is, it's an integer,
+but we only care about whether it's zero or nonzero,
+in other words,
+``false'' or ``true''),
+then
+<pre>	if(valid)
+</pre>is a perfectly reasonable and readable condition.
+However, when values are not conceptually Boolean,
+I encourage you to make explicit comparisons against 0.
+For example, we could have expressed our average-taking code as
+<pre>	if(n &amp;&amp; sum / n &gt; 1)
+</pre>but I think it's clearer to be explicit and say
+<pre>	if(n != 0 &amp;&amp; sum / n &gt; 1)
+</pre>(However, many C programmers feel that expressions like
+<pre>	if(n &amp;&amp; sum / n &gt; 1)
+</pre>are ``more concise,'' so you will see them all the time
+and you should be able to read them.)
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx5e.html" rev=precedes>prev</a>
+<a href="sx5g.html" rel=precedes>next</a>
+<a href="sx5.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

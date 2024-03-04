@@ -1,0 +1,226 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>Assignment #2</title>
+</head>
+<body>
+<H1>Assignment #2</H1>
+
+
+
+
+
+<B>Intermediate C Programming
+<br>
+<br>
+UW Experimental College
+</B><br>
+<br>
+<B>Assignment #2
+</B><p><B>Handouts:
+</B></p><p><a href="PS2.html">Assignment #2</a>
+<br><a href="PS1a.html">Assignment #1 Answers</a>
+<br><a href="../int/sx2.html">Class Notes, Chapter 16</a>
+<br><a href="../int/sx3.html">Class Notes, Chapter 17</a>
+<p><B>Review Questions:
+</B></p><OL><li>List some differences between text and binary data files.
+</OL><p><B>Exercises:
+</B></p><OL><li>We're going to fix one of the more glaring deficiencies
+of the initial implementation of the game,
+namely that the description of the dungeon takes the form of
+hard-compiled structure arrays in <TT>main.c</TT>,
+such that the source code must be edited
+(and in a tedious way, at that)
+and the game recompiled
+whenever we want to modify the dungeon.
+(We're used to recompiling when we make changes to our programs,
+but we shouldn't have to recompile when we make expected changes to our data.
+Imagine if a spreadsheet program
+required you to enter your worksheet expressions or data
+with a C compiler and recompile each time!)
+<br>
+<br>
+We're going to add code which can read the dungeon description
+dynamically, at run time, from a simple, textual data file.
+The file will describe the rooms,
+the objects and which rooms they're initially in,
+and the exits which interconnect the rooms.
+As the file is read,
+we'll dynamically assign new instances
+of <TT>struct room</TT> and <TT>struct object</TT>
+to define the rooms and objects which the data file describes.
+We won't know how many room and object structures we'll need,
+and we certainly won't know what descriptions they will contain,
+so we'll abandon the <TT>rooms</TT> and <TT>objects</TT> arrays from <TT>main.c</TT>,
+along with their cumbersome initializations.
+We'll add (in <TT>objects.c</TT>) an allocation function,
+<TT>newobject()</TT>,
+which will return a pointer to a brand-new object structure
+which we can use to contain some new object,
+usually one
+we've just read from the data file.
+Similarly, we'll add a <TT>newroom()</TT> function to <TT>rooms.c</TT>
+which will return a pointer to a brand-new room structure.
+(We're not quite ready to do full-blown dynamic memory allocation yet,
+so for now, the room and object allocation functions
+will dole structures out of fixed-size arrays
+which we'll arbitrarily declare as having size 100.
+Naturally we'll keep track of how many structures are actually in use,
+and complain if an attempt is made to use more than 100.
+Since the allocation code is isolated
+down within <TT>rooms.c</TT> and <TT>object.c</TT>,
+only those modules will need rewriting
+when we move to a more flexible allocation scheme;
+the code which calls <TT>newroom()</TT>
+and <TT>newobject()</TT> won't need to change.)
+<br>
+<br>
+Appended to this assignment is a listing of a new file, <TT>io.c</TT>,
+for doing the data file reading.
+(This code is also on the disk
+or at the ftp site,
+in the <TT>week2</TT> subdirectory.)
+<br>
+<br>
+Rip out the definitions and initializations of the <TT>objects</TT> 
+and <TT>rooms</TT> arrays at the top of <TT>main.c</TT>;
+also remove the initialization of <TT>actor</TT>
+(but leave the definition).
+At the top of <TT>main()</TT>,
+before the initial call to <TT>listroom</TT>,
+add the lines
+<pre>
+	if(!readdatafile())
+		exit(1);
+
+	gotoroom(&amp;actor, getentryroom());	/* put actor in initial room */
+</pre>
+<br>
+<br>
+Add the following code to <TT>object.c</TT>
+(it can go near the top):
+<pre>
+#define MAXOBJECTS 100
+
+static struct object objects[MAXOBJECTS];
+static int nobjects = 0;
+
+struct object *
+newobject(char *name)
+{
+struct object *objp;
+
+if(nobjects &gt;= MAXOBJECTS)
+	{
+	fprintf(stderr, "too many objects\n");
+	exit(1);
+	}
+
+objp = &amp;objects[nobjects++];
+
+strcpy(objp-&gt;name, name);
+objp-&gt;lnext = NULL;
+
+return objp;
+}
+</pre>
+(This code is in the file <TT>object.xc</TT>
+in the <TT>week2</TT> subdirectory.)
+<br>
+<br>
+Add the following code to <TT>rooms.c</TT>
+(it can go near the top):
+<pre>
+#define MAXROOMS 100
+
+static struct room rooms[MAXROOMS];
+static int nrooms = 0;
+
+struct room *
+newroom(char *name)
+{
+struct room *roomp;
+int i;
+
+if(nrooms &gt;= MAXROOMS)
+	{
+	fprintf(stderr, "too many rooms\n");
+	exit(1);
+	}
+
+roomp = &amp;rooms[nrooms++];
+
+strcpy(roomp-&gt;name, name);
+roomp-&gt;contents = NULL;
+for(i = 0; i &lt; NEXITS; i++)
+	roomp-&gt;exits[i] = NULL;
+
+return roomp;
+}
+
+struct room *
+findroom(char *name)
+{
+int i;
+
+for(i = 0; i &lt; nrooms; i++)
+	{
+	if(strcmp(rooms[i].name, name) == 0)
+		return &amp;rooms[i];
+	}
+
+return NULL;
+}
+
+struct room *
+getentryroom(void)
+{
+if(nrooms == 0)
+	return NULL;
+return &amp;rooms[0];	/* temporary */
+}
+</pre>
+(This code is in the file <TT>rooms.xc</TT>
+in the <TT>week2</TT> subdirectory.)
+<br>
+<br>
+You'll also need the file <TT>fgetline.c</TT>,
+which is appended behind the new <TT>io.c</TT>,
+and also in the <TT>week2</TT> subdirectory.
+<br>
+<br>
+After adding all the new code,
+and any necessary prototype declarations to <TT>game.h</TT>,
+the program should again compile and run,
+but it will expect to find a data file named 
+<TT>dungeon.dat</TT> in the current directory.
+A sample <TT>dungeon.dat</TT> file
+(corresponding to the old, hard-compiled game)
+is included here
+(and in the <TT>week2</TT> subdirectory).
+Once you see how it works, you can start extending the dungeon
+simply by modifying the <TT>dungeon.dat</TT> file.
+<li>(tricky)
+If you added long descriptions to rooms and objects last week,
+devise and implement a way for those long descriptions to be 
+read from the data file.
+<li>(easier)
+Expand the set of allowable exits from rooms.
+Add the possibility of northeast, southeast, northwest, and 
+southwest exits, or ``up'' and ``down'' 
+exits, or all six.
+Add commands to go in these new directions.
+Modify the data file reading code in <TT>io.c</TT> to handle 
+setting up the new exits.
+</OL><hr>
+<hr>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-9
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-04 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

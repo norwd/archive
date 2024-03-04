@@ -1,0 +1,88 @@
+<!doctype html>
+<meta name=viewport content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../assets/css/simple.css" type="text/css" />
+
+<link rel="stylesheet" href="assets/notes.css" type="text/css"/>
+<title>Notes from 2014-09-10</title>
+<article>
+<h1><img id="logo" src="assets/logo.png" alt="">Notes</h1>
+<h3>2014-09-10</h3>
+
+<p>
+Here are my latest thoughts on compilers for low level languages
+(I think C).  I am a pretty big fan of the C language.  What I like
+with C is that when you write it and know your target platform you
+have pretty good idea what the code generated will be.  It is very
+predictable.  C was designed at a time where programs had to be very
+simple, and this includes compilers.  So C is trying to be as
+expressive as possible while remaining very easy to compile.
+</p>
+<p>
+It seems that this ideal is now slipping out of sight among
+language users and compiler writers.  Recently, a new family of
+bugs has emerged, compilers exploit <em>undefined behavior</em>
+as defined in the C standard to enable "optimizations".
+<a href="https://gcc.gnu.org/ml/gcc-help/2011-07/msg00219.html">This mail</a> shows how GCC removes a check for overflow that has
+undefined behavior without any warning.  In the same vein,
+<a href="http://lwn.net/Articles/342330/">this article</a> describes a bug in the Linux kernel that was aggravated by
+another undefined behavior based GCC optimization. Another <a href="http://www.daemonology.net/blog/2014-09-04-how-to-zero-a-buffer.html">recent article</a>
+tries to show how, in modern C, one should zero a piece
+of memory.  This problem is made hard by optimizing compilers
+that know the semantics of memset and will
+optimize it out if the it does not change the <em>observational
+behavior</em> of C programs.
+These different behaviors of compilers greatly impair the predictability,
+and I think this is a real deal breaker for many people.
+</p>
+<p>
+But why predictability is something important?  Well, consider
+the following function.  If the compiler is predictable, the
+memset call will be compiled down to assembly.
+</p>
+<pre>
+void f() {
+        char *p = malloc(512);
+        if (!p) return;
+        sensitivestuff(p);
+        memset(p, 0, 512);
+        free(p);
+}
+</pre>
+<p>
+If only standard C is using this function, it is perfectly
+fine to remove the memory clearing call to memset.  But we are
+not in a world where only well-behaved C calls C. This function
+could very well be called by some malicious code that tries to
+access back the memory just freed.  In that case, not zeroing
+the memory causes a security bug since sensitive information can
+be accessed.  So, "modern" compilers, when they do
+their job, assume that all code is written in C and well behaved.
+This is obviously not true in the real world, where abstraction
+leaps exist and can be exploited.
+</p>
+<p>
+The previous argument shows that predictability is essential
+for security.  Another important area where predictability is
+important is performance evaluation.  While basic optimizations
+are critical, when C is used for embedded applications,
+predictability of the compiler is usually preferred to crazy
+compiler tricks.  This is true for a simple reason, programmers
+want to evaluate the cost of their programs at the C level
+but what runs is the actual compiled code.  These two abstraction
+layers need to be related in some simple way for the analysis
+on the high level to be relevant.  Airbus, for example, uses
+a custom GCC version with all optimizations disabled.
+</p>
+<p>
+If I have to sum it up, I think simpler is better, and
+compiler writers are taking a slippery path that could very
+well lead their compilers to be unusable for many applications
+where C used to shine.  The focus is a lot more on a literal
+and probably misguided interpretation of the standard than it
+is on usability and relevance of compilers to today's
+problems.  And, to be honest, is any of the above
+"optimizations" critical to any application that is not
+a contrived benchmark?
+</p>
+</article>
+<!-- analytics free! -->

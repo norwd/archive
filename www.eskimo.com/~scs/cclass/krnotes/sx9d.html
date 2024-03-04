@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>The <cw>sizeof</> operator</title>
+<link href="sx9c.html" rev=precedes>
+<link href="https://www.eskimo.com/~scs/cclass/krnotes/sx9e.html" rel=precedes>
+<link href="https://www.eskimo.com/~scs/cclass/krnotes/sx9.html" rev=subdocument>
+</head>
+<body>
+<H2>The <cw>sizeof</> operator</H2>
+
+page 135
+<p>This
+may seem like an excessively roundabout or low-level way
+of finding the number of elements in an array,
+but it is the way it's done in C,
+and it's perfectly safe and straightforward
+once you get used to it.
+(I would, however, be hard-pressed to defend against the 
+accusation that it's a bit too low-level.)
+</p><p>Note that <TT>sizeof</TT> works on both type names
+(things like <TT>int</TT>, <TT>char *</TT>, <TT>struct key</TT>, etc.)
+and variables
+(strictly speaking, any expression).
+Parentheses are required
+when you're using <TT>sizeof</TT> with a type name
+and optional 
+when you're using it with a variable or expression
+(just like <TT>return</TT>),
+but it's safe to just always use parentheses.
+</p><p><TT>sizeof</TT> returns the size counted in <dfn>bytes</dfn>,
+where the C definition of ``byte'' is ``the size of a <TT>char</TT>.''
+In other words, <TT>sizeof(char)</TT> is always 1.
+(It turns out that it's not necessarily the case,
+though,
+that a byte or a <TT>char</TT> is 8 bits.)
+When we start doing our own dynamic memory allocation
+(which will be pretty soon),
+we'll always be needing to know the size of things
+so that we can allocate space for them,
+so it's just as well
+that we're meeting and getting used to the <TT>sizeof</TT> operator now.
+</p><p>The sentence
+``But the expression in the <TT>#define</TT>
+is not evaluated by the preprocessor''
+means that,
+as far as the preprocessor is concerned,
+the ``value'' of the macro <TT>NKEYS</TT>
+(like the value of any macro)
+is just a string of characters like
+<pre>	(sizeof(keytab) / sizeof keytab[0])
+</pre>which it replaces wherever <TT>NKEYS</TT> is used,
+and which will then be evaluated by the compiler as usual,
+so it doesn't matter
+that the preprocessor wouldn't have known
+how to deal with the <TT>sizeof</TT> operator,
+or how big the <TT>keytab</TT> array or a <TT>struct key</TT> were.
+</p><p>A third way of defining <TT>NKEYS</TT> would be
+<pre>	#define NKEYS (sizeof(keytab) / sizeof *keytab)
+</pre></p><p>Note that
+the definition of <TT>NKEYS</TT>
+depends on
+the definition of the <TT>keytab</TT> array
+(which appears on page 133),
+and
+both of them
+will have to precede the use of <TT>NKEYS</TT>
+in <TT>main</TT> on page 134.
+(Also, all three will have to be in the same source file,
+unless other steps are taken.)
+</p><p>page 136
+</p><p>Notice that <TT>getword</TT> has a lot in common with the 
+<TT>getop</TT> function of the calculator example
+(section 4.3, page 80).
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx9c.html" rev=precedes>prev</a>
+<a href="https://www.eskimo.com/~scs/cclass/krnotes/sx9e.html" rel=precedes>next</a>
+<a href="https://www.eskimo.com/~scs/cclass/krnotes/sx9.html" rev=subdocument>up</a>
+<a href="https://www.eskimo.com/~scs/cclass/krnotes/top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="https://www.eskimo.com/~scs/cclass/krnotes/copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

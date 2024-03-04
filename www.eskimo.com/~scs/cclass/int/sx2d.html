@@ -1,0 +1,136 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>16.4: Line Input and Output
+(<TT>fgets</TT>, <TT>fputs</TT>, etc.)</title>
+<link href="sx2c.html" rev=precedes>
+<link href="sx2e.html" rel=precedes>
+<link href="sx2.html" rev=subdocument>
+</head>
+<body>
+<H2>16.4: Line Input and Output
+(<TT>fgets</TT>, <TT>fputs</TT>, etc.)</H2>
+
+<p>The function
+<pre>
+	char *gets(char *line)
+</pre>
+reads the next line of text
+(i.e. up to the next <TT>\n</TT>)
+from the standard input
+and places the characters
+(except for the <TT>\n</TT>)
+in the character array
+
+pointed to by <TT>line</TT>.
+It returns a pointer to the line
+(that is,
+it returns the same pointer value you gave it),
+unless it reaches end-of-file,
+in which case it returns a null pointer.
+It is assumed that <TT>line</TT> points to enough memory
+to hold all of the characters read,
+plus a terminating <TT>\0</TT>
+(so that the line will be usable as a string).
+Since there's usually no way for anyone to guarantee
+that the array is big enough,
+and no way
+for <TT>gets</TT>
+to check it,
+<TT>gets</TT> is actually a useless function,
+and no serious program should call it.
+</p><p>The function
+<pre>
+	char *fgets(char *line, int max, FILE *fp)
+</pre>
+is somewhat more useful.
+It reads the next line of input from the stream <TT>fp</TT>
+and places the characters,
+<em>including</em> the <TT>\n</TT>,
+in the character array pointed to by <TT>line</TT>.
+The second argument, <TT>max</TT>,
+gives the maximum number of characters to be written to the array,
+and is usually the size of the array.
+Like <TT>gets</TT>,
+<TT>fgets</TT> returns a pointer to the line it reads,
+or a null pointer if it reaches end-of-file.
+
+Unlike <TT>gets</TT>,
+<TT>fgets</TT> does include the <TT>\n</TT>
+in the string it copies to the array.
+Therefore,
+the number of characters in the line,
+plus
+the <TT>\n</TT>,
+plus
+the <TT>\0</TT>,
+will always be less than or equal to <TT>max</TT>.
+(If <TT>fgets</TT> reads <TT>max-1</TT> characters
+without finding a <TT>\n</TT>,
+it stops reading there,
+copies a <TT>\0</TT> to the last element of the array,
+and leaves the rest of the line to be read next time.)
+Since <TT>fgets</TT> does let you guarantee
+that the line being read won't go off the end of the array,
+you should always use <TT>fgets</TT> instead of <TT>gets</TT>.
+(If you want to read a line from standard input,
+you can just pass the constant <TT>stdin</TT> as the third argument.)
+If you'd rather not have the <TT>\n</TT> retained in the input line,
+you can either remove it right after calling <TT>fgets</TT>
+(perhaps by calling <TT>strchr</TT>
+and overwriting the <TT>\n</TT> with a <TT>\0</TT>),
+or maybe call the <TT>getline</TT> or <TT>fgetline</TT>
+
+function we've been using instead.
+(See chapters
+
+6
+and
+
+12;
+these functions are also handy
+in that they return the length of the line read.
+They differ from <TT>fgets</TT> in their treatment of overlong lines,
+though.)
+</p><p>The function
+<pre>
+	int puts(char *line)
+</pre>
+writes the string pointed to by <TT>line</TT> to the standard output,
+and writes a <TT>\n</TT> to terminate it.
+It returns a nonnegative value
+(we don't really care what the value is)
+unless there's some kind of a write error,
+in which case it returns <TT>EOF</TT>.
+</p><p>Finally,
+the function
+<pre>
+	int fputs(char *line, FILE *fp)
+</pre>
+writes the string pointed to by <TT>line</TT>
+to the stream <TT>fp</TT>.
+Like <TT>puts</TT>,
+<TT>fputs</TT> returns a nonnegative value
+or <TT>EOF</TT> on error.
+Unlike <TT>puts</TT>,
+<TT>fputs</TT> does <em>not</em> automatically append a <TT>\n</TT>.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx2c.html" rev=precedes>prev</a>
+<a href="sx2e.html" rel=precedes>next</a>
+<a href="sx2.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1996-1999
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

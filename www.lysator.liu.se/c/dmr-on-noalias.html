@@ -1,0 +1,368 @@
+<html>
+<head>
+<title>Dennis Ritchie: Why I do not like X3J11 type qualifiers</title>
+<link rev="made" rel="made" href="mailto:jutta@pobox.com">
+</head>
+<body>
+[After Dennis Ritchie had written the following critique of type qualifiers
+in the draft ANSI standard of January 1988, the bar on assignments to
+previously const-qualified lvalues was removed, and noalias <em>did</em> go.]
+<hr>
+<p>
+Article 7844 of comp.lang.c:<br>
+From: dmr@alice.UUCP<br>
+Newsgroups: comp.lang.c<br>
+Subject: noalias comments to X3J11<br>
+Message-ID: &lt;7753@alice.UUCP&gt;<br>
+Date: 20 Mar 88 08:37:58 GMT<br>
+Organization: AT&amp;T Bell Laboratories, Murray Hill NJ<br>
+Lines: 333<br>
+<p>
+Reproduced below is the long essay I sent as an official comment
+to X3J11.&#160;<tt> </tt>It is in two parts; the first points out some problems
+in the current definition of `const,' and the second
+is a diatribe about `noalias'.
+<p>
+By way of introduction, the important thing about `const' is
+that the current wording says, in section 3.3.4, that a pointer to a
+ const-qualified object may be cast to a pointer to the plain
+object,
+but &quot;If an attempt is made to modify the pointed-to object by means of
+the converted pointer, the behavior is undefined.&quot;  Because function
+prototypes tend to convert your pointers to const-qualified
+pointers, difficulties arise.
+<p>
+In discussion with various X3J11 members, I learned that this section
+is now regarded as an inadvertant error, and no one thinks that
+it will last in its current form.&#160;<tt> </tt>Nevertheless, it seemed wisest
+to keep my comments in their original strong form.&#160;<tt> </tt>The intentions
+of the committee are irrelevant; only their document matters.
+<p>
+The second part of the essay is about noalias as such.&#160;<tt> </tt>It seems likely
+that even the intentions of the committee on this subject are confused.
+<p>
+Here's the jeremiad.
+<p>
+		<a href="http://www.cs.bell-labs.com/who/dmr/index.html" name="dmr">Dennis Ritchie</a><br>
+				research!dmr<br>
+				dmr@research.att.com<br>
+<p>
+<hr>
+<p>
+<a name="main">
+This is an essay on why I do not like X3J11 type qualifiers.
+It is my own opinion; I am not speaking for AT&amp;T.
+</a>
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>Let me begin by saying that I'm not convinced that even
+the pre-December qualifiers (`const' and `volatile') carry
+their weight; I suspect that what they add to the cost of
+learning and using the language is not repaid in greater
+expressiveness.<br>
+`Volatile', in particular, is a frill for
+esoteric applications, and much better expressed by other
+means.&#160;<tt> </tt>Its chief virtue is that nearly everyone can forget
+about it.&#160;<tt> </tt>`Const' is simultaneously more useful and more
+obtrusive; you can't avoid learning about it, because of its
+presence in the library interface.&#160;<tt> </tt>Nevertheless, I don't
+argue for the extirpation of qualifiers, if only because it
+is too late.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>The fundamental problem is that it is not possible to
+write real programs using the X3J11 definition of C.&#160;<tt> </tt>The
+committee has created an unreal language that no one can or
+will actually use.&#160;<tt> </tt>While the problems of
+`const' may owe to careless drafting of the specification,
+`noalias' is an altogether mistaken notion, and must not
+survive.
+<p>
+<h3><a name="const">1.</a>&#160;<tt> </tt>The qualifiers create an inconsistent language</h3>
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>A substantial fraction of the library cannot be
+expressed in the proposed language.
+<p>
+One of the simplest routines,
+<pre>
+    char *strchr(const noalias char *s, int c);
+</pre>
+can return its first parameter.&#160;<tt> </tt>This first parameter must
+be declared with `const noalias;' otherwise, it would be
+illegal (by the constraints on assignment, 3.3.16.1) to pass
+the address of a const or noalias object.&#160;<tt> </tt>That is, the type
+qualifiers in the prototype are not merely an optional
+pleasantry of the interface; they are required, if one is to
+pass some kinds of data to this or most other library routines.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>Unfortunately, there is no way in X3J11's language
+for<code> strchr </code>to return the value it promises to, because of the
+semantics of return (3.6.6.4) and casts (3.3.4).&#160;<tt> </tt>Whether
+the stripping of the const and noalias qualifiers is done by
+cast inside<code> strchr</code>,&#160;<tt> </tt>or implicitly by its return statement,
+<code> strchr </code>returns a pointer that (because of `const') cannot be
+stored through, and (because of `noalias') cannot even be
+dereferenced; by the rules, it is useless.&#160;<tt> </tt>(Incidentally, I
+think this observation was made by Tom Plum several years
+ago; it's disconcerting that the inconsistency remains.)
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>Although the plain words of the Standard deny it, plastering
+the appropriate `non-const' cast on an expression to
+silence a compiler is sometimes safe, because the most probable
+implementation of `const' objects will allow them to be
+read through any access path, and will diagnose attempts to
+change them by generating an access violation fault at run
+time.&#160;<tt> </tt>That is, in common implementations, adding or taking
+away the `const' qualifier of a pointer can never create any
+bugs not implicit in the rule `do not modify a genuine const 
+object through any access path.'
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>Nevertheless, I must emphasize that this is <em>not</em> the
+rule that X3J11 has written, and that its library is inconsistent
+with its language.&#160;<tt> </tt>Someone writing an interpreter
+using X3J11/88-001 is perfectly at liberty to (indeed, is
+advised to) carry with each pointer a `modifiable' bit, that
+(following 3.3.4) remains off when a pointer to
+a const-qualified object is cast into a plain
+pointer.&#160;<tt> </tt>This implementation will prevent many
+of the real uses of<code> strchr</code>,&#160;<tt> </tt>for
+example.&#160;<tt> </tt>I'm thinking of things like
+<pre>
+        if (p = strchr(q, '/'))
+                *p = ' ';
+</pre>
+which are common and innocuous in C, but undefined by X3J11's language.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>A related observation is that string literals are not
+of type `array of const char.'  Indeed, the Rationale (88-004
+version) says, `However, string literals do not have
+[this type], in order to avoid the problems of pointer type
+checking, particularly with library functions....'  Should
+this bald statement be considered anything other than an
+admission that X3J11's rules are screwy?&#160;<tt> </tt>It is ludicrous
+that the committee introduces the `const' qualifier, and
+also makes strings unwritable, yet is unable to connect the
+two conceptions.
+<p>
+<h3><a name="noalias">2.</a>&#160;<tt> </tt>Noalias is an abomination</h3>
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>`Noalias' is much more dangerous; the committee is
+planting timebombs that are sure to explode in people's
+faces.&#160;<tt> </tt>Assigning an ordinary pointer to a pointer to a
+`noalias' object is a license for the compiler to undertake
+aggressive optimizations that are completely legal by the
+committee's rules, but make hash of apparently safe
+programs.&#160;<tt> </tt>Again, the problem is most visible in the
+library; parameters declared `noalias <i>type</i> *' are especially
+problematical.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>In order to write such a library routine using the new
+parameter declarations, it is in practice necessary to
+violate 3.3.4: `A pointer to a noalias-qualified type ...
+may be converted to ... the non-noalias-qualified type.&#160;<tt> </tt>If
+the pointed to object is referred to by means of the converted
+pointer, the behavior is undefined.'  Thus, the problem
+that occurs with `const' is now much worse; there are no
+interesting and legal uses of<code> strchr</code>.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>How do you code a routine whose prototype specifies
+a noalias pointer?&#160;<tt> </tt>If you fail to violate 3.3.4,
+but instead try to rewrite the declarations of temporary variables to
+make them agree in type with parameters, it becomes hard to
+be sure that the routine works.&#160;<tt> </tt>Consider the specification
+of<code> strtok</code>:
+<pre>
+    char *strtok(noalias char *s1, noalias const char *s2);
+</pre>
+It retains a static pointer to its writable, `noalias' first
+argument.&#160;<tt> </tt>Can you be sure that this routine can be made
+safe under the rules?&#160;<tt> </tt>I have studied it, and the answer is
+conditionally yes, provided one accepts certain parts of the
+Standard as gospel (for example that `noalias' handles will
+<em>not</em> be synchronized at certain times) while ignoring other
+parts.&#160;<tt> </tt>It is a very dodgy thing.&#160;<tt> </tt>For other routines, it is
+certain that complete rewriting is necessary:<code> qsort</code>,&#160;<tt> </tt>for
+example, is full of pointers that rove the argument array
+and change it here and there.&#160;<tt> </tt>If these local pointers are
+qualified with `noalias,' they may all be pointing to different
+virtual copies of parts of the array; in any event,
+the argument itself may have a virtual object that might be
+completely untouched by the attempt to sort it.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>The `noalias' rules have the assignment and cast restrictions
+backwards.&#160;<tt> </tt>Assigning a plain pointer to
+a const-qualified pointer (<code>pc</code> <code>=</code>
+<code>p</code>) is well-defined by the rules and is safe, in that it
+restricts what you can do with <code>pc</code>.&#160;<tt> </tt>
+The other way around (<code>p</code> <code>=</code> <code>pc</code>) is
+forbidden, presumably because it creates a writable access path to
+an unwritable object.
+With `noalias,' the rules are the same
+(<code>pna</code> <code>=</code> <code>p </code>is OK,<code> p</code>
+<code>=</code> <code>pna </code>is forbidden), but the realistic safety
+requirements are completely different.&#160;<tt> </tt>Both of these assignments
+are equally suspicious, in that both create two access paths to an
+object, one manifestation of which might be virtual.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>Here is another way of observing the asymmetry: the
+presence of `const <i>type</i> *' in a parameter list is a useful
+piece of interface information, but `noalias <i>type</i> *' most
+assuredly is not.&#160;<tt> </tt>Given the declaration
+<p>
+<pre>
+    memcpy(noalias void *s1, const noalias void *s2, size_t n);
+</pre>
+what information can one glean from it?&#160;<tt> </tt>Some committee
+members apparently believe that it conveys either to the
+reader or to the compiler that the routine is safe, provided
+that the strings do not overlap.&#160;<tt> </tt>They are mistaken.
+Perhaps the committee's intent is not reflected in the
+current words of the Standard, but I can find nothing there
+that justifies their belief.&#160;<tt> </tt>The rules (page 65, lines 19-20)
+specify `all objects accessible by these [noalias]
+lvalues,' which is the entirety of both array arguments.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>More generally, suppose I see a prototype
+<pre>
+    char *magicfunction(noalias char *, noalias char *);
+</pre>
+Is there anything at all I can conclude about the requirements
+of magicfunction?&#160;<tt> </tt>Is there anything at all I can conclude
+about things it promises to do or not to do?&#160;<tt> </tt>All I
+learn from the Rationale (page 52) is that such a routine
+enjoins me from letting the arguments overlap, but this is
+at variance with the Standard, which gives a stronger
+injunction.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>Within the function itself, things are equally bad.&#160;<tt> </tt>A
+`const <i>type</i> *' parameter, though it presents problems for
+<code> strchr </code>and other routines, does usefully constrain the function:
+it's not allowed to store through the pointer.&#160;<tt> </tt>However,
+within a function with a `noalias <i>type</i> *' parameter,
+nothing is gained except bizarre restrictions: it can't cast
+the parameter to a plain pointer, and it can't assign the
+parameter to another noalias pointer without creating
+unwanted handles and potential virtual objects.&#160;<tt> </tt>The interface
+<em>must</em> say noalias, or at any
+rate <em>does</em> say noalias, so
+the author of the routine has all the grotesque inventions
+of 3.5.3 (handles, virtual objects) rubbed in his face, like
+or not.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>The utter wrongness of `noalias' is that the information
+it seeks to convey is not a property of an object at
+all. `Const,' for all its technical faults, is at least a
+genuine property of objects; `noalias' is not, and the
+committee's confused attempt to improve optimization by pinning
+a new qualifier on objects spoils the language.
+`Noalias' is a bogus invention that is not necessary, and
+not in any case sufficient for its apparent purpose.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>Earlier languages flirted with gizmos intended to help
+optimization, and generally abandoned them.&#160;<tt> </tt>The original
+Fortran, for example, had a<code> FREQUENCY </code>statement that didn't
+help much, confused people, and was dropped.&#160;<tt> </tt>PL/1 had
+`normal/abnormal' and `uses/sets' attributes that suffered a
+similar fate.&#160;<tt> </tt>Today, these are generally looked on as
+adolescent experiments.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>On the other hand, the insufficiency of `noalias' is
+suggested by Cray's Fortran compiler, which has 20 separate
+keywords that control various details of optimization.&#160;<tt> </tt>They
+are specified by an equivalent of<code> #pragma</code>,&#160;<tt> </tt>and thus, despite
+their oddness, can be ignored when trying to understand the
+meaning of a program.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>Perhaps there is some reason to provide a mechanism for
+asserting, in a particular patch of code, that the compiler
+is free to make optimistic assumptions about the kinds of
+aliasing that can occur.&#160;<tt> </tt>I don't know any acceptable way of
+changing the language specification to express the possibility
+of this kind of optimization, and I don't know how much
+performance improvement is likely to result.&#160;<tt> </tt>I would
+encourage compiler-writers to experiment with extensions, by
+#pragma or otherwise, to see what ideas and improvements
+they can come up with, but I am certain that nothing resembling
+the noalias proposal should be in the Standard.
+<p>
+<h3>3.  The cost of inconsistency</h3>
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>K&amp;R C has one important internal contradiction
+(variadic functions are forbidden, yet printf exists) and
+one important divergence between rule and reality (common
+vs. ref/def external data definitions).&#160;<tt> </tt>These contradictions
+have been an embarrassment to me throughout the years,
+and resolving them was high on X3J11's agenda.&#160;<tt> </tt>X3J11 did
+manage to come up with an adequate, if awkward, solution to
+the first problem.&#160;<tt> </tt>Their solution to the second was the
+same as mine (make a rule, then issue a blanket license to
+violate it).
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>I'm aware that there are distinctions to be made
+between `conforming' and `strictly conforming' programs.
+Although the X3J11 rules for qualifiers are inconsistent,
+and therefore most nominally X3J11 compilers will ignore, or
+only warn about, casts and assignments that X3J11 says are
+undefined, people will somehow survive.&#160;<tt> </tt>C has, after all,
+survived the vararg and the extern problems.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>Nevertheless, I advise strongly against sanctifying a
+language specification that no one can possibly embody in a
+useful compiler.&#160;<tt> </tt>This advice is based on bitter experience.
+<p>
+<h3>4.  What to do?</h3>
+<p>
+<a name="noalias-must-go">Noalias must go.</a>&#160;<tt> </tt>
+This is non-negotiable.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>It must not be reworded, reformulated or reinvented.&#160;<tt> </tt>
+The draft's description is badly flawed, but that is not the
+problem.&#160;<tt> </tt>The concept is wrong from start to finish.&#160;<tt> </tt>It
+negates every brave promise X3J11 ever made about codifying
+existing practices, preserving the existing body of code,
+and keeping (dare I say it?) `the spirit of C.'
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>Const has two virtues: putting things in read-only
+memory, and expressing interface restrictions.&#160;<tt> </tt>For example,
+saying
+<pre>
+    char *strchr(const char *s, int c);
+</pre>
+is a reasonable way of expressing that the routine cannot
+change the object referred to by its first argument.&#160;<tt> </tt>I
+think that minor changes in wording preserve the virtues,
+yet eliminate the contradictions in the current scheme.
+<p>
+<ol>
+<li>Reword page 47, lines 3-5 of 3.3.4 (Cast operators), to
+     remove the undefinedness of modifying pointed-to
+     objects, or remove these lines altogether (since casting
+     non-qualified to qualified isn't discussed explicitly
+     either.)
+<p>
+<li>Rewrite the constraint on page 54, lines 14-15, to say
+     that pointers may be assigned without taking qualifiers
+     into account.
+<p>
+<li>Preserve all current constraints against modifying
+     non-modifiable lvalues, that is things of manifestly
+     const-qualified type.
+<p>
+<li>String literals have type&#160;<tt> </tt>`const char []'.
+<p>
+<li>Add a constraint (or discussion or example) to assignment
+     that makes clear the illegality of assigning to an
+     object whose actual type is const-qualified, no matter
+     what access path is used.&#160;<tt> </tt>There is a manifest constraint
+     that is easy to check (left side is not const-qualified),
+     but also a non-checkable constraint (left
+     side is not secretly const-qualified).&#160;<tt> </tt>The effect
+     should be that converting between pointers to const-qualified
+     and plain objects is legal and well-defined;
+     avoiding assignment through pointers that derive ultimately
+     from `const' objects is the programmer's responsibility.
+</ol>
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>These rules give up a certain amount of checking, but
+they save the consistency of the language.
+<p>
+</body>
+</html>

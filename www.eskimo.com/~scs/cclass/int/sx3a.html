@@ -1,0 +1,846 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>17.1: Text Data Files</title>
+<link href="sx3.html" rev=precedes>
+<link href="sx3b.html" rel=precedes>
+<link href="sx3.html" rev=subdocument>
+</head>
+<body>
+<H2>17.1: Text Data Files</H2>
+
+<p>Text data files,
+it must be admitted,
+are not always as compact
+or as efficient to read and write
+as binary files.
+It can be a bit more work to set up the code which reads and writes them.
+But they have some powerful advantages:
+any time you need to,
+you can look at them using ordinary text editors and other tools.
+If program A is writing a data file
+which program B is supposed to
+be able to read but cannot,
+you can immediately look at the file
+to see if it's in the correct format
+and so determine whether it's program A's or B's fault.
+If program A has not been written yet,
+you can easily create a data file by hand to test program B with.
+Text files are automatically portable between machines,
+even those where integers and other data types
+are of different sizes or are laid out differently in memory.
+Because they're not expected to have the rigid formats of binary files,
+it tends to be more natural to arrange
+text files so
+that as the data file format changes slightly,
+newer (or older) versions of the software
+can read older (or newer) versions of the data file.
+Text data files are the focus of this chapter;
+they're what I use all the time,
+and they're what I recommend you use
+unless you have compelling reasons not to.
+</p><p>When we're using text data files, we acknowledge
+that the <em>internal</em> and <em>external</em> representations
+of our data
+are quite different.
+For example, a value of type <TT>int</TT>
+will usually be represented internally as a 2- or 4-byte
+(16- or 32-bit)
+piece of memory.
+Externally, though,
+that integer will be represented as a string of characters
+representing its decimal or hexadecimal value.
+Converting back and forth
+between the internal and external representations
+is easy enough.
+To go from the internal representation to the external,
+we'll almost always use <TT>printf</TT> or <TT>fprintf</TT>;
+for example,
+to convert an <TT>int</TT> we might use <TT>%d</TT> or <TT>%x</TT> format.
+To convert from the external representation back to the internal,
+we could use <TT>scanf</TT> or <TT>fscanf</TT>,
+or read the characters in some other way
+and then use
+functions like
+<TT>atoi</TT>, <TT>strtol</TT>, or <TT>sscanf</TT>.
+</p><p>We have a great many options
+when it comes to performing this mapping,
+that is,
+when converting between the internal and external representations.
+Our choice may be determined by the layout we want the data file to have,
+or by what's easiest to implement,
+or by some combination of these factors.
+Some of the choices are pretty arbitrary;
+but in any case,
+what matters most is obviously that
+the reading and writing code ``match'',
+that is,
+that the data file writing code write the data in the right format
+such that the data file reading code can accurately read it.
+For the rest of this section,
+we'll explore several ways of writing and reading data
+to and from text data files,
+using various combinations of the stdio functions
+(and perhaps one or two of our own).
+</p><p>Suppose we had an array of integers:
+<pre>
+	int a[10];
+</pre>
+and suppose it had been filled up with values,
+and suppose we wanted to write them out to a data file.
+We could write them all on one line, separated by spaces:
+<pre>
+	fprintf(ofp, "%d %d %d %d %d %d %d %d %d %d\n",
+		a[0], a[1], a[2], a[3], a[4], a[5],
+			a[6], a[7], a[8], a[9]);
+</pre>
+We could write them on 10 separate lines:
+<pre>
+	for(i = 0; i &lt; 10; i++)
+		fprintf(ofp, "%d\n", a[i]);
+</pre>
+Realizing that the loop is easier and more flexible,
+we could go back to writing them all on one line, using a loop:
+<pre>
+	for(i = 0; i &lt; 10; i++)
+		fprintf(ofp, "%d ", a[i]);
+	fprintf(ofp, "\n");
+</pre>
+If we were worried about that trailing space at the end of the line,
+we could arrange to eliminate it:
+<pre>
+	for(i = 0; i &lt; 10; i++)
+		{
+		if(i &gt; 0)
+			fprintf(ofp, " ");
+		fprintf(ofp, "%d", a[i]);
+		}
+	fprintf(ofp, "\n");
+</pre>
+Recognizing that <TT>fprintf</TT> is overkill
+for printing single, fixed characters,
+we could replace two of the calls with <TT>putc</TT>:
+<pre>
+	for(i = 0; i &lt; 10; i++)
+		{
+		if(i &gt; 0)
+			putc(' ', ofp);
+		fprintf(ofp, "%d", a[i]);
+		}
+	putc('\n', ofp);
+</pre>
+</p><p>When it came time to read the numbers in,
+we would have at least as many choices.
+We could read the ten values all at once, using <TT>fscanf</TT>:
+<pre>
+	int r = fscanf(ifp, "%d %d %d %d %d %d %d %d %d %d",
+		&amp;a[0], &amp;a[1], &amp;a[2], &amp;a[3], &amp;a[4], &amp;a[5],
+			&amp;a[6], &amp;a[7], &amp;a[8], &amp;a[9]);
+	if(r != 10)
+		fprintf(stderr, "error in data file\n");
+</pre>
+Since the <TT>scanf</TT> family treats all whitespace
+(spaces, tabs, and newlines)
+the same,
+this code would read either the format with all the numbers on one line,
+or the format with one number per line.
+Notice that we check <TT>fscanf</TT>'s return value,
+to make sure that it successfully read in
+all the numbers we expected it to.
+Since data files come in from the outside world,
+it's possible for them to be corrupted,
+and programs should not blindly read them assuming that they're perfect.
+A program that crashes when it attempts to read a damaged data file
+is terribly frustrating;
+a program that diagnoses the problem is much more polite.
+</p><p>We could also read the data file a line at a time,
+converting the text to integers via other means.
+If the integers were stored one per line,
+we could use code like this:
+<pre>
+	#define MAXLINE 200
+
+	char line[MAXLINE];
+	for(i = 0; i &lt; 10; i++)
+		{
+		if(fgets(line, MAXLINE, ifp) == NULL)
+			{
+			fprintf(stderr, "error in data file\n");
+			break;
+			}
+		a[i] = atoi(line);
+		}
+</pre>
+(We could also use
+our own <TT>getline</TT> or <TT>fgetline</TT> function
+instead of <TT>fgets</TT>.)
+If the integers were stored all on one line,
+we could use the <TT>getwords</TT> function from chapter 10
+to separate the numbers at the whitespace boundaries:
+<pre>
+	char *av[10];
+
+	if(fgets(line, MAXLINE, ifp) == NULL)
+		fprintf(stderr, "error in data file\n");
+	else if(getwords(line, av, 10) != 10)
+		fprintf(stderr, "error in data file\n");
+	else	{
+		for(i = 0; i &lt; 10; i++)
+			a[i] = atoi(av[i]);
+		}
+</pre>
+</p><p>Suppose, now, that
+there were not always 10 elements in the array <TT>a</TT>;
+suppose we had a separate integer variable <TT>na</TT>
+to record how many elements the array <TT>a</TT> currently contains.
+When writing the data out,
+we would certainly then
+use a loop;
+we might also want to precede the data by the count,
+in case that will make it easier for the reading program:
+<pre>
+	fprintf(ofp, "%d\n", na);
+	for(i = 0; i &lt; na; i++)
+		fprintf(ofp, "%d\n", a[i]);
+</pre>
+We could also print all
+of the numbers
+on one line:
+<pre>
+	fprintf(ofp, "%d", na);
+	for(i = 0; i &lt; na; i++)
+		fprintf(ofp, " %d ", a[i]);
+</pre>
+(Notice that the presence of the extra value at the beginning of the line
+makes the space separator game easier to play.)
+</p><p>Now, when reading the data in, we would simply read the count first,
+then the data.
+Using <TT>fscanf</TT>:
+<pre>
+	if(fscanf(ifp, "%d", &amp;na) != 1)
+		{
+		fprintf(stderr, "error in data file\n");
+		return;
+		}
+
+	if(na &gt; 10)
+		{
+		fprintf(stderr, "too many items in data file\n");
+		return;
+		}
+
+	for(i = 0; i &lt; na; i++)
+		{
+		if(fscanf(ifp, "%d", &amp;a[i]) != 1)
+			{
+			fprintf(stderr, "error in data file\n");
+			return;
+			}
+		}
+</pre>
+(Here we assume that
+the code to read the array from the data file is part of a function,
+and that when we detect an error,
+we return early from the function.
+In practice,
+we would probably return some error code to the caller.)
+</p><p>If we chose to use <TT>fgets</TT>
+(or <TT>fgetline</TT>),
+the code might look like this for data on separate lines:
+<pre>
+	if(fgets(line, MAXLINE, ifp) == NULL)
+		{
+		fprintf(stderr, "error in data file\n");
+		return;
+		}
+	na = atoi(line);
+	if(na &gt; 10)
+		{
+		fprintf(stderr, "too many items in data file\n");
+		return;
+		}
+
+	for(i = 0; i &lt; na; i++)
+		{
+		if(fgets(line, MAXLINE, ifp) == NULL)
+			{
+			fprintf(stderr, "error in data file\n");
+			return;
+			}
+		a[i] = atoi(line);
+		}
+</pre>
+Or, if the data were all on one line, like this:
+<pre>
+	int ac;
+	char *av[11];
+
+	if(fgets(line, MAXLINE, ifp) == NULL)
+		{
+		fprintf(stderr, "error in data file\n");
+		return;
+		}
+
+	ac = getwords(line, av, 10);
+	if(ac &lt; 1)
+		{
+		fprintf(stderr, "error in data file\n");
+		return;
+		}
+	na = atoi(av[1]);
+	if(na &gt; 10)
+		{
+		fprintf(stderr, "too many items in data file\n");
+		return;
+		}
+	if(na != ac - 1)
+		{
+		fprintf(stderr, "error in data file\n");
+		return;
+		}
+	for(i = 0; i &lt; na; i++)
+		a[i] = atoi(av[i+1]);
+</pre>
+</p><p>But sometimes, you don't need to save the count
+(<TT>na</TT>)
+explicitly;
+the reading program can deduce the number of items
+from the number of items in the file.
+If the file contains <em>only</em> the integers in this array,
+then we can simply read integers until we reach end-of-file.
+For example, using <TT>fscanf</TT>:
+<pre>
+	na = 0;
+	while(na &lt; 10 &amp;&amp; fscanf(ifp, "%d", &amp;a[na]) == 1)
+		na++;
+</pre>
+(This code is deceptively simple;
+we haven't carefully dealt with appropriate error messages
+for a data file with more than 10 values,
+or a data file with a non-numeric ``value''
+for which <TT>fscanf</TT> returns 0.)
+</p><p>Again, we could also use <TT>fgets</TT>.
+If the data is on separate lines:
+<pre>
+	na = 0;
+	while(na &lt; 10 &amp;&amp; fgets(line, MAXLINE, ifp) != NULL)
+		a[na++] = atoi(line);
+</pre>
+If the data is all on one line:
+<pre>
+	if(fgets(line, MAXLINE, ifp) == NULL)
+		{
+		fprintf(stderr, "error in data file\n");
+		return;
+		}
+	na = getwords(line, av, 10);
+	if(na &gt; 10)
+		{
+		fprintf(stderr, "too many items in data file\n");
+		return;
+		}
+	for(i = 0; i &lt; na; i++)
+		a[i] = atoi(av[i]);
+</pre>
+Notice that this last implementation does not require
+that the file consist of
+only
+data for the array <TT>a</TT>.
+One <em>line</em> of the file consists of data for the array <TT>a</TT>,
+but other lines of the file could contain other data.
+</p><p>We could also scatter <TT>a</TT>'s data on multiple lines,
+without using an explicit count,
+and with the ability for the file to contain other data as well,
+if we marked the end of the array data with an explicit marker in the file,
+rather than assuming that the array's data continued until end-of-file.
+For example, we could write the data out like this:
+<pre>
+	for(i = 0; i &lt; na; i++)
+		fprintf(ofp, "%d\n", a[i]);
+	fprintf(ofp, "end\n");
+</pre>
+and read it like this:
+<pre>
+	na = 0;
+	while(fgets(line, MAXLINE, ifp) != NULL)
+		{
+		if(strncmp(line, "end", 3) == 0)
+			break;
+		if(na &gt; 10)
+			{
+			fprintf(stderr, "too many items in data file\n");
+			return;
+			}
+		a[na++] = atoi(line);
+		}
+</pre>
+(There's just one nuisance here in checking for the ``end'' marker:
+<TT>fgets</TT> leaves the <TT>\n</TT> in the line it reads,
+so a simple <TT>strcmp</TT> against <TT>"end"</TT> would fail.
+Here we use <TT>strncmp</TT>, which compares at most <TT>n</TT> characters,
+and we pass the third argument, <TT>n</TT>, as 3.
+Other solutions would be
+to use <TT>strcmp</TT> against the string <TT>"end\n"</TT>,
+or to strip the <TT>\n</TT> somehow,
+or to use our old <TT>getline</TT> or <TT>fgetline</TT> 
+functions,
+since they strip the <TT>\n</TT> for us.)
+</p><p>Now that we've seen many
+(too many!)
+options for writing and reading the array,
+how do you decide which to use?
+Should you use <TT>fscanf</TT>,
+or the slightly more <I>ad hoc</I> methods
+involving <TT>fgets</TT>, <TT>getwords</TT>, <TT>atoi</TT>, etc?
+It's largely a matter of personal preference.
+In the code fragments we've looked at so far,
+the ones using <TT>fscanf</TT> have seemed shorter,
+although in some cases that was because
+they weren't doing as much error checking
+as the ones that used <TT>fgets</TT>.
+In general,
+the methods using <TT>fgets</TT> will allow somewhat more flexibility,
+as we saw when checking for the explicit ``end'' marker,
+
+which would have been difficult or impossible
+using <TT>scanf</TT> or <TT>fscanf</TT>.
+</p><p>Now let's move to another example,
+a user-defined data structure.
+Suppose we have this structure:
+<pre>
+	struct s
+		{
+		int i;
+		float f;
+		char s[20];
+		};
+</pre>
+To write an instance of this structure out,
+we could simply print its fields on one line:
+<pre>
+	struct s x;
+	...
+	fprintf(ofp, "%d %g %s\n", x.i, x.f, x.s);
+</pre>
+or on several lines:
+<pre>
+	fprintf(ofp, "%d\n", x.i);
+	fprintf(ofp, "%g\n", x.f);
+	fprintf(ofp, "%s\n", x.s);
+</pre>
+or simply
+<pre>
+	fprintf(ofp, "%d\n%g\n%s\n", x.i, x.f, x.s);
+</pre>
+(We use <TT>%g</TT> format for the <TT>float</TT> field
+because <TT>%g</TT> tends to print
+the most accurate representation in the smallest space,
+e.g. <TT>1.23e6</TT> instead of <TT>1230000</TT>
+and <TT>1.23e-6</TT> instead of <TT>0.00000123</TT> or <TT>0.000001</TT>.)
+</p><p>To read this structure back in,
+we could again either use <TT>fscanf</TT>,
+or <TT>fgets</TT> and some other functions.
+As before, <TT>fscanf</TT> seems easier:
+<pre>
+	if(fscanf(ifp, "%d %g %s", &amp;x.i, &amp;x.f, &amp;x.s) != 3)
+		{
+		fprintf(stderr, "error in data file\n");
+		return;
+		}
+</pre>
+Here we have a problem, though:
+what if the third, string field contains a space?
+In the <TT>scanf</TT> family,
+the <TT>%s</TT> format stops reading at whitespace,
+so if <TT>x.s</TT> had contained the string <TT>"Hello, world!"</TT>,
+it would be read back in as <TT>"Hello,"</TT>.
+As it happens,
+we could fix it by using the less-obvious format string
+<TT>"%d %g %[^\n]"</TT>,
+where <TT>%[^\n]</TT> means
+``match any string of characters not including <TT>\n</TT>''.
+But we also have another problem:
+what if the string is longer
+than the 20 characters we allocated for the <TT>s</TT> field?
+We could fix this by using <TT>%20s</TT> or <TT>%20[^\n]</TT>,
+although we'd have to remember to change
+the <TT>scanf</TT> format string
+if we ever changed the size of the array.
+</p><p>Let's leave <TT>fscanf</TT> for a moment
+and
+look at our other alternatives.
+If we'd printed the data all on one line, we could use
+<pre>
+	#include &lt;stdlib.h&gt;	/* for atof() */
+
+	char *av[3];
+
+	if(fgets(line, MAXLINE, ifp) == NULL)
+		{
+		fprintf(stderr, "error in data file\n");
+		return;
+		}
+	if(getwords(line, av, 3) != 3)
+		{
+		fprintf(stderr, "error in data file\n");
+		return;
+		}
+	x.i = atoi(av[0]);
+	x.f = atof(av[1]);
+	strcpy(x.s, av[2]);	/* XXX */
+</pre>
+Here we luck out
+on the question of what happens if the string contains a space,
+because it happens that our version of <TT>getwords</TT>
+(see chapter 10, p. 13)
+leaves
+
+the remaining words
+in the last ``word''
+if there are more words in the string than we told it to find,
+i.e. more than the third argument to <TT>getwords</TT>
+which gives the size of the <TT>av</TT> array.
+Here, we told it it could only look for 3 words,
+so if the string contains spaces,
+making the line appear to have 4 or more words,
+words 3, 4, etc. will all be pointed to by <TT>av[2]</TT>.
+However, we still have the problem
+that we haven't guarded against overflow of <TT>x.s</TT>
+if the third (plus fourth, etc.) word on the data line
+is longer than 20 characters.
+(The comment <TT>/* XXX */</TT> is a traditional marker which means
+``this line is inadequate
+and definitely won't work reliably in all situations
+but for one reason or another
+the person writing it is
+not going to take the trouble to do it right just yet.'')
+</p><p>If the data is written on three lines,
+on the other hand,
+we obviously have to call <TT>fgets</TT> three times to read it:
+<pre>
+	if(fgets(line, MAXLINE, ifp) == NULL)
+		{ fprintf(stderr, "error in data file\n"); return; }
+	x.i = atoi(line);
+
+	if(fgets(line, MAXLINE, ifp) == NULL)
+		{ fprintf(stderr, "error in data file\n"); return; }
+	x.f = atof(line);
+
+	if(fgets(line, MAXLINE, ifp) == NULL)
+		{ fprintf(stderr, "error in data file\n"); return; }
+	strcpy(x.s, line);	/* XXX */
+</pre>
+Now the last line has two problems:
+besides the lingering problem of overflow
+(if the line is more than 18 characters long),
+we have the problem that <TT>fgets</TT> retains the <TT>\n</TT>
+(which is why <TT>x.s</TT> will overflow if
+the line is longer than 18 characters, not 19).
+In this case, one way to fix the overflow problem
+would be to have <TT>fgets</TT> read into <TT>x.s</TT> directly:
+<pre>
+	if(fgets(x.s, 20, ifp) == NULL)
+		{ fprintf(stderr, "error in data file\n"); return; }
+</pre>
+If we didn't want to have to remember
+to change that 20 in the call to <TT>fgets</TT>
+if we ever re-sized the array,
+we could get clever and write
+<TT>fgets(x.s, sizeof(x.s), ifp)</TT>.
+Also, we might as well figure out how to get rid of that pesky <TT>\n</TT>.
+One way is by calling the standard library function <TT>strchr</TT>,
+which searches for a certain character in a string.
+This
+
+will require that we <TT>#include &lt;string.h&gt;</TT>,
+and declare an extra <TT>char *</TT> variable:
+<pre>
+	#include &lt;string.h&gt;
+	char *p;
+	p = strchr(x.s, '\n');
+	if(p != NULL)
+		*p = '\0';
+</pre>
+<TT>strchr</TT> returns a pointer to the character that it finds,
+or a null pointer if it doesn't find the character.
+If there's a <TT>\n</TT> in the line at all,
+we know it's at the end,
+so it's safe to overwrite it with a <TT>\0</TT>,
+making the string one character shorter.
+(Since we know that the <TT>\n</TT> is at the end,
+we could also call
+the
+function
+<TT>strrchr</TT>,
+which finds a character starting from the right.)
+</p><p>For any of the methods we've been using so far,
+what if one day we add a new field to the structure <TT>s</TT>?
+Obviously, we'll have to rewrite the code which writes the structure out
+and also the code which reads it in.
+Also, unless we're careful,
+the modified code won't be able to read in
+any data files we might happen to have lying around
+which were written before the structure was changed.
+Depending on the nature of the data file and the way it's used,
+this can be a real problem.
+(In principle,
+it's possible to write a utility program
+to convert the old data files to the new format,
+but it can be a nuisance to write that program,
+and it can be a <em>real</em> nuisance to track down
+all of the old data files that need converting.)
+</p><p>Therefore,
+when a data file format must be changed,
+it's often a good idea if the
+new, improved
+data file reader
+can be made to automatically detect and read old-format files as well.
+(Automatic detection isn't a strict necessity,
+but it's certainly a nicety.)
+Furthermore,
+it's <em>much</em> easier to write a new &amp; improved data file reader,
+that can read both old and new formats,
+if the possibility was thought of
+back when the original data file format was designed.
+</p><p>One thing that helps a lot is if data file formats have version numbers,
+and if each data file begins with a number,
+in a simple format and known location
+which won't change even if the rest of the format changes,
+indicating which version of the format this file uses.
+Having a file format version number
+at the beginning of each data file leads to two immediate advantages:
+<OL><li>Whenever a new program reads a data file,
+it can immediately and unambiguously decide how it's going to read it,
+whether it can use its new &amp; improved reading routines
+or whether it might have to fall back
+on its backwards-compatibility, old-style reader.
+<li>If there is a suite of several programs,
+all of which read the same data files,
+and if for some reason
+there's an old version of one of the programs still in use,
+the old program can print an unambiguous message
+along the lines of
+``this is a new data file which I am too old to read'',
+rather than printing the
+(misleading, in this case)
+``error in data file''
+(or crashing).
+</OL></p><p>Another technique
+which can be immensely useful
+and which we'll explore next
+is to define a data file format in such a way
+that the overall format doesn't change
+even if new data is added to it.
+</p><p>It's easy to see why
+the simple data file fragments we've been looking at so far
+are not resilient in the face of newly-introduced data fields.
+In the case of <TT>struct s</TT>,
+the reader always assumed that
+the first field in the data file was <TT>i</TT>,
+the second field was <TT>f</TT>,
+and the third field was <TT>s</TT>.
+If we ever add any new fields,
+unless we're careful to add them at the end of the file
+(and lucky on top of that),
+the simpleminded reader will get confused.
+</p><p>One powerful way of getting around this problem
+is to <dfn>tag</dfn> each piece of data in the file,
+so that the reader knows unambiguously what it is.
+For example,
+suppose that we wrote instances of our <TT>struct s</TT> out like this:
+<pre>
+	fprintf(ofp, "i %d\n", x.i);
+	fprintf(ofp, "f %g\n", x.f);
+	fprintf(ofp, "s %s\n", x.s);
+</pre>
+Now, each line begins with a little code which identifies it.
+(The code in the data file happens to match
+the name of the corresponding structure member,
+but that's not necessary,
+nor is there any way
+of getting the compiler to make any correspondence automatically.)
+</p><p>If we simply modified one of our previous file-reading code fragments
+to read this new, tagged format,
+we might quickly end up with a mess.
+We'd be continually checking the tag on the line we just read
+against the tag we expected to read,
+and constantly printing error messages or trying to resynchronize.
+But in fact,
+there's no reason to expect the lines to come in a certain order,
+and
+it turns out that it's easier to read such a file a line at a time,
+without that assumption,
+taking each line as it comes
+and
+not
+worrying what order the lines come in.
+Here is how we might do it:
+<pre>
+	x.i = 0; x.f = 0.0; x.s[0] = '\0';
+
+	while(fgets(line, MAXLINE, ifp) != NULL)
+		{
+		if(*line == '#')
+			continue;
+		ac = getwords(line, av, 2);
+		if(ac == 0)
+			continue;
+		if(strcmp(av[0], "i") == 0)
+			x.i = atoi(av[1]);
+		else if(strcmp(av[0], "f") == 0)
+			x.f = atof(av[1]);
+		else if(strcmp(av[0], "s") == 0)
+			strcpy(x.s, av[1]);	/* XXX */
+		}
+</pre>
+This example also throws in a few new little features:
+a line beginning with <TT>#</TT> is ignored,
+so we will be able to place comment lines in data files
+by beginning them with <TT>#</TT>.
+The code also ignores blank lines
+(those for which <TT>getwords</TT> returns 0).
+</p><p>We're now treating the ``data file''
+almost like a ``command file''--the
+first word on each line is almost like a ``command''
+telling us to do something:
+<TT>i</TT> means store this value in <TT>x.i</TT>;
+<TT>f</TT> means store this value in <TT>x.f</TT>,
+etc.
+Since we don't have any easy way
+of telling whether we ever got around to setting a particular field,
+we initialize each one to an appropriate default value
+before we start.
+Notice that we did <em>not</em> have a last line
+in the <TT>if</TT>/<TT>else</TT>/<TT>if</TT>/<TT>else</TT> chain
+saying
+<pre>
+	else	fprintf(stderr, "error in data file\n");
+</pre>
+Instead, we quietly <em>ignore</em> lines we don't recognize!
+This strategy is admittedly on the simpleminded side,
+and it would not be adequate under all circumstances,
+but it means that an old program can read a new data file
+containing fields it's never heard of.
+The old program will still be able to pluck out the data
+it does recognize and can use,
+while (deliberately) ignoring the (new) data it doesn't know about.
+</p><p>This code is not perfect.
+We still have the same sorts of problems with that string field, <TT>s</TT>:
+it might contain spaces,
+which we get around (this time)
+by calling <TT>getwords</TT> with a second argument of 2,
+so that
+all but
+the first word on the line
+end up ``in'' <TT>av[1]</TT>.
+Also, the code does not check
+to see that there actually was a second word on the line
+before using it to set <TT>x.i</TT>, <TT>x.f</TT>, or <TT>x.s</TT>.
+(In this case,
+we could fix that by complaining
+if <TT>getwords</TT> did not return 2.)
+</p><p>Finally, we still have the potential for overflow,
+and we might as well grit our teeth now and figure out how to fix it.
+Since we already initialized <TT>x.s</TT> to the empty string
+with the assignment <TT>x.s[0] = '\0'</TT>,
+one way around the problem
+is to replace the call to <TT>strcpy</TT> with a call to <TT>strncat</TT>:
+<pre>
+		...
+		else if(strcmp(av[0], "s") == 0)
+			strncat(x.s, av[1], 19);
+</pre>
+(or, again, perhaps <TT>strncat(x.s, av[1], sizeof(x.s)-1)</TT>).
+The <TT>strcat</TT> and <TT>strncat</TT> functions
+are slightly misleadingly named:
+what they actually do is <em>append</em>
+the second string you hand them
+(i.e. the second argument)
+to the first, in place.
+In the case of <TT>strncat</TT>,
+it never copies more than <TT>n</TT> characters,
+where <TT>n</TT> is its third argument,
+although it does always append a <TT>\0</TT>,
+which is why we tell it to copy at most 19 characters, not 20.
+
+(Since <TT>x1.s</TT> starts out empty,
+there's definitely room for 19,
+although we would still have to worry about the possibility
+of a corrupted data file which contained two <TT>s</TT> lines.
+You might wonder why we couldn't simply use <TT>strncpy</TT>,
+but it turns out that,
+for obscure historical reasons,
+<TT>strncpy</TT> does <em>not</em> always append the <TT>\0</TT>.)
+</p><p>Although it has a few imperfections
+(which are easily remedied, and are left as exercises)
+
+this last example
+(using <TT>fgets</TT>,
+<TT>getwords</TT>,
+and an <TT>if</TT>/<TT>strcmp</TT>/<TT>else</TT>... chain)
+is an excellent basis
+for a flexible, robust data file reader.
+</p><p>One footnote about the troublesome string field, <TT>s</TT>:
+to get around the problem of fixed-size arrays,
+you might one day decide
+to declare the <TT>s</TT> field of <TT>struct s</TT>
+as a pointer rather than a fixed-size array.
+You would have to be careful while reading, however.
+It might seem that you could just write,
+for example,
+<pre>
+	x.s = av[1];	/* assumes char *s, but also WRONG */
+</pre>
+but this would <em>not</em> work;
+remember that whenever you use pointers
+you have to worry about memory allocation.
+If you assigned <TT>x.s</TT> in that way,
+where would be the memory that it points to?
+It would be
+wherever <TT>av[1]</TT> points,
+which is back into the <TT>line</TT> array.
+Not only is that (probably) a local array,
+valid only while the file-reading functions are active,
+but it's also overwritten with each new line in the data file.
+You'll obviously want <TT>x.s</TT>
+to retain a useful pointer value
+pointing to the text read from the file,
+which means that you'll still have to make a copy,
+after allocating some memory.
+In this case, you might do
+<pre>
+	x.s = malloc(strlen(av[1]) + 1);
+	if(x.s == NULL)
+		{ fprintf(stderr, "out of memory\n"); return; }
+	strcpy(x.s, av[1]);
+</pre>
+To some extent,
+the problems we've been having with field <TT>s</TT> are fundamental.
+In particular,
+any
+time you use text formats
+which are based on whitespace-separated ``words,''
+string fields which might <em>contain</em> spaces are always
+tricky
+to handle.
+
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx3.html" rev=precedes>prev</a>
+<a href="sx3b.html" rel=precedes>next</a>
+<a href="sx3.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1996-1999
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

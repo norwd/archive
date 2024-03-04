@@ -1,0 +1,391 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>section 4.1: Basics of Functions</title>
+<link href="sx7.html" rev=precedes>
+<link href="sx7b.html" rel=precedes>
+<link href="sx7.html" rev=subdocument>
+</head>
+<body>
+<H2>section 4.1: Basics of Functions</H2>
+
+page 68
+<p>Once again,
+notice how a clear, simple description of the problem we're trying to solve
+leads to an
+(almost)
+equally clear program implementing it.
+</p><p>Here are some more nice statements about
+the virtues of a clean, modular design:
+<blockquote>Although it's certainly possible
+to put the code for all of this in <TT>main</TT>,
+a better way is to use the structure to advantage
+by making each part a separate function.
+Three small pieces are easier to deal with than one big one,
+because irrelevant details can be buried in the functions,
+and the chance of unwanted interactions is minimized.
+And the pieces may even be useful in other programs.
+</blockquote></p><p>Let's say a bit more about how and why functions can be useful.
+First,
+we can see that,
+having chosen to use a separate function
+for each part of the print-matching-lines program,
+the top-level <TT>main</TT> routine on page 69
+is particularly simple and straightforward;
+it's little more than a transcription into C
+of the pseudocode on page 68.
+The authors don't tend to use too many comments in their code, anyway,
+but this code hardly needs any:
+the names of the functions called speak for themselves.
+(The only thing that might not be obvious at first is that 
+<TT>strindex</TT> is being used not so much to find the index 
+of a substring but just to determine whether a substring is 
+present at all.)
+Second,
+we may be pleased to notice
+that we're already having a chance
+to re-use the <TT>getline</TT> function
+we first wrote in Chapter 1.
+Third,
+we note that the two functions which we've chosen to use
+(<TT>getline</TT> and <TT>strindex</TT>)
+are themselves reasonably simple and straightforward to write.
+Finally,
+note that sometimes what you re-use is not so much a function 
+as a function <I>interface</I>.
+The code on page 69 uses a new implementation of 
+<TT>getline</TT>,
+but the interface
+(the argument list,
+return value,
+and functionality)
+is the same as for the versions of <TT>getline</TT> in section 
+1.9 on page 29.
+We could have used that version here,
+or this new version there.
+Later,
+if we think of some even better way of reading lines,
+we can write yet another version of <TT>getline</TT>,
+and as long as it has the same interface,
+these programs can call it without
+their
+having to be rewritten.
+</p><p>The ease with which a program like this comes together may be mildly deceptive,
+because nowhere have we discussed the motivations
+which led to the particular pseudocode description on page 68
+or the particular definitions of the functions which were chosen
+to break the problem down into.
+Choosing a design for a program,
+and defining subfunctions
+(their interfaces and their behavior)
+are both arts,
+and of course the tasks are not unrelated.
+A good design leads to the invention of functions
+which might well be useful later,
+and an existing body of good, general-purpose functions
+(all crying out to be re-used)
+can help to guide the design of the next program.
+</p><p>What makes a good building block,
+either an abstract one that we use in a pseudocode description,
+or a concrete one in the form of a general-purpose function?
+The most important aspect of a good building block
+is that it have a single, well-defined task to perform.
+Two of the three functions
+used in the line-matching program
+fill this role very well:
+<TT>getline</TT>'s job is to <I>read one line</I>,
+and
+<TT>strindex</TT>'s job is to <I>find one string in another string</I>.
+<TT>printf</TT>'s specification is considerably broader:
+its job is to <I>print stuff</I>.
+(It's not surprising that <TT>printf</TT> can therefore be the 
+harder routine to call,
+and is certainly much harder to implement.
+Its saving virtue is that it is nonetheless broadly applicable 
+and infinitely reusable.)
+</p><p>When you find that a program is hard to manage,
+it's often because it has not been designed
+and broken up into functions cleanly.
+Two obvious reasons for moving code down into a function are
+because:
+</p><p>1.
+It appeared in the main program several times,
+such that by making it a function,
+it can be written just once,
+and the several places where it used to appear
+can be
+replaced with calls to the new function.
+<p>2.
+The main program was getting too big,
+so it could be made (presumably) smaller and more manageable by 
+lopping part of it off and making it a function.
+<p>These two reasons are important,
+and they represent significant benefits of well-chosen functions,
+but they are not sufficient to automatically identify
+a good function.
+A good function has at least these two additional attributes:
+</p><p>3.
+It does just one well-defined task, and does it well.
+<p>4.
+Its interface to the rest of the program is clean and narrow.
+<p>Attribute 3 is just a restatement of something we said above.
+Attribute 4 says that you shouldn't have to keep track of too many things
+when calling a function.
+If you know what a function is supposed to do,
+and if its task is simple and well-defined,
+there should be just a few pieces of information
+you have to give it to act upon,
+and one or just a few pieces of information
+which
+it returns to you when it's done.
+If you find yourself having to pass lots and lots of 
+information to a function,
+or remember details of its internal implementation to make sure 
+that it will work properly this time,
+it's often a sign that the function is not sufficiently well-defined.
+(It may be an arbitrary chunk of code that was ripped out of a 
+main program
+that was getting too big,
+such that it essentially has to have access to
+all of that main function's variables.)
+</p><p>The whole point of breaking a program up into functions
+is so that you don't have to think about the entire program at once;
+ideally, you can think about just one function at a time.
+A good function is a ``black box'':
+when you call it, you only have to know what it does
+(not how it does it);
+and when you're writing it,
+you only have to know what it's supposed to do
+(and you don't have to know why or under what circumstances
+its caller will be calling it).
+Some functions may be hard to write
+(if they have a hard job to do,
+or if it's hard to make them do it truly well),
+but that difficulty should be compartmentalized along with the 
+function itself.
+Once you've written a ``hard'' function,
+you should be able to sit back and relax
+and watch it do that hard work on call from the rest of your program.
+If you find that difficulties pervade a program,
+that the hard parts can't be buried inside black-box functions
+and then forgotten about,
+if you find that there are hard parts which involve complicated 
+interactions among multiple functions,
+then the program probably needs redesigning.
+</p><p>For the purposes of explanation,
+we've been seeming to talk so far only about ``main programs'' 
+and the functions they call and the rationale behind moving 
+some piece of code down out of a ``main program'' into a function.
+But in reality,
+there's obviously no need to restrict ourselves to a two-tier 
+scheme.
+The ``main program,'' <TT>main()</TT>,
+is itself just a function,
+and any function we find ourself writing
+will often be appropriately written
+in terms of sub-functions, sub-sub-functions, etc.
+</p><p>That's probably enough
+for now
+about functions in general.
+Here are a few more notes about the line-matching program.
+</p><p>The authors mention that
+``The standard library provides a function <TT>strstr</TT>
+that is similar to <TT>strindex</TT>,
+except that it returns a pointer instead of an index.''
+We haven't met pointers yet
+(they're in chapter 5),
+so we aren't quite in a position to appreciate the difference 
+between an index and a pointer.
+Generally,
+an index is a small number referring to some element of an array.
+A pointer is more general:
+it can point to any data object of a particular type, whether 
+it's one element of an array,
+or some other object anywhere in memory.
+(Don't worry too much about the distinction yet,
+but bear in mind that there is a distinction.
+Note, too, that the distinction is not absolute;
+in fact,
+the word ``index'' seems to derive from the concept of pointing,
+as you can see if you think about what you use your index finger for,
+or if you notice
+that the entries in a book's index
+point at the referenced parts of the book.
+We frequently speak casually of an index variable
+``pointing at'' some cell of an array,
+even though it's not a true pointer variable.)
+</p><p>One facet of the <TT>getline</TT> function's interface might bear mentioning:
+its first argument,
+the character array <TT>s</TT>,
+is being used to return the line that it reads.
+This may seem to contradict the rule that a function can never 
+modify the value of a variable in its caller.
+As was briefly mentioned on page 28,
+there's an exception for arrays,
+which we'll be learning about in chapter 5;
+for now, we'll gloss over the point.
+(Actually, we're glossing over two points:
+not only is <TT>getline</TT> able to return a value via an argument,
+but the argument isn't really an array,
+although it's declared as and looks like one.
+Please forgive these gentle fictions;
+explaining them completely would really be premature at this point.
+Perhaps they weren't worth mentioning yet, after all.)
+</p><p>For comparison, here is yet another version of <TT>getline</TT>:
+<pre>int getline(char s[], int lim)
+{
+	int c, i = 0;
+<br>
+<br>
+	while(--lim &gt; 0 &amp;&amp; (c=getchar()) != EOF) {
+		s[i++] = c;
+		if(c == '\n')
+			break;
+	}
+<br>
+<br>
+	s[i] = '\0';
+<br>
+<br>
+	return i;
+}
+</pre>Note that by using <TT>break</TT>,
+we avoid having to test for <TT>'\n'</TT> in two different places.
+</p><p>If you're having trouble seeing how the <TT>strindex</TT> function works,
+its algorithm is
+<pre>	for (<I>each position</I> i <I>in</I> s)
+		if (t <I>occurs at position</I> i <I>in</I> s)
+			return i;
+<br>
+<br>
+	<I>(else)</I> return -1;
+</pre>Filling in the details of
+``<TT>if (t</TT> <I>occurs at position</I> <TT>i</TT> <I>in</I> <TT>s)</TT>'',
+we have:
+<pre>	for (<I>each position</I> i <I>in</I> s)
+		for (<I>each character in</I> t)
+			if (<I>it matches the corresponding character in</I> s)
+				if (<I>it's</I> '\0')
+					return i;
+				else	<I>keep going</I>
+			else	<I>no match at position</I> i
+<br>
+<br>
+	<I>(else)</I> return -1;
+</pre>A slightly less compressed implementation
+than the one on page 69 would be:
+<pre>int strindex(char s[], char t[])
+{
+	int i, j, k;
+<br>
+<br>
+	for (i = 0; s[i] != '\0'; i++) {
+		for(j = i, k = 0; t[k] != '\0'; j++, k++)
+			if(s[j] != t[k])
+				break;
+<br>
+<br>
+		if(t[k] == '\0')
+			return i;
+	}
+<br>
+<br>
+	return -1;
+}
+</pre>Note that we have to check for the end of the string <TT>t</TT> twice:
+once to see if we're at the end of it in the innermost loop,
+and again to see <em>why</em> we terminated the innermost loop.
+(If we terminated the innermost loop
+because we reached the end of <TT>t</TT>,
+we found a match;
+otherwise, we didn't.)
+We could rearrange things to remove the duplicated test:
+<pre>int strindex(char s[], char t[])
+{
+	int i, j, k;
+<br>
+<br>
+	for (i = 0; s[i] != '\0'; i++) {
+		j = i;
+		k = 0;
+<br>
+<br>
+		do {
+			if(t[k] == '\0')
+				return i;
+		} while(s[j++] == t[k++]);
+		
+	}
+<br>
+<br>
+	return -1;
+}
+</pre>It's a matter of style
+which implementation of <TT>strindex</TT> is preferable;
+it's impossible to say which is ``best.''
+(Can you see a slight difference
+in the behavior of the version on page 69
+versus the two here?
+Under what circumstance(s) would this difference be significant?
+How would the version on page 69 behave under those circumstances,
+and how would the two routines here behave?)
+</p><p>page 70
+</p><p>Deep sentence:
+<blockquote>A program is just a set of definitions of variables and functions.
+</blockquote>This sentence may or may not seem deep,
+and it may or may not <em>be</em> deep,
+but it's a fundamental definition of what a C program is.
+</p><p>Note that
+a function's return value
+is automatically converted
+to the return type of the function, if necessary,
+just as in assignments like
+<pre>	f = i;
+</pre>where <TT>f</TT> is <TT>float</TT> and <TT>i</TT> is <TT>int</TT>.
+</p><p>Most programmers do use parentheses around the expression
+in a <TT>return</TT> statement,
+because that way it looks more like <TT>while()</TT>, <TT>for()</TT>, etc.
+The reason the parentheses are optional is that the formal syntax is
+<pre>	return <I>expression</I> ;
+</pre>and,
+as we know,
+any expression surrounded by parentheses is another expression.
+</p><p>It's debatable whether it's ``not illegal''
+for a function to have <TT>return</TT> statements with and 
+without values.
+It's a ``sign of trouble'' at best, and undefined at worst.
+Another
+clear sign of trouble
+(which is equally undefined)
+is
+when
+a function returns
+no value,
+or is declared as <TT>void</TT>,
+but a caller attempts to use the return value.
+</p><p>The <TT>main</TT> program on page 69
+returns the number of matching lines found.
+This is probably better than returning nothing,
+but the convention is usually that a C program returns 0 when 
+it succeeds and a positive number when it fails.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx7.html" rev=precedes>prev</a>
+<a href="sx7b.html" rel=precedes>next</a>
+<a href="sx7.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-03 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

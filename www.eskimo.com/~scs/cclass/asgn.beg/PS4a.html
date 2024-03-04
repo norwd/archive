@@ -1,0 +1,435 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>Assignment #4 Answers</title>
+</head>
+<body>
+<H1>Assignment #4 Answers</H1>
+
+
+
+
+
+<B>Introductory C Programming
+<br>
+<br>
+UW Experimental College
+<br>
+<br>
+Assignment #4 ANSWERS
+</B><br>
+<br>
+<p>Question 1.
+<I>What would the expression
+<pre>
+	c = getchar() != EOF
+</pre>
+</I><I>do?
+</I><p>It would read one character and compare it to the constant <TT>EOF</TT>.
+If the character read was equal to <TT>EOF</TT>,
+it would set <TT>c</TT> to 0,
+otherwise
+(i.e. for any other character)
+it would set <TT>c</TT> to 1.
+What it would <em>not</em> do is read a character,
+assign it to <TT>c</TT>,
+and then test it against <TT>EOF</TT>,
+which is what you usually want to do,
+and which you need to write
+<pre>
+	(c = getchar()) != EOF
+</pre>
+to do.
+<p>Question 2.
+<I>Why must the variable used to hold <TT>getchar</TT>'s return value
+be type <TT>int</TT>?
+</I><p>So that it can reliably store the value <TT>EOF</TT>.
+<p>Variables of type <TT>char</TT> are typically 8 bits large,
+which means that they can hold 2<sup>8<sup>,
+or 256 different character values.
+Furthermore, on an 8-bit system,
+<TT>getchar</TT> can theoretically return
+characters having any of these 256 character values.
+However, <TT>getchar</TT> can also return a 257th value, <TT>EOF</TT>,
+which is not a character value but rather an indication that there are no 
+more characters to get.
+You can no more reliably store
+<TT>getchar</TT>'s 257 return values in a 
+variable of type <TT>char</TT> than you can store 13 eggs in a 
+carton that holds a dozen.
+
+If you tried to assign <TT>getchar</TT>'s return value
+to a <TT>char</TT>,
+you could either mistake a real character value for <TT>EOF</TT>
+or <TT>EOF</TT> for a real character value,
+resulting either in premature termination of input or an infinite loop.
+<p>An <TT>int</TT>, on the other hand, is on the vast majority of 
+machines larger than a <TT>char</TT>, so it can comfortably hold 
+all 256 character values, <em>plus</em> <TT>EOF</TT>.
+<p>Question 3.
+<I>What is the difference
+between the prefix and postfix forms of the <TT>++</TT> operator?
+</I><p>The prefix form increments first,
+and the incremented value goes on to participate in the 
+surrounding expression (if any).
+The postfix form increments later;
+the previous value
+goes on to participate in the surrounding expression.
+<p>Question 4.
+<I>What would the expression
+<pre>
+	i = i++
+</pre>
+do?
+</I><p>Nothing, or at least, nothing useful.
+Since it tries to modify <TT>i</TT> twice,
+it's undefined.
+<p>Question 5.
+<I>What is the definition of a string in C?
+</I><br>
+<br>
+An array of characters,
+terminated with the null character <TT>\0</TT>.
+<p>Question 6.
+<I>What will the <TT>getline</TT> function
+do
+if successive calls to <TT>getchar</TT> return the four values
+<TT>'a'</TT>, <TT>'b'</TT>, <TT>'c'</TT>, and <TT>EOF</TT>?
+</I><p>The first three characters are placed in the <TT>line</TT> array,
+as usual,
+and when the <TT>EOF</TT> indicator is read,
+<TT>getline</TT> breaks out of its loop,
+also as usual.
+Although <TT>c</TT> is now <TT>EOF</TT>,
+<TT>nch</TT> is 3,
+so the condition <TT>c == EOF &amp;&amp; nch == 0</TT>
+is false.
+<TT>getline</TT> therefore does not return <TT>EOF</TT>,
+but rather terminates the line with <TT>\0</TT>
+and returns its length,
+just as it does with a normal line
+which it finds <TT>\n</TT> at the end of.
+<br>
+<br>
+Can this situation ever occur?
+One way to answer a question like this is not to try too hard to answer it,
+to err on the side of conservatism,
+to assume that if we can't prove that the unusual situation won't arise,
+we might as well be safe and arrange that our code can handle it 
+<em>if</em> it somehow comes up.
+(There's obviously little or no harm in writing code
+to handle a situation that never comes up,
+while the reverse--neglecting
+to write code to handle a situation that <em>does</em> come up--can
+of course be very harmful.)
+<br>
+<br>
+In any case,
+under Unix at least,
+this situation can in fact come up.
+Unix does not enforce any notion of a ``text file'';
+the sequence <TT>a</TT>, <TT>b</TT>, <TT>c</TT>, <TT>EOF</TT>
+at the end of a file
+is no more or less favored
+(by the operating system, that is)
+than the sequence <TT>a</TT>, <TT>b</TT>, <TT>c</TT>, <TT>\n</TT>, <TT>EOF</TT>.
+Furthermore, there are some programs
+(e.g. full-screen text editors such as EMACS)
+which make it easy to create a text file without a final newline
+(if only by accident).
+(But there are also examples of programs
+which inadvertently ignore the last line of a file
+whose last line does not end in <TT>\n</TT>,
+and this is a bug which can cause data loss.)
+So writing <TT>getline</TT> to treat a ``line'' ending in <TT>EOF</TT>
+(but no <TT>\n</TT>)
+is not only reasonable, but useful.
+<p>Tutorial 2.
+<I>Improve the <TT>myatoi</TT> function so that it can handle negative numbers.
+</I><p>
+<pre>
+#include &lt;ctype.h&gt;
+
+int myatoi(char str[])
+{
+	int i;
+	int retval = 0;
+	int negflag = 0;
+
+	for(i = 0; str[i] != '\0'; i = i + 1)
+		{
+		if(!isspace(str[i]))
+			break;
+		}
+
+	if(str[i] == '-')
+		{
+		negflag = 1;
+		i = i + 1;
+		}
+
+	for(; str[i] != '\0'; i = i + 1)
+		{
+		if(!isdigit(str[i]))
+			break;
+		retval = 10 * retval + (str[i] - '0');
+		}
+
+	if(negflag)
+		retval = -retval;
+
+	return retval;
+}
+</pre>
+<p>Tutorial 3.
+<I>Modify the ``word zipping'' program
+to move the word from right to left instead of left to right.
+</I><pre>
+#include &lt;stdio.h&gt;
+
+extern int getline(char [], int);
+
+int main()
+{
+	char word[20];
+	int len;
+	int i, j;
+
+	printf("type something: ");
+	len = getline(word, 20);
+	for(i = 80 - len - 1; i &gt;= 0; i--)
+		{
+		for(j = 0; j &lt; i; j++)
+			printf(" ");
+		printf("%s \r", word);
+		}
+	printf("\n");
+
+	return 0;
+}</pre>
+<p>Exercise 4.
+<I>Write a program
+which computes the average
+(and standard deviation)
+of a series of numbers.
+</I><pre>
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;math.h&gt;
+
+extern int getline(char [], int);
+
+int main()
+{
+	char line[100];
+	int x;
+	double sum, sumsq;
+	int n;
+	double mean, stdev;
+
+	sum = sumsq = 0.0;
+	n = 0;
+
+	while(getline(line, 100) != EOF)
+		{
+		x = atoi(line);
+		sum = sum + x;
+		sumsq = sumsq + x * x;
+		n = n + 1;
+		}
+
+	mean = sum / n;
+	stdev = sqrt((sumsq - sum * sum / n) / (n - 1));
+
+	printf("mean: %f\n", mean);
+	printf("std. dev.: %f\n", stdev);
+
+	return 0;
+}
+
+</pre>
+<p>Exercise 5.
+<I>Write a rudimentary checkbook balancing program.
+</I><br>
+<br>
+<pre>
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;	/* for atof() */
+
+#define MAXLINE 100
+
+extern int getline(char [], int);
+
+int main()
+{
+	double balance = 0.0;
+	char line1[MAXLINE], line2[MAXLINE];
+
+	while(getline(line1, MAXLINE) &gt; 0)
+		{
+		getline(line2, MAXLINE);
+
+		if(strcmp(line1, "deposit") == 0)
+			balance += atof(line2);
+		else if(strcmp(line1, "check") == 0)
+			balance -= atof(line2);
+		else	{
+			printf("bad data line: not \"check\" or \"deposit\"\n");
+			continue;
+			}
+
+		printf("balance: %.2f\n", balance);
+		}
+	
+	return 0;
+}</pre>
+<p>Reading the key word and the amount from the same line
+would be surprisingly difficult,
+using only the tools we have in hand so far.
+We'll see a clean way of doing it in a week or two.
+<p>Exercise 6.
+<I>Rewrite the ``compass'' code
+to use <TT>strcpy</TT> and <TT>strcat</TT>.
+</I><br>
+<br>
+<pre>
+char word[20];
+
+if(y &gt; 0)
+	strcpy(word, "north");
+else if(y &lt; 0)
+	strcpy(word, "south");
+else	strcpy(word, "");		/* empty string */
+
+if(x &gt; 0)
+	strcat(word, "east");
+else if(x &lt; 0)
+	strcat(word, "west");
+else	strcat(word, "");		/* empty string */
+
+printf("%s\n", word);
+</pre>
+<p>Exercise 7.
+<I>Write a program to read its input,
+one character at a time,
+and print each character and its decimal value.
+</I><br>
+<br>
+<pre>
+#include &lt;stdio.h&gt;
+
+int main()
+{
+	int c;
+
+	while((c = getchar()) != EOF)
+		printf("character %c has value %d\n", c, c);
+
+	return 0;
+}</pre>
+You will notice that this program prints a funny line or two 
+for each new line (<TT>'\n'</TT>) in the input,
+because when the <TT>%c</TT> in the <TT>printf</TT> call
+finds itself printing a <TT>\n</TT> character that we've just read,
+it naturally prints a newline at that point.
+<p>Exercise 8.
+<I>Write a program to read its input,
+one line at a time,
+and print each line backwards.
+</I><p>Here is one way of doing it,
+using only what we've seen so far:
+<pre>
+#include &lt;stdio.h&gt;
+
+extern int getline(char [], int);
+extern int reverse(char [], int);
+
+int main()
+{
+	char line[100];
+	int len;
+
+	while((len = getline(line, 100)) != EOF)
+		{
+		reverse(line, len);
+		printf("%s\n", line);
+		}
+
+	return 0;
+}
+
+int reverse(char string[], int len)
+{
+	int i;
+	char tmp;
+	for(i = 0; i &lt; len / 2; i = i + 1)
+		{
+		tmp = string[i];
+		string[i] = string[len - i - 1];
+		string[len - i - 1] = tmp;
+		}
+	return 0;
+}
+</pre>
+In practice, it would be a nuisance to have to pass the length 
+of the string to the <TT>reverse</TT> function.
+Strings in C are always terminated by the ``zero'' or 
+``nul'' character, represented by <TT>\0</TT>.
+Therefore, <TT>reverse</TT> (or any piece of code)
+can always compute the length of a string, either by searching 
+for the <TT>\0</TT>,
+or by calling the library function <TT>strlen</TT>,
+which computes the length of a string by searching for the 
+<TT>\0</TT>.
+Here is how the program might look if the <TT>reverse</TT> 
+function did not require that the length of the string be 
+passed in:
+<pre>
+#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+
+extern int getline(char [], int);
+extern int reverse(char []);
+
+int main()
+{
+	char line[100];
+
+	while(getline(line, 100) != EOF)
+		{
+		reverse(line);
+		printf("%s\n", line);
+		}
+
+	return 0;
+}
+
+int reverse(char string[])
+{
+	int len = strlen(string);
+	int i;
+	char tmp;
+	for(i = 0; i &lt; len / 2; i = i + 1)
+		{
+		tmp = string[i];
+		string[i] = string[len - i - 1];
+		string[len - i - 1] = tmp;
+		}
+	return 0;
+}
+</pre>
+<hr>
+<hr>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-9
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-04 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

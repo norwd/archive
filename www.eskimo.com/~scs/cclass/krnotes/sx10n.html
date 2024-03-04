@@ -1,0 +1,71 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>section 7.8.7: Random Number Generation</title>
+<link href="sx10m.html" rev=precedes>
+<link href="sx10.html" rev=subdocument>
+</head>
+<body>
+<H2>section 7.8.7: Random Number Generation</H2>
+
+<p>There is a typo in some printings;
+the code for returning a floating-point random number in the 
+interval [0,1) should be
+<pre>	#define frand() ((double) rand() / (RAND_MAX+1.0))
+</pre></p><p>If you want to get random integers from M to N,
+you can use something like
+<pre>	M + (int)(frand() * (N-M+1))
+</pre><pre></pre></p><p>``[Setting] the seed for <TT>rand</TT>''
+refers to the fact that,
+by default,
+the sequence of pseudo-random numbers
+returned by <TT>rand</TT>
+is the same each time your program runs.
+To randomize it,
+you can call <TT>srand</TT> at the beginning of the program,
+handing it some truly random number,
+such as a value having to do with the time of day.
+(One way is with code like
+<pre>	#include &lt;stdlib.h&gt;
+	#include &lt;time.h&gt;
+<br>
+<br>
+	srand((unsigned int)time((time_t *)NULL));
+</pre>which uses the <TT>time</TT> function mentioned on page 256 in 
+appendix B10.)
+</p><p>One other caveat about <TT>rand</TT>:
+don't try to generate random 0/1 values
+(to simulate a coin flip, perhaps)
+with code like
+<pre>	rand() % 2
+</pre>This looks like it ought to work,
+but it turns out that
+on some systems <TT>rand</TT> isn't always perfectly random,
+and returns values which consistently alternate
+even, odd, even, odd, etc.
+(In fact, for similar reasons,
+you shouldn't usually use
+<TT>rand() % N</TT>
+for any value of <TT>N</TT>.)
+A good way to get random 0/1 values would be
+<pre>	(int)(frand() * 2)
+</pre>based on the other <TT>frand()</TT> examples above.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx10m.html" rev=precedes>prev</a>
+<a href="sx10.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

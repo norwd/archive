@@ -1,0 +1,205 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>Standard Library Functions</title>
+<link href="sx14e.html" rev=precedes>
+<link href="sx14.html" rev=subdocument>
+</head>
+<body>
+<H2>Standard Library Functions</H2>
+
+<p>C's standard library contains many features and functions
+which we haven't seen.
+</p><p>We've seen many of <TT>printf</TT>'s formatting capabilities,
+but not all.
+Besides format specifier characters for a few types we haven't seen,
+
+you can also control the width, precision,
+justification (left or right)
+and a few other attributes of <TT>printf</TT>'s format conversions.
+(In their full complexity,
+<TT>printf</TT> formats are about as elaborate and powerful
+as FORTRAN <TT>format</TT> statements.)
+</p><p>A <TT>scanf</TT> function lets you do ``formatted input''
+analogous to <TT>printf</TT>'s formatted output.
+<TT>scanf</TT> reads from the standard input;
+a variant <TT>fscanf</TT> reads from a specified file pointer.
+</p><p>The
+<TT>sprintf</TT> and <TT>sscanf</TT>
+functions
+let you
+``print'' and ``read''
+to and from in-memory strings instead of files.
+We've seen that <TT>atoi</TT> lets you convert a numeric
+string into an integer;
+the inverse operation can be performed with <TT>sprintf</TT>:
+<pre>
+	int i = 10;
+	char str[10];
+	sprintf(str, "%d", i);
+</pre>
+</p><p>We've used <TT>printf</TT> and <TT>fprintf</TT> to write formatted output,
+and <TT>getchar</TT>, <TT>getc</TT>, <TT>putchar</TT>, and <TT>putc</TT>
+to read and write characters.
+There are also functions
+<TT>gets</TT>, <TT>fgets</TT>, <TT>puts</TT>, and <TT>fputs</TT>
+for reading and writing lines
+(though we rarely need these,
+especially if we're using our own <TT>getline</TT>
+and maybe <TT>fgetline</TT>),
+and also <TT>fread</TT> and <TT>fwrite</TT>
+for reading or writing arbitrary numbers of characters.
+</p><p>It's possible to ``un-read'' a character,
+that is,
+to push it back on an input stream, with <TT>ungetc</TT>.
+(This is useful if you accidentally read one character too far,
+and would prefer that some other part of your program
+read that character instead.)
+</p><p>You can use the
+<TT>ftell</TT>, <TT>fseek</TT>, and <TT>rewind</TT> functions
+to jump around in files,
+performing random access (as opposed to sequential) I/O.
+</p><p>The <TT>feof</TT> and <TT>ferror</TT> functions will tell you
+whether you got <TT>EOF</TT> due to an actual end-of-file
+condition or due to a read error of some sort.
+You can clear errors and end-of-file conditions with
+<TT>clearerr</TT>.
+</p><p>You can open files in ``binary'' mode, or for
+simultaneous
+
+reading and writing.
+(These options involve extra characters
+appended to <TT>fopen</TT>'s mode string:
+<TT>b</TT> for binary,
+<TT>+</TT> for read/write.)
+</p><p>There are several more string functions in <TT>&lt;string.h&gt;</TT>.
+A second set of string functions
+<TT>strncpy</TT>, <TT>strncat</TT>, and <TT>strncmp</TT>
+all
+accept a third argument telling them to
+stop after <TT>n</TT> characters
+if they haven't found the <TT>\0</TT> marking the end of the string.
+A third set of ``<TT>mem</TT>'' functions,
+including <TT>memcpy</TT> and <TT>memcmp</TT>,
+operate on blocks of memory
+which aren't necessarily strings
+and where <TT>\0</TT> is not treated as a terminator.
+The <TT>strchr</TT> and <TT>strrchr</TT> functions
+find characters in strings.
+There is a motley collection
+of ``span'' and ``scan'' functions,
+<TT>strspn</TT>, <TT>strcspn</TT>, and <TT>strpbrk</TT>,
+for searching out or skipping over sequences of characters all 
+drawn from a specified set of characters.
+The <TT>strtok</TT> function aids in breaking up a string
+into words or ``tokens,''
+much like our own <TT>getwords</TT> function.
+</p><p>The header file <TT>&lt;ctype.h&gt;</TT> contains several functions
+which let you classify and manipulate characters:
+check for letters or digits,
+convert between upper- and lower-case,
+etc.
+</p><p>A host of mathematical functions
+are defined in the header file <TT>&lt;math.h&gt;</TT>.
+(As we've mentioned, besides including <TT>&lt;math.h&gt;</TT>,
+you may on some Unix systems
+have to ask for a special library containing the math functions
+while compiling/linking.)
+</p><p>There's a random-number generator, <TT>rand</TT>,
+and a way to ``seed'' it, <TT>srand</TT>.
+<TT>rand</TT> returns integers from 0 up to <TT>RAND_MAX</TT>
+(where <TT>RAND_MAX</TT> is a constant
+<TT>#define</TT>d in <TT>&lt;stdlib.h&gt;</TT>).
+One way of getting random integers from 1 to <TT>n</TT> is to call
+<pre>
+	(int)(rand() / (RAND_MAX + 1.0) * n) + 1
+</pre>
+Another way is
+<pre>
+	rand() / (RAND_MAX / n + 1) + 1
+</pre>
+It seems like it would be simpler to just say
+<pre>
+	rand() % n + 1
+</pre>
+but this method is imperfect
+(or rather, it's imperfect if
+<TT>n</TT> is a power of two
+and
+your system's implementation of <TT>rand()</TT> is imperfect,
+as all too many of them are).
+</p><p>Several functions let you interact with
+the operating system under which your program is running.
+The <TT>exit</TT> function
+returns control to the operating system immediately,
+terminating your program
+and returning an ``exit status.''
+The <TT>getenv</TT> function allows you to read
+your operating system's
+or process's
+``environment variables''
+(if any).
+The <TT>system</TT> function
+allows you to invoke an operating-system command
+(i.e. another program)
+from within your program.
+</p><p>The <TT>qsort</TT> function allows you to sort an array
+(of any type);
+you supply a comparison function
+(via a function pointer)
+which knows how to compare two array elements,
+and <TT>qsort</TT> does the rest.
+The <TT>bsearch</TT> function allows you to
+search for elements in sorted arrays;
+it, too, operates in terms of a caller-supplied comparison function.
+</p><p>Several functions--<TT>time</TT>,
+<TT>asctime</TT>,
+<TT>gmtime</TT>,
+<TT>localtime</TT>,
+<TT>asctime</TT>,
+<TT>mktime</TT>,
+<TT>difftime</TT>,
+and
+<TT>strftime</TT>--allow
+you to determine the current date and time,
+print dates and times,
+and perform other date/time manipulations.
+For example, to print today's date in a program,
+you can write
+<pre>
+	#include &lt;time.h&gt;
+
+	time_t now;
+	now = time((time_t *)NULL);
+	printf("It's %.24s", ctime(&amp;now));
+</pre>
+</p><p>The header file <TT>&lt;stdarg.h&gt;</TT> lets you manipulate
+variable-length function argument lists
+(such as the ones <TT>printf</TT> is called with).
+Additional members of the <TT>printf</TT> family of functions
+let you write your own functions which accept
+<TT>printf</TT>-like format specifiers and
+variable numbers of arguments but call on the
+standard <TT>printf</TT> to do most of the work.
+</p><p>There are facilities for dealing with
+multibyte and ``wide'' characters and strings,
+for use with multinational character sets.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx14e.html" rev=precedes>prev</a>
+<a href="sx14.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-1997
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

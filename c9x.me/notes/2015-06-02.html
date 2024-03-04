@@ -1,0 +1,48 @@
+<!doctype html>
+<meta name=viewport content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../assets/css/simple.css" type="text/css" />
+
+<link rel="stylesheet" href="assets/notes.css" type="text/css"/>
+<title>Notes from 2015-06-02</title>
+<article>
+<h1><img id="logo" src="assets/logo.png" alt="">Notes</h1>
+<h3>2015-06-02</h3>
+
+<p>
+Here is a short note for those who have trouble remembering Russell's
+Paradox or the definition of the Y combinator in lambda-calculus.
+I will expose here one observation that allows you to remember just one of
+the two and recover the other.  The actual link between these two notions
+prevents the lambda-calculus from serving the purpose Church had for it: 
+giving a formal basis to mathematics.  Fortunately the lambda-calculus
+found another application not any less important than grounding mathematics:
+it describes universal computations.
+</p>
+<p>
+Russell's Paradox considers the set R = { X | X ∉ X }
+of sets that do not belong to themselves.  Now if such set exists, R ∈ R if and only
+if R ∉ R, and we have a contradiction.   Let us encode this reasoning
+in lambda-calculus, we start by observing that sets can
+be represented by their characteristic function: a function returning
+1 for all members of the set and 0 for the others.  Assume that
+we represent the negation using a function N.  Then, we can define
+the set R in lambda-calculus by the following characteristic function:
+</p>
+<pre>
+R = λ x. N (x x)
+</pre>
+<p>
+Let's observe what happens when we ask if R is in itself:
+We form <code>Y = R R</code> (that is exactly the Y combinator) and by one
+application of beta-reduction, we get <code>N (R R) ≡ N Y</code>.
+</p>
+<p>
+We just found a fixpoint of N.  In set theory we had a fixpoint of
+negation, but negation does not have fixpoint, hence the paradox.  In the
+lambda-calculus case, we get out of this with a trick: if N has no fixpoint,
+the computation we get by applying these characteristic functions never
+terminates, it <em>diverges</em> and we face an ever-running program that
+never gives us the answer if R is in itself or not.
+</p>
+</article>
+<!-- analytics free! -->

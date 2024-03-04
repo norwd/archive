@@ -1,0 +1,314 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>section 5.6: Pointer Arrays; Pointers to Pointers</title>
+<link href="sx8e.html" rev=precedes>
+<link href="sx8g.html" rel=precedes>
+<link href="sx8.html" rev=subdocument>
+</head>
+<body>
+<H2>section 5.6: Pointer Arrays; Pointers to Pointers</H2>
+
+page 107
+<p>Deep sentence:
+<blockquote>Since pointers are variables themselves,
+they can be stored in arrays just as other variables can.
+</blockquote>This is just one aspect of the generality of C's data types,
+which we'll be seeing in the next few sections.
+</p><p>We've used a recursive definition of ``expression'':
+a constant or variable is an expression,
+an expression in parentheses is an expression,
+an expression plus an expression is an expression,
+etc.
+There are
+obviously an infinite number of expressions,
+of arbitrary complexity.
+In exactly the same way,
+there are an infinite number of data types in C.
+We've already seen the basic data types:
+<TT>int</TT>, <TT>char</TT>, <TT>double</TT>, etc.
+But then we have the <dfn>derived</dfn> data types
+such as array-of-<TT>char</TT> and pointer-to-<TT>int</TT>
+and function-returning-<TT>double</TT>.
+So we can say that
+for any type,
+array-of-<I>type</I> is another type,
+and pointer-to-<I>type</I> is another type,
+and function-returning-<I>type</I> is another type.
+Once we've said that,
+we can see that there is also the 
+possibility of arrays of pointers,
+and arrays of arrays,
+and functions returning pointers,
+and even
+(in section 5.11, though this is a deeper topic)
+pointers to functions.
+(The only possibilities that C doesn't support are
+functions returning arrays,
+and arrays of functions,
+and functions returning functions.)
+</p><p>Make sure you understand why an integer is something that 
+<em>can</em> be ``compared or moved in a single operation,''
+but that a string
+(that is, an array of <TT>char</TT>)
+is <em>not</em>.
+Then,
+realize that a pointer is also something that can be
+``compared or moved in a single operation.''
+(Actually, though, the string comparisons we'll be doing
+are not single operations.)
+From time to time you'll hear me caution you
+not to worry too much about certain aspects of efficiency.
+Here, it's true that
+the overhead of copying entire strings from one place to another,
+a character at a time
+(which is the overhead we'll be getting around
+by manipulating pointers instead)
+can be significant,
+but that's not the only concern:
+once we're comfortable with the idea,
+manipulating pointers will be somewhat easier on <em>us</em>, too.
+(Copying lots of characters around is a nuisance,
+and it can also be dangerous,
+if the destination isn't big enough or isn't in the right place.)
+</p><p>Don't worry
+about the ``one long character array'' that 
+the
+``lines to be sorted are stored end-to-end in.''
+Instead,
+look
+at the picture at the bottom of page 107,
+which shows the pointers that might be set up after reading the 
+lines
+<pre>	defghi
+	jklmnopqrst
+	abc
+</pre>On the left are the pointers before sorting,
+and on the right are the pointers after sorting.
+The three strings have not been moved,
+but by reshuffling the pointers,
+the three pointers in order now point to the lines
+<pre>	abc
+	defghi
+	jklmnopqrst
+</pre></p><p>page 108
+</p><p>Once again,
+we see a nice simple decomposition of the problem,
+which might seem deceptively simple
+except that when problems are decomposed in simple ways like this,
+and then implemented faithfully,
+they really <em>can</em> be this simple.
+Deferring the sorting step is an excellent idea,
+especially if we didn't quite follow the details of the sorting 
+functions in the previous chapter.
+(Actually, in practice,
+we can usually defer the sorting step forever,
+since there's often a general-purpose sort routine
+provided for us somewhere.
+C is no exception:
+a <TT>qsort</TT> function is a required part of its standard library.
+For the most part,
+the only people who have to write sort routines
+are programming students
+and the few people who get stuck implementing system functions.)
+</p><p>The <TT>main</TT> program at the bottom of page 108 looks a 
+bit more elaborate than the pseudocode at the top of the page,
+but the essence of the program is the three calls to 
+<TT>readlines</TT>, <TT>qsort</TT>, and <TT>writelines</TT>.
+Everything else is declarations,
+plus an error message which is printed
+if <TT>readlines</TT> is for some reason not able to read the input.
+Eventually, you should be able to understand
+why all of the
+various
+declarations are required,
+but you can skim over them at first.
+</p><p>page 109
+</p><p>The <TT>readlines</TT> function
+first calls our old friend <TT>getline</TT>
+to read each line into a local array, <TT>line</TT>.
+On page 29 in section 1.9,
+we saw a program for finding the longest line in the input:
+it read each line into a local array <TT>line</TT>,
+and kept a copy of the longest line in a second array <TT>longest</TT>.
+In that program,
+it didn't matter that the input array <TT>line</TT>
+was continually overwritten with each new input line,
+and that most lines
+(except the longest one)
+were lost and forgotten.
+Here, however,
+we <em>do</em> need to save <em>all</em> of the input lines somewhere,
+so that we can sort them and print them later.
+</p><p>The lines are saved by calling <TT>alloc</TT>,
+a function which we wrote in section 5.4
+but may have skimmed over.
+<TT>alloc</TT> allocates <TT>n</TT> bytes of new memory
+for something which we need to save.
+Each time we read another line,
+we call <TT>alloc</TT> to allocate some new memory to store it,
+then call <TT>strcpy</TT> to copy the line from the 
+<TT>line</TT> array to the newly allocated memory.
+This way,
+it's okay
+that the next line is read into the same <TT>line</TT> array;
+we save each line,
+as it's read,
+into its own little <TT>alloc</TT>'ed piece of memory.
+</p><p>Note that memory allocated with a routine such as <TT>alloc</TT>
+persists,
+just as global and <TT>static</TT> variables do;
+it does not disappear when the function that allocated it returns.
+</p><p>Hopefully you're getting used to reading compressed condition statements by now,
+because here's another doozy:
+<pre>	if (nlines &gt;= maxlines || (p == alloc(len)) == NULL)
+</pre>This line checks to make sure we have enough room to store the 
+new line we just read.
+We need two things:
+(1) a slot in the <TT>lineptr</TT> array to store the pointer,
+and
+(2)
+space allocated by <TT>alloc</TT> to store the line itself.
+If we don't have either of these things,
+we return -1,
+indicating that we ran out of memory.
+We don't have a slot in the <TT>lineptr</TT> array if
+we've already read <TT>maxlines</TT> lines,
+and we don't have room to store the line itself
+if <TT>alloc</TT> returns <TT>NULL</TT>.
+The subexpression <TT>(p = alloc(len)) == NULL</TT>
+is equivalent in form
+to other assign-and-test combinations we've been using
+involving <TT>getchar</TT> and <TT>getline</TT>:
+it assigns <TT>alloc</TT>'s return value to <TT>p</TT>,
+then compares it to <TT>NULL</TT>.
+</p><p>Normally, we might be suspicious of the call <TT>alloc(len)</TT>.
+Why?
+Remember that strings are always terminated by <TT>'\0'</TT>,
+so the space required to store a string
+is always one more than the number of characters in it.
+Normally, we'll call things like <TT>alloc(len + 1)</TT>,
+and accidentally calling <TT>alloc(len)</TT> is usually a bug.
+Here, it happens to be okay,
+because before we copy the line to the newly-allocated memory,
+we strip the newline <TT>'\n'</TT> from the end of it,
+by overwriting it with <TT>'\0'</TT>, hence making the string one 
+shorter than <TT>len</TT>.
+(Why is the last character in <TT>line</TT>,
+namely the <TT>'\n'</TT>,
+at <TT>line[len-1]</TT>, and not <TT>line[len]</TT>?)
+</p><p>The fragments
+<pre>	if (nlines &gt;= maxlines ...
+and
+	lineptr[nlines++] = p;
+</pre>deserve some attention.
+These represent a common way of filling in an array in C.
+<TT>nlines</TT> always holds the number of lines we've read so far
+(it's another <dfn>invariant</dfn>).
+It starts out as 0
+(we haven't read any lines yet)
+and it ends up as the total number of lines we've read.
+Each time we read a new line,
+we store the line
+(more precisely, a pointer to it)
+in <TT>lineptr[nlines++]</TT>.
+By using postfix <TT>++</TT>,
+we store the pointer in the slot indexed by the 
+<em>previous</em> value of <TT>nlines</TT>,
+which is what we want, because arrays are 0-based in C.
+The first time through the loop,
+<TT>nlines</TT> is 0,
+so we store a pointer to the first line in <TT>lineptr[0]</TT>,
+and then increment <TT>nlines</TT> to 1.
+If <TT>nlines</TT> ever becomes equal to <TT>maxlines</TT>,
+we've filled in all the slots of the array,
+and we can't use any more
+(even though, at that point,
+the highest-filled cell in the array is <TT>lineptr[maxlines-1]</TT>,
+which is the last cell in the array,
+again because arrays are 0-based).
+We test for this condition by checking <TT>nlines &gt;= maxlines</TT>,
+as a little measure of paranoia.
+The test <TT>nlines == maxlines</TT> would also work,
+but if we ever accidentally introduce a bug into the program 
+such that we fill past the last slot without noticing it,
+we wouldn't want to keep on filling farther and farther past the end.
+<br></p><p>Deep sentences:
+<blockquote>...<TT>lineptr</TT> is an array of <TT>MAXLINES</TT> elements,
+each element of which is a pointer to a <TT>char</TT>.
+That is,
+<TT>lineptr[i]</TT> is a character pointer...
+</blockquote>We can see that <TT>lineptr[i]</TT> has to be a character pointer,
+by looking at two things:
+in the function <TT>readlines</TT>,
+the line
+<pre>	lineptr[lines++] = p;
+</pre>has a character pointer on the right-hand side,
+and the only thing we can assign a character pointer to
+is another character pointer.
+Also,
+in
+the function <TT>writelines</TT>,
+in the line
+<pre>	printf("%s\n", lineptr[i]);
+</pre><TT>printf</TT>'s <TT>%s</TT> format expects a pointer to a character,
+so that's what <TT>lineptr[i]</TT> had better be.
+</p><p>Note that <TT>writelines</TT> prints a newline after each line,
+since newlines were stripped out of the input lines by <TT>readlines</TT>.
+</p><p>Don't worry too much about the discussion at the bottom of page 109.
+We saw in section 5.3
+that due to the ``strong relationship'' between pointers and arrays,
+it is always possible to manipulate an array using pointer-like notation,
+and to manipulate a pointer using array-like notation.
+Since <TT>lineptr</TT> is an array,
+it is possible to manipulate 
+it using pointer-like notation,
+but since what it's an array of is other pointers,
+it can start to get a bit confusing.
+Though many programmers do write things like
+<pre>	printf("%s\n", *lineptr++);
+</pre>and though this is correct code,
+and though one should probably understand it
+to have a 100% complete understanding of C,
+I've decided that code like that is just a bit too hard
+to follow,
+and I'd always write
+(perhaps more pedestrian and mundane)
+things like
+<pre>	printf("%s\n", lineptr[i]);
+or
+	printf("%s\n", lineptr[i++]);
+</pre></p><p>page 110
+</p><p>Since I didn't ask you to follow the <TT>qsort</TT> example in 
+section 4.10 in complete detail, I won't ask you to work 
+through this one completely, either.
+But if you compare the code here to the code on pages 87-88,
+you will see that the <em>only</em> significant differences are 
+that the variables and arrays containing the things being 
+sorted have been changed from <TT>int</TT> to <TT>char *</TT>
+(pointer-to-<TT>char</TT>),
+and the comparison
+<pre>	if (v[i] &lt; v[left])
+</pre>has been changed to
+<pre>	if (strcmp(v[i], v[left]) &lt; 0)
+</pre></p><hr>
+<p>
+Read sequentially:
+<a href="sx8e.html" rev=precedes>prev</a>
+<a href="sx8g.html" rel=precedes>next</a>
+<a href="sx8.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-03 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

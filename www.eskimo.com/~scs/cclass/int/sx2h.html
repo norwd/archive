@@ -1,0 +1,137 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>16.8: <TT>EOF</TT> and Errors</title>
+<link href="sx2g.html" rev=precedes>
+<link href="sx2i.html" rel=precedes>
+<link href="sx2.html" rev=subdocument>
+</head>
+<body>
+<H2>16.8: <TT>EOF</TT> and Errors</H2>
+
+<p>When a function returns <TT>EOF</TT>
+(or, occasionally, 0 or <TT>NULL</TT>,
+as in the case of <TT>fread</TT> and <TT>fgets</TT> respectively),
+we commonly say that we have reached ``end of file,''
+but it turns out that it's also possible
+that there's been some kind of I/O error.
+When you want to distinguish between end-of-file and error,
+you can do so with the <TT>feof</TT> and <TT>ferror</TT> functions.
+<TT>feof(fp)</TT> returns nonzero
+(that is, ``true'')
+if end-of-file has been reached on the stream <TT>fp</TT>,
+and <TT>ferror(fp)</TT> returns nonzero
+if there has been an error.
+Notice the past tense and passive voice:
+<TT>feof</TT> returns nonzero if end-of-file
+<em>has been reached</em>.
+It does <em>not</em> tell you that the next attempt to read from 
+the stream will reach end-of-file,
+but rather that the previous attempt
+(by some other function)
+already <em>did</em>.
+(If you know Pascal,
+you may notice that the end-of-file detection situation in C
+is therefore
+quite different from Pascal.)
+Therefore, you would never write a loop like
+<pre>
+	while(!feof(fp))
+		fgets(line, max, fp);
+</pre>
+Instead, check the return value of the input function directly:
+<pre>
+	while(fgets(line, max, fp) != NULL)
+</pre>
+With a very few possible exceptions, you don't use <TT>feof</TT> 
+to <em>detect</em> end-of-file;
+you use <TT>feof</TT> or <TT>ferror</TT> to distinguish 
+between end-of-file and error.
+(You can also use <TT>ferror</TT> to diagnose error conditions on 
+output files.)
+</p><p>Since the end-of-file and error conditions tend to persist on a stream,
+it's sometimes necessary to clear (reset) them,
+which you can do with <TT>clearerr(FILE *fp)</TT>.
+</p><p>What should your program do if it detects an I/O error?
+Certainly, it cannot continue as usual;
+usually, it will print an error message.
+The simplest error messages are of the form
+<pre>
+	fp = fopen(filename, "r");
+	if(fp == NULL)
+		{
+		fprintf(stderr, "can't open file\n");
+		return;
+		}
+</pre>
+or
+<pre>
+	while(fgets(line, max, fp) != NULL)
+		{
+		<I>... process input ...</I>
+		}
+
+	if(ferror(fp))
+		fprintf(stderr, "error reading input\n");
+</pre>
+or
+<pre>
+	fprintf(ofp, "%d %d %d\n", a, b, c);
+	if(ferror(ofp))
+		fprintf(stderr, "output write error\n");
+</pre>
+Error messages are much more useful,
+however,
+if they include a bit more information,
+such as the name of the file for which the operation is failing,
+and if possible <em>why</em> it is failing.
+For example,
+here is a more polite way to report that a file could not be opened:
+<pre>
+	#include &lt;stdio.h&gt;	/* for fopen */
+	#include &lt;errno.h&gt;	/* for errno */
+	#include &lt;string.h&gt;	/* for strerror */
+
+	fp = fopen(filename, "r");
+	if(fp == NULL)
+		{
+		fprintf(stderr, "can't open %s for reading: %s\n",
+					filename, strerror(errno));
+		return;
+		}
+</pre>
+<TT>errno</TT> is a global variable, declared in <TT>&lt;errno.h&gt;</TT>,
+which may
+
+contain
+a numeric code
+indicating the reason for a recent system-related error
+such as inability to open a file.
+The <TT>strerror</TT> function takes an <TT>errno</TT> code
+and returns a human-readable string
+such as ``No such file'' or ``Permission denied''.
+</p><p>An even more useful error message,
+especially for a ``toolkit'' program
+intended to be used in conjunction with other programs,
+would include in the message text
+the name of the program reporting the error.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx2g.html" rev=precedes>prev</a>
+<a href="sx2i.html" rel=precedes>next</a>
+<a href="sx2.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1996-1999
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

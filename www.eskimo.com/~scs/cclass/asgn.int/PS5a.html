@@ -1,0 +1,351 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>Assignment #5 Answers</title>
+</head>
+<body>
+<H1>Assignment #5 Answers</H1>
+
+
+
+
+
+<B>Intermediate C Programming
+<br>
+<br>
+UW Experimental College
+</B><br>
+<br>
+<B>Assignment #5 ANSWERS
+</B><br>
+<br>
+<p>Exercise 2.
+<I>If you didn't use dynamically-allocated memory
+to hold long object and room descriptions,
+make that change now.
+</I><p>See the published answer to
+
+assignment 2, exercise 2.
+<p>Exercise 3.
+<I>Rewrite <TT>newobject</TT>
+and <TT>newroom</TT>
+to dynamically allocate new structures,
+rather than parceling them out of
+the static <TT>objects</TT> and <TT>rooms</TT> arrays.
+</I><p>Rewriting <TT>newobject</TT> in <TT>object.c</TT>
+is easy enough:
+<pre>
+struct object *
+newobject(char *name)
+{
+struct object *objp;
+
+objp = chkmalloc(sizeof(struct object));
+
+strcpy(objp-&gt;name, name);
+objp-&gt;lnext = NULL;
+objp-&gt;attrs = NULL;
+objp-&gt;contents = NULL;
+objp-&gt;desc = NULL;
+
+return objp;
+}
+</pre>
+<p>However, it isn't quite so simple for <TT>newroom</TT>,
+because we need a way of looking through all the rooms
+we've got,
+for example in the <TT>findroom</TT> function.
+Therefore, we can't allocate room structures in isolation.
+<p>As suggested in the assignment,
+one possibility is
+to keep a linked list of all rooms allocated,
+by adding
+an extra ``next'' field
+to <TT>struct room</TT> in <TT>game.h</TT>:
+<pre>
+struct room
+	{
+	char name[MAXNAME];
+	struct object *contents;
+	struct room *exits[NEXITS];
+	char *desc;			/* long description */
+	struct room *next;		/* list of all rooms */
+	};
+</pre>
+Now I can rewrite <TT>newroom</TT> in <TT>rooms.c</TT>:
+<pre>
+static struct room *roomlist = NULL;
+
+struct room *
+newroom(char *name)
+{
+struct room *roomp;
+int i;
+
+roomp = chkmalloc(sizeof(struct room));
+
+roomp-&gt;next = roomlist;		/* splice into list of all rooms */
+roomlist = roomp;
+
+strcpy(roomp-&gt;name, name);
+roomp-&gt;contents = NULL;
+for(i = 0; i &lt; NEXITS; i++)
+	roomp-&gt;exits[i] = NULL;
+roomp-&gt;desc = NULL;
+
+return roomp;
+}
+</pre>
+Splicing the new room into the list of all rooms is straightforward.
+<p><TT>findroom</TT> must be rewritten slightly,
+to walk over the new room list rather than the old rooms array:
+<pre>
+struct room *
+findroom(char *name)
+{
+struct room *roomp;
+
+for(roomp = roomlist; roomp != NULL; roomp = roomp-&gt;next)
+	{
+	if(strcmp(roomp-&gt;name, name) == 0)
+		return roomp;
+	}
+
+return NULL;
+}
+</pre>
+<p>We also have to decide what to do with the <TT>getentryroom</TT> function.
+(This is the function that gets called to decide
+which room the actor should initially be placed in.)
+It used to return,
+rather arbitrarily,
+the first room in the <TT>rooms</TT> array,
+which always happened to correspond to the first room in the data file,
+which was a reasonable choice.
+If we make the obvious change to <TT>getentryroom</TT>,
+and have it return the ``first'' room in the new room list:
+<pre>
+struct room *
+getentryroom(void)
+{
+return roomlist;	/* temporary */
+}
+</pre>
+it will <em>not</em> be so reasonable a choice,
+because our easy implementation of the list-splicing code
+in <TT>newroom</TT> above
+adds new rooms to the head of the list,
+such that the first room added,
+i.e. the first room in the data file,
+ends up at the end of the list.
+Depending on what your data file looks like,
+the game with the modifications shown so far will start out
+by dumping the player unceremoniously onto the back porch or into the basement
+(which might actually end up being an advantage for the player,
+if the basement tunnel is where the treasure is!).
+<p>If you wish,
+you can rewrite <TT>newroom</TT> to place new rooms at the end of the list,
+or <TT>getentryroom</TT> to return the tail of the list,
+to solve this problem.
+However, a better fix
+would be to allow the data file
+to explicitly specify what the entry room should be,
+rather than making the game code assume anything.
+We'll leave that for another exercise.
+<p>Exercise 4.
+<I>Improve the code in <TT>io.c</TT>
+so that room exit lists can be placed directly in the room descriptions,
+rather than at the end.
+</I><p>The basic change is to the <TT>parsedatafile</TT> function.
+Whereas it used to parse lines at the end of the data file like
+<pre>
+	roomexits kitchen s:hall e:stairway n:porch
+</pre>
+we'll now make it parse lines like
+<pre>
+	exit s hall
+	exit e stairway
+	exit n porch
+</pre>
+which will occur within the description of the particular room
+(in this case, the kitchen)
+itself.
+(I've simplified things
+by putting three exits on three separate lines
+and eliminating the colon syntax;
+there was no particular reason
+for me to have done it in that more complicated way in the first place.)
+<p>Here is the new code for <TT>parsedatafile</TT>:
+<pre>
+	else if(strcmp(av[0], "exit") == 0)
+		{
+		struct room *roomp;
+		if(ac &lt; 3)
+			{
+			fprintf(stderr, "missing exit or room name\n");
+			continue;
+			}
+		if(currentroom == NULL)
+			{
+			fprintf(stderr, "exit not in room\n");
+			continue;
+			}
+		roomp = findroom(av[2]);
+		if(roomp != NULL)
+			{
+			/* already have room, so connect */
+			connectexit(currentroom, av[1], roomp);
+			}
+		else	{
+			/* haven't seen room yet; stash for later */
+			stashexit(currentroom, av[1], av[2]);
+			}
+		}
+</pre>
+This makes use of two auxiliary functions:
+<pre>
+static void
+connectexit(struct room *room, char *dirname, struct room *nextroom)
+{
+int dir;
+
+if(strcmp(dirname, "n") == 0)
+	dir = NORTH;
+else if(strcmp(dirname, "e") == 0)
+	dir = EAST;
+else if(strcmp(dirname, "w") == 0)
+	dir = WEST;
+else if(strcmp(dirname, "s") == 0)
+	dir = SOUTH;
+else if(strcmp(dirname, "ne") == 0)
+	dir = NORTHEAST;
+else if(strcmp(dirname, "se") == 0)
+	dir = SOUTHEAST;
+else if(strcmp(dirname, "nw") == 0)
+	dir = NORTHWEST;
+else if(strcmp(dirname, "sw") == 0)
+	dir = SOUTHWEST;
+else if(strcmp(dirname, "u") == 0)
+	dir = UP;
+else if(strcmp(dirname, "d") == 0)
+	dir = DOWN;
+else	{
+	fprintf(stderr, "no such direction \"%s\"\n", dirname);
+	return;
+	}
+
+room-&gt;exits[dir] = nextroom;
+}
+
+struct stashedexit
+	{
+	struct room *room;
+	char *dirname;
+	char *nextroom;
+	struct stashedexit *next;
+	};
+
+static struct stashedexit *stashedexits = NULL;
+
+static void
+stashexit(struct room *room, char *dirname, char *nextroom)
+{
+struct stashedexit *ep = chkmalloc(sizeof(struct stashedexit));
+ep-&gt;room = room;
+ep-&gt;dirname = chkstrdup(dirname);
+ep-&gt;nextroom = chkstrdup(nextroom);
+ep-&gt;next = stashedexits;
+stashedexits = ep;
+}
+</pre>
+The <TT>stashexit</TT> function builds a linked list of stashed exits,
+allocating a new instance of the new <TT>struct stashedexit</TT>
+for each one,
+each containing the room pointer
+
+and the names of the exit direction and destination room.
+(The strings must also be copied to dynamically-allocated memory,
+because on entry to <TT>stashexit</TT>
+they are pointers back into
+the <TT>line</TT> or <TT>line2</TT> array in <TT>parsedatafile</TT>,
+and those strings will be overwritten
+when we read the next line in the data file.)
+<p>Finally, we must arrange to resolve the stashed exits
+when we're done reading the data file
+and have had a chance to see the descriptions for all the rooms.
+Here is the change to the <TT>readdatafile</TT> function:
+<pre>
+static void connectexit(struct room *, char *, struct room *);
+static void stashexit(struct room *, char *, char *);
+static void resolveexits(void);
+
+readdatafile()
+{
+char *datfile = "dungeon.dat";
+FILE *fp = fopen(datfile, "r");
+if(fp == NULL)
+	{
+	fprintf(stderr, "can't open %s\n", datfile);
+	return FALSE;
+	}
+
+parsedatafile(fp);
+resolveexits();
+fclose(fp);
+return TRUE;
+}
+</pre>
+<p>And here is the third auxiliary function:
+<pre>
+static void
+resolveexits()
+{
+struct stashedexit *ep, *nextep;
+
+for(ep = stashedexits; ep != NULL; ep = nextep)
+	{
+	struct room *roomp = findroom(ep-&gt;nextroom);
+	if(roomp == NULL)
+		fprintf(stderr, "still no such room \"%s\"\n", ep-&gt;nextroom);
+	else	connectexit(ep-&gt;room, ep-&gt;dirname, roomp);
+
+	nextep = ep-&gt;next;
+	free(ep-&gt;dirname);
+	free(ep-&gt;nextroom);
+	free(ep);
+	}
+
+stashedexits = NULL;
+}
+</pre>
+One aspect of this last function deserves mention.
+Why does it not use a more usual list-traversal loop,
+such as
+<pre>
+	for(ep = stashedexits; ep != NULL; ep = ep-&gt;next)
+</pre>
+What's with that temporary variable <TT>nextep</TT>?
+This loop is doing two things at once:
+traversing the linked list
+in order
+to resolve the stashed exits,
+<em>and</em> freeing the list as it goes.
+But when it frees the node
+(the <TT>struct stashedexit</TT>)
+it's working on,
+it also frees--and hence loses--the
+<TT>next</TT> pointer which that structure contains!
+Therefore,
+it makes a copy of the <TT>next</TT> pointer
+<em>before</em> it frees the structure.
+<hr>
+<hr>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995-9
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

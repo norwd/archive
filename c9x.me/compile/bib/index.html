@@ -1,0 +1,337 @@
+<!doctype html>
+<meta name=viewport content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../assets/css/simple.css" type="text/css" />
+
+<style>
+  span { display: block; font-style: italic; margin-top: 0.2em; color: #444; }
+  li   { margin-bottom: 0.5em; }
+@media only screen and (max-device-width: 480px) {
+  ul   { padding: 0px; }
+}
+</style>
+
+
+<title>The Compiler Writer Resource Page</title>
+
+
+<div class="container">
+<h2>Resources for Amateur Compiler Writers</h2>
+
+<p>I know complete pans of the literature are left
+out, but this is a page for <em>amateur</em> compiler
+writers.  Anything that I did not find practical is
+not listed here. (I also did not include the things
+that I do not yet know!)
+All the remarks in grey and even the selection of
+documents are personal.  If you have suggestions of
+papers to include, please contact me! Finally, the
+order of items in the various sections is totally
+arbitrary.
+
+<img style="float:right; width:40%; margin:1em 0em 1em 1em;" src="babel.jpg" alt>
+
+
+<h3>Philosophy</h3>
+<ul>
+
+<li>
+  What every compiler writer should know about programmers.
+  M. Anton Ertl.
+  [<a href="ubc.pdf">pdf</a>]
+  <span>
+    Contains some good warnings about taking the
+    slippery path many compiler writers are taking
+    with respect to undefined behavior.
+  </span>
+
+</ul>
+
+<h3>Compiler Descriptions</h3>
+
+<ul>
+
+<li>
+  A New C Compiler.
+  Ken Thompson.
+  [<a href="new-c.pdf">pdf</a>]
+  <span>
+    A description of the portable C99 Plan 9 compilers.
+  </span>
+
+<li>
+  A Tour Through the Portable C Compiler.
+  S. C. Johnson.
+  [<a href="pcc-tour.pdf">pdf</a>]
+  <span>
+    It is probably not a very good reference, but
+    full compiler descriptions are pretty rare.
+    The <a href="http://pcc.ludd.ltu.se/">PCC compiler</a>
+    has changed quite a bit since this writeup.
+  </span>
+
+<li>
+  A Retargetable C Compiler: Design and Implementation.
+  David R. Hanson and Christopher W. Fraser.
+  [<a href="http://www.amazon.com/Retargetable-Compiler-Design-Implementation/dp/0805316701">amazon</a>]
+  <span>
+    A resonably sized book exposing the full source
+    code of a <a href="https://github.com/drh/lcc">retargetable compiler</a> (lcc).
+    I found the parts describing the frontend and
+    the automatic code generator most interesting.
+  </span>
+
+</ul>
+
+<h3>Books</h3>
+
+<ul>
+
+<li>
+  Compiler Construction.
+  Niklaus Wirth.
+  [<a href="wirthcc.pdf">pdf</a>]
+  <span>
+    An elementary and short textbook to learn the
+    basics of compilation.  Written by Wirth, a Turing
+    award winner, inventor of Pascal.
+  </span>
+
+<li>
+  Compilers: Principles, Techniques, and Tools.
+  Alfred V. Aho, Ravi Sethi, and Jeffrey D. Ullman.
+  [<a href="http://www.amazon.com/Compilers-Principles-Techniques-Alfred-Aho/dp/0201100886">amazon</a>]
+  <span>
+    Despite being intimidating, it is a very readable book with
+    many examples.
+    It has the best material available on lexing and parsing.
+    Some key concepts of more advanced optimizations are also
+    very nicely exposed.
+  </span>
+
+<li>
+  Advanced Compiler Design and Implementation.
+  Steven Muchnick.
+  [<a href="http://www.amazon.com/Advanced-Compiler-Design-Implementation-Muchnick/dp/1558603204">amazon</a>]
+  <span>
+    A pretty comprehensive exposition of compiler technology.
+    Many details are left aside and some code is wrong.
+    Its main value is I think the span of its coverage.
+  </span>
+
+<li>
+  Hacker's Delight.
+  Henry S. Warren, Jr.
+  [<a href="http://www.amazon.com/Hackers-Delight-Henry-Warren-Jr/dp/0201914654">amazon</a>]
+  <span>
+    This is a really fun book for computer geeks.  It is also
+    filled with tricks that can be used for strength reduction.
+    For example, it will teach you how to turn a division by
+    a constant into a multiplication.
+  </span>
+
+</ul>
+
+
+<h3>Dominators and Static Single Assignment</h3>
+
+<ul>
+
+<li>
+  The Static Single Assignment Book.
+  [<a href="http://ssabook.gforge.inria.fr/latest/book.pdf">pdf</a>]
+  <span>
+    A very detailed and practical book about many aspects
+    of the SSA intermediate representation.
+  </span>
+
+<li>
+  Simple and Efficient Construction of Static Single Assignment Form.
+  Matthias Braun, Sebastian Buchwald, Sebastian Hack, Roland Leißa, Christoph Mallon, and Andreas Zwinkau.
+  [<a href="braun13cc.pdf">pdf</a>]
+  <span>
+    Combining laziness and memoization, the authors make a naive
+    construction algorithm both efficient and correct.
+    The algorithm is especially useful for fixing SSA invariants
+    locally broken.
+  </span>
+
+<li>
+  An Efficient Method of Computing Static Single Assignment Form.
+  Ron Cytron, Jeanne Ferrante, Barry K. Rosen, Mark N. Wegman, and F. Kenneth Zadeck.
+  [<a href="ssa.pdf">pdf</a>]
+  <span>
+    The paper explaining the classic construction algorithm
+    of SSA form using domination information.
+  </span>
+
+<li>
+  A Simple, Fast Dominance Algorithm.
+  Keith D. Cooper, Tymothy J. Harvey, and Ken Kennedy.
+  [<a href="quickdom.pdf">pdf</a>]
+  <span>
+    An algorithm to compute the domination information very
+    practical and simple to implement.  It can be slower than the
+    more complex Lengauer-Tarjan algorithm on huge input programs.
+  </span>
+
+</ul>
+
+<h3>Optimizations</h3>
+
+<ul>
+
+<li>
+  Constant Propagation with Conditional Branches.
+  Mark N. Wegman and F. Kenneth Zadeck.
+  [<a href="constpropssa.pdf">pdf</a>]
+  <span>
+    The state-of-the-art algorithm for constant propagation
+    (known as sparse conditional constant propagation).
+    Despite being cutting edge, the algorithm remains simple.
+  </span>
+
+<li>
+  Global Code Motion Global Value Numbering.
+  Cliff Click.
+  [<a href="click-gvn.pdf">pdf</a>]
+  <span>
+    Explains how to make value numbering a global
+    optimization by leveraging SSA form and an
+    independent global code motion algorithm.
+  </span>
+
+
+</ul>
+
+
+<h3>Register Allocation</h3>
+
+<ul>
+
+<li>
+  Linear Scan Register Allocation.
+  Massimiliano Poletto and Vivek Sarkar.
+  [<a href="linearscan.pdf">pdf</a>]
+  <span>
+    The classic linear scan paper, this algorithm is fairly
+    popular in JIT compilers because it compiles quickly
+    and generates reasonable code.
+  </span>
+
+<li>
+  Linear Scan Register Allocation on SSA Form.
+  Christian Wimmer Michael Franz.
+  [<a href="Wimmer10a.pdf">pdf</a>]
+  <span>
+    An adaptation of the classic and fast linear scan
+    algorithm to work on SSA form.  It presents the
+    challenges posed by SSA form pretty well.
+  </span>
+
+<li>
+  Iterated Register Coalescing.
+  Lal George and Andrew W. Appel.
+  [<a href="irc.pdf">pdf</a>]
+  <span>
+    A classic paper for register allocation using
+    graph coloring.  It is usually said to be slow
+    and not used in JIT compilers.  It is also not often
+    used in big compilers because not flexible enough
+    (see below for a fix).
+  </span>
+
+<li>
+  A Generalized Algorithm for Graph-Coloring Register Allocation.
+  Michael D. Smith, Norman Ramsey, and Glenn Holloway.
+  [<a href="pcc-rega.pdf">pdf</a>]
+  <span>
+    Graph-coloring as presented in textbooks is
+    not suited to real computers.  This paper
+    presents various extensions to handle register
+    classes and aliases.  It is the algorithm
+    used in PCC.
+  </span>
+
+</ul>
+
+<h3>Code Generation</h3>
+
+<ul>
+
+<!--
+<li>
+  Code Generation Using Tree Matching and Dynamic Programming.
+  Alfred V. Aho, Mahadevan Ganapathi, and Stephen W. K. Tjiang.
+  [<a href="twig.pdf">pdf</a>]
+  <span>
+    Historical paper presenting
+    Twig, a code generator generator working using bottom-up
+    tree matching and dynamic programming to select minimum-cost
+    machine code.
+  </span>
+-->
+
+<li>
+  Engineering a Simple, Efficient Code Generator Generator.
+  Christopher W. Fraser, David R. Hanson, and Todd A. Proebsting.
+  [<a href="iburg.pdf">pdf</a>]
+  <span>
+    This paper presents iburg, a flexible code generator
+    generator that generates compact and simple code.
+    It is used in the retargetable C compiler lcc.
+  </span>
+
+</ul>
+
+<h3>Machine Specific</h3>
+
+<ul>
+
+<li>
+  What Every Computer Scientist Should Know About Floating Point Arithmetic.
+  David Glodberg.
+  [<a href="floating-point.pdf">pdf</a>]
+
+<li>
+  System V Application Binary Interface (AMD64).
+  [<a href="abi-x64.pdf">pdf</a>]
+  <span>
+    (Almost) Everything you need to know to interface
+    with C code on x64 platforms running a UNIX OS.
+  </span>
+
+<li>
+  ELF Handling for Thread-Local Storage.
+  Ulrich Drepper.
+  [<a href="tls.pdf">pdf</a>]
+  <span>
+    Thread-local storage is OS and architecture specific, and
+    often poorly documented; this document gives the most precise
+    account of how to access thread-local storage on various ELF
+    platforms, including x64.
+  </span>
+
+<li>
+  Procedure Call Standard for the ARM 64-bit Architecture.
+  [<a href="abi-arm64.pdf">pdf</a>]
+  <span>
+    The ABI for AARCH64, saner and better explained
+    than the x64 one.
+  </span>
+
+<li>
+  Short X86 Instruction Set Reference.
+  [<a href="../../x86/index.html">www</a>]
+  <span>
+    Clearly not exhaustive, but still pretty useful
+    for quick lookups.
+  </span>
+
+</ul>
+
+</div>
+
+<!--
+vi: tw=65
+-->
+<!-- analytics free! -->

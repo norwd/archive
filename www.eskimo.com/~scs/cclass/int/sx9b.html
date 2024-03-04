@@ -1,0 +1,166 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>23.2: Dynamically Allocating Multidimensional Arrays</title>
+<link href="sx9a.html" rev=precedes>
+<link href="sx10.html" rel=precedes>
+<link href="sx9.html" rev=subdocument>
+</head>
+<body>
+<H2>23.2: Dynamically Allocating Multidimensional Arrays</H2>
+
+<p>We've seen that it's straightforward to call <TT>malloc</TT> to
+allocate a block of memory which can simulate an array,
+but with a size which we get to pick at run-time.
+Can we do the same sort of thing to simulate multidimensional arrays?
+We can, but we'll end up using pointers to pointers.
+</p><p>If we don't know how many columns the array will have,
+we'll clearly allocate
+memory for
+each row
+(as many columns wide as we like)
+by calling <TT>malloc</TT>,
+and each row will therefore be represented by a pointer.
+How will we keep track of those pointers?
+There are, after all, many of them, one for each row.
+So we want to simulate an array of pointers,
+but we don't know how many rows there will be, either,
+so we'll have to simulate that array (of pointers) with another pointer,
+and this will be a pointer to a pointer.
+</p><p>This is best illustrated with an example:
+<pre>
+	#include &lt;stdlib.h&gt;
+
+	int **array;
+	array = malloc(nrows * sizeof(int *));
+	if(array == NULL)
+		{
+		fprintf(stderr, "out of memory\n");
+		<I>exit or return</I>
+		}
+	for(i = 0; i &lt; nrows; i++)
+		{
+		array[i] = malloc(ncolumns * sizeof(int));
+		if(array[i] == NULL)
+			{
+			fprintf(stderr, "out of memory\n");
+			<I>exit or return</I>
+			}
+		}
+</pre>
+<TT>array</TT> is a pointer-to-pointer-to-<TT>int</TT>:
+at the first level,
+it points to a block of pointers,
+one for each row.
+That first-level pointer is the first one we allocate;
+it has <TT>nrows</TT> elements,
+with each element
+big enough to hold
+a pointer-to-<TT>int</TT>,
+or
+<TT>int *</TT>.
+If we successfully allocate it,
+we then fill in
+the pointers
+(all
+<TT>nrows</TT> of them)
+with a pointer (also obtained from <TT>malloc</TT>)
+to <TT>ncolumns</TT>
+number of
+<TT>int</TT>s,
+the storage for that row of the array.
+If this isn't quite making sense,
+a picture should make everything clear:
+<br>
+<center><img src="fig23.1.gif"></center>
+<br>
+</p><p>Once we've done this, we can (just as for the one-dimensional case)
+use array-like syntax to access our simulated multidimensional array.
+If we write
+<pre>
+	array[i][j]
+</pre>
+we're asking for the <TT>i</TT>'th pointer pointed to by <TT>array</TT>,
+and then for the <TT>j</TT>'th int pointed to by that inner pointer.
+(This is a pretty nice result:
+although some completely different machinery,
+involving two levels of pointer dereferencing,
+is going on behind the scenes,
+the simulated, dynamically-allocated two-dimensional ``array''
+can still be accessed just as if it were an array of arrays,
+i.e. with the same pair of bracketed subscripts.)
+</p><p>If a program uses simulated, dynamically allocated
+multidimensional arrays,
+it becomes possible to write ``heterogeneous'' 
+functions which
+<em>don't</em> have to know (at compile time)
+how big the ``arrays'' are.
+In other words,
+one function can operate
+on ``arrays'' of various sizes and shapes.
+The function will look something like
+<pre>
+	func2(int **array, int nrows, int ncolumns)
+	{
+	}
+</pre>
+This function does accept a pointer-to-pointer-to-<TT>int</TT>,
+on the assumption that we'll only be calling it with simulated,
+dynamically allocated multidimensional arrays.
+(We must not call this function on
+arrays like
+the ``true''
+multidimensional array <TT>a2</TT> of the previous sections).
+The function also accepts the dimensions of the arrays as
+parameters,
+so that it will know how many ``rows'' and
+``columns'' there are,
+so that it can iterate over them correctly.
+Here is a function which zeros out a pointer-to-pointer,
+two-dimensional ``array'':
+<pre>
+	void zeroit(int **array, int nrows, int ncolumns)
+	{
+	int i, j;
+	for(i = 0; i &lt; nrows; i++)
+		{
+		for(j = 0; j &lt; ncolumns; j++)
+			array[i][j] = 0;
+		}
+	}
+</pre>
+</p><p>Finally, when it comes time to free one of these dynamically
+allocated multidimensional ``arrays,'' we must
+remember to free each of the chunks of memory that we've
+allocated.
+(Just freeing the top-level pointer, <TT>array</TT>,
+wouldn't cut it;
+if we did,
+all the second-level pointers would be lost but not freed, and would waste
+memory.)
+Here's what the code might look like:
+<pre>
+	for(i = 0; i &lt; nrows; i++)
+		free(array[i]);
+	free(array);
+</pre>
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx9a.html" rev=precedes>prev</a>
+<a href="sx10.html" rel=precedes>next</a>
+<a href="sx9.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1996-1999
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

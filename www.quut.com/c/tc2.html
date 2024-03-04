@@ -1,0 +1,144 @@
+<html><head><title>ISO C Technical Corrigendum 2</title
+><link rev="made" href="mailto:eggert@twinsun.com"
+></head><body>
+<h1>ISO C Technical Corrigendum 2</h1>
+
+<p>
+ISO C Technical Corrigendum 2 (TC2) has been approved.
+Even leaner than its predecessor <a href="tc1.html">TC1</a>, it
+consists only of small changes in response to Defect Reports,
+and will be of interest mostly to compiler and test suite vendors.
+In a few cases, it codifies behavior that everybody knew was correct
+but that was inadequately expressed in the Standard; in others, it changes
+the name for something (or introduces a new one), but does not
+affect behavior at all.
+<p>
+This text is based on Paul Eggert's summary of
+Douglas A. Gwyn, ``C Standards Update'', <cite>The Journal of C Language Translation</cite>
+<b>6</b>, 3 (March 1995), 150-156, with additional
+material from Paul Eggert and Jutta Degener.
+<ul>
+<p>
+<li> There is a new kind of storage duration, <i>allocated</i>.
+
+	The objects that <code>malloc</code>, <code>realloc</code>, and
+	<code>calloc</code> return have allocated storage duration.  Their
+	lifetime ends with the end of the program or a call to <code>free</code>
+	or <code>realloc</code>.
+
+	<blockquote><font size=2>
+		This does not change the behavior of any program;
+		it just expresses something
+		every C programmer knew implicitly.
+	</font></blockquote>
+<p>
+<li> The following are now locale-specific, not implementation-defined:
+  <ul>
+  <li> shift states used for the encoding of multibyte characters
+  <li> character sets for <code>isalnum</code>,
+	<code>isalpha</code>,
+	<code>iscntrl</code>,
+	<code>islower</code>,
+	<code>isprint</code>,
+	<code>isupper</code>
+  <li> the interpretation of <code>setlocale</code>'s second argument
+	(if neither <code>"C"</code> nor <code>""</code>)
+  <li> additional subject sequence forms for
+	<code>strtod</code>,
+	<code>strtol</code>,
+	<code>strtoul</code>
+  <li> <code>strerror</code>'s
+	returned string
+  </ul>
+	<blockquote><font size=2>
+		Strictly conforming programs - programs that rely on
+		nothing but Standard C and behave the same on all its
+		implementations - are allowed to exhibit locale-specific
+		behavior, but not implementation-defined behavior.
+		This change has made more programs strictly conforming.
+	</font></blockquote>
+<p>
+<li> <code>va_start</code> and <code>va_end</code> must be invoked
+  in corresponding pairs.
+  The pairs cannot nest: for example, the behavior of `<code>va_start(a, foo);
+  va_start(a, foo); va_end(a); va_end(a);</code>' is undefined.
+
+<p>
+<li> An incomplete structure or union type in
+  one translation unit is compatible with a
+  complete structure or union type in another
+  unit.
+	<blockquote><font size=2>
+		For many years, C programmers have simulated abstract
+		data types with pointers to incomplete structures or unions.
+		Outside the implementing module, the pointer is treated as
+		an opaque pointer type; inside, an additional structure or
+		union declaration completes the type and gives access to
+		its members.
+		This change allows that practice.
+	</font></blockquote>
+<p>
+<li> Freestanding environments can have reserved external identifiers.
+<p>
+<li> The implementation-defined integer type compatible with an enumerated type
+  must be capable of representing the enumeration members' values.
+<p>
+<li> An enumerated type is complete
+	at the <code>}</code> ending the enumeration.
+	<blockquote><font size=2>
+		Before TC2, the C standard did not specify
+		when an enumerated type is completed.
+
+	</font></blockquote>
+<p>
+<li> String literals need not be
+distinct even if not identical, so long as their elements
+have appropriate values.
+
+For example, <code>("a" == "ba"+1 &amp;&amp; "a" == "a\0b")</code>
+can yield 1.
+
+
+A similar rule applies to wide string literals.
+String and wide string literals can share space too;
+for example, <code>("a" == (void *) L"a")</code> can yield 1.
+<p>
+<li>
+
+      Passing a type (after promotion) not expected by a library function
+      with variable number of arguments yields undefined behavior.
+<p>
+<li> `<code>return X;</code>' in <code>main</code> is not precisely equivalent
+ to `<code>exit(X);</code>',
+ since the dynamic storage of <code>main</code> vanishes as <code>main</code>
+ returns.
+	<blockquote><font size=2>
+	For example, the following program has undefined behavior:
+<pre>
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+void goodbye(void)
+{
+    printf("Hello, World!\n");
+}
+
+int main(void)
+{
+    char buf[20];
+    setvbuf(stdout, buf, _IOFBF, sizeof(buf));
+    atexit(goodbye);
+    return 0;
+}
+</pre>
+	The program becomes strictly conforming if one replaces
+	<code>main</code>'s <code>return 0;</code> with <code>exit(0);</code>.
+</font></blockquote>
+</ul>
+There are some other minor wording changes.
+<p>
+<hr>
+Corrections and additions welcome; please send email
+to Paul Eggert
+&lt;<a href="mailto:eggert@twinsun.com">eggert@twinsun.com</a>&gt;.
+</body></html>

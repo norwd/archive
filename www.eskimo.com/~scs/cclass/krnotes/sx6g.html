@@ -1,0 +1,73 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>section 3.7: Break and Continue</title>
+<link href="sx6f.html" rev=precedes>
+<link href="sx6h.html" rel=precedes>
+<link href="sx6.html" rev=subdocument>
+</head>
+<body>
+<H2>section 3.7: Break and Continue</H2>
+
+pages 64-65
+<p>Note that a <TT>break</TT> inside a <TT>switch</TT> inside a loop
+causes a break out of the <TT>switch</TT>,
+while a <TT>break</TT> inside a loop inside a <TT>switch</TT>
+causes a break out of the loop.
+</p><p>Neither <TT>break</TT> nor <TT>continue</TT> has any effect on a 
+brace-enclosed block of statements following an <TT>if</TT>.
+<TT>break</TT> causes a break out of the innermost <TT>switch</TT> or loop,
+and <TT>continue</TT> forces the next iteration of the innermost loop.
+</p><p>There is no way of forcing a <TT>break</TT> or <TT>continue</TT> to 
+act on an outer loop.
+</p><p>Another example of where <TT>continue</TT> is useful is when
+processing data files.
+It's often useful to allow comments in data files;
+one convention is that a line beginning with a <TT>#</TT> character
+is a comment,
+and should be ignored by any program reading the file.
+This can be coded with something like
+<pre>	while(getline(line, MAXLINE) &gt; 0) {
+		if(line[0] == '#')
+			continue;
+<br>
+<br>
+		/* process data file line */
+	}
+</pre>The alternative,
+without a <TT>continue</TT>,
+would be
+<pre>	while(getline(line, MAXLINE) &gt; 0) {
+		if(line[0] != '#') {
+			/* process data file line */
+		}
+	}
+</pre>but now the processing of normal data file lines has been made 
+subordinate to comment lines.
+(Also, as the authors note,
+it pushes most of the body of the loop over by another tab stop.)
+Since comments are exceptional,
+it's nice to test for them,
+get them out of the way,
+and go on about our business,
+which the code using <TT>continue</TT> nicely expresses.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx6f.html" rev=precedes>prev</a>
+<a href="sx6h.html" rel=precedes>next</a>
+<a href="sx6.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

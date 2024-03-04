@@ -1,0 +1,249 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>15.1: Structures</title>
+<link href="sx1.html" rev=precedes>
+<link href="sx1b.html" rel=precedes>
+<link href="sx1.html" rev=subdocument>
+</head>
+<body>
+<H2>15.1: Structures</H2>
+
+<p>[This section corresponds to K&amp;R Sec. 6.1]
+</p><p>The basic user-defined data type in C is the <dfn>structure</dfn>,
+or <TT>struct</TT>.
+(C structures are analogous to the <dfn>records</dfn>
+found in some other languages.)
+Defining structures is a two-step process:
+first you define a ``template'' which describes the new type,
+then you declare variables having the new type
+(or functions returning the new type, etc.).
+</p><p>As a simple example,
+suppose we wanted to define our own type for representing complex numbers.
+(If you're blissfully ignorant of these beasts,
+a complex number consists of
+a ``real'' and ``imaginary'' part,
+where the imaginary part is some multiple of the square root of negative 1.
+You don't have to understand complex numbers to understand this example;
+you can think of the real and imaginary parts
+as the <I>x</I> and <I>y</I> coordinates of a point on a plane.)
+FORTRAN has a built-in complex type, but C does not.
+
+How might we add one?
+Since a complex number consists of a real and imaginary part,
+we need a way of holding both these quantities in one data type,
+and a structure will do just the trick.
+Here is how we might declare our complex type:
+<pre>
+	struct complex
+		{
+		double real;
+		double imag;
+		};
+</pre>
+A structure declaration consists of
+up to
+four parts,
+of which we can see three in the example above.
+The first part is the keyword <TT>struct</TT>
+which indicates that we are talking about a structure.
+The second part is a name or <dfn>tag</dfn>
+by which this structure
+(that is, this new data type)
+will be known.
+The third part is a list of the structure's <dfn>members</dfn>
+(also called <dfn>components</dfn> or <dfn>fields</dfn>).
+This list is enclosed in braces <TT>{}</TT>,
+and contains what look like the declarations of ordinary variables.
+Each member has a name and a type,
+just like ordinary variables,
+but here we are not declaring variables;
+we are setting up the structure of the structure
+
+by defining the collection of data types which will make up the structure.
+Here we see that the <TT>complex</TT> structure
+will be made up of two members,
+both of type <TT>double</TT>,
+one named <TT>real</TT> and one named <TT>imag</TT>.
+</p><p>It's important to understand that what we've defined here
+is just the new data type;
+we have <em>not</em> yet declared any variables of this new type!
+The name <TT>complex</TT>
+(the second part of the structure declaration)
+is not the name of a variable;
+it's the name of the structure type.
+The names <TT>real</TT> and <TT>imag</TT> are not the names of variables;
+they're identifiers for the two components of the structure.
+</p><p>We declare variables of our new <TT>complex</TT> type
+with declarations like these:
+<pre>
+	struct complex c1;
+or
+	struct complex c2, c3;
+</pre>
+These look almost like our previous declarations
+of variables having basic types,
+except that instead of a type keyword
+like <TT>int</TT> or <TT>double</TT>,
+we have the two-word type name <TT>struct complex</TT>.
+The keyword <TT>struct</TT> indicates
+that we're talking about a structure,
+and the identifier <TT>complex</TT>
+is the name
+for the particular structure we're talking about.
+<TT>c1</TT>, <TT>c2</TT>, and <TT>c3</TT> will all be declared
+as variables of type <TT>struct complex</TT>;
+each one of them will have real and imaginary parts buried inside them.
+(We'll see how to get at those parts in the next section.)
+Using our graphic, ``labeled box'' notation,
+we could draw representations of
+<TT>c1</TT>, <TT>c2</TT>, and <TT>c3</TT>
+like this:
+<br>
+<center><img src="fig15.1.gif"></center>
+<br>
+Actually, these pictures are a bit misleading;
+the outer box indicating each composite structure
+suggests that there might be more inside them
+than just the two members,
+<TT>real</TT> and <TT>imag</TT>
+(that is, more than the two values of type <TT>double</TT>).
+A simpler but more representative picture would be:
+<br>
+<center><img src="fig15.2.gif"></center>
+<br>
+The only memory allocated is for two values of type <TT>double</TT>
+(the two boxes);
+all
+the
+names
+are just for our convenience
+and the compiler's reference;
+none are typically stored
+in the program's memory
+at run time.
+</p><p>Notice that when we define structures in this way
+we have not quite defined a new type
+on a par with <TT>int</TT> or <TT>double</TT>.
+We can <em>not</em> say
+<pre>
+	complex c1;		/* WRONG */
+</pre>
+The name <TT>complex</TT> does not become a full-fledged type name
+like <TT>int</TT> or <TT>double</TT>;
+it's just the name of a particular structure,
+and we must use the keyword <TT>struct</TT>
+<em>and</em> the name of a particular structure
+(e.g. <TT>complex</TT>)
+to talk about that structure type.
+(There is a way to define new full-fledged type names
+like <TT>int</TT> and <TT>double</TT>,
+and in C++ a new structure does automatically become a full-fledged type,
+but we won't worry about these wrinkles for now.)
+</p><p>I said that a structure definition consisted of
+up to
+four parts.
+We saw the first three of them in the first example;
+the fourth
+part
+of a full structure declaration
+is simply a list of variables,
+which are to be declared as having the structure type
+
+at the same time as the structure itself is defined.
+For example, if we had written
+<pre>
+	struct complex
+		{
+		double real;
+		double imag;
+		} c1, c2, c3;
+</pre>
+we would have defined the type <TT>struct complex</TT>,
+and right away declared three variables
+<TT>c1</TT>, <TT>c2</TT>, and <TT>c3</TT>
+all of type <TT>struct complex</TT>.
+</p><p>In fact, three of the four parts of a structure declaration
+(all but the keyword <TT>struct</TT>)
+
+are optional.
+If a declaration contains the keyword <TT>struct</TT>,
+a structure tag,
+and a brace-enclosed list of members
+(as in the first structure definition we saw),
+it's a definition of the structure itself
+(that is, just the template).
+If a declaration contains the keyword <TT>struct</TT>,
+a structure tag,
+and a list of variable names
+(as in the first declarations of
+<TT>c1</TT>, <TT>c2</TT>, and <TT>c3</TT>
+we saw),
+it's a declaration of those variables having that structure type
+(the structure type itself must of course typically be declared elsewhere).
+If a declaration contains all four elements
+(as in the second declaration of
+<TT>c1</TT>, <TT>c2</TT>, and <TT>c3</TT>
+we saw),
+it's a definition of the structure type <em>and</em>
+a declaration of some variables.
+It's also possible to use the first, third, and fourth parts:
+<pre>
+	struct 	{
+		double real;
+		double imag;
+		} c1, c2, c3;
+</pre>
+Here we declare <TT>c1</TT>, <TT>c2</TT>, and <TT>c3</TT>
+as having a structure type with no tag name,
+which is not usually very useful,
+because without a tag name
+we won't be able to declare any other variables or functions of this type
+for <TT>c1</TT>, <TT>c2</TT>, and <TT>c3</TT> to play with.
+(Finally, it's also possible to declare just the tag name,
+leaving both the list of members
+and any declarations of variables for later,
+but
+this
+
+is only needed in certain fairly rare and obscure situations.)
+</p><p>Because a structure definition can also declare variables,
+it's important not to forget the semicolon
+at the end of a structure definition.
+If you accidentally write
+<pre>
+	struct complex
+		{
+		double real;
+		double imag;
+		}
+</pre>
+without a semicolon,
+the compiler will keep looking for something later in the file
+and try to declare it
+as being
+of type <TT>struct complex</TT>,
+which will either result in a confusing error message or
+(if the compiler succeeds)
+a confusing misdeclaration.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx1.html" rev=precedes>prev</a>
+<a href="sx1b.html" rel=precedes>next</a>
+<a href="sx1.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1996-1999
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+<!-- patched 2023-04-03 per &lt;20230007141207.davidapps3@gmail.com&gt; -->
+</p>
+</body>
+</html>

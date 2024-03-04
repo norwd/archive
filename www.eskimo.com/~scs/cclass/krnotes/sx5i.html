@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>section 2.9: Bitwise Operators</title>
+<link href="sx5h.html" rev=precedes>
+<link href="sx5j.html" rel=precedes>
+<link href="sx5.html" rev=subdocument>
+</head>
+<body>
+<H2>section 2.9: Bitwise Operators</H2>
+
+page 48
+<p>The bitwise operators are definitely a bit
+(pardon the pun)
+more esoteric than the parts of C we've covered so far
+(and, indeed, than probably most of C).
+We won't concentrate on them,
+but they do come up all the time,
+so you should
+eventually learn
+enough about them to recognize what they do,
+even if you don't use them in any of your own programs for a while.
+You may skip this section for now, though.
+</p><p>To see what the bitwise operators are doing,
+it may help to convert to binary for a moment and look at 
+what's happening to the individual bits.
+In the example on page 48, suppose that <TT>n</TT> is 052525,
+which is 21845 decimal, or 101010101010101 binary.
+Then <TT>n &amp; 0177</TT>,
+in base 2 and base 8 (binary and octal)
+looks like
+<pre>	  101010101010101     052525
+	&amp; 000000001111111   &amp; 000177
+	  ---------------     ------
+	          1010101        125
+</pre></p><p>In the second example,
+if <TT>SET_ON</TT> is 012
+and <TT>x</TT> is 0,
+then <TT>x | SET_ON</TT> looks like
+<pre>	        000000000     000000
+	      | 000001010   | 000012
+	        ---------     ------
+	             1010         12
+</pre>and if <TT>x</TT> starts out as 402,
+it looks like
+<pre>	        100000010     000402
+	      | 000001010   | 000012
+	        ---------     ------
+	        100001010        412
+</pre>Note that with <TT>&amp;</TT>,
+anywhere we have a 0 we turn bits off,
+and anywhere we have a 1
+we copy bits through from the other side.
+With <TT>|</TT>,
+anywhere we have a 1 we turn bits on,
+and anywhere we have a 0 we leave bits alone.
+</p><p>You'll frequently see the word <dfn>mask</dfn> used,
+both as a noun and a verb.
+You can imagine that we've cut a mask or stencil out of cardboard,
+and are using spray paint to spray through the mask
+onto some other piece of paper.
+For <TT>|</TT>, the holes in the mask are like 1's,
+and the spray paint is like 1's,
+and we paint more 1's onto the underlying paper.
+(If there was already paint under a hole,
+nothing really changes if we get more paint on it;
+it's still a ``1''.)
+</p><p>The <TT>&amp;</TT> operator is a bit harder to fit into this analogy:
+you can either imagine that the holes in the mask are 1's
+and you're spraying some preservative
+which will fix some of the underlying bits
+after which the others will get washed off,
+or you can imagine that the holes in the mask are 0's,
+and you're spraying some erasing paint or some background color
+which obliterates anything
+(i.e. any 1's, any foreground color)
+it reaches.
+</p><p>For a bit more information on ``bitwise'' operations,
+see the handout,
+``A Brief Refresher on Some Math Often Used in Computing.''
+</p><p>page 49
+</p><p>Work through the example at the top of the page,
+and convince yourself that <TT>1 &amp; 2</TT> is 0
+and that <TT>1 &amp;&amp; 2</TT> is 1.
+</p><p>The precedence of the bitwise operators is not what you might expect,
+and explicit parentheses are often needed,
+as noted in this deep sentence from page 52:
+<blockquote>Note that the precedence of the bitwise operators
+<TT>&amp;</TT>, <TT>^</TT>, and <TT>|</TT>
+falls below <TT>==</TT> and <TT>!=</TT>.
+This implies that bit-testing expressions like
+<pre>	if ((x &amp; MASK) == 0) ...
+</pre>must be fully parenthesized to give proper results.
+</blockquote></p><hr>
+<p>
+Read sequentially:
+<a href="sx5h.html" rev=precedes>prev</a>
+<a href="sx5j.html" rel=precedes>next</a>
+<a href="sx5.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

@@ -1,0 +1,229 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995, 1996 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>section 4.2: Functions Returning Non-Integers</title>
+<link href="sx7a.html" rev=precedes>
+<link href="sx7c.html" rel=precedes>
+<link href="sx7.html" rev=subdocument>
+</head>
+<body>
+<H2>section 4.2: Functions Returning Non-Integers</H2>
+
+page 71
+<p>Actually,
+we
+may
+have
+seen at least one function returning a non-integer,
+in
+the Fahrenheit-Celsius conversion program
+in exercise 1-15
+on page 27
+in section 1.7.
+</p><p>The type name which precedes the name of a function
+(and which sets its return type)
+looks just like
+(i.e. is syntactically the same as)
+the <TT>void</TT> keyword we've been using
+to identify functions which don't return a value.
+</p><p>Note that the version of <TT>atof</TT> on page 71 does not 
+handle exponential notation like <TT>1.23e45</TT>;
+handling exponents is left for exercise 4-2 on page 73.
+<br><br></p><p>``The standard library includes an <TT>atof</TT>''
+means that we're reimplementing something
+which would otherwise be provided for us anyway
+(i.e. just like <TT>printf</TT>).
+In general,
+it's a bad idea to rewrite standard library routines,
+because by doing so you negate the advantage of having 
+someone else write them for you,
+and
+also
+because the compiler or linker are allowed to complain
+if you redefine a standard routine.
+(On the other hand,
+seeing how the standard library routines are implemented
+can be a good learning experience.)
+</p><p>page 72
+</p><p>In the ``primitive calculator'' code at the top of page 72,
+note that the call to <TT>atof</TT>
+is buried in the argument list of the call to <TT>printf</TT>. 
+</p><p>Deep sentences:
+<blockquote>The function <TT>atof</TT> must be declared and defined consistently.
+If <TT>atof</TT> itself
+and the call to it in <TT>main</TT>
+have inconsistent types in the same source file,
+the error will be detected by the compiler.
+But if
+(as is more likely)
+<TT>atof</TT> were compiled separately,
+the mismatch would not be detected,
+<TT>atof</TT> would return a <TT>double</TT>
+that <TT>main</TT> would treat as an <TT>int</TT>,
+and meaningless answers would result.
+</blockquote>The problems of mismatched function declarations are somewhat 
+reduced today by the widespread use of ANSI function prototypes,
+but they're still important to be aware of.
+</p><p>The implicit function declarations mentioned at the bottom of 
+page 72 are an older feature of the language.
+They were handy back in the days when most functions returned 
+<TT>int</TT> and function prototypes hadn't been invented yet,
+but today,
+if you want to use prototypes,
+you won't want to rely on implicit declarations.
+If you don't like depending on defaults and implicit declarations,
+or if you do want to use function prototypes religiously,
+you're under no compunction to make use of
+(or even learn about)
+implicit function declarations,
+and you'll want to configure your compiler
+so that it will warn you
+if you call a function which does not have an explicit,
+prototyped declaration in scope.
+</p><p>You may wonder why the compiler is able to get some things right
+(such as implicit conversions
+between integers and floating-point
+within expressions)
+whether or not you're explicit about your intentions,
+while in other circumstances
+(such as while calling functions returning non-integers)
+you must be explicit.
+The question of when to be explicit and when to rely on the compiler
+hinges on several questions:
+<OL><li>How much information does the compiler have available to it?
+<li>How likely is it that the compiler will infer the right action?
+<li>How likely is it that a mistake
+which you the programmer might make
+will be caught by the compiler,
+or silently compiled into incorrect code?
+</OL></p><p>It's fine to depend on things like implicit conversions
+as long as the compiler has all the information it needs
+to get them right, unambiguously.
+(Relying on implicit conversions
+can make code cleaner, clearer,
+and easier to maintain.)
+Relying on implicit declarations,
+however,
+is discouraged,
+for several reasons.
+First,
+there are generally fewer declarations than expressions in a program,
+so the impact
+(i.e. work)
+of making them all explicit is less.
+Second,
+thinking about declarations is good discipline,
+and
+requiring
+that everything normally be declared explicitly
+can let the compiler catch a number of errors for you
+(such as misspelled functions or variables).
+Finally,
+since the compiler only compiles one source file at a time,
+it is never able to detect inconsistencies between files
+(such as a function or variable declared one way in once source 
+file and some other way in another),
+so it's important that cross-file declarations be explicit and 
+consistent.
+(Various strategies,
+such as
+placing common declarations in header files
+so that they can be #included wherever they're needed,
+and
+requesting that the compiler warn about function calls 
+without prototypes in scope,
+can help to reduce the number of errors having to do with 
+improper declarations.)
+
+</p><p>For the most part,
+you can also ignore the ``old style'' function syntax,
+which hardly anyone is using any more.
+The only thing to watch out for is that an empty set of 
+parentheses in a function declaration
+is an old-style declaration and means ``unspecified 
+arguments,'' not ``no arguments.''
+To declare a new-style function taking no arguments,
+you must include the keyword <TT>void</TT> between the parentheses,
+which makes the lack of arguments explicit.
+(A declaration like
+<pre>	int f(void);
+</pre>does <em>not</em> declare a function accepting one argument of type <TT>void</TT>,
+which would be meaningless,
+since
+the definition of type <TT>void</TT> is that it is a type with no values.
+Instead,
+as a special case,
+a single, unnamed parameter of type <TT>void</TT> indicates
+that a function takes no arguments.)
+For example,
+the definition of the <TT>getchar</TT> function might look
+like
+<pre>	int getchar(void)
+	{
+		int c;
+<br>
+<br>
+		<I>read next character into</I> c <I>somehow</I>
+<br>
+<br>
+		if (<I>no next character</I>)
+			return EOF;
+<br>
+<br>
+		return c;
+	}
+</pre></p><p>page 73
+</p><p>Note that this version of <TT>atoi</TT>,
+written in terms of <TT>atof</TT>,
+has very slightly different behavior:
+it reads past a '.'
+(and, assuming a fully-functional version of <TT>atof</TT>, an 'e').
+<br>
+</p><p>The use of an explicit cast
+when returning a floating-point expression
+from a routine declared as returning <TT>int</TT>
+represents another point on the spectrum
+of what you should worry about explicitly
+versus what you should feel comfortable making use of implicitly.
+This is a case where the compiler <em>can</em>
+do the ``right thing'' safely and unambiguously,
+as long as what you <em>said</em>
+(in this case, to return a floating-point expression
+from a routine declared as returning <TT>int</TT>)
+is in fact what you <em>meant</em>.
+But since the real possibility exists
+that discarding the fractional part
+is not what you meant,
+some compilers will warn you about it.
+Typically,
+compilers which warn about such things can be quieted by using 
+an explicit cast;
+the explicit cast
+(even though it appears to ask for the same conversion that 
+would have happened implicitly)
+serves to silence the warning.
+(In general,
+it's best to silence spurious warnings rather than just ignoring them.
+If you get in the habit of ignoring them,
+sooner or later you'll overlook a significant one
+that you would have cared about.)
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx7a.html" rev=precedes>prev</a>
+<a href="sx7c.html" rel=precedes>next</a>
+<a href="sx7.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1995, 1996
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

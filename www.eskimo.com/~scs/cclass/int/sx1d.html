@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>15.4: Pointers to Structures</title>
+<link href="sx1c.html" rev=precedes>
+<link href="sx1e.html" rel=precedes>
+<link href="sx1.html" rev=subdocument>
+</head>
+<body>
+<H2>15.4: Pointers to Structures</H2>
+
+<p>[This section corresponds to K&amp;R Sec. 6.4]
+</p><p>Pointers in C are general; we can have pointers to any type.
+It turns out that pointers to structures are particularly useful.
+</p><p>We declare pointers to structures
+the same way we declare any other pointers:
+by preceding the variable name with an asterisk in the declaration.
+We could declare two pointers to <TT>struct complex</TT>
+with
+<pre>
+	struct complex *p1, *p2;
+</pre>
+And, as before,
+we could set these pointers to point to actual variables of type complex:
+<pre>
+	p1 = &amp;c2;
+	p2 = &amp;c3;
+</pre>
+Then,
+<pre>
+	*p1 = *p2
+</pre>
+would copy the structure pointed to by <TT>p2</TT>
+to the structure pointed to by <TT>p1</TT>
+(i.e. <TT>c3</TT> to <TT>c2</TT>),
+and
+<pre>
+	p1 = p2
+</pre>
+would set <TT>p1</TT> to point wherever <TT>p2</TT> points.
+(None of this is new,
+these are the obvious analogs of how all
+
+pointer assignments work.)
+If we wanted to access the member of a pointed-to structure,
+it would be a tiny bit messy--first
+we'd have to use <TT>*</TT> to get the structure pointed to,
+then <TT>.</TT> to access the desired member.
+Furthermore,
+since <TT>.</TT> has higher precedence than <TT>*</TT>,
+we'd have to use parentheses:
+<pre>
+	(*p1).real
+</pre>
+(Without the parentheses,
+i.e. if we wrote simply <TT>*p1.real</TT>,
+we'd be taking the structure <TT>p1</TT>,
+selecting its member named <TT>real</TT>,
+and accessing the value that <TT>p1.real</TT> points to,
+which would be doubly nonfunctional,
+since the <TT>real</TT> member is in our ongoing example not a pointer,
+and <TT>p1</TT> is not a structure
+but rather a pointer to a structure,
+so the <TT>.</TT> operator won't work on it.)
+</p><p>Since pointers to structures are common,
+and the parentheses in the example above are a nuisance,
+there's another structure selection operator
+which works on pointers to structures.
+If <TT>p</TT> is a pointer to a structure
+and <TT>m</TT> is a member of that structure,
+then
+<pre>
+	p-&gt;m
+</pre>
+selects that member of the pointed-to structure.
+The expression <TT>p-&gt;m</TT> is therefore exactly equivalent to
+<pre>
+	(*p).m
+</pre>
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx1c.html" rev=precedes>prev</a>
+<a href="sx1e.html" rel=precedes>next</a>
+<a href="sx1.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1996-1999
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>

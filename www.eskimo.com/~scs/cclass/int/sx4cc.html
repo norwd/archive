@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3O//DTD W3 HTML 2.0//EN">
+<!-- This collection of hypertext pages is Copyright 1995-7 by Steve Summit. -->
+<!-- This material may be freely redistributed and used -->
+<!-- but may not be republished or sold without permission. -->
+<html>
+<head>
+<link rev="owner" href="mailto:scs@eskimo.com">
+<link rev="made" href="mailto:scs@eskimo.com">
+<title>18.3.3: <TT>goto</TT></title>
+<link href="sx4bc.html" rev=precedes>
+<link href="sx5.html" rel=precedes>
+<link href="sx4c.html" rev=subdocument>
+</head>
+<body>
+<H3>18.3.3: <TT>goto</TT></H3>
+
+<p>[This section corresponds to K&amp;R Sec. 3.8]
+</p><p>Finally, C has a <TT>goto</TT> statement,
+and labels to go to.
+You will hear many people disparage <TT>goto</TT> statements,
+and without taking a stand on whether they are inherently evil,
+I will say that most code can be written,
+and written pretty cleanly, without them.
+</p><p>You can attach a <dfn>label</dfn> to any statement:
+<pre>
+		<I>statement1</I>;
+	label1:	<I>statement2</I>;
+		<I>statement3</I>;
+	label2:	<I>statement4</I>;
+		<I>statement5</I>;
+</pre>
+A label is simply an identifier followed by a colon.
+The names for labels follow the same rules
+as for variables and other identifiers
+(they consist of
+letters, digit characters, and underscores,
+generally beginning with a letter,
+in any case not beginning with a digit).
+A label can in principle have the same name as a variable;
+variables and labels are quite distinct,
+so the compiler can keep them separate.
+Label names must obviously be unique within a function.
+</p><p>Anywhere you want, you can say
+<pre>
+	goto <I>label</I> ;
+</pre>
+where <I>label</I> is one of the labels in the current function,
+and control flow will jump to that point.
+You can only jump around within the same function;
+you can't
+go to a label in some other
+function.
+(If <TT>goto</TT> isn't enough for you,
+if for some reason
+you must jump back to
+another function,
+
+there's a library function,
+<TT>longjmp</TT>, which will do so under certain circumstances.)
+If you jump into a brace-enclosed block of statements,
+and if that block has local, automatic variables which have initializers
+(that is, attached to their declarations),
+the initializers will <em>not</em> take effect.
+(In other words,
+initializers for block-local variables
+take effect only when the block is entered normally,
+from the top.)
+</p><p>For the vast majority of functions,
+the more ``structured'' <TT>if</TT>/<TT>else</TT>,
+<TT>switch</TT>, and loop statements,
+perhaps augmented with <TT>break</TT> and <TT>continue</TT> statements,
+will accomplish the required control flow, in a clean and obvious way.
+(Without practice,
+it may not always be immediately obvious
+how to structure a piece of code as,
+say,
+a clean loop,
+but the more important point
+is that once it's structured as a clean loop,
+it will be more obvious to a later reader
+what it's doing.)
+Remember, too, that function calls and <TT>return</TT> statements
+also accomplish control flow (analogous to the <TT>GOSUB</TT> in BASIC)
+in a clean and structured way.
+The complaint about <TT>goto</TT>
+is that when it's used without restraint,
+a tangled mess of unwieldy ``spaghetti code''
+often results.
+There are really only two times
+you ever need to use a <TT>goto</TT> statement in real programs:
+<OL><li>To break out of several loops at once.
+(When you have nested loops,
+the <TT>break</TT> statement only breaks you out of
+the innermost loop it's in.)
+<li>To jump to the end of a function,
+to perform some cleanup code or something,
+but bypassing the rest of the function.
+Usually, such a jump-to-the-end happens
+as a result of some error condition which the function has detected.
+
+</OL></p><p>It's customary for an author to claim that,
+although <TT>goto</TT> exists,
+``it has not been used in this book'',
+or that the author can count on the fingers of one hand
+the number of times he's ever used <TT>goto</TT> in C,
+and in fact I
+think I can make these claims myself.
+</p><hr>
+<p>
+Read sequentially:
+<a href="sx4bc.html" rev=precedes>prev</a>
+<a href="sx5.html" rel=precedes>next</a>
+<a href="sx4c.html" rev=subdocument>up</a>
+<a href="top.html">top</a>
+</p>
+<p>
+This page by <a href="../../index.html">Steve Summit</a>
+// <a href="copyright.html">Copyright</a> 1996-1999
+// <a href="mailto:scs@eskimo.com">mail feedback</a>
+</p>
+</body>
+</html>
