@@ -1,0 +1,178 @@
+<html>
+<head>
+ <title>Model 100 Year 2000 Menu Display Patch</title>
+</head>
+
+<body>
+ <h1>Model 100 Year 2000 Menu Display Patch</h1>
+ <address>Chris Osburn &lt;chris [whirlpool] muppetlabs [spot] com&gt;</address>
+ <p>
+ <strong>WARNING!</strong>  This patch has been tested on <em>one and
+ only one</em> Model 100, i.e. the one on my desk.  It has 32k of RAM.
+ This has not been tested on machines having less RAM, nor has it been
+ tested on the Model 102 or 200.  I've noticed side effects on my machine
+ when running machine-language programs.  Usually these side effects
+ resulted in locking the machine up or cold restarts causing memory loss.
+ <strong>Make a backup!</strong>  I haven't tested for effects on the
+ built in apps as yet.  BASIC <em>should</em> pose no problem as the
+ program reserves for itself a small amount of high memory.  <strong>You
+ Have Been Warned.  Caveat Utilitor.  Your Mileage May Vary.</strong>
+ <p>
+ Bug and side effect reports are welcome, but I doubt I'll be able to
+ do much about them.  This patch is no way as good a solution as patching
+ and burning a new ROM.  (By the way, if you can patch the ROM, set addr
+ 5A53h = 32h and addr 5A56 = 30h and away you go!)
+ <p>
+ <img src="../pics/new.gif" align=left alt="NEW: ">William McCrosky reports
+ this successful <a href="m100y2k.pdf">hardware solution</a> (PDF format,
+ 200k)
+ <p>
+ <h2>Background</h2>
+ The TRS-80 Model 100 was created in a joint venture between Kyocera
+ (for the hardware) and Microsoft (for the software).  The Model 100 has
+ an attractive main menu display, which displays the date in the form
+ "<tt>Jun 20,1998 Sat 13:15:36</tt>".
+ <p>
+ The Model 100's real-time clock chip is a uPD 1990AC which stores a
+ BCD represntation of month, day of week, day of month, hours, minutes
+ and seconds.  It also produces a pulse that drives a background process
+ interrupt.  Conspicuously absent is the year.  The Model 100 works
+ around this by storing the 2-digit year as 2 BCD digits in locations
+ F92Dh and F92Eh and updating these by comparing the month reported
+ by the 1990AC with a copy stored in addr F655h.  The day-of-week is
+ maintained in a separate register in the 1990AC, and not calculated.
+ If you decide today is Sunday, the chip will happily believe you and
+ tell you tomorrow is Monday, regardless of the actual day and date.
+ This makes our task considerably easier.
+ <p>
+ Nowhere in the internal workings of the Model 100 is the century
+ stored or used.  BASIC programs may therefore have year 2000 issues
+ beyond the scope of this document.  However, as noted above, the 
+ century is displayed on the main menu.
+ <p>
+ At addr 5A15h is the routine that grabs the real time clock data and
+ formats it for menu screen output.  Notable in this routine are these
+ instructions:
+ <p>
+ <pre>
+ 5A4Fh:	MVI  M,2Ch  ; store a comma
+        INX  H      ; increment memory pointer
+        MVI  M,31h  ; store the digit '1'
+        INX  H      ; increment memory pointer
+        MVI  M,39h  ; store the digit '9'
+ </pre>
+
+ (As noted above, if you can patch the 31h and 39h to read 32h and 30h,
+ your work here is done.  Feel free to let me know if you have this
+ capability; i'd be happy to do business with you!)
+ <p>
+ The 5A15h routine uses a scratch pad starting at FD88h to build the 
+ output string, and the "19" gets dropped into the two bytes FD8Fh and
+ FD90h.  If one had a way of changing these values before the instruction
+ that copies them to the LCD display is called, surely we'd be in Nirvana.
+ But the LCD update is called just a few instructions later.
+ <p>
+ <h2>Method</h2>
+ Enter the background process, mentioned above.  256 times per second
+ the real time clock prods the RST 7.5 interrupt line on the 8085
+ processor, causing the routine at 003Ch to be executed.  Eventually,
+ this takes us to F5FFh where we find three bytes encoded
+ <p>
+ <pre>
+ F5FFh: RET
+        NOP
+        NOP
+ </pre>
+ <p>
+ Three bytes is just the right amount for a JMP instruction to take
+ us to the code of our choice, just as the designers intended.  (They
+ <em>did</em> intend that, right?)
+ <p>
+ Following is a BASIC program that reserves 16 bytes of memory for
+ our update routine, pokes in the relevant processor instructions,
+ then (very carefully) enables the patch by changing the bytes at
+ F5FFh.
+ <p>
+ <pre>
+ 1 ' TRS-80 Model 100 Year 2000 Menu
+ 2 ' patch.  Run to get "20" to appear
+ 3 ' as the century.  run 1000 to 
+ 4 ' restore default functionality
+ 5 ' Side effects:  Many!  run 1000
+ 6 ' before questionable activity!
+ 10 ' allocate our memory by setting
+ 11 ' HIMEM
+ 20 CLEAR 256,62943
+ 30 ' read the instructions from data
+ 31 ' to memory
+ 40 FOR A=62944 TO 62956
+ 50 READ B
+ 60 POKE A,B
+ 70 NEXT A
+ 80 ' Enable the patch.  We want to 
+ 81 ' have JMP 0F5E0H encoded here.
+ 82 ' But, if we put the JMP instruction
+ 83 ' in first, the machine will just
+ 84 ' keep jumping to 0000h 256 times
+ 85 ' per second.  So, we do this in
+ 86 ' reverse!
+ 100 POKE 62977,245 ' hi addr
+ 110 POKE 62976,224 ' lo addr
+ 120 POKE 62975,195 ' and JMP!
+ 190 ' The preassembled assembly 
+ 191 ' program that gets called
+ 200 '                   ORG    0F5E0H
+ 210 DATA 229 :'  Y2K:   PUSH   H
+ 220 DATA 245 :'         PUSH   PSW
+ 230 DATA 33,143,253 :'  LXI    H,0FD8FH
+ 240 DATA 54,50 :'       MVI    M,32H
+ 250 DATA 35 :'          INX    H
+ 260 DATA 54,48 :'       MVI    M,30H
+ 270 DATA 241 :'         POP    PSW
+ 280 DATA 225 :'         POP    H
+ 290 DATA 201 :'         RET
+ 999 END '               END    Y2K
+ 1000 ' Code to disable the patch
+ 1001 ' if needed
+ 1010 POKE 62975,201 '  RET
+ </pre>
+ <p>
+ The code pushes registers that may be affected, then goes to store the
+ "20" in the right place.  It's certainly overkill to do this 256 times
+ per second, and will likely have a performance impact.  Unfortunately,
+ there's no hook provided in the date string builder routine.  The POKE
+ at line 1010 restores the original RET instruction, disabling the patch.
+
+ <h2>Side Effects</h2>
+ The program uses the uppermost 16 bytes of free user memory (starting
+ at MAXRAM - 16) to store the patch.  Any machine language program that
+ will use that area will need to have the patch disabled by restoring
+ the RET instruction to F5FFh.
+ <p>
+ I haven't determined whether the scratch pad at FD88h is used by any
+ builtin programs.  Obviously, the menu doesn't need it during at those
+ times, and it appears that it isn't updated.  A way of determining
+ when one is in the menu program is desirable.
+ <p>
+ I'm uncertain whether MAXRAM - 16 will be a suitable location for all
+ users to store the patch.  I need to rewrite the code to make that a
+ settable variable.  (Not hard, just haven't gotten there yet.)
+
+ <h2>Conclusion</h2>
+ I would rather the designers left off the century entirely than hard-code
+ it to "19".  This program should be considered a stopgap until a ROM
+ upgrade facility is available.  Perhaps one could get the Department
+ of Justice to cause Microsoft to pick up the tab for this...
+ 
+ <h2>References</h2>
+ <ol>
+  <li>Morgan, Christopher L., <em>Hidden Powers of the TRS-80 Model
+  100</em>, The Waite Group, New York, 1984
+  <li>Tandy Corporation, <em>TRS-80 Model 100 Assembler / Debugger
+  Manual</em>, catalog number 26-3823, Tandy Corporation, Fort Worth,
+  Texas, 1984
+  <li>Tandy Corporation, <em>TRS-80 Model 100 Owner's Manual</em>,
+  Tandy Corporation, Fort Worth, Texas, 1983
+ </ol>
+</body>
+</html>
