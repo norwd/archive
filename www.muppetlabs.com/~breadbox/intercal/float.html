@@ -1,0 +1,449 @@
+<!DOCUMENT html>
+<html>
+<head>
+<title>The INTERCAL floating-point library</title>
+<style>
+body {
+    font-size: 100%;
+    margin: 1em;
+    max-width: 64em;
+}
+h1 {
+    margin: 1em auto;
+    text-align: center;
+}
+table {
+    margin: 1em;
+    border-spacing: 1em 0;
+}
+td { vertical-align: text-top; }
+td.label { text-align: right; }
+</style>
+</head>
+<body>
+<p>
+<a href="../pub/intercal/float.tar.gz"
+>Download float.tar.gz</a>
+<h1>The INTERCAL floating-point library</h1>
+<p>
+<h2>Background</h2>
+<p>
+In <a href="../intercal-man/index.html">the
+INTERCAL manual</a>, section 8.4 offers the reader a handful of
+INTERCAL programming projects. They are of widely varying difficulty
+(though none of them are particularly easy [though again arguably is
+no INTERCAL programming project]). But by the time I began to write
+INTERCAL code, most of the suggested projects had already been
+completed. There was, in fact, only two left (one of which was
+predicated on the other):
+<p>
+<ul>
+<li>
+Compile a floating-point library, using 32-bit variables to represent
+floating-point numbers.
+<li>
+Use said library to program a set of Fast Fourier Transform functions.
+</ul>
+<p>
+So you see, I really had no choice in the matter. The only option open
+to me was to write a floating-point library. And not only did it need
+to provide the basic arithmetic operations including exponentiation,
+but in order to implement FFT it also needed to supply the
+trigonometric functions.
+<p>
+So, that's what I did.
+<p>
+One of the more minor obstacles to completing this task was that the
+C-INTERCAL compiler, the only INTERCAL compiler generally available at
+the time, had a hard limit of 1000 lines per program. The author (Eric
+S. Raymond) had assumed, when he wrote it, that 1000 lines would be
+sufficiently large to accomodate any single INTERCAL program likely to
+be written, if not the total amount of INTERCAL code that would ever
+be written. He, alas, was not a true INTERCAL programmer. The
+floating-point library would ultimately require nearly twice that
+space alone, never mind when added to an actual program. So in
+addition to the floating-point library, I also contributed
+improvements to the C-INTERCAL compiler to allow it to handle source
+files of arbitrary size.
+<p>
+The timing for this work happened to be such that I was able to finish
+all of the above in time for May 26th, 1997: the 25th anniversary of
+INTERCAL. I thus coordinated to have the floating-point library, along
+with the FFT program and the new version of the compiler, released
+along with the improved compiler on that day.
+<p>
+As I stated at the time: "INTERCAL stands a living testament to the
+Turing-completeness Theorem."
+<p>
+Here follows the complete documentation for the floating-point library.
+<p>
+<h2>Summary of Routines</h2>
+<p>
+<table>
+<tr>
+<td><code>(5000)</code></td>
+<td><code>:3 <- :1</code> plus <code>:2</code></td>
+<tr>
+<td><code>(5010)</code></td>
+<td><code>:3 <- :1</code> minus <code>:2</td>
+<tr>
+<td><code>(5020)</code></td>
+<td><code>:2 <-</code> the integer part of <code>:1</code><br>
+    <code>:3 <-</code> the fractional part of <code>:1</code></td>
+<tr>
+<td><code>(5030)</code></td>
+<td><code>:3 <- :1</code> times <code>:2</code></td>
+<tr>
+<td><code>(5040)</code></td>
+<td><code>:3 <- :1</code> divided by <code>:2</code></td>
+<tr>
+<td><code>(5050)</code></td>
+<td><code>:3 <- :1</code> modulo <code>:2</code></td>
+<tr><td colspan=2> </td></tr>
+<tr>
+<td><code>(5060)</code></td>
+<td><code>:2 <- :1</code> cast from a two's-complement integer into a floating-point number</td>
+<tr>
+<td><code>(5070)</code></td>
+<td><code>:2 <- :1</code> cast from a floating-point number into the nearest two's-complement integer</td>
+<tr>
+<td><code>(5080)</code></td>
+<td><code>:2 <- :1</code> cast from a floating-point number into a decimal representation in scientific notation</td>
+<tr>
+<td><code>(5090)</code></td>
+<td><code>:2 <- :1</code> cast from a decimal representation in scientific notation into a floating-point number
+<tr><td colspan=2> </td></tr>
+<tr>
+<td><code>(5100)</code></td>
+<td><code>:2 <-</code> the square root of <code>:1</code></td>
+<tr>
+<td><code>(5110)</code></td>
+<td><code>:2 <-</code> the natural logarithm of <code>:1</code></td>
+<tr>
+<td><code>(5120)</code></td>
+<td><code>:2 <-</code> <i>e</i> to the power of <code>:1</code> (the exponential function)</td>
+<tr>
+<td><code>(5130)</code></td>
+<td><code>:3 <- :1</code> to the power of <code>:2</code></td>
+<tr><td colspan=2> </td></tr>
+<tr>
+<td><code>(5200)</code></td>
+<td><code>:2 <-</code> <i>sin</i> <code>:1</code></td>
+<tr>
+<td><code>(5210)</code></td>
+<td><code>:2 <-</code> <i>cos</i> <code>:1</code></td>
+<tr>
+<td><code>(5220)</code></td>
+<td><code>:2 <-</code> <i>tan</i> <code>:1</code></td>
+<tr><td colspan=2> </td></tr>
+<tr>
+<td><code>(5400)</code></td>
+<td><code>:1 <-</code> uniform random number between zero and one exclusive</td>
+<tr>
+<td><code>(5410)</code></td>
+<td><code>:2 <- :1</code> times &phi;</td>
+<tr>
+<td><code>(5419)</code></td>
+<td><code>:2 <- :1</code> divided by &phi;</td>
+</table>
+<p>
+Note: All of the above routines except <code>(5020)</code>, <code>(5060)</code
+>, <code>(5080)</code>, <code>(5200)</code>, <code>(5210)</code>,
+and <code>(5400)</code> also modify <code>.5</code> as
+follows: <code>.5</code> will contain <code>#3</code> if the result
+overflowed or if the arguments were out of domain, <code>#2</code> if
+the result underflowed, <code>#1</code> otherwise. (See below for
+details.)
+<p>
+<h2>Detailed description</h2>
+<p>
+The INTERCAL floating-point library uses the IEEE format for 32-bit
+floating-point numbers, which uses bit 31 as a sign bit (1 being
+negative), bits 30 through 23 hold the exponent with a bias of 127,
+and bits 22 through 0 contain the fractional part of the mantissa with
+an implied leading 1. In mathematical notation:
+<p>
+<blockquote>
+  <b>N</b> = (1.0 + <i>fraction</i>) &middot; 2^(<i>exponent</i> &minus; 127)
+                                     &middot; &minus;1^<i>sign</i>
+</blockquote>
+<p>
+Thus the range of floating-point magnitudes is, roughly, from
+5.877472*10^-39 up to 6.805647*10^38, positive and negative. Zero is
+specially defined as all bits 0. (Actually, to be precise, zero is
+defined as bits 30 through 0 as being 0. Bit 31 can be 1 to represent
+negative zero, which the library generally treats as equivalent to
+zero, though don't hold me to that.)
+<p>
+Note that, contrary to the IEEE standard, exponents 0 and 255 are not
+given special treatment (besides the representation for zero). Thus
+there is no representation for infinity or not-a-numbers, and there is
+no gradual underflow capability. Conformance with widely-accepted
+standards was not considered to be a priority for an INTERCAL library.
+(The fact that the general format conforms to IEEE at all is due to
+the author doubting their ability to get anything done without being
+able to lean upon some form of prior art.)
+<p>
+Here, for easy reference, are some common values as they would be
+directly represented within an INTERCAL program:
+<p>
+<table>
+<tr>
+<td class="label">Zero</td>
+<td><code>#0$#0</code></td>
+<tr>
+<td class="label">One</td>
+<td><code>#30720$#28672</code></td>
+<tr>
+<td class="label">Two</td>
+<td><code>#0$#32768</code></td>
+<tr>
+<td class="label">One million</td>
+<td><code>#9280$#40480</code></td>
+<tr>
+<td class="label">One-half</td>
+<td><code>#28672$#28672</code></td>
+<tr>
+<td class="label">Square root of two</td>
+<td><code>#31757$#30509</code></td>
+<tr>
+<td class="label"><i>e</i></td>
+<td><code>#1760$#33742</code></td>
+<tr>
+<td class="label">&pi;</td>
+<td><code>#571$#35133</code></td>
+</table>
+<p>
+However, a more human-accessible representation of floating-point
+numbers is made possible by the routines <code>(5080)</code> and
+<code>(5090)</code>. For this representation, scientific notation is
+used with six digits of precision after the decimal point. The seven
+digits of the mantissa are suffixed with the two digits of the
+exponent. If the number is negative, a one is prefixed (in the
+billions' place), so there can be ten decimal digits in all. Finally,
+if the exponent is negative, fifty is added. As is the usually the
+case with scientific notation, the digit to the left of the decimal
+point must be nonzero except for the case of zero itself.
+
+The above may sound convoluted, but it is not nearly as confusing as
+it perhaps should be. As an example, if you wished to enter the value
+of the speed of light measured in centimeters per seconds squared, you
+would type <tt>TWO NINE NINE SEVEN NINE TWO FIVE ONE OH</tt>. The
+INTERCAL program would then call <code>(5080)</code> to transform this
+into the floating-point number 2.997925e+10. The same value printed
+out with the help of <code>(5090)</code> would appear as
+ccxcixD&#773;C&#773;C&#773;X&#773;C&#773;MMDX. Similarly, the value
+-1.602189e-19 (the charge of an electron measured in Coulombs) would
+be represented respectively as <tt>ONE ONE SIX ZERO TWO ONE EIGHT NINE
+SIX NINE</tt> and
+mclxC&#773;C&#773;X&#773;V&#773;I&#773;I&#773;I&#773;CMLXIX. Note that
+the negative sign on the exponent always translates to an L between
+the fraction and the exponent when output.
+<p>
+The 16-bit variable <code>.5</code> is used by the floating-point
+library as an error indicator. Upon return from most of the functions,
+<code>.5</code> will normally be set to <code>#1</code> if the return
+value is valid. If <code>.5</code> is set to <code>#2</code>, this
+indicates that the result of the function underflowed (that is, the
+magnitude of the result is less than 2^-127). If <code>.5</code> is
+set to <code>#3</code>, this indicates either that the result
+overflowed (magnitude greater than 2^128), or that the arguments to
+the function were illegal. The latter can occur for the following
+situations: division by zero (either via division or modulus),
+negative root (either via square root or a fractional power), and
+non-positive logarithm. Also, <code>(5070)</code> will
+set <code>.5</code> to <code>#3</code> if the magnitude of the
+argument is greater than 2^31, and <code>(5080)</code> will do
+likewise if given a bad number (e.g., if it is greater than two
+billion).
+<p>
+It may be worth nothing that there are some cases in which an under-
+or overflow can be recovered from with tolerable grace. The sign and
+fraction bits of such a value will usually still be correct, and the
+exponent bits will just be the lower eight bits of the true exponent:
+that is, the true exponent plus or minus 256 as appropriate. If such a
+value is passed to another function as is, and the return value from
+that over- or underflows in the opposite direction, it is likely that
+the final result can be trusted. Of course, this depends entirely on
+the nature of the operations involved, and this paragraph should not
+be taken as advice to pursue such approaches in general, just as this
+document should not be taken as advice to make use of this library at
+all. Note also that in the case of <code>(5110)</code>, the
+exponential function, and <code>(5130)</code>, the power function, it
+is quite easy to request a massively under- and/or overflowed result.
+In these cases the functions in question exit early, and attempting to
+salvage something from such results, with the possible exception of
+the sign bit, is pretty much guaranteed to be fruitless.
+<p>
+<code>(5020)</code> is the integral partition function (equivalent
+to <code>modf()</code> in the C library). Both return values are
+floating-point numbers, and both have the same sign as the argument,
+such that <code>:2</code> + <code>:3</code> = <code>:1</code> while
+keeping the magnitude of <code>:3</code> less than 1.
+<p>
+<code>(5060)</code> and <code>(5070)</code> are the "type-casting"
+functions. They translate values to and from 32-bit two's-complement
+integers. <code>(5070)</code> truncates any fractional amounts from
+its argument, and will signal an error if the magnitude of the value
+requires more than 32 bits.
+<p>
+The trigonometric functions <code>(5200)</code>, <code>(5210)</code>,
+and <code>(5220)</code> will return erroneous results when given very
+large arguments. At magnitudes around 8 million or so, the result is
+occasionally off by one bit. The errors get progressively worse, so
+that with magnitudes in the neighborhood of the quintillions and
+higher, the number is wholly inaccurate. However, at magnitudes around
+8 million, there is already a difference of over 20&pi; between
+consecutive floating-point numbers, so it is hard to conceive of a
+purpose for which improved accuracy would be useful.
+<p>
+In the descriptions for <code>(5410)</code> and <code>(5419)</code>,
+&phi; refers to the golden ratio.
+<p>
+<h2>Internal routines</h2>
+<p>
+A floating-point library involves a fair amount of mathematical
+functionality to begin with, something that INTERCAL is not generally
+mistaken for having. The floating-point library therefore has a number
+of internal functions to provide it with some 64-bit arithmetic, among
+other things. While these routines were designed specifically for
+internal use, and in many cases one would be hard-pressed to find
+other uses for them in their current form, it was felt that they were
+nonetheless worth documenting. Besides providing a guide for anyone so
+foolish as to examine the actual code, it provides a sort of "itemized
+bill" that helps to justify the inordinate size of the library.
+<p>
+In the following list, the notation <code>:1:2</code> simply indicates
+that two 32-bit variables, in this example <code>:1</code>
+and <code>:2</code>, are being used to hold a single 64-bit integer
+value. The notation <code>:1:2.1</code>, on the other hand, indicates
+a kind of double-precision floating-point value, a format that the
+library uses frequently when storing intermediate values. The two
+32-bit variables hold the fraction bits, with no implied bits, and
+ideally with the highest 1 bit at bit 55. The 16-bit variable holds
+the exponent, but with a bias of 639 instead of 127. This is done so
+that underflows do not affect the sign, which is also stored in the
+16-bit variable in bit 10. These intermediate values are rounded (to
+even), truncated, and stored in a single 32-bit variable by the
+floating-point normalization function, <code>(5600)</code>.
+<p>
+Finally, note that the numbers in the tables accessed by
+routines <code>(5690)</code> through <code>(5693)</code> are generally
+tailored for the function that applies them, and all of them use
+slightly different representations for the values they encode.
+<p>
+Here are brief descriptions of the internal routines:
+<table>
+<tr>
+<td><code>(5500)</code></td>
+<td><code>:1:2 <- :1:2</code> plus <code>:3:4</code><br>
+    <code>.5 <- #0</code> if no overflow, <code>#1</code> otherwise</td>
+<tr>
+<td><code>(5510)</code></td>
+<td><code>:1 <- :1</code> plus <code>:6,</code> where <code>:6</code> has at most one 1 bit<br>
+    <code>:6 <- #0</code> on overflow, nonzero otherwise</td>
+<tr>
+<td><code>(5519)</code></td>
+<td><code>:1 <- :1</code> minus <code>:6</code>, where <code>:6</code> has at most one 1 bit<br>
+    <code>:6 <- #0</code> on underflow, nonzero otherwise</td>
+<tr>
+<td><code>(5520)</code></td>
+<td><code>.1 <- .1</code> minus <code>#1</code></td>
+<tr>
+<td><code>(5530)</code></td>
+<td><code>:1:2:3:4 <- :1:2</code> times <code>:3:4</code></td>
+<tr>
+<td><code>(5540)</code></td>
+<td><code>:1 <- :1:2</code> divided by <code>:3:4</code>, with <code>:1:2</code> aligned on bit 63, <code>:3:4</code> aligned on bit 62, and the result aligned on bit 31<br>
+    <code>.1 <-</code> the exponent of the quotient plus <code>#126</code><br>
+    <code>.5 <- #1</code> if the result should be rounded up, <code>#0</code> otherwise</td>
+<tr>
+<td><code>(5550)</code></td>
+<td><code>:1:2.1 <- :1:2.1</code> modulo <code>:3:4.2</code></td>
+<tr>
+<td><code>(5560)</code></td>
+<td><code>:1:2 <-</code> two's complement of <code>:1:2</code></td>
+<tr>
+<td><code>(5570)</code></td>
+<td><code>:1:2 <- :1:2</code> left-shifted logically so that bit 63 is 1<br>
+    <code>.1 <- .1</code> minus the no. of bits shifted out</td>
+<tr>
+<td><code>(5580)</code></td>
+<td><code>:3:4 <- :3:4</code> shifted right arithmetically <code>.3</code> bits</td>
+<tr>
+<td><code>(5590)</code></td>
+<td><code>:1:2 <- :1:2</code> shifted so that bit 55 is the highest 1 bit<br>
+    <code>.1 <- .1</code> plus or minus the no. of bits shifted<br>
+    <code>.5 <-</code> the bits right-shifted out of <code>:1:2</code>, if any</td>
+<tr>
+<td><code>(5600)</code></td>
+<td><code>:1 <-</code> the normalization of <code>:1:2.1</code></td>
+<tr>
+<td><code>(5610)</code></td>
+<td><code>:1:2.1 <-</code> the natural logarithm of <code>:1:2.1</code></td>
+<tr>
+<td><code>(5620)</code></td>
+<td><code>:1:2.1 <-</code> <i>e</i> to the power of <code>:1:2.1</code></td>
+<tr>
+<td><code>(5640)</code></td>
+<td><code>:1:2.1 <- :1:2.1</code> to the power of the two's-complement integer in <code>:3</code></td>
+<tr>
+<td><code>(5650)</code></td>
+<td><code>:1:2.1 <- :1</code> to the power of <code>:2</code><br>
+    <code>.5 <- #1</code> if the power is not real, <code>#2</code> otherwise</td>
+<tr>
+<td><code>(5670)</code></td>
+<td><code>:1:2 <-</code> an angle between -&pi;/2 and &pi;/2 that has the same value for sine as <code>:1</code>, and stored in two's-complement, fixed-point form, with the one's position at bit 62<br>
+    <code>.1 <- #1024</code> if the cosine of <code>:1:2</code> will have the opposite sign as the cosine of <code>:1</code>, <code>#2048</code> otherwise</td>
+<tr>
+<td><code>(5680)</code></td>
+<td><code>:1:2 <-</code> the sine of <code>:1:2</code> in two's-complement, fixed-point<br>
+    <code>:3:4 <-</code> the cosine of <code>:1:2</code></td>
+<tr>
+<td><code>(5690)</code></td>
+<td><code>;1 <-</code> a table of 32 significant bits of the numbers 10^<i>i</i>, where <i>i</i> ranges from 1 to 39<br>
+    <code>,1 <-</code> a table of exponents for the above powers of ten</td>
+<tr>
+<td><code>(5691)</code></td>
+<td><code>;1 <-</code> a table of bit patterns representing ln(1 + 1/(2^<i>i</i> &minus; 1)), where <i>i</i> ranges from -1 to -26</td>
+<tr>
+<td><code>(5692)</code></td>
+<td><code>;1 <-</code> a table of bit patterns representing &minus;ln(1 + 2^<i>i</i>), where <i>i</i> ranges from -1 to -32</td>
+<tr>
+<td><code>(5693)</code></td>
+<td><code>;1 <-</code> a table of bit patterns representing <i>arctan</i>(2^<i>i</i>), where <i>i</i> ranges from 0 to -30</td>
+</table>
+<p>
+<h2>Bibliography</h2>
+<ul>
+<li>
+Knuth, Donald E.: <i>The Art of Computer Programming: Vol. 2
+(Seminumerical Algorithms)</i>, 2nd edition. Addison-Wesley, 1981.
+<br>
+This book provided the essential background, as well as algorithms
+for the basic arithmetic operations. Mention should also be made
+of Vol. 1, which provided an algorithm for the natural logarithm
+as a side note.
+<li>
+Koren, Israel: <i>Computer Arithmetic Algorithms</i>. Prentice-Hall,
+1993.
+<br>
+In addition to information on the IEEE standard, this book provided
+algorithms for the exponential and trigonometric functions.
+<li>
+Plauger, P. J.: <i>The Standard C Library</i>. Prentice-Hall, 1992.
+<br>
+This book provided assistance in designing the modulus and power
+functions, as well as other miscellaneous contributions.
+</ul>
+<p>
+<br>
+<small><a href="index.html">
+INTERCAL</a></small>
+<br>
+<small><a href="../index.html">Brian
+Raiter</a></small>
+<br>
+<small><a href="http://www.muppetlabs.com/">Muppetlabs</a></small>
+</body>
+</html>

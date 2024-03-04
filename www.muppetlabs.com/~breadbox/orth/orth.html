@@ -1,0 +1,349 @@
+<html>
+<head>
+<title>Documentation for Orthogonal 0.2</title>
+</head>
+<body bgcolor="#EFEFFF" text="#000000">
+<h3>Introduction</h3>
+<p>
+This document describes the Orthogonal language. It does not, however
+explain why you would want to know this, as that would be a far more
+difficult task. Let us just take it as read that you are willing to
+entertain the notion that you might be interested, or else you
+wouldn't be here.
+<p>
+Orthogonal, or rather the idea of a 2-dimensional language, first
+began in the alt.lang.intercal newsgroup. In 1994 an enterprising
+<a href="mailto:jepler@herbie.unl.edu">Jeff Epler</a> created an
+interpreter for such a language. In 1996 we discovered his work, and
+decided to build upon this foundation.
+<p>
+The version you see here is basically the original language with a new
+interpreter. For the most part this version of Orthogonal is fully
+compatible with the previous version, although this is somewhat of a
+moot point as the file format has completely changed. It is somewhat
+of a moot point anyway, but you can expect us to ignore that fact,
+here and throughout this document.
+<p>
+At some point in the future<a href="orth.html#note1">&sup1;</a> Orthogonal will
+undergo many changes, and absolutely no attempt will be made to
+maintain much in the way of backwards-compatibility. We can justify
+this by pointing out that Epler's language was called Orthagonal, not
+Orthogonal, so this is really an entirely different language. See?
+With that pathetic rationalization behind us, let us turn to the
+description of the current language.
+<p>
+<h3>The Orthogonal Environment</h3>
+<p>
+When reading the following, it may help to think of Orthogonal not
+so much as a computer language, but more as the assembly language for
+a nonexistant chip - a very primitive, stack-based chip, with damn few
+instructions (though strangely enough capable of writing to stdout).
+<p>
+The Orthogonal environment consists of two entities: the grid and the
+stack. The grid is a two-dimensional memory space, where code and data
+can be found. The stack is the more familiar one-dimensional object
+that data is pushed to and popped from.
+<p>
+Available data types in Orthogonal include the 32-bit signed
+integer. The 32-bit signed integer also completes the list of
+available data types.
+<p>
+At the beginning of an Orthogonal program the stack is empty, the grid
+contains the program being interpreted, and execution begins at the
+origin [0,0] with a delta of [+1,0] (in other words, heading due
+east). Thus after executing the instruction at [0,0], the interpreter
+moves to [1,0], and then to [2,0], unless and until the program
+changes the direction, or ends the execution with the <code>ret</code>
+instruction (more on that below).
+<p>
+Also during startup, any command-line arguments are, at the
+programmer's option, loaded into the grid in a horizontal row, one
+character per cell. The default location is from [0,255] to [255,255];
+both the position and length of the row can be set by the program (see
+&quot;Preprocessor Variables&quot; below). Each argument is separated
+by a single zero value, and zeros pad out the cells to the end of the
+row if there is leftover space.
+<p>
+Each cell in the grid can contain either a datum (one of the integers
+mentioned earlier) or an instruction. When execution encounters a cell
+containing an integer, the value is pushed onto the stack; in other
+words, numbers carry an implicit push instruction. Besides specifying
+numbers in decimal notation, hexadecimal can be used by preceding the
+number with, of course, <code>0x</code>. Octal numbers can also be
+specified using a preceding <code>0</code>, but who really uses octal
+anymore? I mean, come on. Furthermore, numbers in the range of ASCII
+characters can be represented by enclosing the character in single
+quotes, and the standard set of backslash escape sequences ('\n', et
+al.) is also available for quoting non-graphic characters.
+<p>
+<h3>The Orthogonal Instruction Set</h3>
+<p>
+The Orthogonal instruction set falls roughly into three categories:
+operators, directives and the other ones. The operators all pop one or
+more elements from the top of the stack and then push back to the
+stack a result. The directives may also take values from the stack,
+but also affect the direction of program execution. The other ones are
+basically like operators, but with side effects.
+<p>
+<table>
+<caption>The Operators</caption>
+<tr><td><code>+&nbsp;&nbsp;</code><td>add the top two elements of the
+    stack (and push the sum)</tr>
+<tr><td><code>*&nbsp;&nbsp;</code><td>multiply the top two elements of
+    the stack</tr>
+<tr><td><code>-&nbsp;&nbsp;</code><td>subtract the top stack element
+    from the second element</tr>
+<tr><td><code>/&nbsp;&nbsp;</code><td>divide the top element into the
+    second (i.e., S2 / S1)</tr>
+<tr><td><code>%&nbsp;&nbsp;</code><td>divide the top element into the
+    second and push the remainder</tr>
+<tr><td><code>&amp;&nbsp;&nbsp;</code><td>bitwise AND the top two
+    stack elements</tr>
+<tr><td><code>|&nbsp;&nbsp;</code><td>bitwise OR the top two
+    elements</tr>
+<tr><td><code>^&nbsp;&nbsp;</code><td>bitwise XOR the top two
+    elements</tr>
+<tr><td><code>!&nbsp;&nbsp;</code><td>push the logical NOT of the top
+    element (0 <samp>-&gt;</samp> 1, all else <samp>-&gt;</samp> 0)</tr>
+<tr><td><code>~&nbsp;&nbsp;</code><td>exchange the top two stack
+    elements</tr>
+<tr><td><code>@&nbsp;&nbsp;</code><td>duplicate the top stack
+    element</tr>
+<tr><td><code>$&nbsp;&nbsp;</code><td>discard the top stack element
+    (i.e., pop-and-drop)</tr>
+</table>
+<p>
+<table>
+<caption>The Directives</caption>
+<tr><td><code>L&nbsp;&nbsp;</code><td>set delta to [+1,0] (i.e., go
+    west)</tr> 
+<tr><td><code>K&nbsp;&nbsp;</code><td>set delta to [0,-1] (north)</tr>
+<tr><td><code>J&nbsp;&nbsp;</code><td>set delta to [0,+1] (south)</tr>
+<tr><td><code>H&nbsp;&nbsp;</code><td>set delta to [-1,0] (east)</tr>
+<tr><td><code>cw&nbsp;</code><td>change delta from [dx,dy] to [dy,-dx]
+    (i.e., clockwise)</tr>
+<tr><td><code>ccw</code><td>change delta from [dx,dy] to [-dy,dx]
+    (counter-clockwise)</tr>
+<tr><td><code>rev</code><td>change delta from [dx,dy] to
+    [-dx,-dy]</tr>
+<tr><td><code>x&nbsp;&nbsp;</code><td>change current x-coordinate to
+    the top stack element</tr>
+<tr><td><code>y&nbsp;&nbsp;</code><td>change current y-coordinate to
+    the top stack element</tr>
+<tr><td><code>dx&nbsp;</code><td>change the x value of the delta to
+    the top stack element</tr>
+<tr><td><code>dy&nbsp;</code><td>change the y value of the delta to
+    the top stack element</tr>
+</table>
+<p>
+<table>
+<caption>And the Other Ones</caption>
+<tr><td><code>=&nbsp;&nbsp;</code><td>push the data at the grid
+    coordinates given by the top two stack elements (i.e., push the
+    contents of [S1,S2])</tr>
+<tr><td><code>#&nbsp;&nbsp;</code><td>store the third stack element at
+    the coordinates of the top two elements (i.e., [S1,S2] is set to
+    S3)</tr>
+<tr><td><code>?&nbsp;&nbsp;</code><td>test the top stack element, and
+    if zero, skip over the next cell (i.e., add the delta twice to the
+    current position)</tr>
+<tr><td><code>c&nbsp;&nbsp;</code><td>output the top stack element as
+    an ASCII character, or a newline if top element is zero</tr>
+<tr><td><code>s&nbsp;&nbsp;</code><td>output stack elements as
+    characters until a zero is encountered</tr>
+<tr><td><code>d&nbsp;&nbsp;</code><td>output the top element as a
+    number in ASCII format (i.e., itoa)</tr>
+<tr><td><code>nop</code><td>nothing happens (i.e., xyzzy)</tr>
+<tr><td><code>ret</code><td>end the program and return the top stack
+    element to the OS</tr> 
+</table>
+<p>
+Cells that have not been set to contain anything remain undefined, and
+it is an error to allow execution to enter an undefined cell, or to
+read its contents with the <code>=</code> instruction (push cell
+contents). It is also an error to attempt to push the contents of a
+cell containing an instruction. (Setting the contents of an undefined
+cell, using the <code>#</code> instruction, is on the other hand
+perfectly acceptable and even encouraged.)
+<p>
+<h3>The Orthogonal Program File Format</h3>
+<p>
+This is an excellent example of that ancient maxim that tells us that
+words are equivalent to millipictures. Therefore, the following
+program is the description of Orthogonal's file format:
+<p>
+<pre> 
+; A hello world program in Orthogonal.
+;
+[0,0]
+0   'd' 'l' 'r' 'o' 'w' ' ' ',' 'o' 'l' 'l' 'e' 'h' s   cw
+                                                        0
+                                                        c
+                                                ret 0   cw
+</pre>
+<p>
+Unlike most languages, whitespace is very important in an Orthogonal
+source file. Note that each column is four characters wide. This is
+the default setting, and it can be changed if desired, but four is
+wide enough for all of the instructions and all integers in the range
+of -999 to 9999, which includes most of the useful ones. Spaces are
+not required between adjacent cell contents, though admittedly some
+legibility can be lost in their absences. (But do note also that the
+cell contents do not have to be left-justified.) In the interest of
+keeping things terse, it is considered acceptable, if a bit gauche, to
+leave off the closing quote of a character value (with the exception
+of a quoted space character, since that's just too ugly to allow).
+<p>
+Note also that the section is headed by its coordinates. An input file
+can contain any number of such sections, allowing a programmer to
+scatter a program's various components hither and yon.
+<p>
+Comments are introduced with a semicolon, and extend to the end of the
+line. Comments can be inserted in the middle of a section, in a
+section's right margin, and in fact pretty much anywhere. They are
+disallowed only in a preprocessor command line, which gives us the
+segueway we so desperately needed to move on to the next topic.
+<p>
+<h3>Orthogonal Preprocessor Variables</h3>
+<p>
+The &quot;:set&quot; preprocessor command allows one to create macro-style
+variable names and generally avoid using magic numbers in the program
+proper. Since the only available storage outside of the stack are grid
+cells of arbitrarily chosen coordinates, magic numbers tend to be a
+fact of life in Orthogonal.
+<p>
+The syntax is:
+<p>
+<pre>
+:set &lt;name&gt; = &lt;value&gt;
+</pre>
+<p>
+where <var>&lt;name&gt;</var> is the name to create, and
+<var>&lt;value&gt;</var> is the number to be assigned. (Or quoted
+character, or what have you.) So, if the following lines appeared in a
+source file:
+<p>
+<pre>
+:set ix = 12
+:set iy = 48
+</pre>
+<p>
+the code to decrement the contents of [12,48] could be written as:
+<p>
+<pre>
+iy  ix  =   1   -   iy  ix  #
+</pre>
+<p>
+and in all likelihood would be.
+<p>
+There also exist a number of predefined variables, which can be used
+and/or modified by the programmer to control the program parsing and
+startup conditions.
+<p>
+The predefined variables and their semantics:
+<p>
+<ul>
+<li>ORTHVER the version of Orthogonal being used (currently set to 0x0002,
+    indicating version 0.2)
+<li>COLSIZE the width of columns in the source file (default is 4)
+<li>TABSIZE how big a tabstop should be read as (default is 8)
+<li>ARGROW  the y-coordinate of where to store the command-line arguments
+    (default is 255)
+<li>MAXARGS the number of cells to devote to storing the command-line
+    arguments, or zero to indicate no arguments should be stored
+    (default is 256)
+</ul>
+<p>
+<h3>lnvoking Orthogonal</h3>
+<p>
+An Orthogonal program is invoked as follows:
+<p>
+<pre>
+orth [-t] [&lt;orthogonal program&gt; [command-line arguments]]
+</pre>
+<p>
+The optional -t argument runs Orthogonal in trace mode. &quot;-&quot; can be
+supplied as the program name, or it can be omitted entirely, to have
+the source file read from stdin.
+<p>
+Additionally, Orthogonal will also ignore the first line of a file if
+it begins with <code>#</code>, essentially treating it as a comment
+line. This permits the Orthogonal interpreter to be automatically
+invoked via the Unix <code>#!</code> convention.
+<p>
+<h3>Conclusion</h3>
+<p>
+If you are still confused, and need further explanation, I suggest you
+go look at the sample programs. Really. There's nothing more I can do
+for you here.
+<p>
+<h3>Appendix: Differences Between Orthagonal and Orthogonal</h3>
+<p>
+(First and foremost, of course, is that Orthagonal used a non-graphic
+source file format, but actually this section discusses differences
+between the languages proper, rather than how one gets a program into
+the interpreter.)
+<p>
+Orthagonal had a fixed-size grid of 256x256. Orthogonal's grid, on the
+other hand, is an unbounded quarter-plane (well, unbounded except for
+available memory). This change is the source of the biggest
+incompatibility between the two languages: Orthagonal's fixed grid
+allowed for wrap-around. That is, if a westbound execution reached
+[255,4] the next instruction would come from [0,4]. In Orthogonal,
+however, the next instruction would be taken from [256,4]. We felt
+that the chances of someone having written a program that was fatally
+dependent upon the wraparound feature were miniuscule.
+<p>
+Upon initialization, Orthagonal's grid was initialized with zero
+values; thus in Orthagonal one never encountered undefined cells.
+<p>
+Orthagonal only accepted a single argument on the command line, which
+was stored in a row always starting at [0,255]. Also, the cells were not
+padded out with zeros to the end of the row. Orthogonal accepts any
+number of command-line arguments, and allows the source file to define
+where, and how many bytes, should be stored, and always uses the
+entire space.
+<p>
+Orthagonal's stack was also limited to 256 elements. Orthogonal's
+stack is unbounded.
+<p>
+Finally, Orthagonal contained a bug in regard to the c instruction
+(output character). If the top stack element was zero, Orthagonal
+would print a newline as advertised, but in all other cases it would
+throw away the top stack element and output the next element. This bug
+has been corrected in Orthogonal. This fact can be used to create
+dynamically portable code. For example:
+<p>
+<pre>
+0   10  10  c   !   ?   1
+</pre>
+<p>
+After printing a newline, the above code will place a one or a zero on
+the stack if Orthagonal or Orthogonal, respectively, is the
+interpreter in use. One can then store this value somewhere, and use
+it later to select different sections of implementation-dependent
+code.
+<p>
+<h3>About the Author</h3>
+<p>
+Please send bug reports and other Orthogonally-related material to
+<a href="mailto:breadbox@muppetlabs.com">Brian Raiter</a>.
+<p>
+<hr>
+<font size="-1">
+<a name="note1">&sup1;</a> The design and subsequent implementation of
+the successor language was originally planned to begin immediately
+following the completion of testing of the current version. However,
+said testing phase has long since reached completion, and it must be
+acknowledged that progress on the next design phase remains at the
+cocktail-napkin state at which it has been since the differences of
+opinions regarding certain language aesthetics between certain
+programmers reached certain discordant apexes. Names will of course
+not be named, but it is unarguable that a few purists are going to
+have a hard time clinging to their precious ideals when the research
+grants dry up and they are forced to fend for themselves out in the
+cold and unforgiving pragmata that comprise the reality in which the
+rest of us manage to get real work accomplished.
+</font>
+</body>
+</html>

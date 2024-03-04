@@ -1,0 +1,620 @@
+<!DOCUMENT html>
+<html>
+<head>
+<title>A Dissection of quine.i</title>
+<style>
+body {
+    font-size: 100%;
+    margin: 1em;
+    max-width: 64em;
+}
+</style>
+</head>
+<body>
+<p>
+<blockquote>
+<b>quine</b> /kwi:n/ <i>n.</i> [from the name of the logician Willard
+van Oman Quine, via Douglas Hofstadter] A program that generates a
+copy of its own source text as its complete output.
+<p align="right">
+(from the
+<a href="http://www.catb.org/~esr/jargon/html/Q/quine.html">Jargon
+File</a>)
+</blockquote>
+<p>
+<a href="../pub/intercal/quine.i">Download
+quine.i</a>.
+<p align="center">
+<center><h1>quine.i dissected</h1></center>
+<p>
+<h3>Quines and INTERCAL</h3>
+<p>
+A basic feature of any quine is that it must have some chunk of data
+which is output twice: once as code, and once as data (i.e., itself).
+In a language that has identical representations for code and data,
+such as Lisp, creating this data can be relatively straightforward. In
+a language with powerful and terse string-manipulation capabilities,
+such as Perl, the data can be very small.
+<p>
+And then we have INTERCAL. Not only does INTERCAL have no concept of
+"data-as-code", it has no strings, as such. It quickly becomes clear
+that a large part of any INTERCAL quine will have to consist of many
+numbers to be output as the characters of the source code. The largest
+INTERCAL variable is the 32-bit integer, into which four characters
+can be interleaved, and then later unpacked and stored in an array to
+be output. Since there is no way to assign a value to more than one
+variable per statement, that adds up to a lot of statements.
+<p>
+<h3>Earlier INTERCAL Quines</h3>
+<p>
+The first INTERCAL quine I ever created was in February of 1997, and
+it was 18871 bytes long. It contained 644 statements, of which 530
+were devoted to initializing a hybrid array. The next section of the
+program was the part that output these 530 lines of source code, and
+consisted of roughly 75 lines itself. (Much of those lines were for
+the routine to output a number in ASCII characters.) The remaining
+section created a tail array of 2120 elements, into which the
+interleaved characters in the hybrid array were separated out and
+stored, and then a single <code>READ OUT</code> brought the program to
+completion.
+<p>
+Having actually completed a successful INTERCAL quine, I then began to
+wonder about how to go about making it smaller. At first I
+concentrated on tightening up the code, reasoning that any savings
+would shrink the size of the array as well. However, I soon realized
+that the routines were already pretty skeletal, and there wasn't much
+I could do in that direction. (Although much later I would revise my
+opinion on that score.) That left me with the option of making the
+data itself more compact, and using slightly larger code to produce
+the actual characters. It didn't take long before the idea of using
+Huffman compression came to mind. Huffman compression is almost ideal
+for this task, since all the real work is up front in the encoding
+stage, and specifically in building the character translation table.
+The actual decoding process can be done in two lines of (obfuscated)
+C, once the binary tree is reconstructed, and mainly involves
+bit-twiddling, an activity that INTERCAL excels at (relatively
+speaking).
+<p>
+My first successful quine with Huffman compression was 11323 bytes
+long, completed in May 1997. In November 1998 I went on a protracted
+campaign of making the program shorter, and eventually released a
+version that was a mere 9130 bytes. This quine consisted of 412
+statements, of which 292 statements initialized a hybrid array. This
+array contained the binary tree defining the Huffman code in its first
+48 elements, with the remaining 244 elements being the encoded
+"bitstream".
+<p>
+In August 2003, I picked up the quine again and worked on making it
+smaller still. I made a modification to the Huffman compression
+wherein a given encoded symbol could automatically imply some number
+of bits to implicitly follow it. (Thus, for example, because the
+character <code>D</code> was always followed by an <code>O</code>
+character, all but the last bit of the code for <code>O</code> could
+be dropped from the bitstream.) This along with several reductions of
+the INTERCAL code itself allowed me to produce a quine that was 6758
+bytes in size. This quine consisted of 323 statements, with a hybrid
+array of 211 elements: 41 for the Huffman tree, and 169 for the
+bitstream.
+<p>
+By this point I had become aware of the large amount of redundancy in
+the INTERCAL code, which even my variant Huffman compression couldn't
+take advantage of. However, switching to a more powerful compression
+scheme seemed hopeless. The INTERCAL routine that decompressed the
+Huffman-encoded bitstream was extremely terse. A more powerful
+compression scheme would be counterbalanced by requiring a larger
+amount of code to do the decompression. I looked around for
+compression schemes that allowed for trivial decompression algorithms,
+and eventually found one, called "Re-Pair".
+<p>
+<h3>Re-Pair Compression Overview</h3>
+<p>
+Re-Pair is short for "recursive pairing". (The name comes from a
+paper, "Offline Dictionary-Based Compression", by N. Jesper Larsson
+and Alistair Moffat. The term "byte pair" encoding is also sometimes
+seen.) Re-Pair compression uses a very simple coding scheme, in which
+frequently-occuring pairs of symbols are replaced by a single symbol,
+previously unused. A dictionary is thus created matching pairs of
+symbols to new symbols. Note that either or both of the symbols in the
+pair might themselves be dictionary entries. In this manner, long
+repeated sections can be encoded.
+<p>
+The simplest approach for encoding a stream in this manner is as
+follows:
+<p>
+<ol>
+<li>
+Scan the plaintext and find the most frequently-occuring pair of
+symbols.
+<li>
+Replace the chosen pair everywhere it appears in the plaintext with a
+single new symbol.
+<li>
+Append the encoding of the pair as the new symbol to the dictionary.
+<li>
+Repeat, until no pair of symbols occurs more than once in the
+plaintext.
+</ol>
+<p>
+There are more sophisticated approaches, of course, but for short
+strings this greedy algorithm usually works as well as any other.
+<p>
+Decompressing a symbol from the compressed stream can be done with a
+simple recursive procedure:
+<p>
+<ol>
+<li>
+Look up the symbol in the dictionary.
+<li>
+If the symbol does not have an entry, output the symbol directly.
+<li>
+Otherwise, decompress the left-hand symbol in the entry, and then
+decompress the right-hand symbol in the entry.
+</ol>
+<p>
+The main drawback of this scheme is that compression is slow, and
+requires a fair amount of memory.
+<p>
+<h3>The Current INTERCAL Quine</h3>
+<p>
+The INTERCAL quine presented here, written on 30 June 2004, is 3629
+bytes long. The Re-Pair compression scheme is the main reason for the
+improved compactness over previous quines. Also, the program's
+routines were completely rewritten in order to make the source more
+amenable to Re-Pair compression. Other techniques for shrinking the
+total size include juggling the assignment of dictionary index values
+so that the compressed string would require fewer characters when
+represented as decimal values in the source code, and doing a
+heuristic search for a set of line labels that maximized overall
+compression.
+<p>
+<hr>
+<p>
+The following is a detailed description of the quine program. Note
+that the lines of code quoted here have been re-formatted for
+legibility; in the program, they are completely bereft of whitespace.
+<p>
+As always when analyzing a quine, there are two possible incarnations
+of the program to consider. One is the program that is executing, the
+other is the program that is being output. From the latter point of
+view, the program comes in three sections. The first section creates a
+hybrid array, the second section initializes the array's elements, and
+the third section contains everything else. The first section consists
+of a single statement, and is output directly at the end of the
+initialization routine. The second section is output by reconstructing
+the initialization statements from the array values. The third section
+is output by decompressing the bytestream stored in the array.
+<p>
+Here are the first two sections of the program:
+<p>
+<pre>
+	    DO ;2 &lt;- #255
+	    DO ;2SUB#1 &lt;- #23948$#3181
+	    DO ;2SUB#2 &lt;- #2568$#53882
+	    DO ;2SUB#3 &lt;- #8776$#4650
+	    DO ;2SUB#4 &lt;- #1260$#40490
+	[ ... skipping 99 lines ... ]
+	    DO ;2SUB#104 &lt;- #46820$#8021
+	    DO ;2SUB#105 &lt;- #14955$#6781
+	    DO ;2SUB#106 &lt;- #3484$#38981
+	    DO ;2SUB#107 &lt;- #62208$#0
+</pre>
+<p>
+In order for the dictionary to be simple to store and consult, the
+quine uses byte values above 128 for dictionary symbols. Values below
+128 are automatically treated as ASCII character values. Because
+output values are bit-reversed, this translates into: even values
+represent ASCII characters, odd values represent dictionary entries.
+<p>
+The dictionary is stored in the first 63 elements of the hybrid array,
+with two entries per element. Since INTERCAL arrays don't have a zero
+element, only 126 dictionary entries are available. Entries for
+symbols 129 through 191 are stored in the top 16 bits of each array
+element, and entries for symbols 193 through 255 are stored in the
+bottom 16 bits. Each 16-bit value in turn contains two 8-bit symbol
+values, the left-hand symbol being in the top 8 bits.
+<p>
+The other 44 array elements comprise the bytestream that, when
+decompressed, recreates the program's third and final section.
+<p>
+Note, by the way, that none of the above lines begin with
+<code>PLEASE</code>. All of the quine's politesse is packed into the
+rest of the program.
+<p>
+The final element of <code>;2</code> is special in two ways. First and
+most visibly, it is the only entry that has all zero bits in the
+interleaved right half of its value. Second, it is the only entry that
+contains a zero byte. That is to say, when the 32-bit entries are
+separated into four sequential 8-bit values, this is the only entry
+that contains an octet equal to zero. These two different "zeroes" are
+each used as sentinels to indicate the end of the data. The former
+zero is used when outputting the second section, and the latter
+zero is used when outputting the third section.
+<p>
+The fact that <code>;2</code> is created with 255 elements when it
+only uses 107 is due to a minor optimization, which is explained
+below.
+<p>
+Having dispensed with sections one and two, it's time to examine
+section three. This is where the actual program is. To start, let's
+look at the subroutines. There are five main subroutines:
+<p>
+<code>(4)&nbsp;&nbsp;&nbsp;&nbsp;</code>
+Call <code>(1001)</code>.
+<br>
+<code>(24)&nbsp;&nbsp;&nbsp;</code>
+Print the (bit-reversed) character in <code>.2</code>.
+<br>
+<code>(1)&nbsp;&nbsp;&nbsp;&nbsp;</code>
+Print <code>.1</code> as a decimal number.
+<br>
+<code>(2)&nbsp;&nbsp;&nbsp;&nbsp;</code>
+Output the string represented by the compressed byte in <code>.2</code>.
+<br>
+<code>(14)&nbsp;&nbsp;&nbsp;</code>
+Call <code>(2)</code> and then call <code>(1)</code>.
+<p>
+Let us examine these before turning to the main program, starting with
+<code>(4)</code>.
+<p>
+<pre>
+(4)	    DO (1001) NEXT
+</pre>
+<p>
+This one isn't really a subroutine, but it should be explained up
+front. The standard technique of handling conditionals is to set
+<code>.5</code> to either <code>#1</code> or <code>#2</code> and then
+jump to a line which in turn jumps to <code>(1001)</code>. In this
+program, however, most conditionals are handled by setting
+<code>.5</code> to either <code>#2</code> or <code>#3</code>. (This is
+because it usually requires fewer characters to create a
+<code>#2</code> vs. <code>#3</code> value than the more traditional
+<code>#1</code> vs. <code>#2</code>.) This necessitates having an
+extra jump before reaching <code>(1001)</code>, which is what this
+statement accomplishes.
+<p>
+Additionally, <code>(4)</code> is used in lieu of a
+<code>RESUME</code> statement, typically by calling <code>(4)</code>
+with <code>.5</code> set to <code>#3</code>. The quine actually
+contains no <code>RESUME</code> statements. Instead, each subroutine
+is arranged to fall through to a <code>DO (4) NEXT</code> statement.
+In each case <code>.5</code> is known to have the desired value,
+usually leftover from a previous test.
+<p>
+<pre>
+(24)	    DO STASH .1
+	PLEASE .1 &lt;- .4
+	PLEASE .4 &lt;- .2
+	    DO (1010) NEXT
+	PLEASE RETRIEVE .1
+	    DO ,2SUB#1 &lt;- .3~#255
+	PLEASE READ OUT ,2
+	    DO (4) NEXT
+</pre>
+<p>
+<code>(24)</code> is a bare-bones character-output routine. It stores
+the previous character output in <code>.4</code> so that it can
+subtract the following character from it. (Thus, all output in the
+program must be done through this routine.) <code>.1</code> is
+frequently used in the program as a loop counter, so <code>(24)</code>
+<code>STASH</code>es <code>.1</code> before performing the
+subtraction. <code>,2</code> is created as an one-element tail array
+&mdash; and <code>.4</code> is set to <code>#0</code> &mdash; at the
+start of the program.
+<p>
+Note that <code>(24)</code> does not affect the value of
+<code>.5</code>, so as per the comments in the previous section, the
+program can only safely <code>DO (24) NEXT</code> when <code>.5</code>
+is already set to <code>#3</code>.
+<p>
+The next subroutine, <code>(1)</code>, is our "itoa" function. This is
+the central component to outputting the second section:
+<p>
+<pre>
+(1)	PLEASE .5 &lt;- '?"!1~.1'~#1"$#2'~#6
+	PLEASE .2 &lt;- #10
+	    DO (4) NEXT
+	    DO (1040) NEXT
+	PLEASE .5 &lt;- .1
+	PLEASE .1 &lt;- .3
+	    DO (1030) NEXT
+	    DO STASH .1
+	PLEASE .1 &lt;- .5
+	PLEASE .2 &lt;- .3
+	    DO (1010) NEXT
+	PLEASE RETRIEVE .1
+	    DO STASH .3
+	    DO (1) NEXT
+	PLEASE RETRIEVE .3
+	PLEASE .2 &lt;- .3$#3
+	PLEASE .2 &lt;- !2~#15'$!2~#240'
+	PLEASE .2 &lt;- !2~#15'$!2~#240'
+	    DO (24) NEXT
+	PLEASE RESUME #1
+</pre>
+<p>
+This is a recursive subroutine. On each recursion, one decimal digit
+is extracted from <code>.1</code> until it reaches zero. So, the first
+step of the routine is to test the value of <code>.1</code>. If it is
+zero, then <code>(1)</code> returns to where it was called. (Note that
+this means that a value of zero is incorrectly rendered as an empty
+string. But see below.)
+<p>
+If <code>.1</code> is non-zero, the subroutine first divides it by
+ten. It then takes the the resulting quotient and multiplies it by
+ten. By subtracting that product from the original number, the value
+of the lowest decimal digit is isolated. This value is stored in
+<code>.3</code> and <code>STASH</code>ed. Then the quotient is
+<code>RETRIEVE</code>d and <code>(1)</code> is called recursively. In
+this fashion the digits of the number are separated out and stored in
+a stack of <code>STASH</code>ed <code>.3</code> values, lowest to
+highest. When <code>.1</code> reaches zero and the recursion bottoms
+out, the individual digit values are <code>RETRIEVE</code>d from
+highest to lowest. The part of the subroutine after the recursion adds
+48 to the digits, bit-reverses the sum, and passes the resulting value
+to <code>(24)</code> to be output as an ASCII digit.
+<p>
+Note, by the way, that the code does not actually call
+<code>(24)</code> as shown above. Instead, the <code>(1)</code>
+subroutine is placed in the source file just above <code>(24)</code>
+in the source file, and execution is simply allowed to fall through.
+(In other words, the last two lines of the above subroutine are
+fictional, added here for the sake of clarity.)
+<p>
+There are a couple of side effects of this subroutine which should be
+mentioned here. The first one is that <code>.1</code> will always be
+equal to zero by the time this subroutine returns to its caller. The
+second side effect involves the value of the bottom four bits of
+<code>.2</code> when the subroutine returns to its original
+caller. Typically, these bits will always be equal to 12, as this is
+the top half of the bit-reversed value of the ASCII digit
+characters. However, in the lone case where <code>(1)</code> was
+called with <code>.1</code> equal to zero, <code>.2</code> will
+instead be equal to 10 (as you can see by inspecting the first two
+lines of the subroutine).
+<p>
+The next subroutine to examine is <code>(2)</code>, the decompression
+routine. This is the central component to outputting the third
+section. It is also recursive; in fact, it is doubly recursive:
+<p>
+<pre>
+(2)	PLEASE .5 &lt;- #1$!2~#1'
+	    DO (20) NEXT
+	    DO STASH :2
+	PLEASE .5 &lt;- #1$!2~#2'
+	    DO :2 &lt;- ;2SUB!2~#508'
+	    DO (21) NEXT
+	PLEASE .2 &lt;- :2~#65280
+	    DO (2) NEXT
+	PLEASE .2 &lt;- :2~#255
+	PLEASE RETRIEVE :2
+	    DO (2) NEXT
+(20)	    DO (4) NEXT
+	PLEASE .5 &lt;- #1$"!2~.2'~#1"
+	    DO (10) NEXT
+	    DO (24) NEXT
+	    DO (1001) NEXT
+(21)	    DO (4) NEXT
+	    DO :2 &lt;- :2~'#65280$#65280'
+	PLEASE .5 &lt;- #3
+(10)	    DO (4) NEXT
+	PLEASE GIVE UP
+</pre>
+<p>
+First, the low bit of <code>.2</code> is tested. If it is zero, then
+<code>.2</code> contains a valid bit-reversed ASCII character. In this
+case, the subroutine jumps to <code>(20)</code>, where the character
+is output, and the subroutine immediately returns to the caller.
+Otherwise, <code>.2</code>'s value is an index into our compression
+dictionary. The top six bits of the byte value in <code>.2</code> is
+used as the index into <code>;2</code>. The second-lowest bit is used
+to determine which half of <code>:2</code> to use. If this bit is
+zero, then the code at <code>(21)</code> shifts the value in
+<code>:2</code> down 16 bits. Then the subroutine calls itself
+recursively, once for each byte value stored in <code>:2</code>. In
+this way are the dictionary entries expanded to their full string
+values when output.
+<p>
+Now, there are two important aspects to the subroutine that the above
+paragraph skipped over. First, note that actually seven bits of
+<code>.2</code>, not six, are used for the index into
+<code>;2</code>. The compression dictionary only occupies entries 1
+through 63, however; the entries beyond 63 contain the compressed
+bytestream. Thus, this routine is also used to extract two bytes from
+the compressed string, and output their decompressed values.
+<p>
+Second, note that the code under <code>(20)</code> tests if
+<code>.2</code> is equal to zero before calling <code>(24)</code>.  If
+so, the subroutine is diverted to the line following
+<code>(10)</code>. So this means that the program can be made to end
+at any time by attempting to output a zero byte.
+<p>
+The final subroutine, <code>(14)</code>, is very simple:
+<p>
+<pre>
+(14)	    DO (2) NEXT
+	    DO (1) NEXT
+	PLEASE RESUME #1
+</pre>
+<p>
+The effect is to output the dictionary entry corresponding to the
+value in <code>.2</code>, followed by the decimal number stored in
+<code>.1</code>. (But note, once again, that the code does not
+actually call <code>(1)</code>. Rather the <code>(14)</code>
+subroutine is placed before <code>(1)</code> in the source file, and
+execution is allowed to just fall through.)
+<p>
+Having covered the subroutines, and the initialization of the hybrid
+array, let us now turn to the main body of the program.
+<p>
+<pre>
+	PLEASE .1 &lt;- #255
+	PLEASE .2 &lt;- .1
+	    DO ,2 &lt;- #1
+	PLEASE .4 &lt;- #0
+	    DO (14) NEXT
+</pre>
+<p>
+The above lines complete the initialization section. The
+<code>,2</code> array is created and <code>.4</code> is set to zero,
+as required by the <code>(24)</code> subroutine. Both <code>.1</code>
+and <code>.2</code> are set to 255 just before <code>(14)</code> is
+invoked. The <code>(14)</code> routine, remember, simply calls
+<code>(2)</code> and <code>(1)</code> sequentially. <code>(2)</code>
+expands the value 255 in <code>.2</code> into the output string
+"<tt>DO;2&lt;-#</tt>", and <code>(1)</code> outputs the value in
+<code>.1</code> as the string "<tt>255</tt>". The total effect is that
+the first line of the program is output. This completes the printing
+of the first section.
+<p>
+<pre>
+	PLEASE COME FROM (3)
+	    DO (1020) NEXT
+	    DO STASH .1
+	PLEASE .2 &lt;- #155
+	    DO :2 &lt;- ;2SUB.1
+	    DO (14) NEXT
+	PLEASE .2 &lt;- #11
+	PLEASE .1 &lt;- :2~'#65535$#0'
+	    DO (14) NEXT
+	PLEASE .2 &lt;- #15
+	PLEASE .1 &lt;- :2~'#0$#65535'
+	    DO (14) NEXT
+	PLEASE RETRIEVE .1
+	PLEASE .5 &lt;- .2~#6
+(3)	    DO (4) NEXT
+</pre>
+<p>
+This loop outputs section two of source code, i.e. the statements that
+initialize <code>;2</code>. <code>.1</code> is the loop counter,
+initialally set to zero by the previous call to <code>(2)</code>, and
+incremented at the start of each iteration by <code>(1020)</code>. The
+body of the loop calls <code>(14)</code> three separate times. The
+first time, <code>.2</code> is set to 155. <code>(2)</code> expands
+155 to the string "<tt>DO;2SUB#</tt>", and <code>(1)</code> prints the
+value of the loop counter. The second time, <code>.2</code> is set to
+11, which expands to the string "<tt>&lt;-#</tt>", and <code>.1</code>
+is set to the left-interleaved bits in <code>:2</code> (which contains
+the current element of <code>;2</code>). For the third call to
+<code>(14)</code>, <code>.2</code> is set to 15, which expands to the
+string "<tt>$#</tt>", and <code>.1</code> gets the right-interleaved
+bits of <code>:2</code>. In this fashion, a single line of source code
+is reconstructed and output.
+<p>
+Finally, at the bottom of the loop body, two bits from <code>.2</code>
+are extracted and stored in <code>.5</code> before calling
+<code>(4)</code>. Recall that <code>(1)</code> leaves a value of 12 in
+the bottom four bits of <code>.2</code>, and therefore <code>.5</code>
+will get set to 2, thus causing <code>(4)</code> to do nothing.
+Except, that is, in the case when <code>(1)</code> is called with
+<code>.1</code> set to zero &mdash; in this case case, <code>.2</code>
+will have a value of 10 in its bottom bits, which will put a value of 1
+in <code>.5</code>. The upshot of this is that the loop will exit when
+it encounters an element of <code>;2</code> whose right-interleaved
+half is equal to zero. Conveniently, this is true only for final
+element of <code>;2</code>.
+<p>
+At this point the program has completed the output of section two.
+The third and final section to be output is what is encoded in the
+elements of <code>;2</code>, in Re-Pair compressed form. All that
+remains is to decompress and output this data. (Note, by the way, that
+the first character encoded in this data is a "<tt>0</tt>" character.
+This is because the final "<tt>0</tt>" character of section two hasn't
+been printed out yet, because as noted above the <code>(2)</code>
+routine renders a zero value as an empty string.)
+<p>
+<pre>
+(4)	    DO (1001) NEXT
+	PLEASE .1 &lt;- #255
+	PLEASE COME FROM (34)
+	    DO (1020) NEXT
+	    DO (1020) NEXT
+	PLEASE .2 &lt;- .1
+(34)	    DO (2) NEXT
+</pre>
+<p>
+In this loop, <code>.1</code> starts out equal to 255, which
+corresponds to the final entry in the compression dictionary. On each
+iteration <code>.1</code> is increased by two; on the first iteration
+this leaves <code>.1</code> equal to 257, referring to the first two
+bytes of the compression string. This value is then transferred to
+<code>.2</code> and <code>(2)</code> is called. This causes two bytes
+from the bytestream stored in <code>;2</code> to be extracted,
+decompressed, and output. The reason for increasing by two on each
+iteration is that the value passed to <code>(2)</code> must always be
+odd; even values correspond to literal ASCII character values.
+<p>
+This loop continues until the zero bytes at the end of the data are
+reached, which, as noted above, cause <code>(2)</code> to end the
+program. The quine has completed the printing of the third section,
+and thus the entire quine.
+<p>
+<hr>
+<p>
+For the unadulterated awfulness of it all, here is what the quine
+looks like in its entirety. Line breaks have been inserted, but the
+real program contains no whitespace of any kind. (Be aware that these
+line breaks will prevent this code from successfully compiling. If you
+want a working copy of the quine, please use the link at the top of
+this page.) Note that the part of the program that was so meticulously
+discussed above occupies roughly a third of the source code. The long
+initial sequence of assignment statements constitute the majority of
+the program.
+<p>
+<pre>
+DO;2&lt;-#255DO;2SUB#1&lt;-#23948$#3181DO;2SUB#2&lt;-#2568$#53882DO;2SUB#3&lt;-#8776$#4650D
+O;2SUB#4&lt;-#1260$#40490DO;2SUB#5&lt;-#27757$#26128DO;2SUB#6&lt;-#54082$#1258DO;2SUB#7&lt;
+-#32099$#811DO;2SUB#8&lt;-#50248$#40237DO;2SUB#9&lt;-#552$#55962DO;2SUB#10&lt;-#56582$#8
+50DO;2SUB#11&lt;-#29560$#2282DO;2SUB#12&lt;-#3805$#21001DO;2SUB#13&lt;-#37509$#7485DO;2S
+UB#14&lt;-#9070$#6039DO;2SUB#15&lt;-#2723$#25131DO;2SUB#16&lt;-#57608$#6137DO;2SUB#17&lt;-#
+418$#15338DO;2SUB#18&lt;-#41351$#6397DO;2SUB#19&lt;-#2955$#14435DO;2SUB#20&lt;-#97$#1391
+3DO;2SUB#21&lt;-#551$#23120DO;2SUB#22&lt;-#19065$#58047DO;2SUB#23&lt;-#60707$#12331DO;2S
+UB#24&lt;-#8718$#59963DO;2SUB#25&lt;-#2727$#27177DO;2SUB#26&lt;-#32830$#14335DO;2SUB#27&lt;
+-#21192$#6813DO;2SUB#28&lt;-#18998$#59933DO;2SUB#29&lt;-#18386$#40665DO;2SUB#30&lt;-#104
+00$#42282DO;2SUB#31&lt;-#49759$#63089DO;2SUB#32&lt;-#51502$#38329DO;2SUB#33&lt;-#2568$#2
+1154DO;2SUB#34&lt;-#48931$#32803DO;2SUB#35&lt;-#52561$#12495DO;2SUB#36&lt;-#60975$#8931D
+O;2SUB#37&lt;-#8953$#14941DO;2SUB#38&lt;-#11269$#62899DO;2SUB#39&lt;-#17007$#27305DO;2SU
+B#40&lt;-#2883$#40763DO;2SUB#41&lt;-#923$#38920DO;2SUB#42&lt;-#13762$#1181DO;2SUB#43&lt;-#2
+6919$#13475DO;2SUB#44&lt;-#32110$#32805DO;2SUB#45&lt;-#28197$#41531DO;2SUB#46&lt;-#11397
+$#10933DO;2SUB#47&lt;-#18954$#64311DO;2SUB#48&lt;-#14979$#4735DO;2SUB#49&lt;-#56758$#503
+31DO;2SUB#50&lt;-#26785$#9765DO;2SUB#51&lt;-#51412$#43774DO;2SUB#52&lt;-#36740$#9147DO;2
+SUB#53&lt;-#51101$#41909DO;2SUB#54&lt;-#43553$#13603DO;2SUB#55&lt;-#18585$#22919DO;2SUB#
+56&lt;-#83$#63368DO;2SUB#57&lt;-#16557$#22417DO;2SUB#58&lt;-#8586$#29786DO;2SUB#59&lt;-#165
+98$#38839DO;2SUB#60&lt;-#849$#55195DO;2SUB#61&lt;-#49734$#31353DO;2SUB#62&lt;-#708$#2729
+9DO;2SUB#63&lt;-#41475$#56753DO;2SUB#64&lt;-#10232$#12153DO;2SUB#65&lt;-#29478$#4389DO;2
+SUB#66&lt;-#51348$#5783DO;2SUB#67&lt;-#6226$#38397DO;2SUB#68&lt;-#6779$#53847DO;2SUB#69&lt;
+-#58337$#9053DO;2SUB#70&lt;-#59323$#9495DO;2SUB#71&lt;-#5868$#22011DO;2SUB#72&lt;-#20324
+$#58283DO;2SUB#73&lt;-#7818$#15727DO;2SUB#74&lt;-#23283$#4831DO;2SUB#75&lt;-#38054$#6651
+DO;2SUB#76&lt;-#50574$#45010DO;2SUB#77&lt;-#8951$#9943DO;2SUB#78&lt;-#34349$#7969DO;2SUB
+#79&lt;-#34468$#7641DO;2SUB#80&lt;-#57018$#7647DO;2SUB#81&lt;-#18727$#9134DO;2SUB#82&lt;-#1
+3091$#22815DO;2SUB#83&lt;-#17162$#14185DO;2SUB#84&lt;-#8821$#12919DO;2SUB#85&lt;-#51865$
+#6553DO;2SUB#86&lt;-#62719$#7099DO;2SUB#87&lt;-#36046$#27566DO;2SUB#88&lt;-#39538$#13037
+DO;2SUB#89&lt;-#13096$#37807DO;2SUB#90&lt;-#24876$#43309DO;2SUB#91&lt;-#9788$#13051DO;2S
+UB#92&lt;-#9794$#55763DO;2SUB#93&lt;-#41918$#44978DO;2SUB#94&lt;-#19860$#5917DO;2SUB#95&lt;
+-#9124$#7133DO;2SUB#96&lt;-#17315$#5037DO;2SUB#97&lt;-#16043$#56731DO;2SUB#98&lt;-#26371
+$#8565DO;2SUB#99&lt;-#57178$#30514DO;2SUB#100&lt;-#1142$#32061DO;2SUB#101&lt;-#43279$#12
+336DO;2SUB#102&lt;-#31466$#2002DO;2SUB#103&lt;-#5606$#14719DO;2SUB#104&lt;-#46820$#8021D
+O;2SUB#105&lt;-#14955$#6781DO;2SUB#106&lt;-#3484$#38981DO;2SUB#107&lt;-#62208$#0PLEASE.1
+&lt;-#255PLEASE.2&lt;-.1DO,2&lt;-#1PLEASE.4&lt;-#0DO(14)NEXTPLEASECOMEFROM(3)DO(1020)NEXTDO
+STASH.1PLEASE.2&lt;-#155DO:2&lt;-;2SUB.1DO(14)NEXTPLEASE.2&lt;-#11PLEASE.1&lt;-:2~'#65535$#
+0'DO(14)NEXTPLEASE.2&lt;-#15PLEASE.1&lt;-:2~'#0$#65535'DO(14)NEXTPLEASERETRIEVE.1PLEA
+SE.5&lt;-.2~#6(3)DO(4)NEXT(2)PLEASE.5&lt;-#1$!2~#1'DO(20)NEXTDOSTASH:2PLEASE.5&lt;-#1$!2
+~#2'DO:2&lt;-;2SUB!2~#508'DO(21)NEXTPLEASE.2&lt;-:2~#65280DO(2)NEXTPLEASE.2&lt;-:2~#255P
+LEASERETRIEVE:2DO(2)NEXT(20)DO(4)NEXTPLEASE.5&lt;-#1$"!2~.2'~#1"DO(10)NEXTDO(24)NE
+XT(4)DO(1001)NEXTPLEASE.1&lt;-#255PLEASECOMEFROM(34)DO(1020)NEXTDO(1020)NEXTPLEASE
+.2&lt;-.1(34)DO(2)NEXT(14)DO(2)NEXT(1)PLEASE.5&lt;-'?"!1~.1'~#1"$#2'~#6PLEASE.2&lt;-#10D
+O(4)NEXTDO(1040)NEXTPLEASE.5&lt;-.1PLEASE.1&lt;-.3DO(1030)NEXTDOSTASH.1PLEASE.1&lt;-.5PL
+EASE.2&lt;-.3DO(1010)NEXTPLEASERETRIEVE.1DOSTASH.3DO(1)NEXTPLEASERETRIEVE.3PLEASE.
+2&lt;-.3$#3PLEASE.2&lt;-!2~#15'$!2~#240'PLEASE.2&lt;-!2~#15'$!2~#240'(24)DOSTASH.1PLEASE
+.1&lt;-.4PLEASE.4&lt;-.2DO(1010)NEXTPLEASERETRIEVE.1DO,2SUB#1&lt;-.3~#255PLEASEREADOUT,2
+(21)DO(4)NEXTDO:2&lt;-:2~'#65280$#65280'PLEASE.5&lt;-#3(10)DO(4)NEXTPLEASEGIVEUP</pre>
+<p>
+<br>
+<small><a href="index.html">
+INTERCAL</a></small>
+<br>
+<small><a href="../index.html">Brian
+Raiter</a></small>
+<br>
+<small><a href="http://www.muppetlabs.com/">Muppetlabs</a></small>
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>The Return 42 Collection</title>
+<style type="text/css">
+body {
+  background-color: #FFFFFC;
+  text: #101000;
+  font-size: 100%;
+  max-width: 64em;
+  margin: 1em;
+}
+</style>
+</head>
+<body>
+<h1>The Return 42 Collection</h1>
+<p>
+These programs all do the same thing, which is exit with a value of
+42. In other words, the absolute minimum while still being able to
+demonstrate that they did, in fact, do something. Several of these
+programs are described in detail in other essays; they are included
+here for the sake of completeness.
+</p>
+<p>
+If you wish to verify for yourself that these programs do, in fact,
+work, you can download the assembler source files and build them
+with <a href="http://www.nasm.us">nasm</a>. Each program includes
+explicit build instructions at the top of the source file.
+</p>
+<p>
+<a href="tiny-i386.asm.txt">tiny-i386.asm source</a>
+<br/>
+<a href="tiny-i386">tiny-i386 binary</a>
+<br/>
+45 bytes
+<p>
+This is the final version of the program from
+<a href="teensy.html">the original essay</a>. This
+is the smallest a Linux ELF executable can be.
+</p>
+<p>
+<a href="tiny-elf32.asm.txt">tiny-elf32.asm source</a>
+<br/>
+<a href="tiny-elf32">tiny-elf32 binary</a>
+<br/>
+76 bytes
+<p>
+This is the final version of the program from
+<a href="revisit.html">the second essay</a>. This is the smallest a
+Linux ELF executable can be without violating the requirements
+described in the ELF specification.
+</p>
+<p>
+<a href="tiny-libc.asm.txt">tiny-libc.asm source</a>
+<br/>
+<a href="tiny-libc">tiny-libc binary</a>
+<br/>
+297 bytes
+<p>
+This is the final version of the program from
+<a href="somewhat.html">the third essay</a>. This is the smallest
+Linux ELF executable I have been able to create while being fully
+standards-compliant and linking with libc. I do not know if a smaller
+executable is possible.
+</p>
+<p>
+<a href="tiny-x64.asm.txt">tiny-x64.asm source</a>
+<br/>
+<a href="tiny-x64">tiny-x64 binary</a>
+<br/>
+80 bytes
+<p>
+Occasionally people wonder if Linux's handling of 64-bit ELF files
+allows for a similar range of devious compression. In general, 64-bit
+ELF files are both larger and less forgiving of invalid values than
+their 32-bit counterparts. But that doesn't mean that nothing can be
+done. This 80-byte binary is a minor variation of one that was created
+by Oleg Finkelshteyn, making use of an excellent but narrow window for
+overlap. (In contrast to the 32-bit ELF, I do <i>not</i> know if a
+smaller 64-bit ELF is possible. We know that a 64-bit ELF binary
+cannot be smaller than 64 bytes, so that leaves a 16-byte range in
+which a smaller ELF file might exist. I currently do not see a way to
+make a working file less than 80 bytes, but that doesn't mean it can't
+be done.)
+</p>
+<p>
+<a href="tiny-elf64.asm.txt">tiny-elf64.asm source</a>
+<br/>
+<a href="tiny-elf64">tiny-elf64 binary</a>
+<br/>
+120 bytes
+<p>
+For the sake of completeness, here's a 64-bit executable that adheres
+to all requirements of the ELF specification. Frustratingly, I have
+been entirely unable to overlap the program segment header table at
+all with the ELF header, so the only creative space-saving in this
+program comes from storing the program instructions in the p_vaddr and
+p_paddr fields.
+</p>
+<p>
+<a href="tiny-aout.asm.txt">tiny-aout.asm source</a>
+<br/>
+<a href="tiny-aout">tiny-aout binary</a>
+<br/>
+35 bytes
+<p>
+ELF is hardly the only executable file format that Linux kernels can
+support. Though it's uncommon now, at one time the native Linux
+executable format was a.out files. The a.out format is very simple,
+having only limited support for dynamic linking. The a.out header is
+only 32 bytes, so it can easily be smaller than the smallest ELF
+executable. (Note: the last time I tested this binary &mdash;
+admittedly many years ago &mdash; the kernel would complain about
+a.out binaries with a size that was not evenly divisible by 4K, but it
+would still allow them to run.)
+</p>
+<hr/>
+<br/>
+<small><a href="index.html"
+>Tiny</a></small>
+<br/>
+<small><a href="../index.html"
+>Software</a></small>
+<br/>
+<small><a href="../../index.html">Brian Raiter</a></small>
+</body>
+</html>

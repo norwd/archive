@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Useful Teensy Programs</title>
+<style type="text/css">
+body {
+  background-color: #FFFFFC;
+  text: #101000;
+  font-size: 100%;
+  max-width: 64em;
+  margin: 1em;
+}
+</style>
+</head>
+<body>
+<h1>Useful Teensy Programs</h1>
+<p>
+The programs listed here are provided as exhibitions of just how
+compressed a Linux ELF executable can be and still accomplish
+something useful. Because they are potentially useful, they all adhere
+to the ELF specification (though most of them still bypass libc in
+favor of making direct system calls).
+</p>
+<p>
+In order to use one of these programs, you can download the assembler
+source and build it with <a href="http://www.nasm.us">nasm</a>. If you
+don't want to install nasm, and you have reason to believe that I can
+be trusted, you can download a pre-built binary and run it directly.
+(Note that you will need to use chmod +x to mark a downloaded binary
+as executable.)
+</p>
+<p>
+<a href="cls.asm.txt">cls.asm source</a>
+<br/>
+<a href="cls">cls binary</a>
+<br/>
+98 bytes
+</p>
+<p>
+Admittedly, this program is trivial, no more than a variant on
+hello-world. Yet the fact is that I use this program almost daily. It
+just clears the terminal screen, in the process also clearing any odd
+persistent state such as reverse video. It's both shorter to type than
+"clear" and faster than "reset". (For some reason the standard reset
+utility takes a full second to complete.) Admittedly this program
+assumes an ANSI-compatible terminal without testing for same, or even
+if stdout is connected to a terminal, but I have yet to find such
+shortcuts to be problematic. The name "cls", short for "clear screen",
+is deeply embedded in my muscle memory, thanks to the TRS-80 and MS-DOS
+both using it, and I find myself typing it habitually.
+</p>
+<p>
+<a href="hexdump.asm.txt">hexdump.asm source</a>
+<br/>
+<a href="hexdump">hexdump binary</a>
+<br/>
+202 bytes
+</p>
+<p>
+This is your classic hexdump program. I wrote it one day in a fit of
+pique, after trying (and failing) to convince the standard Linux
+programs to output bytes in the formatting style that I've been
+accustomed to since before reaching my majority. (I've since stopped
+using this program, as the default output of xxd(1) is nearly
+identical.) My original version simply read from standard input, but I
+quickly found this irritating enough that I sacrificed a few more
+bytes in order to allow it to accept a filename on the command line.
+</p>
+<p>
+<a href="base64.asm.txt">base64.asm source</a>
+<br/>
+<a href="base64">base64 binary</a>
+<br/>
+256 bytes
+</p>
+<p>
+This is a simple base64 decoder utility. Like hexdump, it can either
+accept a filename on the command line, or work on standard input.
+Since sometimes very large files are encoded in base64, I allowed the
+program to be slightly larger than strictly necessary in order to
+optimize for speed. This version is actually noticeably faster than
+the utility included in GNU coreutils for 32-bit Linux.
+</p>
+<p>
+<a href="ls.asm.txt">ls.asm source</a>
+<br/>
+<a href="ls">ls binary</a>
+<br/>
+1017 bytes
+</p>
+<p>
+This utility was my attempt to tackle an important yet complex tool.
+ls is one of those programs that you really can't do without, in part
+because its functionality has almost no overlap with other standard
+tools, but also because it's tailored to provide multiple pieces of
+information at a glance. My version is missing a few standard
+features, such as sorting, but it does recognize many commonly-used
+command-line options, such as <tt>-l</tt>, <tt>-a</tt>, <tt>-F</tt>,
+and <tt>-R</tt>. The "long" output format only displays numeric user
+IDs, timestamps are displayed as ages instead of actual times, and the
+columnar output is not particularly clever. But beyond these things,
+it conforms pretty closely to the standard ls program we all know and
+love.
+</p>
+<p>
+<a href="factor.asm.txt">factor.asm source</a>
+<br/>
+<a href="factor">factor binary</a>
+<br/>
+1020 bytes
+</p>
+<p>
+This is an implementation of the standard Unix utility. It displays
+the prime factors of the integers provided on the command line, or on
+standard input if no arguments are given. Instead of simply trying to
+achieve the smallest possible size, I decided to shoot for real
+portability with this program, for a change. It not only conforms to
+the requirements of the ELF specification, it also avoids making
+direct system calls and instead dynamically links with libc. It should
+continue to work with any future version of Linux, as long as new
+versions of the libc ABI and the ELF specification remain
+backwards-compatible. It also includes online help, version
+information, and error messages, and therefore arguably stands as a
+completely functional replacement for the standard utility in GNU
+coreutils. Because factoring huge prime numbers can sometimes run for
+a long time, I attempted to optimize for speed and size both. This
+program makes significant use of the FPU in order to increase
+parallelization in the inner loop. (Back when I first wrote it, it was
+significantly faster than the standard GNU program. Since then, the
+coreutils program has been updated with some advanced mathematics, and
+it's now the faster program.)
+</p>
+<!--
+<p>
+<a href="snake.asm.txt">snake.asm source</a>
+<br/>
+<a href="snake">snake binary</a>
+<br/>
+1496 bytes
+</p>
+<p>
+By now you may be thinking: "These program are technically useful, I
+suppose, but isn't there anything <em>interesting</em> in here?" Well,
+how about a game? This is an implementation of Snake, a classic
+computer game &mdash; in fact it's so old that you can hardly find it
+anymore in its original form. I originally wrote this as an Easter Egg
+for a contract involving text-terminal interfaces. Now it's available
+to all as a tiny program. In case you've never played it, the object
+of the game is to guide your snake around the playing field, eating
+the food blocks that appear at random locations, and dodging the walls
+and your own tail. As you eat the blocks, your score increases but so
+does your length. The program is hard-coded to work on a Linux console
+running in Latin1 mode, and thus is unlikely to behave well on modern
+terminal programs. However, its small size makes it the perfect
+addition to a rescue disk! After all, when you've just lost all your
+data, what's better than a game to distract you from your troubles?
+(By the way, my personal all-time high score is 478. Can you beat
+that?)
+-->
+<p>
+<a href="puzzle.asm.txt">puzzle.asm source</a>
+<br/>
+<a href="puzzle">puzzle binary</a>
+<br/>
+995 bytes
+</p>
+<p>
+The final program in this list is a game. And not just a game, but one
+that runs under X. You've probably seen the 15 sliding-tile puzzle at
+some point in your life. Some of you may even remember the program
+that came with the original 1984 Macintosh operating system. But are
+you aware that, in order to justify including the puzzle in the
+limited memory and disk space available, the author squeezed its size
+down to under 600 bytes?
+(See <a href="http://www.folklore.org/StoryView.py?story=Puzzle.txt"
+>here</a> for the details.) Alas, while I would have loved to be able
+to present a Linux binary that matched that size, the complexities of
+interfacing with an X server and mimicking the details of the original
+put it well over that target. I'm still working to reduce it further,
+but for now here's my hefty rendition. It uses the same graphics as
+the original, which unfortunately means that the window is only
+slightly larger that its own title bar on a modern display. But it is
+a faithful recreation of the original Macintosh program that runs
+under X Windows. And despite all of my hedging about its bloat, I'd
+wager that it's the only X program you've ever seen under 1k.
+<p>
+(Usage note: This program does not go through normal channels to find
+the X server; it assumes that your X server is running locally and
+that you are the only (or at least the first) user. If the program
+nevertheless fails immediately when run, you may need to give yourself
+permission to start X programs directly. This can be done by
+running <tt>xhost si:localuser:$USER</tt>. Afterwards, you can repeat
+the command with a prepended minus sign to remove these
+permissions: <tt>xhost -si:localuser:$USER</tt>.)
+</p>
+<hr/>
+<br/>
+<small><a href="index.html"
+>Tiny</a></small>
+<br/>
+<small><a href="../index.html"
+>Software</a></small>
+<br/>
+<small><a href="../../index.html">Brian Raiter</a></small>
+</body>
+</html>
+

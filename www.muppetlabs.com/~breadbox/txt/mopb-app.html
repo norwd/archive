@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<title>My Own Private Binary: Appendix: Making the Flat Binary Format Usable</title>
+<style type="text/css">
+body {
+  font-size: 100%;
+  margin: 1em;
+  max-width: 68em;
+}
+h1, h2 {
+  text-align: center;
+}
+h3 {
+  padding-top: 1em;
+}
+img {
+  margin: 0.5em 0 0 5em;
+}
+code {
+  color: #223;
+  white-space: pre;
+}
+code .dim {
+  color: #888;
+}
+.centered {
+  margin: 0 auto;
+  text-align: center;
+}
+.illo {
+  float: right;
+  margin: 0.2em 0 0.2em 3em;
+}
+.cartoon {
+  align: right;
+  font-size: 85%;
+  font-style: italic;
+  text-align: right;
+}
+.cartoon img {
+  border: 1px solid black;
+  /*padding-bottom: 0.5em;*/
+}
+.note {
+  font-size: 85%;
+  margin: 0 0 0.3em 20em;
+  max-width: 55em;
+}
+.source {
+  margin: 0 6em 1em 4em;
+  border-collapse: collapse;
+}
+.source .ul1 {
+  width: 1em;
+  height: 0.5em;
+}
+.source .title {
+  font-family: monospace;
+  padding: 0 0.3em;
+  vertical-align: center;
+  width: 1%;
+}
+.source .ul2 {
+  border-top: 1px solid gray;
+  border-left: 1px solid gray;
+  height: 0.5em;
+}
+.source .ur {
+  border-top: 1px solid gray;
+  border-right: 1px solid gray;
+}
+.source .main {
+  border-left: 1px solid gray;
+  border-right: 1px solid gray;
+  border-bottom: 1px solid gray;
+  padding: 0 2em;
+}
+.sourcebreak {
+  margin: 0 0 0 4em;
+  border-collapse: collapse;
+}
+.sourcebreak tr td {
+  vertical-align: top;
+  padding: 0.5em 0;
+}
+.sourcebreak tr td:first-child {
+  padding-right: 1em;
+}
+.layout {
+  margin: 0 auto;
+  text-align: center;
+  border-collapse: collapse;
+}
+.layout tr td {
+  border: 1px solid black;
+}
+.layout .lfade {
+  border-right: 0;
+}
+.layout .faded {
+  border-style: dashed;
+  border-width: 1px 0;
+}
+.layout .rfade {
+  border-left: 0;
+}
+.term {
+  background-color: #000;
+  color: #AAA;
+  font-family: monospace;
+  font-size: 100%;
+  margin-left: 1em;
+  padding: 0.5em;
+  white-space: pre;
+  display: table;
+  min-width: 72em;
+}
+.term b {
+  color: #EEE;
+}
+.term .i {
+  background-color: #AAA;
+  color: #000;
+} 
+</style>
+</head>
+<body>
+<h1>My Own Private Binary: Appendix</h1>
+
+<h2>Making the Flat Binary Format Usable</h2>
+
+<hr />
+
+<p>Okay. At this point, we have a working kernel module that establishes
+a new, metadata-free binary format for Linux. But without the tools
+and libraries that we normally have at our disposal when writing
+programs, trying to use this format is an utter pain. We're forced to
+do everything from scratch, in bare assembly. How can we improve this
+situation?</p>
+
+<p>To be specific, there are two problems here:</p>
+
+<ol>
+<li>We can't create executables from regular object files, which
+prevents us from using compiled languages like C.</li>
+<li>We can't link with <code>libc</code>, so none of our familiar system functions
+are accessible.</li>
+</ol>
+
+<p>In theory these problems are orthogonal to each other, but in practice
+they become somewhat intertwined. But we need to start somewhere, so
+let's begin with the first one.</p>
+
+<h3>Creating Binaries</h3>
+
+<p>The process of transforming an object file into an executable is
+usually done by a linker, such as <code>ld(1)</code>. Now in this case "linker"
+is something of a misnomer, since we're not even trying to link
+anything. We just want to generate binary files that work with our
+kernel module. If we could get that from a standard object file, then
+at a stroke we would be able to use compilers again. The irony is that
+a binary image is present inside of an object file &mdash; if only we could
+remove all of the guff surrounding it.</p>
+
+<p>And hey, we can do exactly that, thanks to <code>objcopy(1)</code>. This is a
+utility program that few programmers ever need, but it's a nice little
+program that's part of the standard GNU build tools. Its purpose is to
+translate object files across different formats.</p>
+
+<p>Are you familiar with the GNU BFD library? ("BFD" doesn't stand for
+what you're probably thinking; it's short for "binary file
+descriptor".) <code>libbfd</code> is a foundational hunk of code used in the GNU
+toolchain. This library provides details about all the various binary
+file formats &mdash; object files and executables alike. All of the GNU
+build tools depend on <code>libbfd</code> for reading and writing these file
+types, allowing them all to support binary file formats across a
+variety of platforms.</p>
+
+<p><code>objcopy</code> provides a simple command-line interface to a major piece of
+functionality provided by <code>libbfd</code>. It allows you to pull apart an
+object file, and then stuff those contents back into another object
+file using a different format. And as it happens, <code>objcopy</code> provides a
+null format called "binary" &mdash; a blank-slate format with no intrinsic
+associated metadata. So, in theory, we should be able to ask <code>objcopy</code>
+to extract the code section (which, according to tradition, is named
+<code>.text</code>) from an ELF object file, and place it in a "binary" object
+file, and that should give us a valid executable file that our kernel
+module will load and run.</p>
+
+<p>Before we can properly test this idea with an object file generated by
+<code>gcc(1)</code>, though, we'd need to have the C code actually, you know, do
+something. (If nothing else, it would need to exit safely.) Which
+brings us face-to-face with the second problem. Set let's set
+<code>objcopy</code> aside for a moment, and consider our lack of system library.</p>
+
+<h3>Utility Functions</h3>
+
+<p>It's rough for a C programmer to suddenly be denied access to the
+standard functions. However, it is true that a number of the things
+we're missing the most are provided by system calls, with the standard
+library functions being little more than wrappers. So let's consider
+those functions first.</p>
+
+<p>We'll start with the <code>exit</code> system call, since it's quite simple and
+used by nearly every program. We want to wrap a C function around it.
+While we could use assembly language to write a function that can be
+called from C, the number of instructions we need is small enough that
+it makes more sense to use <code>gcc</code>'s inline assembly feature instead:</p>
+
+<p><table class="source"><tr><td class="ul1"><td class="title" rowspan="2"><i>tiny.c</i><td><tr><td class="ul2"><td class="ur"><tr><td class="main" colspan="3"><pre><code>#define exit(exitcode)  asm volatile ("syscall" : : "a" (60), "D" (exitcode))
+</code></pre></table></p>
+
+<p>The inline assembly feature of <code>gcc</code> is notorious for being
+complicated, but for our purposes it's absolutely worth it to
+understand what it can do. In this example, we have on the left a
+string that contains a single assembly-language instruction. But the
+section on the right tells the compiler what you want the registers to
+contain before it runs. In this case, we have a list of two registers,
+with <code>"a"</code> indicating the register <code>rax</code> and <code>"D"</code> referring to <code>rdi</code>.
+(There are varying levels of specificity available &mdash; for example,
+<code>"r"</code> requests any general-purpose register, while <code>"U"</code> requests a
+register that doesn't need to be preserved across function calls.) The
+compiler will follow these requests and add instructions to initialize
+<code>rax</code> and <code>rdi</code> with the given values right before the <code>syscall</code>
+instruction.</p>
+
+<p>We could have included instructions in our string to initialize <code>rax</code>
+and <code>rdi</code> explicitly. But doing it this way allows the compiler, and
+in particular the optimizer, to better merge our assembly with the
+surrounding code. So, for example, knowing that the exit status has to
+be stored in <code>rdi</code> may influence the compiler to use <code>rdi</code> to store it
+there to begin with, thus allowing it to optimize away a <code>mov</code>
+instruction. (Of course, once you invite the optimizer to your party,
+you have to dance to its tune. This is one reason that the inline
+assembly statement is marked as <code>volatile</code> &mdash; since our inline
+assembly has no output values, the optimizer might incorrectly deduce
+that our entire statement has no effect, and remove it entirely. The
+<code>volatile</code> qualifier warns the compiler that the inline assembly has
+side effects, and thus its usefulness cannot be judged on its outputs
+alone.)</p>
+
+<h3>Linking Without Linkers</h3>
+
+<p>So, armed with this macro, let's return to our proposed <code>objcopy</code>
+experiment. We'll make a C function that requires no assistance from
+<code>libc</code>, or indeed any external entity:</p>
+
+<p><table class="source"><tr><td class="ul1"><td class="title" rowspan="2"><i>tiny.c</i><td><tr><td class="ul2"><td class="ur"><tr><td class="main" colspan="3"><pre><code>#define exit(exitcode)  asm volatile ("syscall" : : "a" (60), "D" (exitcode))
+
+void foo(void)
+{
+    exit(42);
+}
+</code></pre></table></p>
+
+<p>The name of the function here isn't important, since we won't actually
+be calling it as a function &mdash; it'll just run when the file is
+executed. (It might have been more intuitive to call it <code>main()</code>, but
+compilers give that name special treatment.) We'll compile it, and
+then use <code>objcopy</code> to extract the object file's <code>.text</code> section.</p>
+
+<p><div class="note">Note that the file sizes may not be the same on
+your machine as on mine, depending on what compiler (and which
+version) you use. The differences shouldn't be more than a few bytes
+in either direction, however.</div>
+<div class="term">$ <b>gcc -Wall -c tiny.c</b><br/>$ <b>objcopy -O binary -j .text tiny.o tiny.com</b><br/>$ <b>wc -c tiny.com</b><br/>     21 tiny.com</div></p>
+
+<p>While 21 bytes is quite a bit larger than our own 12-byte and 7-byte
+creations, it's not bad for unoptimized compiler output. And it
+suggests that <code>objcopy</code> did extract precisely what we wanted it to.
+And when we test it:</p>
+
+<p><div class="term">$ <b>chmod +x tiny.com</b><br/>$ <b>./tiny.com</b><br/>$ <b>echo $?</b><br/>42</div></p>
+
+<p>We can see that we really do have a working binary, created using
+standard build tools. Let's try it again, but this time inviting the
+optimizer to get involved.</p>
+
+<p><div class="note">The <code>-Os</code> option tells the compiler to optimize for
+size instead of performance.</div>
+<div class="term">$ <b>gcc -Wall -Os -c tiny.c</b><br/>$ <b>objcopy -O binary -j .text tiny.o tiny.com</b><br/>$ <b>chmod +x tiny.com</b><br/>$ <b>./tiny.com</b><br/>$ <b>echo $?</b><br/>42<br/>$ <b>wc -c tiny.com</b><br/>     13 tiny.com</div></p>
+
+<p>Down to 13 bytes &mdash; the C compiler is only one byte away from the
+version that we created manually on our first try. That's quite
+respectable! Let's look at the disassembly to see where the thirteenth
+byte came from:</p>
+
+<p><div class="term">$ <b>ndisasm -b64 tiny.com</b><br/>00000000  B83C000000        mov eax,0x3c<br/>00000005  BF2A000000        mov edi,0x2a<br/>0000000A  0F05              syscall<br/>0000000C  C3                ret</div></p>
+
+<p>It's actually the exact same program that we wrote, the only
+difference being a useless <code>ret</code> instruction tacked on at the end.
+That's not surprising, in retrospect, as the compiler has no way of
+knowing that the inline assembly will never finish. But guess what: we
+can actually remedy that. <code>gcc</code> has a special pseudo-function named
+<code>__builtin_unreachable()</code>. Using it in your code is a promise to the
+compiler that control can never reach it. If we place a call to this
+function at the end of <code>foo()</code>, the optimizer will take advantage of
+our guarantee:</p>
+
+<p><div class="term">$ <b>gcc -Wall -Os -c tiny.c</b><br/>$ <b>objcopy -O binary -j .text tiny.o tiny.com</b><br/>$ <b>chmod +x tiny.com</b><br/>$ <b>./tiny.com</b><br/>$ <b>echo $?</b><br/>42<br/>$ <b>wc -c tiny.com</b><br/>     12 tiny.com<br/>$ <b>ndisasm -b64 tiny.com</b><br/>00000000  B83C000000        mov eax,0x3c<br/>00000005  BF2A000000        mov edi,0x2a<br/>0000000A  0F05              syscall</div></p>
+
+<p>Writing our programs in C is now looking rather attractive, when the
+compiler can do such a good job at whittling away extra instructions.</p>
+
+<p>However, this <code>objcopy</code> technique is not going to scale up. Not only
+is it a terrible hack, it's also dependent on there being only one
+function in our program. If the code contained multiple functions, we
+couldn't guarantee that our top-level function would be placed first
+in the <code>.text</code> section. Moreover, if our code makes use of any global
+variables, the compiler will almost certainly place them in a separate
+<code>.data</code> section, making their addresses incompatible with addresses in
+the <code>.text</code> section.</p>
+
+<p>It might seem that we've landed back to square one, with no easy way
+to extract usable binaries out of the compiler's object files. But not
+so &mdash; we're just getting started here. Using <code>objcopy</code> allowed us to
+avoid the linker entirely, but the truth is that we still want the
+linker's help with things like address fixups. Fortunately for us, the
+linker is remarkably amenable to this kind of detailed customization,
+thanks to the existence of linker scripts.</p>
+
+<h3>Linker Scripts</h3>
+
+<p>If you are not already familiar with linker scripts, you may be
+surprised to learn that a significant block of a linker's logic
+resides not in the code itself, or even in a library like <code>libbfd</code>,
+but rather in simple, textual configuration files. Every time you run
+your linker, it uses the appropriate linker script as a guide for what
+to put where. While linker scripts are mostly stored internally, you
+can typically also find copies of them under the linker's search
+paths. On my machine, they are under
+<code>/usr/lib/x86_64-linux-gnu/ldscripts/</code>. Linker scripts can and do get
+extremely complicated, but for basic needs like our own they can be
+quite simple:</p>
+
+<p><table class="source"><tr><td class="ul1"><td class="title" rowspan="2"><i>comfile.x</i><td><tr><td class="ul2"><td class="ur"><tr><td class="main" colspan="3"><pre><code>/* Linker script for command executable files */
+OUTPUT_FORMAT(binary)
+OUTPUT(a.com)
+SECTIONS
+{
+  .main 0x10000 : { *(.main) }
+  .text : { *(.text) *(.rodata) }
+  .data : { *(.data) *(.bss) }
+  /DISCARD/ : { *(.eh_frame) }
+}
+</code></pre></table></p>
+
+<p>The first line sets the "binary" format as the BFD-provided file
+format to output. Using this null format ensures that the resulting
+file will contain only what our linker script explicitly asks for. The
+second line provides a default filename if none is provided on the
+command line.</p>
+
+<p>The <code>SECTIONS</code> block lays out what the output file should contain,
+like a blueprint. This script specifies that the linker should place
+all of the <code>.text</code> and <code>.rodata</code> sections together before any <code>.data</code>
+and <code>.bss</code> sections, for example. (The asterisks before the names are
+there because there can be more than one section with the same name
+when multiple object files are involved &mdash; i.e. the situation in which
+there is actual linking being done.) Other sections not named in the
+blueprint do not make it into the output file, for the most part. Some
+sections, like <code>.eh_frame</code>, are still included in the BFD-defined
+binary format, but fortunately the linker provides an explicit
+<code>/DISCARD/</code> destination that causes sections to be forcibly omitted.</p>
+
+<p>But then what's this <code>.main</code> section at the top, with the hexadecimal
+annotation? This is how we can choose which function will land at the
+start of the generated binary. We will define a separate section that
+is specifically set aside for our top-level function. The linker can
+then ensure that that function is placed in front of everything else.
+(The <code>0x10000</code> annotation is the value of <code>loadaddr</code> in our kernel
+module. It informs the linker where the binary will be loaded into
+memory, so that the linker can calculate absolute addresses if called
+upon to do so.)</p>
+
+<p><code>gcc</code>, like most compilers, provides an extension that allows us to
+mark objects for placement in non-standard sections. We can use this
+in our C program like so:</p>
+
+<p><table class="source"><tr><td class="ul1"><td class="title" rowspan="2"><i>tiny.c</i><td><tr><td class="ul2"><td class="ur"><tr><td class="main" colspan="3"><pre><code>static void exit(int exitcode)
+{
+    asm ("syscall" : : "a" (60), "D" (exitcode));
+    __builtin_unreachable();
+}
+
+void __attribute__((section(".main"))) _main(void)
+{
+    exit(42);
+}
+</code></pre></table></p>
+
+<p>After compiling, we can use <code>objdump(1)</code> to look at the list of
+sections created by the compiler:</p>
+
+<p><div class="term">$ <b>gcc -Wall -c tiny.c</b><br/>$ <b>objdump -h tiny.o</b><br/><br/>tiny.o:     file format elf64-x86-64<br/><br/>Sections:<br/>Idx Name          Size      VMA               LMA               File off  Algn<br/>  0 .text         00000013  0000000000000000  0000000000000000  00000040  2**0<br/>                  CONTENTS, ALLOC, LOAD, READONLY, CODE<br/>  1 .data         00000000  0000000000000000  0000000000000000  00000053  2**0<br/>                  CONTENTS, ALLOC, LOAD, DATA<br/>  2 .bss          00000000  0000000000000000  0000000000000000  00000053  2**0<br/>                  ALLOC<br/>  3 .main         00000011  0000000000000000  0000000000000000  00000053  2**0<br/>                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, CODE<br/>  4 .comment      0000002a  0000000000000000  0000000000000000  00000064  2**0<br/>                  CONTENTS, READONLY<br/>  5 .note.GNU-stack 00000000  0000000000000000  0000000000000000  0000008e  2**0<br/>                  CONTENTS, READONLY<br/>  6 .eh_frame     00000058  0000000000000000  0000000000000000  00000090  2**3<br/>                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, DATA</div></p>
+
+<p>As you can see, there are a fair number of sections, though several
+are actually empty. But the important point is that there is both a
+<code>.text</code> section and a <code>.main</code> section, and both of them are non-empty.
+This shows that our two functions did in fact wind up in separate
+sections. The <code>.text</code> section appears earlier in the object file, but
+our linker script will ensure that the contents of <code>.main</code> are placed
+first.</p>
+
+<p>Typically the linker will determine which kind of output file it's
+being asked to create from context, and then load the appropriate
+linker script from its own store. We can explicitly tell the linker to
+use our hand-rolled script instead, via the <code>-T</code> command-line option:</p>
+
+<p><div class="term">$ <b>gcc -Wall -c tiny.c</b><br/>$ <b>ld -T ./comlink.x -o tiny.com tiny.o</b><br/>$ <b>./tiny.com</b><br/>$ <b>echo $?</b><br/>42<br/>$ <b>wc -c tiny.com</b><br/>     36 tiny.com</div></p>
+
+<p>The binary's increased size is mainly due to <code>exit()</code> being written as
+a separate function. If we turn optimization back on, the optimizer
+will see that the <code>exit()</code> function can be inlined instead, and we
+will quickly get our 12-byte executable again.</p>
+
+<h3>More Inline Assembly</h3>
+
+<p>Now that we can safely write code with multiple functions, we can
+create proper wrapper functions for system calls. We've got a working
+<code>exit()</code> function; now let's see what a wrapper function for <code>write()</code>
+might look like:</p>
+
+<p><table class="source"><tr><td class="ul1"><td class="title" rowspan="2"><i>write.c</i><td><tr><td class="ul2"><td class="ur"><tr><td class="main" colspan="3"><pre><code>long write(int fd, void const *buf, long size)
+{
+    long r;
+
+    asm volatile ("syscall" : "=a" (r)
+			    : "0" (1), "D" (fd), "S" (buf), "d" (size)
+			    : "rcx", "r11", "memory");
+
+    if (r &lt; 0) {
+        errno = -r;
+        r = -1;
+    }
+    return r;
+}
+</code></pre></table></p>
+
+<p>This one is a bit more involved. That's partly because <code>write()</code> takes
+more arguments, but it's mainly because unlike <code>exit()</code> it actually
+returns. The part after the first colon declares the assembly's
+outputs &mdash; i.e. the values that need to be transferred into C
+variables afterwards. As with all system calls, <code>write</code>'s return value
+is stored in <code>rax</code>, which is indicated by the constraint string
+<code>"=a"</code>. Now <code>rax</code> also appears in the second list, the list of inputs,
+but this time the constraint string is <code>"0"</code> instead of <code>"a"</code>. This is
+because registers cannot be repeated across constraint strings: if a
+register is both an output and an input, the latter needs to be
+referred to by its (zero-based) index instead.</p>
+
+<p>The final clause in the <code>asm</code> statement is a list of operands that are
+neither inputs nor outputs but are nonetheless modified by the inline
+assembly. The optimizer will assume that any register not mentioned
+will be diligently preserved, so it's important to be thorough here.
+As it happens, Linux system calls are documented as preserving all
+registers except <code>rcx</code> and <code>r11</code> (and <code>rax</code>, obviously), so our list
+is mercifully short. The last item, <code>"memory"</code> is a general indicator
+that the inline assembly reads and/or writes memory locations other
+than the explicitly named C variables. (If we didn't include this
+constraint, the optimizer might feel justified in reordering
+statements so that, for example, the <code>write</code> system call is made
+before the code that actually populates the buffer contents.)</p>
+
+<p>Finally, our function checks for a negative return, and stores such
+values in a global <code>errno</code> variable, so that it matches the behavior
+of the standard library function.</p>
+
+<p>Let's put all this together into a self-contained hello-world C
+program:</p>
+
+<p><table class="source"><tr><td class="ul1"><td class="title" rowspan="2"><i>hello.c</i><td><tr><td class="ul2"><td class="ur"><tr><td class="main" colspan="3"><pre><code>static int errno = 0;
+
+static long write(int fd, void const *buf, long size)
+{
+    long r;
+    asm volatile ("syscall" : "=a" (r)
+			    : "0" (1), "D" (fd), "S" (buf), "d" (size)
+			    : "rcx", "r11", "memory");
+    if (r &lt; 0) {
+        errno = -r;
+        r = -1;
+    }
+    return r;
+}
+
+static __attribute__((noreturn)) void exit(int exitcode)
+{
+    asm volatile ("syscall" : : "a" (60), "D" (exitcode));
+    __builtin_unreachable();
+}
+
+void __attribute__((section(".main"))) _main(void)
+{
+    write(1, "hello, world\n", 13);
+    exit(errno ? 1 : 0);
+}
+</code></pre></table></p>
+
+<p>And test it:</p>
+
+<p><div class="term">$ <b>gcc -Wall -Os -c hello.c</b><br/>$ <b>ld -T comfile.x -o hello.com hello.o</b><br/>$ <b>./hello.com</b><br/>hello, world<br/>$ <b>./hello.com >/dev/null ; echo $?</b><br/>0<br/>$ <b>./hello.com >/dev/full ; echo $?</b><br/>1<br/>$ <b>wc -c hello.com</b><br/>     72 hello.com</div></p>
+
+<p>With the extra error-handling, our file size has ballooned to a
+whopping 72 bytes &mdash; but the fact that the C compiler generated it all
+for us is a breath of fresh air.</p>
+
+<h3>Arguing About Arguments</h3>
+
+<p>If we want to move on to a program that actually does something
+useful, however, we are once again faced with the issue of accessing
+<code>argc</code>, <code>argv</code>, and <code>envp</code>. Ideally we would like to access those
+values as parameters to our top-level function, just as we normally do
+with <code>main()</code>. But right now those values are stored on the stack, and
+under the x86 64-bit calling convention, function arguments are passed
+through registers instead. How can we fix this?</p>
+
+<p>One way would be to add some inline assembly at the beginning of our
+top-level function to grab these three values from the stack and cram
+them into variables. This is not a great solution, because functions
+usually set up a stack frame first thing, the size of which varies. So
+it would be preferable to address the issue before the function runs,
+instead of during.</p>
+
+<p>Another possible approach would be to work the opposite end, and
+modify our kernel module so that it stores those three values in
+registers in the first place. Is that even possible? It actually is.
+You may remember that the final step in our kernel module's loader
+function is calling <code>start_thread()</code>, and that the first argument to
+that function is a pointer to a struct holding the process's register
+contents. Nothing is stopping us from modifying those values before
+passing them along to <code>start_thread()</code>. In fact, it's actually
+considered good policy to do just that, and set all of the
+general-purpose registers to known values (zero if nothing else).
+Otherwise, the registers will contain whatever values were left in
+them from the parent process, and this could, at least in theory, leak
+information and become a security issue. Okay, so why haven't we done
+that already? Well, the issue is that registers are
+architecture-specific, and so naturally the struct storing their
+values is too. The kernel source tree is set up so that most of the
+code is architecture-neutral, with the minimal amount of necessary
+architecture-specific code being relegated to separate directory
+subtrees. Right now, our kernel module is architecture-neutral, so it
+would be preferable not to embed x86-specific code in the middle of
+it.</p>
+
+<p>(Of course, if I thought there was a snowball's chance in hell that
+this code could ever become an official kernel module, I would happily
+break out the architecture-specific code into separate files and
+integrate them into the full directory structure, not to mention doing
+the necessary research to determine the proper calling convention for
+the Tensilica Xtensa architecture and all the other less-popular
+platforms that Linux runs on. But you and I both know that this flat
+binary file format is never going to be officially adopted, so I'd
+prefer to find a solution that doesn't involve the kernel module
+code.) <div class="note">(Side note to the side note: On the off chance that you wound
+up on this page because you were searching for "Tensilica Xtensa
+calling convention", the basic convention is that the first six
+arguments are stored in registers <code>a2</code> through <code>a7</code>, in order, with
+further arguments stored on the stack. However, the register window
+can shift these forward depending on the call instruction, so I
+recommend you read <a href="http://wiki.linux-xtensa.org/index.php/ABI_Interface">this reference
+page</a> to get
+further details.)</div>
+</p>
+
+<p>A third possibility would be to provide a tiny bit of prolog code, to
+be inserted at the top of the binary, that pops the stack values into
+registers. This is more or less what the implicit object file <code>crt1.o</code>
+does for normal C programs, via the <code>_start()</code> function that in turn
+calls <code>main()</code>. In fact, it's such a common thing to need that the
+linker script has a feature supporting it. The <code>STARTUP()</code> command can
+be used at the top level to implicitly include an object file <em>and</em>
+ensure that it will be linked first, before the other input files. The
+nice thing about this approach is that if we did want to add support
+for another architecture, we would just need to provide a different
+startup object file.</p>
+
+<p>For the x86 64-bit architecture, the calling convention is that the
+first six function arguments are stored in <code>rdi</code>, <code>rsi</code>, <code>rdx</code>, <code>rcx</code>,
+<code>r8</code>, and <code>r9</code>, with further arguments stored on the stack. (Note that
+this isn't the whole story: SSE registers are used for floating-point
+arguments, for example. But these details are sufficient for our
+purposes.) So, converting our three stack entries to function
+parameters simply requires the following:</p>
+
+<p><table class="source"><tr><td class="ul1"><td class="title" rowspan="2"><i>startup.asm</i><td><tr><td class="ul2"><td class="ur"><tr><td class="main" colspan="3"><pre><code>BITS 64
+SECTION .main	
+	pop	rdi
+	pop	rsi
+	pop	rdx
+</code></pre></table></p>
+
+<p>This reduces down to a measly three bytes of machine code, but we need
+to house it in an ELF object file so that the linker can use it at
+link time:</p>
+
+<p><table class="source"><tr><td class="ul1"><td class="title" rowspan="2"><i>comfile.x</i><td><tr><td class="ul2"><td class="ur"><tr><td class="main" colspan="3"><pre><code><span class="dim">/* Linker script for command executable files */</span>
+<span class="dim">OUTPUT_FORMAT(binary)</span>
+<span class="dim">OUTPUT(a.com)</span>
+STARTUP(startup.o)
+<span class="dim">SECTIONS</span>
+<span class="dim">{</span>
+<span class="dim">  .main 0x10000 : { *(.main) }</span>
+<span class="dim">  .text : { *(.text) *(.rodata) }</span>
+<span class="dim">  .data : { *(.data) *(.bss) }</span>
+<span class="dim">  /DISCARD/ : { *(.eh_frame) }</span>
+<span class="dim">}</span>
+</code></pre></table></p>
+
+<h3>Putting It All Together</h3>
+
+<p>In order to verify that this change really does give us working
+function arguments, we'll write a quick-and-dirty test program:</p>
+
+<p><table class="source"><tr><td class="ul1"><td class="title" rowspan="2"><i>test.c</i><td><tr><td class="ul2"><td class="ur"><tr><td class="main" colspan="3"><pre><code>static void println(char *str)
+{
+    int n, r;
+
+    for (n = 0 ; str[n] ; ++n) ;
+    str[n] = '\n';
+    asm volatile ("syscall" : "=a" (r)
+			    : "0" (1), "D" (1), "S" (str), "d" (n + 1)
+                            : "rcx", "r11", "memory");
+}
+
+static void exit(int exitcode)
+{
+    asm volatile ("syscall" : : "a" (60), "D" (exitcode));
+    __builtin_unreachable();
+}
+
+void __attribute__((section(".main"))) _main(int argc, char *argv[], char *envp[])
+{
+    int i;
+
+    for (i = 0 ; i &lt; argc ; ++i)
+        println(argv[i]);
+    for (i = 0 ; envp[i] ; ++i)
+        println(envp[i]);
+    exit(0);
+}
+</code></pre></table></p>
+
+<p>When we build everything, we get:</p>
+
+<p><div class="term">$ <b>nasm -f elf64 startup.asm</b><br/>$ <b>gcc -Wall -Os -c test.c</b><br/>$ <b>ld -T comfile.x -o test.com test.o</b><br/>$ <b>./test.com foo bar baz | head</b><br/>./test.com<br/>foo<br/>bar<br/>baz<br/>_=./test.com<br/>SHLVL=1<br/>HOME=/home/breadbox<br/>USERNAME=breadbox<br/>HISTCONTROL=ignoreboth<br/>XDG_CONFIG_HOME=/home/breadbox/.config<br/>$ <b>wc -c test.com</b><br/>    103 test.com</div></p>
+
+<p>And with that, we now have a working system for writing (almost)
+idiomatic C code, with the output being a binary file format of our
+own design.</p>
+
+<p>Of course, this is still little more than a proof of concept. The next
+step would be to create a larger library of wrapper functions around
+the system calls, as well as providing popular standard function like
+<code>strlen()</code>. (We should also define a nice macro to hide the messiness
+of the <code>_main()</code> function declaration.) A dozen or so functions is
+enough to be able to start writing some non-trivial programs.</p>
+
+<p>In fact, I did enough of this to be able to build my own replacement
+version of <code>factor(1)</code>. A standalone binary with all the same features
+as the standard utility, it manages to squeeze in at just under 1k in
+size &mdash; whereas the <code>/usr/bin/factor</code> on my machine is dependent on
+<code>libc</code> and is still over 74k. What a grotesque cyclopean boat anchor
+of a binary, am I right? (Of course, the standard utility includes a
+bunch of complicated math functions that allow it to complete quickly
+even when given very large numbers, but you don't really notice the
+difference in speed until you reach the trillions. Hey, there are
+always tradeoffs.)</p>
+
+<p>That said, my version is a standalone executable out of necessity. If
+it could have linked with a shared system library, like <code>libc</code>, it
+might have been smaller still. But our binary file format has no
+support for dynamic linking. Nor is it likely to in the future, as
+that would require the ability to look up functions by name, and to
+identify addresses needing fixups at runtime. All of which calls for
+&hellip; metadata. So, static libraries for us it is. If you'd like to see
+and/or build any of this code yourself, by the way, I've provided a
+tarball with all of the source code.</p>
+
+<p><a href="mopb/comfile-0.3.tar.gz">Click here to download comfile-0.3.tar.gz.</a></p>
+
+<p>It would be awfully nice, though, if we had to option to statically
+link with <code>libc</code> itself. In theory this ought to be possible, since
+our private binary file format doesn't really require any special
+handling of code before the linking stage, and building a static
+library doesn't involve the linker. Unfortunately, however, <code>libc</code> is
+a bit of a special case, as the library depends on special features of
+ELF executables (such as defining initialization functions that run in
+advance of <code>main()</code>). So even though I was able to get my programs to
+statically link with <code>libc.a</code>, they invariably crashed on startup.
+It's possible that someone else's nonstandard, less-featureful
+implementation of the C library would work for our programs, but so
+far I haven't found a decent solution. I'll keep looking, though. This
+binary file format may never be installed on any Linux machine besides
+my own, but I'm fond of it nonetheless.</p>
+
+<div class="cartoon"><img src="mopb/cartoon1.jpg"/><br/>Illustration
+of author attempting to link with <code>libc</code> by
+Bomberanian</div>
+
+<p><a href="mopb/comfile-0.3.tar.gz">comfile-0.3.tar.gz</a> <br />
+<a href="mopb.html">(main essay)</a></p>
+
+<p><hr/></p>
+<small><a href="index.html">Texts</a></small>
+<br/>
+<small><a href="../index.html">Brian Raiter</a></small>
+</body>
+</html>

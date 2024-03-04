@@ -1,0 +1,414 @@
+<html>
+<head>
+<title>TRS-80 One-Liners</title>
+</head>
+<body bgcolor="#FFFFFC" text="#101000">
+<div style="max-width:64em;margin:1em;">
+<a href="../pub/software/oneliner.bas">Download
+ONELINER.BAS</a>
+<p align="center">
+<center>
+<h1>One-Liners for TRS-80 Basic</h1>
+</center>
+</p>
+<p>
+This program is a collection of one-liners written by various authors
+for the TRS-80 Model I/III. That is, each sub-program in this program
+originally started out as a one-line program. They have been collected
+together into a single program so that you can experience them all for
+yourself without having to load each one up separately.
+</p>
+<p>
+There are a total of 14 different one-liners. Most one-liners run in
+infinite (or near-infinite) loops. A few of the programs originally
+exited to the <tt>READY</tt> prompt; those are handled here by letting
+them fall into infinite loops inserted between one-liners. At any
+time, you can hit Shift-Clear to leave a one-liner and return to the
+initial menu. To exit the program, press Enter at the initial menu
+&mdash; i.e. without providing any input.
+</p>
+<p>
+Note: it is recommended that you do not exit the program simply by
+pressing Break. If this does happen, you should press Shift-Clear and
+then Enter to exit cleanly before returning to the DOS or loading a
+new Basic program. Otherwise, sooner or later the machine will
+probably hang.
+</p>
+<p>
+All the one-liners, except for the last two, were originally published
+in Softside magazine between 1980 and 1982. They typically appeared as
+filler material, occupying the space of a small advertisement. My
+high-school computer programming teacher had a small hoard of various
+TRS-80 magazines, including numerous Softsides, and this is how I
+first became acquainted with the challenge of writing one-liners. I
+immediately fell in love with the idea. (After all, the one-liner
+mindset was little more than my normal programming mindset, back then,
+taken to its logical conclusion.) I carefully paged through all of my
+teacher's Softsides in order to find all the TRS-80 one-liners.
+Inevitably I eventually decided that I needed to collect them all
+together into a single program.
+</p>
+<p>
+In order to provide a way to access each one-liner as a separate
+program, I needed to add two things: a way for the user to select
+which one-liner to run, and a way to cleanly exit a one-liner without
+using Break, which would exit the whole program.
+</p>
+<p>
+The former problem was solved with a simple one-liner, line 1 of the
+program. All it does is reset some of the shared state of the Basic
+interpreter and then displays a prompt. It is notable only for the
+fact that the prompt is tailored to remind users of the opening prompt
+of the Scott Adams Adventure Collections.
+</p>
+<p>
+The latter problem was a bit trickier, and I eventually solved it by
+writing a short assembly-language routine to hook into the keyboard
+handler. The hook code simply looks for the Shift-Clear key
+combination, and when it sees it it forces the Basic interpreter to
+jump back to line 1 of the program. Providing and installing the
+machine-language code is done in line 0 of the program. The
+machine-language bytes are embedded in a <tt>REM</tt> statement. I
+didn't want to use the standard <tt>USR</tt> interface for invoking
+the code, however, out of concern that it might somehow interfere with
+a future one-liner, so instead I hijacked the little-used
+<tt>NAME</tt> command. If you're curious to understand how it works,
+I've included a detailed explanation at the end of the page.
+</p>
+<p>
+(I also had to edit the originals slightly, since almost all of them
+were originally written to be either line 0 or line 1. Generally this
+was a trivial change, although some of the one-liners that got
+assigned to lines 10 and above are now a little big larger than they
+originally were.)
+</p>
+<p>
+Here is a list of the available one-liners:
+</p>
+<table>
+<tr>
+<td align="center" style="padding-right:1em;">1</td>
+<td>A one-line adventure game</td>
+<td> by </td><td>Phillip Case</td>
+</tr>
+<tr>
+<td align="center" style="padding-right:1em;">2</td>
+<td>Installing and running an assembly program</td>
+<td> by </td><td>Patrick Boyle</td>
+</tr>
+<tr>
+<td align="center" style="padding-right:1em;">3</td>
+<td>A personalized Christmas greeting</td>
+<td> by </td><td>Dave Garrity</td>
+</tr>
+<tr>
+<td align="center" style="padding-right:1em;">4</td>
+<td>Using control characters to make hidden messages</td>
+<td> by </td><td>Robert Westeoh</td>
+</tr>
+<tr>
+<td align="center" style="padding-right:1em;">5</td>
+<td>A one-line dodging game</td>
+<td> by </td><td>Nick Dilisi &amp; Anthony Abate</td>
+</tr>
+<tr>
+<td align="center" style="padding-right:1em;">6</td>
+<td>Lunar lander (enter your x-velocity at start)</td>
+<td> by </td><td>John Boyer</td>
+</tr>
+<tr>
+<td align="center" style="padding-right:1em;">7</td>
+<td>Symmetrical line patterns (press R to clear screen)</td>
+<td> by </td><td>Quentin Barnes</td>
+</tr>
+<tr>
+<td align="center" style="padding-right:1em;">8</td>
+<td>Another foray into TRS-80 art in one line</td>
+<td> by </td><td>William H. Tooker</td>
+</tr>
+<tr>
+<td align="center" style="padding-right:1em;">9</td>
+<td>A one-line driving game</td>
+<td> by </td><td>James Petivan</td>
+</tr>
+<tr>
+<td align="center" style="padding-right:1em;">A</td>
+<td>Random kaleidoscope patterns</td>
+<td> by </td><td>Mark Soupene</td>
+</tr>
+<tr>
+<td align="center" style="padding-right:1em;">B</td>
+<td>Simplified Space Invaders (use Space to fire)</td>
+<td> by </td><td>Mark L. Kayton</td>
+</tr>
+<tr>
+<td align="center" style="padding-right:1em;">C</td>
+<td>An excursion in non-orthogonal random lines</td>
+<td> by </td><td>Arne Rohde</td>
+</tr>
+<tr>
+<td align="center" style="padding-right:1em;">D</td>
+<td>Guess my number</td>
+<td> by </td><td>Brian Raiter &amp; Rex Wheeler</td>
+</tr>
+<tr>
+<td align="center" style="padding-right:1em;">E</td>
+<td>A hex-to-decimal converter</td>
+<td> by </td><td>Brian Raiter</td>
+</tr>
+</table>
+</p>
+<p>
+My personal favorites are numbers 1, 6, and 7.
+</p>
+<p>
+The following is a listing, or really a representation of the listing,
+of the complete program. It is provided for reference only; it's much
+less effort to use the provided link at the top of the page to obtain
+a usable copy of the program. Manually entering one-liners is often
+not a straightforward matter: The interpreter won't accept the full
+255 bytes at the prompt, so occasionally one has to omit the last few
+characters when entering a line, and then append the remainder via the
+<tt>EDIT</tt> command after the interpreter has had a chance to
+parse the input. (<tt>EDIT</tt> is also used to embed line
+breaks and other special characters in string literals.) And of
+course, the bytes of the machine-language routine in line 0 has
+to be created by entering filler characters and then modifying
+them afterwards via <tt>POKE</tt>.
+</p>
+<p>
+<blockquote>
+<pre>
+0 B=PEEK(16548)+256*PEEK(16549)+124:FORX=0TO2:POKEB+79+X*2,PEEK(
+16782+X):NEXT:POKE16782,195:POKE16783,BAND255:POKE16784,B/256:NA
+ME:REM * One-liner key hook
+                             *&#x1FB22;@&#x1FB1B;&#x3C7; &#xA7;K@&#x3C7;q&#x3C7;p&#x3C7;"@ &#x3C7; &#x3C7;"&#x1FB0E;A&#x3B2;&#x3B6;??&#x1FBC9;&#x2660;: 8&#x1FB34;&gt;&#x3B1;
+&#x3C7;*&#x1FB22;@&#x1FB1B;
+^                             V
+            S@&gt;???2&#x1FB0D;A
+  S&#x1FB0E;A
+1 CLEAR50:CLS:RANDOM:POKE16412,0:POKE16419,95:INPUT"Press SHIFT-
+CLEAR to return here.
+Which One-liner (1-Z)";L1$:IFL1$="",NAME:ENDELSEONASC(L1$)-48GOT
+O2,4,5,6,8,9,11,12,13,1,1,1,1,1,1,1,15,16,17,18,19:GOTO1:REM * O
+ne-liner menu
+2 CLS:PRINT"Adventure
+Visible Items: Trees
+Obvious Exits: EAST WEST
+"STRING$(30,45):INPUT"Tell me";A$:IFA$&lt;&gt;"E",2ELSEPRINT@0,"I'm in
+ a cave."@79,"Nothing";:PRINT@143,"None",;:PRINT@263,"";:INPUTA$
+:IFASC(A$)=72ANDMID$(A$,4)="P",PRINT"You win!!"ELSE2
+3 GOTO3
+4 CLEAR22:A$=STRING$(22,32):J=VARPTR(A$):I=PEEK(J+1)+256*PEEK(J+
+2):I=I+65536*(I&gt;32767):FORK=ITOI+21:READZ:POKEK,Z:NEXT:DEFUSR=I:
+FORX=1TO2:POKEI+10,RND(63)+128:L=USR(0):X=1:NEXT:DATA33,0,60,17,
+1,60,1,255,3,54,0,237,176,6,5,33,0,0,43,124,181,201
+5 INPUT"ENTER YOUR NAME";A$:A$=A$+" ":L=LEN(A$):P=30:CLS:PRINT@P
++1,"**":FORI=1TOL:PRINT@P-I+64*I,"* ";:PRINTMID$(A$,1,I);:PRINTM
+ID$(A$,1,I)+" *":NEXT:PRINTTAB(P)"MERRY":PRINTTAB(P);"XMAS!":FOR
+T=1TO5000:NEXT:PRINTTAB(P-11)"FROM SOFTSIDE PUBLICATIONS":RUN5
+6 CLEAR999:CLS:PRINT"M A G I C   C O D E":PRINT"E N T E R   M S 
+G":INPUTA$:PRINTCHR$(28):PRINTCHR$(31):X=LEN(A$):FORY=1TOX:B$=B$
++MID$(A$,Y,1):C$=CHR$(RND(58)+31):B$=B$+C$:NEXT:PRINT"E N T E R"
+:INPUTD$:PRINTB$:PRINT:PRINT"E N T E R":INPUTD$:PRINTCHR$(23)
+7 GOTO7
+8 P=28:C$="V":FORT=1TO9E9:Q=RND(12):IFT/4=INT(T/4)PRINT@916+Q,"O
+":NEXTELSEA$="I            I":PRINT@P,C$@980,A$@1023,:IFPEEK(154
+24+P)=79ORP&gt;32ORP&lt;21PRINT@P,"BOOM";:FORW=1TO9:NEXT:RUN8ELSEK=PEE
+K(14400):IFK=32P=P-1:NEXTELSEIFK=64P=P+1:NEXTELSENEXT
+9 INPUTH:CLS:G=42:FORT=0TO127:G=G+RND(3+(G=47))-2:FORD=GTO47:SET
+(T,D):NEXTD,T:FORF=0TO99-H*5:P=PEEK(14400):H=H+(P=32)/2-(P=64)/2
+:V=V+.25+(P=8)/2:RESET(X,Y):X=X+H:Y=Y+V:IFPOINT(X,Y)IFV&gt;1ORHRESE
+T(X,Y):RUN9ELSESET(X,Y-1):PRINT@349,"Landed"ELSESET(X,Y):NEXT
+10 GOTO10
+11 CLS:DEFINTA-Z:RANDOM:X=32:Y=12:FORK=1TO2STEP0:IFINKEY$="R"THE
+N11ELSEL=RND(25):XD=RND(3)-2:YD=RND(3)-2:FORA=1TOL:SET(X,Y):SET(
+127-X,Y):SET(127-X,47-Y):SET(X,47-Y):X=X+XD:Y=Y+YD:X=X-128*INT(X
+/128):Y=Y-48*INT(Y/48):NEXTA,K:REM "R"=RESTART
+12 CLS:PRINT@402,"C O M P U T E R  A R T  ! !":PRINT:DEFINTA-Z:R
+ANDOM:FORT=1TO1000:NEXTT:CLS:FORT=1TO10:A=RND(62)-1:B=RND(62)+61
+:C=RND(22)-1:D=RND(22)+21:FORX=ATOB:SET(X,D):SET(X,C):NEXTX:FORY
+=CTOD:SET(B,Y):SET(A,Y):NEXTY,T:FORT=1TO3000:NEXTT:GOTO12
+13 CLS:J=27:P=15391:FORM=1TO9E9:T=RND(99):FORL=RND(T)TOTSTEPRND(
+9)/9:J=50-ABS(ABS(J+SIN(L))-50):A=PEEK(14400)/32:P=P-((AAND1)-(A
+/2AND1))*(PEEK(14464)+1):PRINTTAB(J)"!!!   .   !!!":IFPEEK(P)=33
+PRINT"SCORE:"SELSEPOKEP,191:S=S+1:NEXTL,M
+14 GOTO14
+15 CLS:PRINT"Hit space bar to see a new pattern":FORX=1TO700:NEX
+TX:FORT=1TO5000:CLS:FORZ=1TO1160:X=RND(64)-1:Y=RND(24)-1:SET(X,Y
+):SET(X,47-Y):SET(127-X,47-Y):SET(127-X,Y):IFINKEY$=""THENNEXTZ,
+T:GOTO15ELSENEXTT:GOTO15
+16 CLS:CLEAR99:C=RND(62)+33:PRINTSTRING$(63,C):FORX=0TO1E9:IFINK
+EY$="",NEXTELSEFORH=0TO1E9:R=RND(63)-1:IFPEEK(15360+R)&lt;&gt;C,NEXTEL
+SEFORL=960+RTORSTEP-64:PRINT@L,"!";:PRINT@L," ";:NEXT:FORL=0TO9:
+PRINT@R,CHR$(RND(159)+32);:NEXT:PRINT@R," ";:NEXTXELSENEXTX
+17 CLS:DEFINTA-Z:X=RND(127):Y=RND(47):FORA=0TO10+RND(60):I=RND(7
+)-4:J=RND(5)-3:FORB=0TORND(30):SET(X,Y):I=I+2*I*((I+X&gt;127)OR(I+X
+&lt;0)):X=X+I:J=J+J*2*((J+Y&gt;47)OR(J+Y&lt;0)):Y=Y+J:NEXT:NEXT:FORI=0TO9
+99:NEXT:RUN17
+18 CLS:RANDOM:A=1:B=1E3:Q=RND(1E3):FORX=1TO8E9:PRINTA"-"B:INPUT"
+ Guess";C:IFC&lt;AORC&gt;B,X=X-1:NEXTELSEIFC&lt;QPRINT"Too low":A=C+1:NEX
+TELSEIFC&gt;QPRINT"Too high":B=C-1:NEXTELSEPRINTC"is right!!
+ It took you"X"tries.
+":X=9E9:NEXT:FORX=0TO0:X=INKEY$="":NEXT:RUN18
+19 PRINT"Hex: --"STRING$(2,24);:FORA=1TO0STEP-1:FORQ=0TO0:A$=INK
+EY$:Q=A$="":NEXT:B(A)=ASC(A$):IFB(A)&gt;47ANDB(A)&lt;58ORB(A)&gt;64ANDB(A
+)&lt;71THENPRINTCHR$(B(A));:NEXT:FORA=0TO1:H=H+((-B(A)+55)*(B(A)&gt;64
+)+VAL(CHR$(B(A))))*16[A:NEXT:PRINT"
+Dec"H:RUN19ELSEA=A+1:NEXT
+</pre>
+</blockquote>
+</p>
+<p>
+Once again, to be clear: I am <em>not</em> the author of the majority
+of this program. I am merely the anthologist. The original authors
+and/or copyright holders continue to own and reserve all rights to
+this code.
+</p>
+<p><hr></p>
+<p align="center">
+<center>
+<h3>Appendix: How Line 0 Works</h3>
+</center>
+</p>
+<p>
+The Basic part of line 0 is straightforward. The first
+statement:
+<blockquote>
+<pre>B=PEEK(16548)+256*PEEK(16549)+124</pre>
+</blockquote>
+initializes <tt>B</tt> with the address of the Basic program,
+plus 124 bytes, which is the offset of the machine-language
+routine within the <tt>REM</tt>. Next comes a short loop:
+<blockquote>
+<pre>FORX=0TO2:POKEB+79+X*2,PEEK(16782+X):NEXT</pre>
+</blockquote>
+which copies the existing <tt>NAME</tt> vector to a safe place
+inside the machine-language routines (in the bytes containing
+question marks below). Once these bytes have been saved, the
+program can then replace them:
+<blockquote>
+<pre>POKE16782,195:POKE16783,BAND255:POKE16784,B/256</pre>
+</blockquote>
+with a vector that jumps to the machine-language routine. With
+this in place, the Basic program can then use the statement:
+<blockquote>
+<pre>NAME</pre>
+</blockquote>
+to jump to the machine-language routine.
+</p>
+<p>
+The machine-language code, besides being necessary to hook
+the keyboard, also allows much more functionality to be packed
+into a small number of bytes. Turning to the original assembly,
+the machine language routine at offset 124 (007CH) from the
+start of the Basic program is as follows:
+<blockquote>
+<pre>                ; The hook installer routine
+007C  DD2AA440  SETUP:  LD      IX,(40A4H)      ; IX=line 0 pos
+0080  119D01            LD      DE,0100H+HOOK   ; DE=offset of
+0083  15                DEC     D               ;   hook rtn
+0084  DD19              ADD     IX,DE           ; advance IX
+0086  ED4B1640          LD      BC,(4016H)      ; BC=keybd rtn
+008A  DD7101            LD      (IX+1),C        ; store in CALL
+008D  DD7002            LD      (IX+2),B        ;   instruction
+0090  DD221640          LD      (4016H),IX      ; replace w/IX
+0094  1E19              LD      E,REMOVE-HOOK   ; change NAME
+0096  DD19              ADD     IX,DE           ;   vector to
+0098  DD228F41          LD      (418FH),IX      ;   remove rtn
+009C  C9                RET                     ; setup is done
+</pre>
+</blockquote>
+4016H contains the address of the current keyboard handling
+routine. The <tt>SETUP</tt> routine retrieves that address and
+stores it inside the <tt>HOOK</tt> routine, which immediately
+follows this one. It then replaces that value with the address
+of the start of the <tt>HOOK</tt> routine, thus installing the
+keyboard hook. It also modifies the value of the <tt>NAME</tt>
+vector, so that instead of pointing to this routine, it will
+point to <tt>REMOVE</tt> (described below). After this, a
+subsequent <tt>NAME</tt> statement will call <tt>REMOVE</tt>
+instead of <tt>SETUP</tt>.
+</p>
+<p>
+The keyboard hook routine is as follows:
+<blockquote>
+<pre>                ; The keyboard hook
+009D  CD3F3F    HOOK:   CALL    3F3FH           ; keybd handler
+00A0  FE1F              CP      31              ; Clear key?
+00A2  C0                RET     NZ              ; no, let pass
+00A3  3A8038            LD      A,(3880H)       ; a shift key
+00A6  B7                OR      A               ;   pressed?
+00A7  3E1F              LD      A,31            ; (restore acc)
+00A9  C8                RET     Z               ; no, let pass
+00AA  E1                POP     HL              ; yes, grab it
+00AB  2AA440            LD      HL,(40A4H)      ; HL=line 0 pos
+00AE  01D801            LD      BC,0100H+NEXT   ; advance HL to
+00B1  05                DEC     B               ;   next line
+00B2  09                ADD     HL,BC           ;   of program
+00B3  C31E1D            JP      1D1EH           ; back to Basic
+</pre>
+</blockquote>
+The address of the original keyboard routine is stored as part
+of the <tt>CALL</tt> instruction at top, replacing the original
+value of 3F3FH (or "??" in ASCII). Thus the hook routine first
+invokes the normal keyboard handler. When it returns, the
+accumulator holds the decoded character. ASCII 31 represents the
+Clear key, so if the accumulator holds some other value, the
+routine returns directly. Otherwise the byte at 3880H is
+examined, and if it is nonzero then a Shift key is currently
+down. If so, the <tt>HL</tt> register is altered to point to the
+second line of the current Basic program, and the hook routine
+jumps directly back to the Basic interpreter instead of
+returning.
+</p>
+<p>
+Finally, the <tt>REMOVE</tt> routine, invoked when a second
+<tt>NAME</tt> statement is encountered, is as follows:
+<blockquote>
+<pre>                ; The hook uninstaller routine
+00B6  DD2AA440  REMOVE: LD      IX,(40A4H)      ; IX=line 0 pos
+00BA  119D01            LD      DE,0100H+HOOK   ; DE=offset of
+00BD  15                DEC     D               ;   hook rtn
+00BE  DD19              ADD     IX,DE           ; advance IX
+00C0  DD5E01            LD      E,(IX+1)        ; get original
+00C3  DD5602            LD      D,(IX+2)        ;   keybd rtn
+00C6  ED531640          LD      (4016H),DE      ; restore it
+00CA  3E3F              LD      A,'?'           ; restore the
+00CC  1E3F              LD      E,'?'           ;   original
+00CE  163F              LD      D,'?'           ;   NAME vector
+00D0  328E41            LD      (418EH),A       ;   put here by
+00D3  ED538F41          LD      (418FH),DE      ;   Basic prog
+00D7  C9                RET                     ; we're done
+                NEXT:
+</pre>
+</blockquote>
+This routine simply restores the values that 4016H and 418EH
+originally had. The original value for 4016H is stored as part
+of the <tt>CALL</tt> instruction at the top of the <tt>HOOK</tt>
+routine, while the origianl vector value for 418EH was stored
+inside this routine directly, replacing the ASCII question mark
+bytes, as part of the <tt>SETUP</tt> routine. This routine is
+invoked in line 1 of the Basic program, in the case when the
+user inputs an empty string, just before the final <tt>END</tt>
+statement.
+</p>
+<blockquote>
+<p>
+(Note: An earlier version of this article was published in the 
+<a href="http://trs-80.org.uk/Tandy_Page_2x.html">TRS8BIT newsletter</a>,
+in the second issue of year 6, a.k.a. the <a href="trs8bit0602.pdf">June
+2012 edition</a>.)
+</p>
+</blockquote>
+<p><hr></p>
+<font size=-1><a href="index.html">Software
+</a></font>
+<br/>
+<font size=-1><a href="../index.html">Brian
+Raiter</a></font>
+<br/>
+<font size=-1><a href="http://www.muppetlabs.com/">Muppetlabs</a></font>
+</div>
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!DOCUMENT html>
+<html>
+<head>
+<title>About yapp.i</title>
+<style>
+body {
+    font-size: 100%;
+    margin: 1em;
+    max-width: 64em;
+}
+h1 {
+    margin: 1em auto;
+    text-align: center;
+}
+</style>
+</head>
+<body>
+<p>
+<a href="../pub/intercal/yapp.tar.gz">Download
+yapp.tar.gz</a>
+<h1>yapp</h1>
+<p>
+yapp stands for "yet another program printer", or "yet another
+printing program", or maybe "yet another printer printer". Yeah,
+probably "yet another printer printer". What yapp does is print out
+programs that print out. That is, yapp takes whatever is piped into
+its standard input, and produces on its standard output the source
+code for an INTERCAL program that will, when compiled, produce the
+original output.
+<p>
+Since producing output in an INTERCAL program calls for quite a few
+lines of code just to store the character data in an array (see, for
+example, beer.i), yapp attempts to minimze the size of the programs it
+generates. The most important of these attempts is the fact that the
+character data is actually stored four characters at a time, in a
+32-bit, or hybrid, array. After this array has been filled in (which
+usually is the vast majority of the generated program), a 16-bit, or
+tail, array is filled with the unpacked character data. After the
+latter array is output, the remaining lines print any leftover
+characters (if the original input size was not evenly divisible by
+four) and exit.
+<p>
+Other attempts to reduce size made by yapp are leaving out whitespace,
+and avoiding use of the system library.
+<p>
+Here is an example of what yapp's output looks like. The parts that
+change depending on the input data are marked with curly braces.
+Whitespace has been added in a mostly-futile attempt to attain
+legibility.
+<p>
+<pre>
+        DO (9) NEXT
+        DO ;1 &lt;- .4~#65532
+        DO ,1 &lt;- .4
+        DO .1 &lt;- #0
+        DO ;1SUB#1 &lt;- {data}${data}
+        DO ;1SUB#2 &lt;- {data}${data}
+        PLEASE ;1SUB#3 &lt;- {data}${data}
+        DO ;1SUB#4 &lt;- {data}${data}
+                *
+                *
+                *
+        PLEASE ;1SUB{N/4} &lt;- {data}${data}
+        PLEASE COME FROM (1)
+        DO .2 &lt;- .1
+        DO .3 &lt;- #4
+        PLEASE COME FROM (3)
+        DO .5 &lt;- '?".1~.3"$#1'~#3
+        DO .1 &lt;- '?.1$.3'~'#0$#65535'
+        DO (4) NEXT
+(3)     DO .3 &lt;- !3$#0'~'#32767$#1'
+(4)     DO (5) NEXT
+        PLEASE FORGET #1
+        DO :1 &lt;- ;1SUB!1~#65532'
+        DO ,1SUB"!2$#1'~'#65532$#3'" &lt;- :1~'#43690$#0'
+        DO ,1SUB"!2$#2'~'#65532$#3'" &lt;- :1~'#21845$#0'
+        DO ,1SUB"!2$#3'~'#65532$#3'" &lt;- :1~'#0$#43690'
+        DO ,1SUB.1 &lt;- :1~'#0$#21845'
+        DO .5 &lt;- '?"'#65535~"'?.4$.1'~'#0$#65532'"'~#1"$#1'~#3
+(1)     DO (2) NEXT
+(2)     DO (5) NEXT
+        PLEASE FORGET #1
+        DO READ OUT ,1
+        PLEASE GIVE UP
+(5)     PLEASE RESUME .5
+(9)     DO .4 &lt;- {N}
+        PLEASE RESUME #1
+</pre>
+<p>
+The first lines call the routine at <code>(9)</code>, which does
+nothing but initialize <code>.4</code> with the size of the input
+(indicated by <code>{N}</code>). The reason for this being a routine
+is that yapp does not know what this number is until it has already
+generated the lines at the top of the program, so it has to delay
+inserting this information until the end. The value in <code>.4</code>
+is then used to initialize <code>,1</code> and <code>;1</code>, the
+latter being one-fourth as large. Our counter variable,
+<code>.1</code>, is also set to zero.
+<p>
+The next lines fill <code>;1</code> with the character data
+representing the input to yapp, four characters in each array
+element. These lines represent yapp's real work. Everything besides
+these lines and the line labelled <code>(9)</code> are the same for
+every input. (Note: this is assuming that the size of the input is a
+multiple of four. When this is not the case, a few more lines are
+added in to directly output the leftover characters.)
+<p>
+The <code>COME FROM (1)</code> marks the top of the loop that
+translates the contents of <code>;1</code> into <code>,1</code>. After
+the counter value in <code>.1</code> is saved in <code>.2</code>, the
+<code>COME FROM (3)</code> begins the inner loop of the modified
+increment routine. Note that this routine is incrementing by four
+instead of one. This is because <code>.1</code> is indirectly serving
+as the index into <code>,1</code>, as well as the index into
+<code>;1</code>. Since INTERCAL arrays are one-based, the index needs
+to be stored in <code>.2</code> before being incremented. The
+bottommost bits of <code>.2</code> can then be twiddled to index three
+of the four <code>,1</code> elements to be initialized, and the value
+in <code>.1</code> gives the fourth element. Shifting <code>.1</code>
+right two bits also gives the index into <code>;1</code>.
+<p>
+The loop continues until <code>.1</code> is equal to <code>.4</code>,
+at which point <code>,1</code> is filled and can be output.
+<p>
+<br>
+<small><a href="index.html">
+INTERCAL</a></small>
+<br>
+<small><a href="../index.html">Brian
+Raiter</a></small>
+<br>
+<small><a href="http://www.muppetlabs.com/">Muppetlabs</a></small>
+</body>
+</html>

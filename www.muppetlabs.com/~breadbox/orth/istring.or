@@ -1,0 +1,133 @@
+; Create string arrays for C-INTERCAL.
+;
+;    written by Brian Raiter, June 1996
+;
+; The 1st argument is the C-INTERCAL array number.
+; The 2nd argument is a number or single character giving the
+;     last character READ OUT.
+; The remainder of the command line is the string to translate.
+
+:set ArgRow = 63
+:set aY = ArgRow
+:set aiX = 8
+:set aiY = 8
+:set vX = 43
+:set vY = 32
+:set cX = 33
+:set cY = 31
+
+; Decode the first two arguments
+
+[0,0]
+0   L   @   6   -   ?   cw  0   0   'r' 'o' 'r' 'r' 'E' s   c   ret
+    +                   @
+    1                   aY
+ccw cw  ?   =   nop ~   cw
+@
+@
+?       cw  $   1   +   @   1   +   aY  ~   =   ?   cw  cw
+ccw J   ccw     cw  +   '0' -   J   0   #   aiX aiY cw  @
+0   1   ?       *               00      ccw ~   +   2   cw
+'r' -   @       10              @       aY
+'o' @   #       ~               aY      ~
+'r' @   vX      #               ~       =
+'r' aY  -       aiX             =       L   @   cw      cw  @   cw
+'E' ~   ~       aiY             @       ~       0x0F    |       0x55
+s   =   vY      +               ?       +       &       /       &
+c   nop ~       cw  1   ~   nop cw      1       16      4       2
+ret ccw ccw                     ccw $   ccw     *       &       *
+                                                ~       0xCC    ~
+                                                0xF0    ~       0xAA
+                                                &       *       &
+                                                16      4       2
+                                                /       &       /
+                                                |       0x33    |
+                                                ccw @   ccw     ccw cY  cX  #
+
+:set sX = 34
+:set sY = 43
+:set fX = 31
+:set fY = 24
+
+; Determine the length of the string to create
+
+[20,23]
+cw  sY  sX  #   L   @   aY  ~   =   ?   cw  cw
+@               +                       0   01
+rev             K   1   nop #   fX  fY  H   ?
+                                        1   ccw ~   -   1   -
+                                        cw  cw
+
+:set iX = 36
+:set iY = 43
+
+; Iterate on each character
+
+[26,26]
+                                        0   1   L
+                                                ~
+                                                1
+                                                !
+                                                ?
+        cw  @   cw      cw  00  ~   cw          &
+        |       0x33    |           @           3
+        /       &       /           cY          ~
+        16      4       2           cX          1
+        &       *       &           #           #
+        0xF0    ~       0xAA        -           iX
+        ~       0xCC    ~           0xFF        iY
+        *       &       *           &           @
+        16      4       2           ~           @
+        &       /       &           ccw 1   +   ccw
+        0x0F    |       0x55
+ccw     @       ccw @   ccw             
+cw  ' ' K       ccw aY  @   +   00  @   00  c   0
+?       nop     ~
+=       $       =
+~       ~       @
+aY  ccw cw  ?   cw
++   $
+1   nop
+cw  cw
+
+; The output code
+
+[39,24]
+            cw  ' ' 'E' 'S' 'A' cw 
+            0                   'E'
+'\t'c   ?   ccw J   s   'P' 'L' cw
+                0
+                nop
+                nop
+                nop
+                nop
+                nop
+                ','
+                ' '
+                'O'         ccw
+                'D'     d       s
+                s   0               'S'
+                dx                      ccw
+                0   0               'U'
+                '#'     '#'     'B'
+                ' '         ccw
+                '-'
+d   s   ' ' '<' cw
+
+; The coda
+
+[6,29]
+ret
+0
+c
+0
+d
+=
+cX
+cY
+s
+'\t'
+'D'
+'O'
+' '
+cw  ',' '3' '0' '0' '1' 'S' 'U' 'B' '#' '1' ' ' '<' '-' ' ' '#' 0   c   0   $

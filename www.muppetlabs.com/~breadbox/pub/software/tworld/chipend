@@ -1,0 +1,81 @@
+#!/usr/bin/perl -w
+
+#
+# chipend: written 2002 by Brian Raiter, after an idea by Mike Lask.
+# This program has been placed in the public domain. There are no
+# warranties; use at own risk.
+#
+# The patches are as follows:
+#
+# * The number of the first ending level is stored as a two-byte word
+#   (little-endian) at offsets 0x91B9 and 0xBB14.
+# * The number of the final ending level is stored as a two-byte word
+#   (little-endian) at offsets 0x91C0, 0xBA14, and 0xBB1C.
+# * To suppress the decade messages, change the byte at offset 0xBB2A
+#   from 0xD2 to 0xD1.
+#
+
+use strict;
+use Fcntl;
+
+my $filename;
+my $endlevel1;
+my $endlevel2;
+my $nomessages;
+
+my $or_dx_cx = 0xD10B;
+
+sub yowzitch()
+{
+    "Usage: $0 EXEFILE [END1] END [-nm]\n"
+  . "    EXEFILE  path to the copy of chips.exe to modify\n"
+  . "    END1     number of the last level before the hidden levels\n"
+  . "             (defaults to the same number as END)\n"
+  . "    END      number of the actual last level\n"
+  . "    -nm      supresses display of the decade messages\n"
+}
+
+sub patchword($$$)
+{
+    my $file = shift;
+    my $offset = shift;
+    my $word = pack "v", shift;
+    return sysseek($file, $offset, 0) && syswrite($file, $word, 2);
+}
+
+$filename = shift or die yowzitch;
+if ($filename eq "-h") {
+    print yowzitch;
+    exit 0;
+}
+
+while ($_ = shift) {
+    if (/^\d+$/) {
+	die "invalid level number: $_\n" if $_ < 1 || $_ > 999;
+	die yowzitch if $endlevel2;
+	($endlevel1 ? $endlevel2 : $endlevel1) = $_;
+    } elsif (/^-nm$/) {
+	$nomessages = 1;
+    } else {
+	die yowzitch;
+    }
+}
+die yowzitch unless $endlevel1;
+$endlevel2 ||= $endlevel1;
+die "invalid arguments: $endlevel1 > $endlevel2\n" if $endlevel1 > $endlevel2;
+
+my $file = \*EXE;
+sysopen EXE, $filename, O_WRONLY or die "$filename: $!\n";
+binmode $file;
+
+patchword($file, 0xBB2A, $or_dx_cx) or die "$filename: $!\n" if $nomessages;
+
+patchword($file, 0x91B9, $endlevel1) &&
+patchword($file, 0xBB14, $endlevel1) &&
+patchword($file, 0x91C0, $endlevel2) &&
+patchword($file, 0xBA14, $endlevel2) &&
+patchword($file, 0xBB1C, $endlevel2)
+    or die "$filename: $!\nfile may have become corrupted; use at own risk.\n";
+
+close $file;
+print "$filename has been patched.\n";
