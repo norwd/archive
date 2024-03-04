@@ -1,0 +1,1006 @@
+<html>
+<head>
+<title>Restricted Pointers in C (Draft 2), X3J11.1 93-006</title>
+<link rel="made" rev="made" href="mailto:jutta@pobox.com">
+</head>
+<body>
+<h1>Restricted Pointers in C</h1>
+Numerical C Extensions Group, Aliasing Subcommittee<br>
+Final Report: Draft 2, X3J11/94-019, WG14/N334
+<hr>
+<dl>
+<dt>
+   1&#160;<tt> </tt><a href="restrict.html#rationale">Rationale</a>
+<dd>
+	1.1&#160;<tt> </tt><a href="restrict.html#aliasing">Aliasing</a><br>
+	1.2&#160;<tt> </tt><a href="restrict.html#library-examples">Library examples</a><br>
+	1.3&#160;<tt> </tt><a href="restrict.html#overlapping-objects">Overlapping objects</a><br>
+	1.4&#160;<tt> </tt><a href="restrict.html#restricted-pointers">Restricted pointers</a><br>
+	1.5&#160;<tt> </tt><a href="restrict.html#design-choices">Design choices</a><br>
+<dt><p>
+  2&#160;<tt> </tt><a href="restrict.html#formal-definition">Formal definition of restrict</a><dd>
+<dt><p>
+  3&#160;<tt> </tt><a href="restrict.html#examples">Examples</a>
+<dd>
+3.1&#160;<tt> </tt><a href="restrict.html#file-scope-restricted-pointers">
+	File scope restricted pointers</a><br>
+3.2&#160;<tt> </tt><a href="restrict.html#function-parameters">Function parameters</a><br>
+3.3&#160;<tt> </tt><a href="restrict.html#block-scope">Block scope</a><br>
+3.4&#160;<tt> </tt><a href="restrict.html#members-of-structures">Members of structures</a><br>
+3.5&#160;<tt> </tt><a href="restrict.html#type-definitions">Type definitions</a><br>
+3.6&#160;<tt> </tt><a href="restrict.html#expressions-based-on">
+	Expressions based on restricted pointers</a><br>
+3.7&#160;<tt> </tt><a href="restrict.html#assignments-between-restricted">
+	Assignments between restricted pointers</a><br>
+3.8&#160;<tt> </tt><a href="restrict.html#assignments-to-unrestricted">
+	Assignments to unrestricted pointers</a><br>
+3.9&#160;<tt> </tt><a href="restrict.html#ineffective-uses">
+	Ineffective uses of type qualifiers</a><br>
+3.10&#160;<tt> </tt><a href="restrict.html#constraint-violations">Constraint violations</a><p>
+<dt>Appendix
+<dd>
+<a href="restrict.html#appendix-design-choices">Discussion of design choices</a><ul>
+  <a href="restrict.html#contiguity">Contiguity</a><br>
+  <a href="restrict.html#aliasing-of">Aliasing of unmodified objects</a><br>
+  <a href="restrict.html#linked-lists">Linked lists</a><br>
+</ul>
+<a href="restrict.html#array-syntax">Array syntax and qualified parameters</a><br>
+<a href="restrict.html#comparison-with-noalias">Comparison with noalias</a><br>
+</dl>
+<p>
+<hr>
+<p>
+<blockquote>
+Bill Homer<br>
+Cray Research, Inc.<br>
+655F Lone Oak Drive<br>
+Eagan, MN 55121<br>
+homer@cray.com  or  uunet!cray!homer
+<p>
+April 25, 1994
+</blockquote>
+        This document incorporates the change proposed in X3J11.1/93-040 to
+        Draft 1 of the Final Report, WG14/N274 (also known as X3J11.1/93-026
+        and X3J11/93-020).  The change consists of a revision of the section
+        entitled ``<a href="restrict.html#aliasing-of">Aliasing of unmodified objects</a>''
+	(formerly numbered 1.6 in the Rationale), and small changes to
+	<a href="restrict.html#formal-definition">section 2</a>
+	(in the subsection entitled
+	``<a href="restrict.html#semantics">Semantics</a>'') and
+	<a href="restrict.html#examples">section 3</a> (for the examples
+	in <a href="restrict.html#figure-7">Figure 7</a>
+        and <a href="restrict.html#figure-8">Figure 8</a>).&#160;<tt> </tt>
+	There are also some purely editorial changes,
+        which include reordering some of the sections.&#160;<tt> </tt>
+        In particular, three sections that discuss design decisions
+	were moved into an <a href="restrict.html#appendix-design-choices">Appendix</a>.
+<p>
+<hr>
+<p>
+<h1><a name="rationale">1  Rationale</a></h1>
+<p>
+<h2><a name="aliasing">1.1</a>&#160;<tt> </tt>Aliasing</h2>
+<p>
+  For many compiler optimizations, ranging from simply holding a value
+  in a register to the parallel execution of a loop, it is necessary to
+  determine whether two distinct lvalues designate distinct
+  objects.&#160;<tt> </tt>If the objects are not distinct, the lvalues are
+  said to be <em>aliases</em>.&#160;<tt> </tt>It is aliasing through pointers
+  that presents the greatest difficulty, because there is often not
+  enough information available within a single function,
+  or even within a single compilation unit, to determine whether two
+  pointers can point to the same object.&#160;<tt> </tt>Even when enough
+  information is available, this analysis can require substantial
+  time and space.&#160;<tt> </tt>For example, it could require an analysis
+  of a whole program to determine the possible values of a pointer
+  that is a function parameter.
+<p>
+<h2><a name="library-examples">1.2</a>&#160;<tt> </tt>Library examples</h2>
+<p>
+  Consider how potential aliasing enters into implementations in C of two
+  Standard C library functions.&#160;<tt> </tt>There are no restrictions on the use of
+  <code>memmove</code>, and the implementation shown below follows the model
+  described in the Standard by copying through a temporary array.&#160;<tt> </tt>
+  (Other approaches are possible, but this one is straightforward and
+  strictly conforming.)  Since <code>memcpy</code> cannot be used for
+  copying between overlapping arrays, its implementation can be a direct copy.
+<p>
+<dl><dt><dd><a name="figure-1"><b>Figure 1</b></a>&#160;<tt> </tt>
+	<i>Sample implementation of memmove.</i>
+<dt>
+<pre>
+   void *memmove(void *s1, const void *s2, size_t n) {
+           char * t1 = s1;
+           const char * t2 = s2;
+           char * t3 = malloc(n);
+           size_t i;
+           for(i=0; i&lt;n; i++) t3[i] = t2[i];
+           for(i=0; i&lt;n; i++) t1[i] = t3[i];
+           free(t3);
+           return s1;
+   }
+
+</pre>
+<dd><a name="figure-2"><b>Figure 2</b></a>&#160;<tt> </tt>
+	<i>Sample implementation of memcpy.</i>
+<dt><pre>
+   void *memcpy(void *s1, const void *s2, size_t n);
+           char * t1 = s1;
+           const char * t2 = s2;
+           while(n-- &gt; 0) *t1++ = *t2++;
+           return s1;
+   }
+</pre>
+</dl>
+<p>
+  Note that the restriction on <code>memcpy</code> is expressed only in its
+  <em>Description</em> in the Standard, and cannot be expressed directly in
+  its implementation in C.&#160;<tt> </tt>While this does allow the source-level
+  optimization of eliminating the temporary used in <code>memmove</code>,
+  it does not provide for compiler optimization of the resulting single
+  loop.&#160;<tt> </tt>In many architectures, it is faster to copy bytes in blocks,
+  rather than one at a time.&#160;<tt> </tt>The implementation of <code>memmove</code>
+  uses <code>malloc</code> to obtain the temporary array, and this guarantees
+  that the temporary is disjoint from the source and target
+  arrays.&#160;<tt> </tt>From this a compiler can deduce that block copies may
+  safely be used for both loops.&#160;<tt> </tt>The implementation of
+  <code>memcpy</code>, on the other hand, provides the compiler no basis
+  for ruling out the possibility that, for example, <code>s1</code> and
+  <code>s2</code> point to successive bytes.&#160;<tt> </tt>Therefore unconditional
+  use of block copies does not appear to be safe, and the code generated for
+  the single loop in <code>memcpy</code> may not be as fast as the code for
+  each loop in <code>memmove</code>.
+<p>
+<h2><a name="overlapping-objects">1.3</a>&#160;<tt> </tt>Overlapping objects</h2>
+
+  The restriction in the <em>Description</em> of <code>memcpy</code> prohibits
+  copying between ``overlapping objects.''&#160;<tt> </tt>A recent interpretation
+  from X3J11 in response to RFI #42, X3J11 92-001, clarified what is meant by
+ ``objects'' in this context.&#160;<tt> </tt>In the following quotation from that
+  interpretation, the section numbers prefixed with ## refer to the
+  American National Standard X3.159-1989.&#160;<tt> </tt>(The number of the
+  corresponding section in ISO/IEC 9899:1990(E) is three greater.)
+<p>
+<dl><dt><dd>
+        From ##1.6, an object is ``a region of data storage ...''
+        ``Except for bit-fields, objects are composed of contiguous sequences
+        of one or more bytes, the number, order, and encoding of which are
+        either explicitly specified or implementation-defined ...''
+<dl><dt><dd>
+<a name="figure-3"><b>Figure 3</b></a>&#160;<tt> </tt>
+			<i>Memcpy between rows of a matrix.</i><p>
+<pre>
+  void f1(void) {
+          extern char a[2][N];
+          memcpy(a[1], a[0], N);
+  }
+</pre></dl>
+<dt><dd>
+  Therefore, the ``objects'' referred to by ##4.11.2.1 are exactly the
+  regions of data storage pointed to by the pointers and dynamically
+  determined to be of <code>N</code> bytes in length (i.e. treated as an
+  array of <code>N</code> elements of character type).&#160;<tt> </tt>
+<p>
+  (A) So, no, the objects are not ``the largest objects into which the
+  arguments can be construed as pointing''.&#160;<tt> </tt>
+<p>
+  (B) In <a href="restrict.html#figure-3">Figure 3</a>, the call to <code>memcpy</code> has defined
+  behavior.&#160;<tt> </tt>
+<p>
+  (C) The behavior is defined because the pointers point into
+  different (non-overlapping) objects.&#160;<tt> </tt>
+<dl><dt><dd>
+<a name="figure-4"><b>Figure 4</b></a>&#160;<tt> </tt><i>Memcpy between halves of an array</i><p>
+<pre>
+   void f2(void) {
+           extern char b[2*N];
+           memcpy(b+N, b, N);
+   }
+</pre>
+</dl>
+<dt><dd>
+  Objects are defined as ``regions of data storage'' unrelated to
+  declarations or types (from the same citations above).
+<p>
+  (A)  So, yes, for <code>memcpy</code>, a contiguous sequence of elements
+  within an array can be regarded as an object in its own right.
+<p>
+  (B)  The objects are not the smallest contiguous sequence of bytes that
+  can be construed, they are exactly the regions of data storage starting
+  at the pointers and of <code>N</code> bytes in length.
+<p>
+  (C)  Yes, the non-overlapping halves of array <code>b</code> can be
+  regarded as objects in their own rights.
+<p>
+  (D)  Behavior is defined.
+<p>
+...
+<p>
+  Length is determined by ``various methods.''  For strings in which all
+  elements are accessed, length is inferred by null byte
+  termination.&#160;<tt> </tt>For <code>mbstowcs</code>, <code>wcstombs</code>,
+  <code>strftime</code>, <code>vsprintf</code>, <code>sscanf</code>,
+  <code>sprintf</code>, and all other similar functions, it was the intent
+  of the standard that the rules in ##4.11.1 be applicable by extension
+  (i.e., the objects and lengths are similarly dynamically determined).
+</dl>
+<p>
+<h2><a name="restricted-pointers">1.4 Restricted pointers</a></h2>
+<p>
+  If an aliasing restriction like the one for <code>memcpy</code> could
+  be expressed in a function definition, then it would be available
+  to a compiler to facilitate effective pointer alias
+  analysis.&#160;<tt> </tt>The preceding discussion suggests the form
+  that the restriction should take.&#160;<tt> </tt>
+  It should be possible to specify in the declaration of a pointer that it
+  provides ``exclusive initial access'' to the object to which it points, as
+  though the pointer were initialized with a call to
+  <code>malloc</code>.&#160;<tt> </tt>Because it is the unqualified versions
+  of function parameter types that are compared for type compatibility,
+  it is convenient to specify the restriction with a type qualifier,
+  spelled <code>restrict</code>, on the pointer type.&#160;<tt> </tt>The
+  following prototype for <code>memcpy</code> thus both expresses the
+  desired restriction and is compatible with the current prototype.
+<dl>
+<dt><dd><a name="figure-5"><b>Figure 5</b></a>&#160;<tt> </tt><i>Restricted pointer prototype for memcpy.</i>
+<dt>
+<pre>
+   void *memcpy(void * restrict s1, const void * restrict s2, size_t n);
+</pre></dl>
+<p>
+<h2><a name="design-choices">1.5</a>&#160;<tt> </tt>Design choices</h2>
+<p>
+  Given this general concept of restricted pointers, there remain a number
+  of design choices.&#160;<tt> </tt>Three of these are discussed in detail
+  in the an appendix.&#160;<tt> </tt>Most such choices may be characterized
+  as a choice between simplicity and expressive power.&#160;<tt> </tt>To some,
+  it seems better to simplify the analysis of restricted pointers by
+  confining their use to the simplest paradigms.&#160;<tt> </tt>For example,
+  restricted pointers would be quite useful even if they could
+  be declared only as function parameters and if the restricted pointers
+  themselves could not be modified.&#160;<tt> </tt>This would support what is
+  clearly the most important paradigm, an alias-free function call interface
+  in C, analogous to that in Fortran.&#160;<tt> </tt>To others,
+  it seems better to support the expression of aliasing restrictions
+  in as many paradigms as feasible.&#160;<tt> </tt>This would be helpful in
+  converting existing programs to use restricted pointers, and would
+  allow more freedom of style in new programs.
+<p>
+  The definition given in section 2 favors the second view.&#160;<tt> </tt>
+  It allows restricted pointers to be modifiable, to be members of structures
+  and elements of arrays, and to be ``strongly scoped,'' in the sense that
+  a restricted pointer declared in a nested block makes a non-aliasing
+  assertion only within that block.
+<p>
+   <hr>
+<p>
+  <h1><a name="formal-definition">2 Formal definition of restrict</a></h1>
+<p>
+  What follows are proposed additions to the document <em>International
+  Standard Programming Languages --- C (ISO/IEC 9899:1990(E))</em>.&#160;<tt> </tt>
+  The relevant sections are noted in brackets in each header, with the
+  corresponding section in <em>American National Standard</em> X3.159-1989
+  noted in parentheses.
+<p>
+<h2><a name="keywords">Keywords [6.1.1 (ANS 3.1.1)]</a></h2>
+  <em>Add a keyword:</em> <b>restrict</b>
+<p>
+<h2><a name="type-qualifiers">Type Qualifiers [6.5.3 (ANS 3.5.3)]</a></h2>
+<p>
+<h3>Syntax</h3>
+  <em>Add a type-qualifier:</em> <b>restrict</b>
+  <p>
+<h3>Constraints</h3>
+  <em>Add a constraint:</em>
+<p>
+  Types other than pointer types derived from object or incomplete types
+  shall not be restrict-qualified.&#160;<tt> </tt>
+<p>
+<h3><a name="semantics">Semantics</a></h3>
+<p>
+<em>Add the following text after line 22.</em>
+<p>
+  Let <code>D</code> be a declaration of an ordinary identifier that provides a
+  means of designating an object <code>P</code> as a restrict-qualified
+  pointer.
+<p>
+  If <code>D</code> appears inside a block and does not have storage-class
+  <code>extern</code>, let <code>B</code> denote the block.&#160;<tt> </tt>
+  If <code>D</code> appears in the list of parameter declarations of a
+  function definition, let <code>B</code> denote the associated
+  block.&#160;<tt> </tt>Otherwise, let <code>B</code> denote the block of
+  <code>main</code> (or the block of whatever function is called at
+  program startup, in a freestanding environment).
+<p>
+  In what follows, a pointer expression <code>E</code> is said to be
+  <i>based</i> on object <code>P</code> if (at some sequence point in the
+  execution of <code>B</code> prior to the evaluation of <code>E</code>)
+  modifying <code>P</code> to point to a copy of the array object into
+  which it formerly pointed would change the value of <code>E</code>.
+  (In other words, <code>E</code> depends on the value of <code>P</code>
+  itself rather than on the value of an object referenced indirectly
+  through <code>P</code>.&#160;<tt> </tt>For example, if identifier <code>p</code>
+  has type <code>(int ** restrict)</code>, then the pointer expressions
+  <code>p</code> and <code>p+1</code> are based on the restricted pointer
+  object designated by <code>p</code>, but the pointer expressions
+  <code>*p</code> and <code>p[1]</code> are not.)
+<p>
+  During each execution of <code>B</code>, let <code>O</code> be the
+  array object that is determined dynamically by all references through
+  pointer expressions based on <code>P</code>.&#160;<tt> </tt>All references
+  to values of <code>O</code> shall be through pointer expressions based
+  on <code>P</code>.&#160;<tt> </tt>Furthermore, if <code>P</code> is assigned
+  the value of a pointer expression <code>E</code> that is based on
+  another restricted pointer object <code>P2</code>, associated with block
+  <code>B2</code>, then either the execution of <code>B2</code> shall begin
+  before the execution of <code>B</code>, or the execution of
+  <code>B2</code> shall end prior to the assignment.&#160;<tt> </tt>
+  If this requirement is not met, then the behavior is undefined.
+<p>
+  Here an execution of <code>B</code> means that portion of the
+  execution of the program during which storage is guaranteed to be reserved
+  for an instance of an object that is associated with <code>B</code> and has
+  automatic storage duration.&#160;<tt> </tt>A reference to a value means either
+  an access to or a modification of the value.&#160;<tt> </tt>
+  During an execution of <code>B</code>, attention is confined to those
+  references that are actually evaluated (this excludes references that
+  appear in unevaluated expressions, and also excludes references that
+  are ``available,'' in the sense of employing visible identifiers,
+  but do not actually appear in the text of <code>B</code>).&#160;<tt> </tt>
+<p>
+  A translator is free to ignore any or all aliasing implications of uses of
+  <code>restrict</code>.
+<p>
+<hr>
+<p>
+<h1><a name="examples">
+3 Examples</a></h1>
+<h2><a name="file-scope-restricted-pointers">
+3.1</a>&#160;<tt> </tt>File scope restricted pointers</h2>
+
+  A file scope restricted pointer is subject to very strong
+  restrictions.&#160;<tt> </tt>It should point into a single array
+  object for the duration of the program.  That array object may
+  not be referenced both through the restricted pointer and
+  through either its declared name (if it has one) or another restricted
+  pointer.&#160;<tt> </tt>
+  Because of these restrictions, references through the pointer can be
+  optimized as effectively as references to a static array through its
+  declared name.&#160;<tt> </tt>
+  File scope restricted pointers are therefore useful in providing 
+  access to dynamically allocated global arrays.  In <a href="restrict.html#figure-6">Figure 6</a>, a compiler
+  can deduce from the restrict qualifiers that there is no potential
+  aliasing among the names <code>a</code>, <code>b</code>,
+  and <code>c</code>.&#160;<tt> </tt>
+  Notice how the single block of allocated storage is ``subdivided''
+  into two unique arrays in <code>init</code>.
+<dl>
+<dt><dd><a name="figure-6"><b>Figure 6</b></a>&#160;<tt> </tt><i>File scope restricted pointer.</i>
+<dt>
+<pre>
+   float * restrict a, * restrict b;
+   float c[100];
+
+   int init(int n) {
+       float * t = malloc(2*n*sizeof(float));
+       a = t;      /* a refers to 1st half. */
+       b = t + n;  /* b refers to 2nd half. */
+   }
+</pre>
+</dl>
+<h2><a name="function-parameters">3.2</a>&#160;<tt> </tt>Function parameters</h2>
+<p>
+  Restricted pointers are also very useful as pointer parameters
+  of a function.&#160;<tt> </tt>In the function <code>f3</code> in
+  <a href="restrict.html#figure-7">Figure 7</a>, it is possible for a compiler to infer that
+  there is no aliasing of modified objects, and so to optimize the loop
+  aggressively.&#160;<tt> </tt>
+  Upon entry to <code>f3</code>, the restricted pointer <code>a</code>
+  must provide exclusive access to its associated array.&#160;<tt> </tt>
+  In particular, within <code>f3</code> neither <code>b</code> nor
+  <code>c</code> may point into the array associated with
+  <code>a</code>, because neither is assigned a pointer value based
+  on <code>a</code>.&#160;<tt> </tt>
+  For <code>b</code>, this is evident from the const-qualifier in its
+  declaration, but for c, an inspection of the body of <code>f3</code>
+  is required.
+<dl>
+<dt><dd><a name="figure-7"><b>Figure 7</b></a>&#160;<tt> </tt><i>Restricted pointer function parameters</i>
+<dt><pre>
+   float x[100];
+   float *c;
+
+   void f3(int n, float * restrict a, float * const b) {
+       int i;
+       for ( i=0; i&lt;n; i++ )
+           a[i] = b[i] + c[i];
+   }
+   void g3(void) {
+       float d[100], e[100];
+       c = x; f3(100,   d,    e); /* Behavior defined.   */
+              f3( 50,   d, d+50); /* Behavior defined.   */
+              f3( 99, d+1,    d); /* Behavior undefined. */
+       c = d; f3( 99, d+1,    e); /* Behavior undefined. */
+              f3( 99,   e,  d+1); /* Behavior defined.   */
+   }
+</pre>
+</dl>
+  Two of the calls shown in <code>g3</code> result in aliasing that is
+  inconsistent with the <code>restrict</code> qualifier, and their
+  behavior is undefined.&#160;<tt> </tt>Note that it is permitted for
+  <code>c</code> to point into the array associated with <code>b</code>.
+  Note also that, for these purposes, the ``array'' associated
+  with a particular pointer means only that portion of an array object
+  which is actually referenced through that pointer.
+<p>
+<h2><a name="block-scope">3.3</a>&#160;<tt> </tt>Block scope</h2>
+<p>
+  A block scope restricted pointer makes an aliasing assertion
+  that is limited to its block.&#160;<tt> </tt>This seems more natural than
+  allowing the assertion to have function scope.&#160;<tt> </tt>It allows
+  local assertions that apply only to key loops, for example.&#160;<tt> </tt>
+  It also allows equivalent assertions to be made when inlining a 
+  function by converting it into a macro.  In <a href="restrict.html#figure-8">Figure 8</a>, the original
+  restricted pointer parameter is represented by a block scope
+  restricted pointer.
+<dl>
+<dt><dd><a name="figure-8"><b>Figure 8</b></a>&#160;<tt> </tt><i>Macro version of f3.</i>
+<dt><pre>
+   float x[100];
+   float *c;
+   
+   #define f3(N, A, B)                                    \
+   {   int n = (N);                                       \
+       float * restrict a = (A);                          \
+       float * const    b = (B);                          \
+       int i;                                             \
+       for ( i=0; i&lt;n; i++ )                              \
+           a[i] = b[i] + c[i];                            \
+   }
+</pre></dl>
+<p>
+<h2><a name="members-of-structures">3.4</a>&#160;<tt> </tt>Members of structures</h2>
+<p>
+  A restricted pointer member of a structure makes an aliasing
+  assertion, and the scope of that assertion is the scope of the
+  ordinary identifier used to access the structure.&#160;<tt> </tt>
+  Thus although the structure type is declared at file scope
+  in <a href="restrict.html#figure-9">Figure 9</a>, the assertions made by the declarations of the parameters
+  of <code>f4</code> have block (of the function) scope.
+<p>
+<dl><dt><dd><a name="figure-9"><b>Figure 9</b></a>&#160;<tt> </tt>
+<i>Restricted pointers as members of a structure.</i>
+<dt><pre>
+   struct t {     /* Restricted pointers assert that    */
+       int n;     /* members point to disjoint storage. */
+       float * restrict p;
+       float * restrict q;
+   };
+      
+   void f4(struct t r, struct t s) {
+       /* r.p, r.q, s.p, s.q should all point to    */
+       /* disjoint storage during each execution of f4. */
+       /* ... */
+   }
+</pre>
+</dl>
+<h2><a name="type-definitions">3.5</a>&#160;<tt> </tt>Type definitions</h2>
+<p>
+  A <code>restrict</code> qualifier in a type definition makes an aliasing
+  assertion when the typedef name is used in the declaration of
+  an ordinary identifier that provides access to an object.&#160;<tt> </tt>
+  As with members of structures, it is the scope of the latter
+  identifier, not the scope of the typedef name, that determines the
+  scope of the aliasing assertion.&#160;<tt> </tt>
+<p>
+<h2><a name="expressions-based-on">
+3.6</a>&#160;<tt> </tt>Expressions based on restricted pointers</h2>
+<dl>
+<dt><dd><a name="figure-10"><b>Figure 10</b></a>&#160;<tt> </tt><i>Pointer expressions based on p.</i>
+<dt><pre>
+   #include &lt;stdlib.h&gt;
+   #include &lt;string.h&gt;
+
+   struct t { int * q; int i; } a[2] = { /* ... */ };
+
+   void f5(struct t * restrict p, int c)
+   {
+        struct t * q;
+        int n;
+        if(c) {
+            struct t * r;
+            r = malloc(2*sizeof(*p));
+            memcpy(r, p, 2*sizeof(*p));
+            p = r;
+        }
+        q = p;
+        n = (int)p;
+        /* - - - - - - - - - - - - - - - - - - - - - - - 
+          Pointer expressions     Pointer expressions
+          based on p              not based on p
+   
+          p                       p-&amp;gt;q
+          p+1                     p[1].q
+          &amp;amp;p[1]                   &amp;amp;p
+          &amp;amp;p[1].i
+          q                       q-&amp;gt;p
+          ++q
+          (char *)p               (char *)(p-&amp;gt;i)
+          (struct t *)n           ((struct t *)n)-&gt;q
+        - - - - - - - - - - - - - - - - - - - - - - - - */
+   }
+   
+   main() {
+       f5(a, 0);
+       f5(a, 1);
+   }
+
+</pre></dl>
+  In <a href="restrict.html#figure-10">Figure 10</a>, the restricted pointer parameter <code>p</code>
+  is potentially adjusted to point into a copy of its original array 
+  of two structures.&#160;<tt> </tt>By definition, a subsequent pointer
+  expression is said to be based on <code>p</code>if and only if
+  its value is changed by this adjustment.&#160;<tt> </tt>In the comment,
+  the values of the pointer expressions in the first column are changed
+  by this adjustment, and so those expressions are based on 
+  <code>p</code>.&#160;<tt> </tt>The values of the pointer expressions in
+  the second column are not changed by the adjustment, and so those
+  expressions are not based on <code>p</code>.&#160;<tt> </tt>This can be
+  verified by adding appropriate print statements for the expressions,
+  and comparing the values produced bz the two calls of <code>f5</code>
+  in <code>main</code>.
+<p>
+  It is important to note that the definition of ``based on'' applies
+  to expressions that rely on implementation-defined behavior.&#160;<tt> </tt>
+  This is illustrated in the example, which assumes that the casts
+  <code>(int)</code> followed by <code>(struct t *)</code>
+  give the original value.
+<h2><a name="assignments-between-restricted">
+3.7</a>&#160;<tt> </tt>Assignments between restricted pointers
+</h2>
+<dl><dt><dd><a name="figure-11"><b>Figure 11</b></a>&#160;<tt> </tt><i>Assignments between restricted
+pointers.</i>
+<dt><pre>
+   int * restrict p1, * restrict p2;
+
+   void f6(int * restrict q1, * restrict q2)
+   {
+       p1 = p2;     /* Behavior undefined. */
+       p1 = q1;     /* Behavior undefined. */
+       q1 = q2;     /* Behavior undefined. */
+       { 
+           int * restrict r1, * restrict r2;
+           ...
+           r1 = r2; /* Behavior undefined. */
+           q1 = r1; /* Behavior undefined. */
+           p1 = r1; /* Behavior undefined. */
+           ...
+       }
+   }
+</pre></dl>
+  Let as say that one restricted pointer is ``newer'' than another if
+  the block with which the first is associated begins execution after
+  the block associated with the second.&#160;<tt> </tt>Then the formal definition
+  allows a newer restricted pointer to be assigned a value based on an older
+  restricted pointer.&#160;<tt> </tt>This allows, for example, a function with 
+  a restricted pointer parameter to be called with an argument that is
+  a restricted pointer.
+<p>
+  Conversely, an older restricted pointer may be assigned a value based on a
+  newer restricted pointer only after execution of the block associated
+  with the newer restricted pointer has ended.&#160;<tt> </tt>This allows, for
+  example, a function to return the value of a restricted pointer that is
+  local to the function, and the return value then to be assigned to
+  another restricted pointer.
+<p>
+  The behavior of a program is undefined if it contains an assignment
+  between two restricted pointers that does not fall into one of these
+  two categories.&#160;<tt> </tt>Some examples are given in <a href="restrict.html#figure-11">Figure 11</a>.
+<h2><a name="assignments-to-unrestricted">
+3.8</a>&#160;<tt> </tt>Assignments to unrestricted pointers
+</h2>
+This proposal permits assignment of the value of a restricted pointer
+to an unrestricted pointer, as in <a href="restrict.html#figure-12">Figure 12</a> below.
+<dl><dt><dd><a name="figure-12"><b>Figure 12</b></a>&#160;<tt> </tt><i>Assignments to unrestricted pointers.
+</i>
+<dd><pre>
+   void f7(int n, float * restrict r, float * restrict s) {
+       float * p = r, * q = s;
+       while(n--- > 0)
+           *p++ = *q++;
+   }
+</pre></dl>
+  If a compiler tracks pointer values, it should be able to optimize the
+  loop as effectively as if the restricted pointers <code>r</code>
+  and <code>s</code> were used directly.
+<p>
+  More complicated ways of combining restricted and unrestricted pointers
+  are unlikely to be effective because they are too difficult for a compiler
+  to analyze.&#160;<tt> </tt>As always, a programmer concerned about performance
+  must adapt his style to the capabilities of available compilers.&#160;<tt> </tt>
+  A conservative approach would be to avoid using both restricted and
+  unrestricted pointers in the same function.
+
+<h2><a name="ineffective-uses">3.9</a>&#160;<tt> </tt>Ineffective uses of type qualifiers</h2>
+
+  Except where specifically noted in the formal definition, the
+  <code>restrict</code> qualifier behaves in the same way as
+  <code>const</code> and <code>volatile</code>.&#160;<tt> </tt>In particular,
+  note that it is not a constraint violation for a function return type
+  or the <em>type-name</em> in a cast to be qualified, but the qualifier
+  has no effect because function call and cast expressions are not
+  lvalues.&#160;<tt> </tt>Thus the presence of the <code>restrict</code> qualifier
+  in the declaration of <code>f8</code> in <a href="restrict.html#figure-13">Figure 13</a> makes no assertion
+  about aliasing in functions that call <code>f8</code>.&#160;<tt> </tt>Similarly,
+  the two casts make no assertion about aliasing of the references through
+  the pointers <code>p</code> and <code>r</code>.
+
+<dl><dt><dd><a name="figure-13"><b>Figure 13</b></a>&#160;<tt> </tt><i>Qualified function return
+  type and casts.
+</i>
+<dd><pre>
+   float * restrict f8(void)  /* No assertion about aliasing. */
+   {
+       extern int i, *p, *q, *r;
+
+       r = (int * restrict)q; /* No assertion about aliasing. */
+
+       for(i=0; i&lt;100; i++)
+           *(int * restrict)p++ =   r[i];  /* No assertion    */
+                                           /* about aliasing. */
+       return p;
+   }
+</pre></dl>
+<h2><a name="constraint-violations">3.10</a>&#160;<tt> </tt>Constraint violations</h2>
+  It is a violation of the constraint in 6.5.3 (ANS 3.5.3) 
+  (of the Standard as modified above)
+  to restrict-qualify an object type which is not a pointer type,
+  or to restrict-qualify a pointer to a function.
+
+<dl><dt><dd><a name="figure-14"><b>Figure 14</b></a>&#160;<tt> </tt><i>Restrict cannot qualify
+non-pointer object types.
+</i>
+<dt><pre>
+       int restrict x;    /* Constraint violation. */
+       int restrict *p;   /* Constraint violation. */
+</pre>
+<dd><a name="figure-15"><b>Figure 15</b></a>&#160;<tt> </tt><i>Restrict cannot qualify
+pointers to functions.</i>
+<dt><pre>
+    float (* restrict f9)(void); /* Constraint violation. */
+</pre>
+</dl>
+
+<p>
+<hr>
+<p>
+
+<h1><a name="appendix-design-choices">Appendix: Discussion
+of design choices</a></h1>
+<h2><a name="contiguity">Contiguity</a></h2>
+  A restricted pointer points to an associated object that is determined
+  dynamically.&#160;<tt> </tt>When all references, both direct and indirect,
+  through a restricted pointer comprise a contiguous sequence of bytes,
+  then the associated object is exactly that sequence.&#160;<tt> </tt>
+  Otherwise, the object consists of both the referenced bytes and
+  those unreferenced bytes that fall between any two referenced bytes.
+<p>
+  This convention is consistent with the specification noted above, that
+  ``except for bit-fields, objects are composed of contiguous sequences
+  of one or more bytes.''  It is also consistent with the notions of
+  objects and argument association in Fortran 77.&#160;<tt> </tt>
+  Thus, in environments that support mixed-language programming,
+  restricted pointer parameters can be used in C prototypes for
+  functions defined in Fortran, and also in definitions of C functions
+  that are called from Fortran.
+<p>
+  Note that an implementation is free to support restricted pointers to
+  non-contiguous sets of bytes as an extension.&#160;<tt> </tt>Such support is not
+  mandated, however, because the need for it does not seem compelling,
+  and it could inhibit optimizations for architectures that cannot load
+  and store single bytes or that have software-managed caches.&#160;<tt> </tt>
+  Note that such an extension might be useful in implementation-defined
+  calling conventions between C and Fortran 90, because Fortran 90 permits
+  arguments that are non-contiguous sets of array elements.
+
+<h2><a name="aliasing-of">Aliasing of unmodified objects</a></h2>
+
+  Comparison with Fortran raises an issue concerning aliasing of
+  unmodified objects, as illustrated in <a href="restrict.html#figure-16">Figure 16</a>.&#160;<tt> </tt>
+  Knowing that parameter <code>a</code> provides exclusive access to the array
+  into which it points is sufficient to allow the the loop in <code>f10</code>
+  to be vectorized or executed in parallel.&#160;<tt> </tt>
+  Knowing that <code>b</code> and <code>c</code> are not used to access
+  overlapping portions of a single array allows no additional optimizations,
+  and so, in principle, there is no need to restrict-qualify <code>b</code>
+  and <code>c</code>.
+
+<dl><dt><dd><a name="figure-16"><b>Figure 16</b></a>&#160;<tt> </tt><i>Aliasing matters only for
+modified objects.
+</i>
+<dt><pre>
+   void f10(int n, float * restrict a, float *b, float *c) {
+       int i;
+       for ( i=0; i&lt;n; i++ )
+           a[i] = b[i] + c[i];
+   }
+</pre></dl>
+  But, as a practical matter, it is easier for a compiler to analyze functions
+  in which all pointer parameters are restrict-qualified.&#160;<tt> </tt>
+  This suggests that the semantics of the qualifier should be defined
+  so that one can restrict-qualify all three pointer parameters of
+  <code>f10</code> and still make calls of the form <code>f10(x, y, y)</code>.
+  This would be analogous to the aliasing semantics of Fortran dummy 
+  arguments.
+<p>
+  The simplest way of doing this (proposed in Draft 1 of this report) is
+  to allow aliasing through two restrict-qualified pointers provided the
+  referenced objects are not modified.&#160;<tt> </tt>
+  Unfortunately, if those objects are themselves pointers (i.e., there
+  are two levels of indirection), this aliasing can inhibit optimization,
+  even if the secondary pointers are also restrict-qualified and used
+  to modify the objects to which they, in turn, refer.&#160;<tt> </tt>See
+  X3J11.1/93-040 for examples.
+<p>
+  In the final analysis, it did not seem possible to permit aliasing
+  of unmodified objects, have effective assertions for multiple levels
+  of indirection, and still keep the semantics relatively simple.
+<p>
+  It was decided to drop the special treatment of unmodified objects,
+  largely because the practical effect is quite small.&#160;<tt> </tt>
+  First, as noted, the extra qualifiers are not needed in principle,
+  though they may be useful for specific compilers.  Second, in these
+  cases, it is also useful, and might be sufficient, to const-qualify
+  <code>b</code> and <code>c</code>, because this gives a compiler
+  enough aliasing information in the parameter declarations alone to
+  optimize <code>f10</code> (see the discussion of <a href="restrict.html#figure-7">Figure 7</a>).&#160;<tt> </tt>.
+  Finally, even if a specific compiler requires all three restrict qualifiers
+  to give the desired optimization, it is most unlikely that their
+  use would give unexpected results for a call such as <code>f10(x,y,y)</code>,
+  even though its behavior is technically undefined.&#160;<tt> </tt>Such
+  use may therefore be justified in particular cases, as are other instances
+  of undefined or implementation-defined behavior, such as assigning
+  to one member of a union and then referring to another.
+
+<h2><a name="linked-lists">Linked lists</a></h2>
+
+  Operations on data contained in the items of a linked list are
+  difficult to optimize, particularly for vector or parallel
+  execution.&#160;<tt> </tt>
+  Because potential aliasing is not the only difficulty, it is
+  unlikely that the use of restricted pointers in this context
+  will make much difference with currently available compilers.&#160;<tt> </tt>
+  Nevertheless, as the use of parallel architectures becomes more widespread,
+  their compilers may well be more ambitious in this area.&#160;<tt> </tt>
+  With this in mid, the following examples illustrate how to use the 
+  <code>restrict</code> and <code>const</code> qualifiers to make
+  assertions that could, in principle, enable effective optimizations.
+<p>
+  First note that restricted pointers cannot, in general, be used
+  for link pointers in portions of the program that modify the lists.&#160;<tt> </tt>
+  Thus in <a href="restrict.html#figure-17">Figure 17</a>, the assignments to <code>next</code> and <code>head</code>
+  would give undefined behavior if they were restrict qualified.
+
+<dl><dt><dd><a name="figure-17"><b>Figure 17</b></a>&#160;<tt> </tt><i>Operations on the structure
+of a linked list.
+</i>
+<dt><pre>
+   struct t { struct t * next; float x; } * head, * item;
+
+   void modify_links()
+       /* Add a list item at the beginning. */
+       item -&gt; next = head; head = item;
+
+       /* Add a list item as the second item. */
+       item -&gt; next = head -&gt; next; head -&gt; next = item;
+
+       /* Delete second list item. */
+       head -&gt; next = head -&gt; next -&gt; next;
+
+       /* Delete first list item. */
+       head = head -&gt; next;
+   }
+</pre></dl>
+  In contrast, in functions in which the structure of the lists is
+  constant, this can be asserted by using a combination of the
+  <code>restrict</code> and <code>const</code> qualifiers.&#160;<tt> </tt>
+  Note that, as in <a href="restrict.html#figure-18">Figure 18</a>, this requires a second structure type,
+  and a cast from the original to a new type.&#160;<tt> </tt>The comments
+  describe an optimization that allows parallel execution of the second
+  loop.&#160;<tt> </tt>Alternatively, the second loop could be fused with the 
+  first, so that both operations are performed during a single walk.&#160;<tt> </tt>
+  The latter optimization is likely to be beneficial on any architecture.
+
+<dl><dt><dd><a name="figure-18"><b>Figure 18</b></a>&#160;<tt> </tt><i>Operations on the values in 
+a linked list
+</i>
+<dt><pre>
+   struct t { struct t * next; float x; };
+   struct rt { struct rt * const restrict next; float x; };
+
+   void modify_values(struct t * head) {
+       /* Assert that links will not change. */
+       struct rt * const restrict rhead = (struct rt *)head;
+
+       /* Need modifiable unrestricted pointer to walk list. */
+       struct rt * this = rhead;
+       
+       /* Can build a cache of link addresses. */
+       for(this=rhead; this; this = this-&gt;next) {
+           this -&gt; x += 1;
+       }
+
+       /* Can use cached addresses to execute in parallel. */
+       for(this=rhead; this; this = this-&gt;next) {
+           this -&gt; x *= 2;
+       }
+    }
+</pre></dl>
+  Unfortunately, there is a subtle problem with this approach.&#160;<tt> </tt>
+  If there is a function call between the two loops that has <code>rhead</code>
+  as a parameter, then there should be a guarantee that the cached links are
+  not changed during the execution of the called function.&#160;<tt> </tt>The
+  problem is that there is nothing to prevent the function from modifying
+  a link via
+<pre>*(struct rt * restrict *)&amp;(rhead-&gt;next) = ... </pre>
+(assuming for the sake of argument that the structures on the list were
+dynamically allocated as an array of structures).&#160;<tt> </tt>To make the
+aliasing assertions effective would require forbidding this sort of
+modification.&#160;<tt> </tt>This might be done be extending the full semantics
+of the <code>const</code> qualifier to include objects designated as
+const-qualified by a restricted pointer, as well as objects that are
+const-qualified by their definitions.  (This extension is not part
+of the current proposal.)
+
+<p>
+<hr>
+<p>
+
+<h1><a name="array-syntax">Appendix: Array syntax and
+qualified parameters</a></h1>
+
+  By section 6.7.1 (ANS 3.7.1) of the Standard, a declaration of
+  a function parameter as ``array of <em>type</em>'' is adjusted
+  to ``pointer to <em>type</em>.''&#160;<tt> </tt>
+  Thus the following two prototypes for <code>f11</code> are
+  compatible.
+<dl><dt><dd><a name="figure-19"><b>Figure 19</b></a>&#160;<tt> </tt><i>Equivalent parameter declarations</i>
+<dt><pre>
+   void f8(int n, float a[][100], float b[][100]);
+   void f8(int n, float (*a)[100], float (*b)[100]);
+</pre></dl>
+  In either case, <code>a</code> and <code>b</code> are pointers used to access
+  their respective two-dimensional arrays, but the first form more clearly
+  conveys the rank of the arrays.&#160;<tt> </tt>It is therefore unfortunate that
+  only the second form allows the pointers to be qualified, e.g.,
+  by <code>restrict</code>.&#160;<tt> </tt>
+<p>
+  This suggests an extension of the syntax to allow one or more type
+  qualifiers to appear within the ``array of'' type derivation for a
+  function parameter declared to have array type.&#160;<tt> </tt>The declaration is
+  then adjusted to the analogously qualified pointer type.&#160;<tt> </tt>
+
+<dl><dt><dd><a name="figure-20"><b>Figure 20</b></a>&#160;<tt> </tt><i>Restricted version of f11.</i>
+<dt>
+<pre>
+   void f11(int n, float a[restrict][100], float b[restrict][100])
+   {
+       int i, j;
+       for(i=0; i&lt;n; i++)
+           for(j=0; j&lt;100; j++)
+              a[i][j] = b[i][j];
+   }
+
+   void g11(int m, int k, float p[][100]) {
+           f9(m, p, p+k); /* Defined if and only if m &lt;= k. */
+   }
+</pre></dl>
+
+  This extension would be even more convenient in the presence of a
+  variable length array extension, that would allow another parameter
+  to be used in an array size expression.&#160;<tt> </tt>
+  In <a href="restrict.html#figure-21">Figure 21</a>, the compiler, or code reviewer, can use the information
+  in the prototype alone to deduce that the first call of <code>f12</code>
+  in <code>g12</code> is defined, but the second call is potentially
+  undefined (depending upon which elements of the arrays <code>f12</code>
+  actually references).
+
+<dl><dt><dd><a name="figure-21"><b>Figure 21</b></a>&#160;<tt> </tt><i>Restrict and variable length arrays</i>
+<dt><pre>
+   void f12(int m, int n, float a[restrict m][n],
+                          float b[restrict m][n]);
+   
+   void g12(int n, float *p[n]) {
+           f20(10, n, p, p+10); /* Defined behavior. */
+           f20(20, n, p, p+10); /* Potential undefined behavior. */
+   }
+</pre></dl>
+<p>
+For consistency, the extension would apply to all type qualifiers.&#160;<tt> </tt>
+The following changes to the Standard would be required for this extension.&#160;<tt> </tt>
+<p>
+<h2><a name="declarators">Declarators [6.5.4 (ANS 3.5.4)]</a></h2>
+<p>
+<h3>Syntax</h3>
+<p>
+<i>Allow an optional </i> type-qualifier-list <i> in the third form
+of direct-declarator:</i>
+<p>
+<em>direct-declarator</em>
+<code>[</code> <em>type-qualifier-list</em> (opt)
+<em>constant-expression</em> (opt)  <code>]</code>
+
+<h2><a name="array-declarators">Array Declarators [6.5.4.2
+(ANS 3.5.4.2)]</a></h2>
+<p>
+<h3>Constraints</h3>
+<p>
+<em>Add a constraint:</em>
+<p>
+  Type qualifiers shall appear preceding or in place of a size expression
+  only in a declaration of a function parameter of array type, and then only
+  in the outermost array type derivation.&#160;<tt> </tt>
+
+<p>
+<h2><a name="function-definition">Function Definition [6.7.1 (ANS 3.7.1)]</a></h2>
+<p>
+<h3>Semantics</h3>
+<p>
+<em>Modify lines 23-24 to read:</em>
+<p>
+  ... A declaration of a parameter as ``array of <em>type</em>'' shall be
+  adjusted to ``qualified pointer to <em>type</em>'' (where the type qualifiers
+  are those specified within the square brackets of the array type derivation),
+  ...&#160;<tt> </tt>
+
+<p>
+<hr>
+<p>
+
+<h1><a name="comparison-with-noalias">
+Appendix: Comparison with noalias</a></h1>
+<p>
+Tom MacDonald provided the following overview of the differences
+between <code>restrict</code> and the previously proposed
+<code>noalias</code>.
+<p>
+  The X3J11 committee attempted to solve the aliasing problem in C by
+  introducing a new type qualifier <code>noalias</code>.&#160;<tt> </tt>
+  That effort failed because of technical problems with
+  the <a href="noalias-88.html">proposed
+  semantics of </a><a href="noalias-88.html"
+	><code>noalias</code></a>.&#160;<tt> </tt>
+  This restricted pointer proposal is different in many ways.&#160;<tt> </tt>
+<menu>
+<li>
+  Only pointers can be declared to be restricted.&#160;<tt> </tt>
+  In the <code>noalias</code> proposal, all objects were permitted to be
+  declared noalias-qualified.
+<li>
+  It is the declaration of the restricted pointer that makes the
+  aliasing assertions, while it was the noalias-qualified lvalue
+  that made the aliasing assertions.
+<li>
+  A restricted pointer can be an alias with an unrestricted pointer,
+  whereas a pointer to a noalias-qualified type was guaranteed to be
+  completely alias free.
+<li>
+  The proposed semantics of <code>noalias</code> defined an alternate
+  execution path in which virtual objects were created and later
+  synchronized with the original object.&#160;<tt> </tt>No alternate execution
+  path is defined for restricted pointers.&#160;<tt> </tt>
+  The proposed semantics for restricted pointers merely permit
+  the optimizer to statically analyze restricted pointers.
+<li>
+  A block scope restricted pointer only makes assertions on
+  the containing scope.&#160;<tt> </tt>In the <code>noalias</code> proposal,
+  a block scope noalias-qualified object made assertions that affected
+  the entire containing function.
+<li>
+  A pointer to a noalias-qualified type made no aliasing assertion
+  if it was a member of a structure (because identifiers designating
+  members of structures were not ``handles'').&#160;<tt> </tt>A restricted pointer
+  member of a structure does make an aliasing assertion.
+</menu>
+</body>
+</html>

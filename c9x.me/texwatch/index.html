@@ -1,0 +1,51 @@
+<!doctype html>
+<meta name=viewport content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../assets/css/simple.css" type="text/css" />
+
+<title>texwatch - An Automatic TeX Recompiler</title>
+
+<div class="container">
+<h1>texwatch</h1>
+
+<h2>Automatic TeX Recompilation</h2>
+
+<h3>A Dead C Program</h3>
+<p>This page used to be about a C
+program.  But on second thought, the whole thing is a
+poor implementation of an idea that can be hacked in 10
+lines of shell.  So, here is a saner alternative.
+
+<pre>
+#!/bin/sh
+
+TEX=  # list your main tex file here
+DEP=`find . -name '*.tex' -not -name $TEX`
+PDF=${TEX%.tex}.pdf
+
+compile() {
+	pdflatex $TEX < /dev/null
+#	bibtex ${TEX%.tex}.aux
+#	pdflatex $TEX < /dev/null
+#	pdflatex $TEX < /dev/null
+}
+
+[ -e $PDF ] || compile
+# xpdf -remote view $PDF &
+mupdf $PDF &
+
+while true
+do
+        inotifywait -qr -o /dev/null -e modify $TEX $DEP
+        compile
+        # xpdf -remote view -reload
+	[ -e $PDF ] && killall -HUP mupdf
+done
+</pre>
+
+<p>Modify it to your liking.  I usually compile only
+once in <code>compile()</code> and tolerate flaky
+references to have a faster iteration cycle.  If I
+want the references fixed, I just save the file a
+second time.
+</div>
+<!-- analytics free! -->

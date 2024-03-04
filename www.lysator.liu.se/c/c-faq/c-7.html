@@ -1,0 +1,213 @@
+<html><head>
+<link rel="made" rev="made" href="mailto:jutta@cs.tu-berlin.de">
+<title>Variable-Length Argument Lists</title></head>
+<body>
+<a href="c-6.html"><img SRC="prev.xbm" ALT="[prev]"></a>
+<a href="index.html#comp-lang-c-faq"><img SRC="up.xbm" ALT="[up]"></a>
+<a href="c-faq-toc.html#c-7"><img SRC="overview.xbm" alt="[overview]"></a>
+<a href="c-8.html"><img SRC="next.xbm" ALT="[next]"></a>
+<hr>
+
+<h2>Section 7. Variable-Length Argument Lists</h2>
+<p>
+<h3>
+<a name="7-1">
+7.1:	How can I write a function that takes a variable number of
+	arguments?
+</a></h3><p>
+  	Use the <code>&lt;stdarg.h&gt;</code> header (or, if you must, the older
+	<code>&lt;varargs.h&gt;</code>).
+<p>
+	Here is a function which concatenates an arbitrary number of
+	strings into <code>malloc</code>'ed memory:
+<p>
+<pre>
+	#include &lt;stdlib.h&gt;		/* for malloc, NULL, size_t */
+	#include &lt;stdarg.h&gt;		/* for va_ stuff */
+	#include &lt;string.h&gt;		/* for strcat et al */
+
+	char *vstrcat(char *first, ...)
+	{
+		size_t len = 0;
+		char *retbuf;
+		va_list argp;
+		char *p;
+
+		if(first == NULL)
+			return NULL;
+
+		len = strlen(first);
+
+		va_start(argp, first);
+
+		while((p = va_arg(argp, char *)) != NULL)
+			len += strlen(p);
+
+		va_end(argp);
+
+		retbuf = malloc(len + 1);	/* +1 for trailing \0 */
+
+		if(retbuf == NULL)
+			return NULL;		/* error */
+
+		(void)strcpy(retbuf, first);
+
+		va_start(argp, first);
+
+		while((p = va_arg(argp, char *)) != NULL)
+			(void)strcat(retbuf, p);
+
+		va_end(argp);
+
+		return retbuf;
+	}
+</pre>
+<p>
+	Usage is something like
+<p>
+<pre>
+	char *str = vstrcat(&quot;Hello, &quot;, &quot;world!&quot;, (char *)NULL);
+</pre>
+<p>
+	Note the cast on the last argument.&#160;<tt> </tt>(Also note that the caller
+	must free the returned, <code>malloc</code>'ed storage.)
+<p>
+	Under a pre-<a href="index.html#ANSI">ANSI</a> compiler, rewrite the function definition
+	without a prototype (&quot;<code>char</code> <code>*vstrcat(first) char *first;</code>{&quot;),
+	include <code>&lt;stdio.h&gt;</code> rather than <code>&lt;stdlib.h&gt;</code>, add &quot;<code>extern
+	char *malloc();</code>&quot;, and use <code>int</code> instead of <code>size_t</code>.&#160;<tt> </tt>You may also
+	have to delete the <code>(void)</code> casts, and use the older <code>varargs</code>
+	package instead of <code>stdarg</code>.&#160;<tt> </tt>See the <a href="c-7.html#7-2">next question</a> for hints.
+<p>
+	Remember that in variable-length argument lists, function
+	prototypes do not supply parameter type information; therefore,
+	default argument promotions apply (see <a href="c-5.html#5-8">question 5.8</a>), and null
+	pointer arguments must be typed explicitly (see <a href="c-1.html#1-2">question 1.2</a>).
+<p>
+	References: <a href="index.html#K-amp-RII">K&amp;R II</a> Sec. 7.3 p. 155, Sec. B7 p. 254; <a href="index.html#H-amp-S">H&amp;S</a>
+	Sec. 13.4 pp. 286-9; <a href="index.html#ANSI">ANSI</a> Secs. 4.8 through 4.8.1.3 .
+<p>
+
+<h3>
+<a name="7-2">
+7.2:	How can I write a function that takes a format string and a
+	variable number of arguments, like printf, and passes them to
+	printf to do most of the work?
+</a></h3><p>
+  	Use <code>vprintf</code>, <code>vfprintf</code>, or <code>vsprintf</code>.
+<p>
+	Here is an &quot;error&quot; routine which prints an error message,
+	preceded by the string <code>&quot;error: &quot;</code> and terminated with a newline:
+<p>
+<pre>
+	#include &lt;stdio.h&gt;
+	#include &lt;stdarg.h&gt;
+
+	void
+	error(char *fmt, ...)
+	{
+		va_list argp;
+		fprintf(stderr, &quot;error: &quot;);
+		va_start(argp, fmt);
+		vfprintf(stderr, fmt, argp);
+		va_end(argp);
+		fprintf(stderr, &quot;\n&quot;);
+	}
+</pre>
+<p>
+	To use the older <code>&lt;varargs.h&gt;</code> package, instead of <code>&lt;stdarg.h&gt;</code>,
+	change the function header to:
+<p>
+<pre>
+	void error(va_alist)
+	va_dcl
+	{
+		char *fmt;
+</pre>
+<p>
+	change the <code>va_start</code> line to
+<p>
+<pre>
+	va_start(argp);
+</pre>
+<p>
+	and add the line
+<p>
+<pre>
+	fmt = va_arg(argp, char *);
+</pre>
+<p>
+	between the calls to <code>va_start</code> and <code>vfprintf</code>.&#160;<tt> </tt>(Note that there is
+	no semicolon after <code>va_dcl</code>.)
+<p>
+	References: <a href="index.html#K-amp-RII">K&amp;R II</a> Sec. 8.3 p. 174, Sec. B1.2 p. 245; <a href="index.html#H-amp-S">H&amp;S</a>
+	Sec. 17.12 p. 337; <a href="index.html#ANSI">ANSI</a> Secs. 4.9.6.7, 4.9.6.8, 4.9.6.9 .
+<p>
+
+<h3>
+<a name="7-3">
+7.3:	How can I discover how many arguments a function was actually
+	called with?
+</a></h3><p>
+  	This information is not available to a portable program.&#160;<tt> </tt>Some
+	old systems provided a nonstandard <code>nargs()</code> function, but its use
+	was always questionable, since it typically returned the number
+	of words passed, not the number of arguments.&#160;<tt> </tt>(Structures and
+	floating point values are usually passed as several words.)
+<p>
+	Any function which takes a variable number of arguments must be
+	able to determine from the arguments themselves how many of them
+	there are.&#160;<tt> </tt><code>printf</code>-like functions do this by looking for
+	formatting specifiers (<code>%d</code> and the like) in the format string
+	(which is why these functions fail badly if the format string
+	does not match the argument list).&#160;<tt> </tt>Another common technique
+	(useful when the arguments are all of the same type) is to use a
+	sentinel value (often 0, -1, or an appropriately-cast null
+	pointer) at the end of the list (see the <a href="c-1.html#1-2-execl"><code>execl</code></a> and <a href="c-7.html#7-1"><code>vstrcat</code></a>
+	examples under questions <a href="c-1.html#1-2">1.2</a> and <a href="c-7.html#7-1">7.1</a> above).
+<p>
+
+<h3>
+<a name="7-4">
+7.4:	I can't get the </a><code>va_arg</code> macro to pull in an argument of type
+	pointer-to-function.
+</h3><p>
+  	The type-rewriting games which the <code>va_arg</code> macro typically plays
+	are stymied by overly-complicated types such as pointer-to-
+	function.&#160;<tt> </tt>If you use a <code>typedef</code> for the function pointer type,
+	however, all will be well.
+<p>
+	References: <a href="index.html#ANSI">ANSI</a> Sec. 4.8.1.2 p. 124.
+<p>
+
+<h3>
+<a name="7-5">
+7.5:	How can I write a function which takes a variable number of
+	arguments and passes them to some other function (which takes a
+	variable number of arguments)?
+</a></h3><p>
+  	In general, you cannot.&#160;<tt> </tt>You must provide a version of that
+	other function which accepts a <code>va_list</code> pointer, as does <code>vfprintf</code>
+	in the example above.&#160;<tt> </tt>If the arguments must be passed directly
+	as actual arguments (not indirectly through a <code>va_list</code> pointer)
+	to another function which is itself variadic (for which you do
+	not have the option of creating an alternate, <code>va_list</code>-accepting
+	version) no portable solution is possible.&#160;<tt> </tt>(The problem can be
+	solved by resorting to machine-specific assembly language.)
+<p>
+
+<h3>
+<a name="7-6">
+7.6:	How can I call a function with an argument list built up at run
+	time?
+</a></h3><p>
+  	There is no guaranteed or portable way to do this.&#160;<tt> </tt>If you're
+	curious, ask <a href="index.html#steve">this list's editor</a>, who has a few wacky ideas you
+	could try...&#160;<tt> </tt>(See also <a href="c-16.html#16-11">question 16.11</a>.)
+
+<p>
+<hr>
+<a href="c-6.html"><img SRC="prev.xbm" ALT="[prev]"></a>
+<a href="index.html#comp-lang-c-faq"><img SRC="up.xbm" ALT="[up]"></a>
+<a href="c-faq-toc.html#c-7"><img SRC="overview.xbm" alt="[overview]"></a>
+<a href="c-8.html"><img SRC="next.xbm" ALT="[next]"></a></body></html>

@@ -1,0 +1,60 @@
+diff --git a/gui.h b/gui.h
+index e6c83da..6b2fdf3 100644
+--- a/gui.h
++++ b/gui.h
+@@ -104,6 +104,7 @@ struct gui {
+ 	void (*setpointer)(GPointer pt);
++	void (*settitle)(char *title);
+ 	int (*textwidth)(Rune *str, int len);
+ 	int (*nextevent)(GEvent *eret);
+ 	int hmargin;
+ 	int vmargin;
+ 	int border;
+diff --git a/main.c b/main.c
+index 105ea91..ca657ed 100644
+--- a/main.c
++++ b/main.c
+@@ -33,6 +33,12 @@ chwin(W *w)
+ {
++	char *title;
++
+ 	cmd_parse(GKEsc); /* reset command parser state */
+ 	curwin = w;
++	title = win_text(w)->eb->path;
++	if (!title)
++		title = "no name";
++	g->settitle(title);
+ }
+
+ static int
+@@ -171,6 +177,7 @@ main(int ac, char *av[])
+ 	if (ac > 1)
+ 		ex_get(curwin, av[1]);
++	chwin(curwin);
+ 	gev(0, 0, 0);
+ 	ev_loop();
+ }
+
+diff --git a/x11.c b/x11.c
+index b358a05..6c815c1 100644
+--- a/x11.c
++++ b/x11.c
+@@ -194,2 +194,8 @@ setpointer(GPointer pt)
+ }
++
++static void
++settitle(char *title)
++{
++	XStoreName(d, win, title);
++}
+
+@@ -350,6 +356,7 @@ struct gui gui_x11 = {
+ 	.drawtext	= drawtext,
+ 	.getfont	= getfont,
+ 	.nextevent	= nextevent,
+ 	.setpointer	= setpointer,
++	.settitle	= settitle,
+ 	.textwidth	= textwidth,
+ 	.hmargin	= HMargin,
+--
+2.1.4

@@ -1,0 +1,40 @@
+<!doctype html>
+<meta name=viewport content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../assets/css/simple.css" type="text/css" />
+
+<link rel="stylesheet" href="assets/notes.css" type="text/css"/>
+<title>Notes from 2014-09-03</title>
+<article>
+<h1><img id="logo" src="assets/logo.png" alt="">Notes</h1>
+<h3>2014-09-03</h3>
+
+<p>
+While hacking on my text editor I discovered
+a fun idiom.  Often, in a switch statement you have two
+cases that are very similar except in one or two points.
+In that situation it would be poor style to copy the big
+chunk of code that is common to the two cases, instead,
+you can use the following neat trick.
+</p>
+<pre>
+switch(type) {
+	...
+case X:
+	isx = 1;
+if (0) {
+case Y:
+	isx = 0;
+}
+	common code;
+	...
+	break;
+}
+</pre>
+<p>
+The line <code>isx = 0;</code> will only be executed when
+the type is Y because of the guard.  This is very similar
+and sort of dual to Duff's device.  For additional fun,
+the braces of <code>if (0)</code> can be removed!
+</p>
+</article>
+<!-- analytics free! -->

@@ -1,0 +1,230 @@
+<html><head>
+<link rel="made" rev="made" href="mailto:jutta@cs.tu-berlin.de">
+<title>System Dependencies</title></head>
+<body>
+<a href="c-15.html"><img SRC="prev.xbm" ALT="[prev]"></a>
+<a href="index.html#comp-lang-c-faq"><img SRC="up.xbm" ALT="[up]"></a>
+<a href="c-faq-toc.html#c-16"><img SRC="overview.xbm" alt="[overview]"></a>
+<a href="c-17.html"><img SRC="next.xbm" ALT="[next]"></a>
+<hr>
+
+<h2>Section 16. System Dependencies</h2>
+<p>
+<h3>
+<a name="16-1">
+16.1:	How can I read a single character from the keyboard without
+	waiting for a newline?
+</a></h3><p>
+  	Contrary to popular belief and many people's wishes, this is not
+	a C-related question.&#160;<tt> </tt>(Nor are closely-related questions
+	concerning the echo of keyboard input.)&#160;<tt> </tt>The delivery of
+	characters from a &quot;keyboard&quot; to a C program is a function of the
+	operating system in use, and has not been standardized by the C
+	language.&#160;<tt> </tt>Some versions of curses have a cbreak() function
+	        which does what you want.  If you're specifically trying to read
+        a short password without echo, you might try<code> getpass()</code>.&#160;<tt> </tt>Under
+        Unix, use<code> ioctl </code>to play with the terminal driver modes (<code>CBREAK </code>or<code> RAW </code>under "classic" versions;<code> ICANON</code>,<code> c_cc[VMIN] </code>and
+<code>        c_cc[VTIME] </code>under System V or Posix systems).  Under MS-DOS, use
+<code>        getch()</code>.  Under VMS, try the Screen Management (<code>SMG$</code>) routines,
+        or curses, or issue low-level<code> $QIO</code>'s with the<code> IO$_READVBLK </code>(and
+        perhaps<code> IO$M_NOECHO</code>) function codes to ask for one character at
+        a time.  Under other operating systems, you're on your own.
+        Beware that some operating systems make this sort of thing
+        impossible, because character collection into input lines is
+        done by peripheral processors not under direct control of the
+        CPU running your program.
+<p>
+	Operating system specific questions are not appropriate for
+	comp.lang.c .&#160;<tt> </tt>Many common questions are answered in
+	frequently-asked questions postings in such groups as
+	comp.unix.questions and comp.os.msdos.programmer .&#160;<tt> </tt>Note that
+	the answers are often not unique even across different variants
+	of a system; bear in mind when answering system-specific
+	questions that the answer that applies to your system may not
+	apply to everyone else's.
+<p>
+	References: <a href="index.html#PCS">PCS</a> Sec. 10 pp. 128-9, Sec. 10.1 pp. 130-1.
+<p>
+
+<h3>
+<a name="16-2">
+16.2:	How can I find out if there are characters available for reading
+	(and if so, how many)?</a>&#160;<tt> </tt>Alternatively, how can I do a read that
+	will not block if there are no characters available?
+</h3><p>
+  	These, too, are entirely operating-system-specific.&#160;<tt> </tt>Some
+	versions of curses have a<code> nodelay() </code>function.&#160;<tt> </tt>Depending on your
+	system, you may also be able to use &quot;nonblocking I/O&quot;, or a
+	system call named &quot;select&quot;, or the<code> FIONREAD</code><code> ioctl</code>, or<code> kbhit()</code>,
+	or<code> rdchk()</code>, or the<code> O_NDELAY </code>option to<code> open() </code>or<code> fcntl()</code>.
+<p>
+
+<h3>
+<a name="16-3">
+16.3:	How can I clear the screen?</a>&#160;<tt> </tt>How can I print things in inverse
+	video?
+</h3><p>
+  	Such things depend on the terminal type (or display) you're
+	using.&#160;<tt> </tt>You will have to use a library such as<code> termcap </code>or
+	<code>curses</code>, or some system-specific routines, to perform these
+	functions.
+<p>
+
+<h3>
+<a name="16-4">
+16.4:	How do I read the mouse?
+</a></h3><p>
+  	Consult your system documentation, or ask on an appropriate
+	system-specific newsgroup (but check its FAQ list first).&#160;<tt> </tt>Mouse
+	handling is completely different under the X window system, MS-
+	DOS, Macintosh, and probably every other system.
+<p>
+
+<h3>
+<a name="16-5">
+16.5:	How can my program discover the complete pathname to the
+	executable file from which it was invoked?
+</a></h3><p>
+  	<code>argv[0] </code>may contain all or part of the pathname, or it may
+	contain nothing.&#160;<tt> </tt>You may be able to duplicate the command
+	language interpreter's search path logic to locate the
+	executable if the name in<code> argv[0] </code>is present but incomplete.
+	However, there is no guaranteed or portable solution.
+<p>
+
+<h3>
+<a name="16-6">
+16.6:	How can a process change an environment variable in its caller?
+</a></h3><p>
+  	In general, it cannot.&#160;<tt> </tt>Different operating systems implement
+	name/value functionality similar to the Unix environment in
+	different ways.&#160;<tt> </tt>Whether the &quot;environment&quot; can be usefully
+	altered by a running program, and if so, how, is system-dependent.
+<p>
+	Under Unix, a process can modify its own environment (some
+	systems provide<code> setenv() </code>and/or<code> putenv() </code>functions to do this),
+	and the modified environment is usually passed on to any child
+	processes, but it is <em>not</em> propagated back to the parent
+	process.
+<p>
+<h3><a name="16-7">
+16.7:   How can I check whether a file exists?</a>&#160;<tt> </tt>I want to query
+	the user before overwriting existing files.
+</h3><p>
+        On Unix-like systems, you can try the<code> access() </code>routine, although it's got a few
+        problems.&#160;<tt> </tt>(It isn't atomic with respect to the following
+        action, and can have anomalies if used in setuid programs.)&#160;<tt> </tt>
+	Another option (perhaps preferable) is to call
+	<code>stat()</code> on the file.&#160;<tt> </tt>Otherwise, the only
+	guaranteed and portable way to test for file existence is to try
+	opening the file (which doesn't help if you're trying to avoid
+	overwriting an existing file, unless you've got something like the
+	BSD Unix <code>O_EXCL</code> <code>open</code> option available).
+<h3>
+<a name="16-8">
+16.8:	How can I find out the size of a file, prior to reading it in?
+</a></h3><p>
+  	If the &quot;size of a file&quot; is the number of characters you'll be
+	able to read from it in C, it is in general impossible to
+	determine this number in advance.&#160;<tt> </tt>Under Unix, the<code> stat </code>call
+	will give you an exact answer, and several other systems supply
+	a Unix-like<code> stat </code>which will give an approximate answer.&#160;<tt> </tt>You can
+	<code>fseek </code>to the end and then use<code> ftell</code>, but this usage is
+	nonportable (it gives you an accurate answer only under Unix,
+	and otherwise a quasi-accurate answer only for <a href="index.html#ANSI">ANSI</a> C &quot;binary&quot;
+	files).&#160;<tt> </tt>Some systems provide routines called<code> filesize </code>or
+<code>       filelength</code>.
+<p>
+	Are you sure you have to determine the file's size in advance?
+	Since the most accurate way of determining the size of a file as
+	a C program will see it is to open the file and read it, perhaps
+	you can rearrange the code to learn the size as it reads.
+<p>
+
+<h3>
+<a name="16-9">
+16.9:	How can a file be shortened in-place without completely clearing
+	or rewriting it?
+</a></h3><p>
+  	BSD systems provide<code> ftruncate()</code>, several others supply<code> chsize()</code>,
+	and a few may provide a (possibly undocumented)<code> fcntl </code>option
+	<code>F_FREESP</code>.&#160;<tt> </tt>Under MS-DOS, you can sometimes use<code> write(fd, &quot;&quot;, 0)</code>.
+	However, there is no truly portable solution.
+<p>
+
+<h3>
+<a name="16-10">
+16.10:	How can I implement a delay, or time a user's response, with
+	sub-second resolution?
+</a></h3><p>
+  	Unfortunately, there is no portable way.&#160;<tt> </tt>V7 Unix, and derived
+	systems, provided a fairly useful<code> ftime() </code>routine with
+	resolution up to a millisecond, but it has disappeared from
+	System V and Posix.&#160;<tt> </tt>Other routines you might look for on your
+	system include<code> nap()</code>,<code> setitimer()</code>,<code> msleep()</code>,<code> usleep()</code>,<code> clock()</code>,
+	and<code> gettimeofday()</code>.&#160;<tt> </tt>The<code> select() </code>and<code> poll() </code>calls (if
+	available) can be pressed into service to implement simple
+	delays.&#160;<tt> </tt>On MS-DOS machines, it is possible to reprogram the
+	system timer and timer interrupts.
+<p>
+
+<h3>
+<a name="16-11">
+16.11:	How can I read in an object file and jump to routines in it?
+</a></h3><p>
+  	You want a dynamic linker and/or loader.&#160;<tt> </tt>It is possible to
+	<code>malloc </code>some space and read in object files, but you have to know
+	an awful lot about object file formats, relocation, etc.&#160;<tt> </tt>Under
+	BSD Unix, you could use<code> system() </code>and<code> ld -A </code>to do the linking for
+	you.&#160;<tt> </tt>Many (most?) versions of SunOS and System V have the<code> -ldl</code>
+	library which allows object files to be dynamically loaded.
+	There is also a GNU package called &quot;dld&quot;.&#160;<tt> </tt>See also <a href="c-7.html#7-6">question
+	7.6</a>.
+<p>
+<h3><a name="16-12">
+16.12:  How can I invoke an operating system command from within a
+        program?</a></h3>
+<p>
+        Use<code> system()</code>.
+<p>
+        References: <a href="index.html#K-amp-RII">K&amp;R II</a> Sec. B6 p. 253; <a href="index.html#ANSI">ANSI</a> Sec. 4.10.4.5; <a href="index.html#H-amp-S">H&amp;S</a>
+        Sec. 21.2; <a href="index.html#PCS">PCS</a> Sec. 11 p. 179;
+<p>
+<h3>
+<a name="16-13">
+16.13:	How can I invoke an operating system command and trap its output?</a>
+</h3><p>
+  	Unix and some other systems provide a<code> popen() </code>routine, which
+	sets up a<code> stdio </code>stream on a pipe connected to the process
+	running a command, so that the output can be read (or the input
+	supplied).&#160;<tt> </tt>Alternately, invoke the command simply (see
+	<a href="c-16.html#16-12">question 16.12</a>) in such a way that
+	it writes its output to a file, then open and read that file.
+<p>
+	References: <a href="index.html#PCS">PCS</a> Sec. 11 p. 169 .
+<p>
+<h3>
+<a name="16-14">
+16.14:	How can I read a directory in a C program?
+</a></h3><p>
+  	See if you can use the<code> opendir() </code>and<code> readdir() </code>routines, which
+	are available on most Unix systems.&#160;<tt> </tt>Implementations also exist
+	for MS-DOS, VMS, and other systems.&#160;<tt> </tt>(MS-DOS also has<code> FINDFIRST </code>and<code> FINDNEXT </code>routines which do essentially the same thing.)
+
+<p>
+<h3>
+<a name="16-15">
+16.15:  How can I do serial (&quot;comm&quot;) port I/O?
+</a></h3><p>
+It's system-dependent.&#160;<tt> </tt>Under Unix, you typically open, read,
+        and write a device in <code>/dev</code>, and use the facilities of the
+        terminal driver to adjust its characteristics.&#160;<tt> </tt>Under MS-DOS,
+        you can either use some primitive BIOS interrupts, or (if you
+        require decent performance) one of any number of interrupt-driven
+serial I/O packages.
+<p>
+<hr>
+<a href="c-15.html"><img SRC="prev.xbm" ALT="[prev]"></a>
+<a href="index.html#comp-lang-c-faq"><img SRC="up.xbm" ALT="[up]"></a>
+<a href="c-faq-toc.html#c-16"><img SRC="overview.xbm" alt="[overview]"></a>
+<a href="c-17.html"><img SRC="next.xbm" ALT="[next]"></a></body></html>

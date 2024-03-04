@@ -1,0 +1,482 @@
+<!doctype html>
+<meta name=viewport content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../assets/css/simple.css" type="text/css" />
+
+<title>memex - Archiving Tool</title>
+
+<style>em { font-weight: bold; }</style>
+
+<div class="container">
+
+<h1>memex</h1>
+<nav>
+<!--<h2>Archiving Tool</h2>-->
+<ul>
+  <li><a href="index.html">Intro</a>
+  <li><a class="here" href="spec.html">Storage model</a>
+  <li><a href="http://c9x.me/git/memex.git/">Code</a>
+  <!-- <li><a href="/archive/story.html">story</a> -->
+</ul>
+</nav>
+
+<p>
+You will find here a complete description of the
+sdar archives and how they are used by the memex
+tool. The description should be accurate enough
+that from it alone and an sdar key it is possible
+to recover data from an archive. One goal is that
+this page is going to be mirrored by archive.org
+(or similar) and thus guarantee the perennity of
+memex archives. Another goal is to give memex
+users a precise understanding of the data model
+so that they may use the low level sdar tool to
+edit their archives.
+
+<h3>Secret content-addressed storage &mdash; sdar</h3>
+
+<p>
+In 2019, with the objective of building some form
+of encrypted git, I specced a central bit of
+infrastructure precisely:
+<em>sdar</em>.  sdar stands for secret deduplicated
+archive. It provides encrypted and
+content-addressed storage.  The sdar tool can add
+data to an ephemeral <em>stash</em> area, each
+piece of data added to the stash is given an
+<em>address</em> computed from the data itself.
+Eventually, the stash <em>committed</em>, that is,
+consolidated as a <em>segment</em> of the archive.
+An archive is the mere sum of its segments. The
+sdar tool can retrieve data from an archive using
+addresses.
+
+<p>
+In the final scheme, each segment of an archive
+represents one update to the memex. The user modifies
+its local copy of the memex, consolidates all the
+local changes in a segment, then uploads the segment
+to some remote storage. This way, very little
+information is leaked to the backup hosting service:
+only update sizes and rate of change &mdash; pretty
+much the least amount of information that could leak.
+Synchronization with other versions of the archive
+could also be easy (assuming segment names do not
+conflict): just rsync the segment directory.
+
+<p>
+The cryptography is handled by nacl's
+<a href="https://nacl.cr.yp.to/box.html">cryptobox</a>.
+sdar loads the <em>archive key</em> from
+<code>~/sdar.key</code> (or some other user-supplied
+path) and, for each segment, it generates a new key
+pair. The segment's private key is used to encrypt
+the data for the public archive key.  This way, it
+is possible to create a new segment without having
+access to the private part of the archive key. Put
+another way, it is possible to add to an archive
+without knowing the read key. The detailed layout
+of an sdar key file is:
+
+<pre>
+name   | range     | content
+-------+-----------+---------------------------
+magic  |   0 -   7 | 20 2f 18 06 44 de 56 7a
+salt   |   8 -  39 | scrypt salt (random)
+b3key  |  40 -  71 | blake3 key (random)
+pubkey |  72 - 103 | public archive key
+cipher | 104 - 151 | (see below)
+
+cipher = nacl_secretbox(
+  prvkey | 0 - 31 | private archive key,
+  scrypt(passphrase, salt, N=16384, r=8, p=1))
+</pre>
+
+<p>
+Key files are split in two parts, the first 104 bytes
+are clear while the last 48 are encrypted using nacl
+<a href="https://nacl.cr.yp.to/secretbox.html">secretbox</a>.
+This last part contains the private part
+of the archive key and is only used when reading.
+The secretbox function from nacl requires both a key
+and a nonce; sdar derives them from the user's
+passphrase with a single call to
+<a href="https://www.tarsnap.com/scrypt.html">scrypt</a>.
+scrypt produces 56 bytes, the first 24 bytes are
+used as nonce while the last 32 form the key. The salt
+used by scrypt is found in the range [8 - 39] of the
+key file. When ingesting data, sdar uses a keyed
+<a href="https://github.com/BLAKE3-team/BLAKE3">blake3</a>
+sum to compute unique identifiers for blocks.
+From this point, any time I refer to blake3 sum
+it will be a keyed sum using <code>b3key</code>
+as key.
+
+<p>
+Archives are identified by their root directory
+and follow this simple structure.
+
+<pre>
+arch/
+  cache
+  seg/
+    4fb87932feff5763299abba007414164
+    e911349455f055170f85c2bebedd4567
+  stash/
+</pre>
+
+<p>
+The cache file is merely here to enable speedy reads.
+Like the stash's content, the cache file contains some
+unencrypted information and should not be shared with
+untrusted parties. Segments only can safely be shared.
+Segments have pseudo-random names that are 16 bytes
+expressed as hexadecimal. The names are in fact the
+first half of the public key stored in the corresponding
+segment. Having random segment names makes it easy to
+merge two archives: just copy over all the segments,
+if there is a name conflict either you will die the
+same day from being sucked into a black hole, or the
+two archives shared some content.
+
+<p>
+When data is streamed in an archive, sdar splits it
+in blocks using a content-defined chunking (CDC)
+algorithm. Chunking serves two purposes: first,
+it limits the maximal amount of data that needs
+to reside in memory (blocks have a max size of 2Mib),
+and second, it allows efficient deduplication of large
+files that differ only in a few places. For example,
+you will benefit from chunking-based deduplication if
+you store VM images in an sdar archive. The blocks
+created by CDC are stored compressed and encrypted
+in segments.
+
+<p>
+Segments start with a header of 40 clear bytes.
+Then comes an encrypted metadata block, followed
+by the actual data blocks, and finally, an index.
+The metadata block does not include a date and
+message if the segment file starts with the magic
+v2 sequence.
+
+<pre>
+<b>Clear header</b>
+  name     | range   | content
+  ---------+---------+---------------------------
+  magic v1 | 0 -   7 | 4c 00 7b f8 62 aa 9a 4e
+  magic v2 | 0 -   7 | b3 8f 9e 05 00 22 57 24
+  pubkey   | 8 -  39 | segment public key
+
+<b>Encrypted metadata</b>
+  name   | range     | content
+  -------+-----------+---------------------------
+  nitem  |   0 -   7 | number of items
+  dlen   |   8 -  15 | byte size of the data blocks
+  date   |  16 -  23 | creation unix time (v1 only)
+  msg    |  24 - 151 | user message       (v1 only)
+
+<b>Encrypted data blocks</b> (dlen bytes)
+
+<b>Encrypted index</b> (nitem items)
+</pre>
+
+<p>
+The segment file name is a hex encoding of the bytes
+[8 - 23]. The rest of the segment is a sequence of
+blocks individually encrypted. These blocks can all
+be decrypted with the private part of the archive
+key. The nonce used to encrypt a block is derived
+from a 64 bit signed integer N specific to that
+block. The first 8 bytes of the nonce are the big
+endian encoding of N and the 16 subsequent bytes
+are all set to zero.
+
+<p>
+The encrypted metadata derives its nonce from
+the integer -1. It contains the total size of
+the encrypted data blocks as well as the number
+of items in the index. Readers use this
+information to find the beginning of the index
+and subsequently read it. Additionally, the segment
+creation time as well as a user-defined message
+(not necessarily nul terminated) are part of the
+metadata block. These last two pieces of data
+are not necessary for reading the segment, but
+may be useful to users. All the integers are
+serialized in big endian format. It is noteworthy
+that without the decryption key it is impossible
+to know how much of the segment is the index and
+how much is the data. That is, from a segment
+file alone we cannot infer if the segment holds
+a single big item, or multiple small ones.
+
+<p>
+After decoding the metadata a reader will want to
+jump straight to the index. The index is essentially
+an array of <code>nitem</code> items. Chunks of 58254
+items are grouped to form blocks &mdash; the last
+block may be smaller. The first index block is
+encrypted with nonce -2, the second with nonce -3,
+and so on. Items are 36 bytes long so that a
+single block fits in 2Mib of memory (the maximum
+block size). Items contain two fields:
+
+<pre>
+name   | range     | content
+-------+-----------+---------------------------
+b3sum  |   0 -  31 | blake3 keyed sum
+szcmp  |  32 -  39 | plain size &amp; compression bit
+</pre>
+
+<p>
+The blake3 sum (keyed by <code>b3key</code>) is
+computed over the entire raw content of the block.
+The second field is the big endian encoding of 2S+C
+where S is the size of plain data and C is a bit
+indicating whether the block content was compressed
+or not. Importantly, if the block content was
+compressed, S is the size <em>after</em>
+compression. This is the most useful number when
+reading a segment: by adding the cipher overhead
+of 16 bytes to it, we find how long the encrypted
+data for this block is in the segment file.
+
+<p>
+Data blocks are not very interesting. They are just
+plain user data, possibly compressed using
+<a href="https://github.com/lz4/lz4">lz4</a> if
+that happens to decrease their size. They are of
+course encrypted and their nonce is derived from
+the offset at which they live in the data part
+of the segment. So, for example, the first block
+has an all zeroes nonce.
+
+<p>
+Stitching things together, let us see how to read
+a data block from a segment file using a blake3
+sum as query. First, decrypt the metadata block
+using the archive key and the segment public key
+(stored in the clear header).
+From the metadata, find the position of the index
+in the file. Read chunks of the index until the
+requested blake3 sum is found. While reading the
+index, add 16+S to an accumulator X for each entry
+that is not the desired one. The offset X gives us
+where in the segment the block is. For our entry
+of interest we also have S and C. X is used to
+derive the proper nonce and we obtain S bytes of
+plain payload. Depending on whether C is set or
+not, send the plain payload to lz4 for decompression.
+And we are done.
+
+<p>
+I barely believe you stuck this far! If you did,
+you might have noticed that I never explained how
+chunks created by CDC are organized when a big
+value is ingested. When a single value spans over
+multiple blocks, sdar creates a tree of blocks.
+Blocks at the leaves contain value chunks, and
+internal blocks contain the blake3 sums of blocks
+at the next level. Trees are limited to depth 2.
+For efficient seeking, internal blocks also store
+the size of the subtrees. The following diagram
+may help in understanding the scheme.
+
+<pre>
+
+{ ------ internal nodes ------ } { - leaf nodes - }
+
+                                       +-----+
+                    +-------+       -- | 123 |
++-------+       --- | def   |     /    +-----+
+| abc   |     /     +-------+    /     | A   |
++-------+    /      | 123 1 | --       +-----+
+| def 3 | --        | 987 2 | --
+| 012 1 | --        +-------+    \    +-----+
++-------+    \                     -- | 987 |
+              \     +-------+         +-----+
+                --- | 012   |         | BC  |
+                    +-------+         +-----+
+                    | 456 1 | --
+                    +-------+    \    +-----+
+                                   -- | 456 |
+                                      +-----+
+                                      | D   |
+                                      +-----+
+</pre>
+
+<p>
+In the figure,
+blake3 sums are represented with three hex digits.
+Blocks are represented as boxes with a header showing
+the blake3 sum of their content. The topmost block
+<code>abc</code> is the root of a tree of depth 2 that
+stores the content ABCD split over four blocks.
+In the block <code>abc</code>, the entry <code>def</code>
+is bundled with 3, the total size of the tree with
+root block <code>def</code>. In sdar, internal blocks
+have 52428 entries, and are always filled to their
+maximum. The entries are composed of a blake3 sum
+of 32 bytes, followed by 8 bytes to represent the
+size of the corresponding subtree, again encoded
+in big endian. The entry count is chosen so that
+internal blocks do not exceed 2Mib. Trees being
+limited to depth 2 is not a problem in practice:
+the CDC algorithm will not produce blocks smaller
+than 512Kib, so the minimum value size that is
+required to overflow sdar is over 1Pib.
+
+<p>
+Finally, sdar addresses are simply the combination
+of one level in {0,1,2} and a blake3 sum. sdar prints
+addresses with the level first, then a hex
+representation of the blake3 sum. The level is used
+when reading to know what is the depth of the block
+tree to process. Continuing with the example tree
+from above, the topmost node would have address
+<code>2abc</code>.  If you experiment with sdar, you
+can try to take an address starting with 1 and change
+the level to 0 to observe the content of the root
+block.
+
+<p>
+sdar is pretty fast overall. I chose the primitive
+algorithms (lz4, gear hash, blake3, ...) so that a
+honorable throughput can be achieved. The times
+reported below are obtained on an Intel NUC with
+an i5-7260U processor and a Samsung SSD on NVMe.
+
+<ul>
+<li>On a fresh archive, I process the linux 5.14.9
+    source tree (1Gib): 5.5s to add to the stash
+    and 1.6s to create a segment from the stash;
+    the resulting segment is 308Mib.
+<li>Same experiment when the source tree is
+    already in the archive: 0.9s to add to the
+    stash and 0.02s to create the segment; the
+    resulting segment is 208b.
+<li>It takes 1.6s to read back the entire 5.14.9
+    source tree from the archive.
+</ul>
+
+<p>
+In the next section, I explain how the memex tool
+is built on top of sdar.
+
+<h3>A git clone &mdash; memex</h3>
+
+<p>
+The memex tool is pretty much a git clone with a
+slightly poorer cli (can you believe this?!). It
+was straightforward to build on top of sdar, only
+a lot of boilerplate. It is a Go program that
+calls sdar as subprocess and communicates using
+some <a href="https://git-scm.com/docs/protocol-common#_pkt_line_format">pkt-line</a>-like
+format.
+
+<p>
+Files are ingested as standalone sdar values,
+directories are represented by a simple binary
+format that lists the addresses of their content.
+And finally, full snapshots, or <em>commits</em>,
+hold the address of the root directory as well
+as some metadata.
+
+<p>
+Diffing, snapshot listing, fetching, and syncing
+is implemented naively by walking the data in the
+sdar archive.
+
+<p>
+Commit objects follow the format below. They
+start with a rather long magic sequence of 4
+bytes so that they can be easily recovered
+from an sdar archive and its key.
+For example, if the head commit's address has
+been lost.
+
+<pre>
+type    | content
+--------+----------------
+byte[4] | 17 ee 7b a6
+string  | message
+uvarint | commit time
+addr    | root directory object
+addr    | previous commit
+</pre>
+
+<p>
+memex objects use an ad-hoc binary serialization
+scheme. Integers are stored as
+<a href="https://developers.google.com/protocol-buffers/docs/encoding#varints">varints</a>:
+the integer is split in K packs of seven
+bits where the last pack is non-zero, the first
+K-1 packs are or-ed with 128 and output in order,
+then the last pack is output as is (i.e., without
+its msb set). This scheme has the advantage of
+using few bytes when serializing small integers.
+Strings are serialized with their size first
+output as varint, then the string content.
+Addresses are serialized as sequences of 33
+bytes, the first byte is constrained to be in
+{0,1,2} and represents the level while the 32
+others are the blake3 sum part of the address.
+
+<p>
+Directory objects follow this format.
+
+<pre>
+type    | content
+--------+----------------
+byte[1] | version: 0x11 or 0x12
+uvarint | number of entries following
+Entry[] | entries
+
+<b>Entry</b>
+  type    | content
+  --------+----------------
+  byte[1] | kind in: reg(0), lnk(1), dir(2)
+  data    | depends on the kind, see below
+
+<b>reg data</b> (regular file)
+  type    | content
+  --------+----------------
+  addr    | content address
+  string  | name
+  beint16 | mode (permissions)
+  uvarint | mtime (unix time)
+  uvarint | size
+  beint64 | xxh checksum
+
+<b>lnk data</b> (symbolic link)
+  type    | content
+  --------+----------------
+  string  | name
+  string  | destination
+
+<b>dir data</b> (directory)
+  type    | content
+  --------+----------------
+  addr    | directory object address
+  string  | name
+  beint16 | mode (permissions)
+  uvarint | mtime (unix time)
+          |   absent if version &gt; 0x11
+</pre>
+
+<p>
+As you can see, the memex tool is not a proper
+backup tool: it cannot handle special files and
+skips a ton of filesystem metadata. The latest
+object format (version 0x12) even dropped
+mtimes for directories to improve the quality
+of diffs.
+
+<p>
+Despite being conceptually quite easy, programming
+the memex tool required about 3k lines of Go. There
+might have been a language better suited to this
+task.
+
+</div>
+<!-- analytics free! -->

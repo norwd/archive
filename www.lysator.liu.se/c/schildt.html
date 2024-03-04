@@ -1,0 +1,933 @@
+<html>
+<head>
+<title>The Annotated Annotated C Standard</title>
+<link rel="made" rev="made" href="mailto:jutta@pobox.com">
+</head>
+<body>
+<h1>The Annotated Annotated C Standard<br>
+<a href="clive/index.html" name="clive">C.D.W.Feather</a></h1>
+<p>
+This is a review of <i>The Annotated ANSI C Standard</i>, annotated by Herbert
+Schildt.
+<p>
+This review is made possible by the generosity of Raymond Chen
+&lt;raymondc@microsoft.com&gt;, who provided the review copy of the book,
+and is dedicated to the Dream Inn, Santa Cruz, CA, whose staff
+supplied uncounted cups of coffee while I wrote this review.
+<p>
+This version was modified on 1995-03-03.&#160;<tt> </tt>
+Thanks to the following for pointing out errors:
+<p>
+<blockquote>
+     Stan Brown &lt;brown@ncoast.org&gt;<br>
+     Jutta Degener &lt;jutta@pobox.com&gt;<br>
+     Mark-Jason Dominus &lt;mjd@saul.cis.upenn.edu&gt;<br>
+     Sue Meloy &lt;suem@hprpcd.rose.hp.com&gt;<br>
+     Christopher R Volpe &lt;volpe@ausable.crd.ge.com&gt;<br>
+     Alan Watson &lt;alan@bernie.sal.wisc.edu&gt;
+</blockquote>
+<p>
+<hr>
+<p>
+<h1>Introduction</h1>
+<p>
+Since <i>The Annotated ANSI C Standard</i> first appeared, many people have
+commented on errors in the book.&#160;<tt> </tt>After reading several of these, I obtained
+a copy of the book and have read it in its entirety.
+<p>
+Many of these comments might appear to be relatively trivial.&#160;<tt> </tt>In response to
+this, I can only point out that the book is commenting on a very carefully
+designed document, and one that has to be read precisely.&#160;<tt> </tt>If the annotator
+cannot get things right, then the book is not just useless, but is a positive
+danger to those who do not have the time to read and analyse every word of the
+standard.&#160;<tt> </tt>In other contexts, such as a tutorial on C, some of the errors in
+this book could be allowed to pass, but not in this.
+<p>
+When I state that no mention is made of a topic, this indicates that I feel
+that the topic is at least as important as ones that were commented on; quite
+often this refers to the features of the standard which are less easy to
+understand.
+<p>
+Text quoted directly from the book is indicated by ## in the left margin.
+<p>
+<h1>General comments</h1>
+<p>
+Quite often, the book gives the impression that annotations were omitted
+because they couldn't be fitted into the format of &quot;standard on the left,
+comments on the right&quot;.&#160;<tt> </tt>Whilst many pages of the standard have no annotations
+at all, there are no pages with annotation but no standard.&#160;<tt> </tt>I note at least
+one case below where I believe that a function was not annotated because the
+comments on the previous section took up too much space.
+<p>
+The front cover of the book shows, amongst much clutter and someone's
+half-eaten muffin, page 147 of the standard.&#160;<tt> </tt>It is intriguing to note that,
+not only is this the obsolete ANSI standard rather than the ISO standard,
+but that it corresponds to half of page 146 in the book.
+<p>
+The major divisions of the standard are referred to as &quot;Part 1&quot;, &quot;Part 2&quot;, etc.
+In actual fact, they are &quot;clause 1&quot;, &quot;clause 2&quot;, and so on.&#160;<tt> </tt>One has to wonder
+about an author who can't even get that right.
+<p>
+For a year after first writing this review, I believed that at least the
+left hand pages (the extracts of the Standard) were correct.&#160;<tt> </tt>
+It turns out that even this isn't the case!
+[See <a href="schildt.html#6-1-3-1">6.1.3.1</a>.]
+
+<p>
+<h1>Specific comments</h1>
+<p>
+Numbers at the start of each comment are the ISO subclause numbers of
+Schildt's annotations, which are not always the same as the subclause actually
+being annotated.
+<p>
+<h2>Introduction</h2>
+The ISO Standard has an <a href="iso-introduction.html">introduction</a> which says, among other things,
+which parts of the text are or are not part of the Standard itself.&#160;<tt> </tt>
+This has been omitted from the book.&#160;<tt> </tt>
+Since it is missing, readers are perhaps unaware that, for example,
+errors in the examples do not affect the meaning of the Standard.&#160;<tt> </tt>
+<p>
+<h2>3.10, 3.16, 3.17</h2>
+A proper understanding of the terms &quot;implementation-defined&quot;, &quot;undefined&quot;,
+and &quot;unspecified&quot;, and of the differences between them, is essential to
+understanding the limits that the standard puts on the programmer and the
+implementor.&#160;<tt> </tt>Unfortunately, the differences are not explained at all, and
+the book leaves me wondering why the different terms are used at all.
+<p>
+<h2>3.13</h2>
+<blockquote>
+##&#160;<tt> </tt>However, this limits the total character set to 255 characters.<br>
+</blockquote>
+Actually, it limits it to UCHAR_MAX characters, which is at least 255, but
+can be more.&#160;<tt> </tt>There was an opportunity here to explain what multibyte characters
+actually are, but it seems to have been missed, possibly because of the lack
+of space.
+<p>
+<h2>3.14</h2>
+<blockquote>
+##&#160;<tt> </tt>An object is either a variable or a constant that resides at a<br>
+##&#160;<tt> </tt>physical memory address.<br>
+</blockquote>
+In C, a constant does not reside in memory, (except for some string literals)
+and so is not an object.
+<p>
+<h2>5.1.1.3</h2>
+The standard is clear that diagnostics are required when syntax rules and
+constraints are violated, and are optional otherwise.&#160;<tt> </tt>This is not covered at
+all.&#160;<tt> </tt>Instead we get the vague statement that
+<blockquote>
+##&#160;<tt> </tt>The standard requires that a compiler issue error messages when<br>
+##&#160;<tt> </tt>an error in the source code is encountered.<br>
+</blockquote>
+without discussing the different kinds of errors.
+<p>
+<h2>5.1.2.2</h2>
+<blockquote>
+##&#160;<tt> </tt>You are therefore free to declare <code>main()</code> as required by your<br>
+##&#160;<tt> </tt>program.<br>
+</blockquote>
+This statement is immediately followed by the example:
+<pre>
+    void main (void)
+</pre>
+even though the text of the standard directly opposite states that this is
+undefined.&#160;<tt> </tt>Indeed, the text I quote makes me wonder whether Schildt believes
+that:
+<pre>
+    struct foo { int i; double d; } main (double argc, struct foo argv)
+</pre>
+is permitted !
+<p>
+Most of the examples in the book declare <code>main()</code> as <code>void</code>.&#160;<tt> </tt>I won't bother to
+point them out individually.
+<p>
+<h2>5.1.2.2.1</h2>
+<blockquote>
+##&#160;<tt> </tt>Though most compilers will automatically return 0 when no other<br>
+##&#160;<tt> </tt>return value is specified (even when <code>main()</code> is declared as<br>
+##&#160;<tt> </tt><code>void</code>), you should not rely on this fact because it is not<br>
+##&#160;<tt> </tt>guaranteed by the standard.<br>
+</blockquote>
+Indeed it is not.&#160;<tt> </tt>If <code>main()</code> is declared as <code>void</code>, I don't know of any compiler
+that will return 0.&#160;<tt> </tt>Indeed, the standard forbids it to !
+<p>
+<h2>5.1.2.3</h2>
+This section is often called the &quot;as if&quot; rule, because it says that an
+implementation may do anything providing that the effect is &quot;as if&quot; the
+exact wording of the standard was followed.&#160;<tt> </tt>This is almost completely ignored
+in favour of explaining &quot;side effect&quot; and &quot;automatic storage&quot;.
+<p>
+<h2>5.2.1.2</h2>
+<blockquote>
+##&#160;<tt> </tt>Therefore, a multibyte character is a character that requires<br>
+##&#160;<tt> </tt>more than one byte.<br>
+</blockquote>
+Ignoring the fact that &quot;character&quot; and &quot;byte&quot; are synonymous in the standard
+(something that is not mentioned in the annotations), the definition of
+multibyte character is clear that it *does* include single byte characters.
+<p>
+<blockquote>
+##&#160;<tt> </tt>First, the null character may not be used except in the first<br>
+##&#160;<tt> </tt>byte of a multibyte sequence.<br>
+</blockquote>
+I read this as meaning that the multibyte character &lt;00&gt;&lt;94&gt; is legal while
+the multibyte character &lt;94&gt;&lt;00&gt; is not.&#160;<tt> </tt>In actual fact, the standard states
+that a zero byte must not appear in <em>any</em> multibyte character other than the
+null character (i.e. the end of string indicator).&#160;<tt> </tt>This means that string
+operations such as <code>strcpy</code> will work as expected with multibyte character
+sequences.
+<p>
+There was an opportunity here to explain multibyte characters and how to
+use them, something that most books omit.&#160;<tt> </tt>Unfortunately, this one omits it
+as well.
+<p>
+<h2>5.2.3</h2>
+<blockquote>
+##&#160;<tt> </tt>In other words, one copy of a library function in memory may<br>
+##&#160;<tt> </tt>not be used by two or more currently executing programs.<br>
+</blockquote>
+This is blatant nonsense - on most Unix systems, if the same program is
+executing several times, all the code is shared by both processes.&#160;<tt> </tt>Indeed,
+many go further and share one copy of the standard C library among every
+process on the system.
+<p>
+What this section of the standard is talking about is re-entrancy.&#160;<tt> </tt>The
+functions in the library are not re-entrant, and so may not be called from
+within themselves.&#160;<tt> </tt>For example:
+<ul>
+<li><code>qsort()</code> cannot be called from within the compare function passed to <code>qsort();</code>
+<li>if a signal can be raised within a library function (perhaps by an external
+  event such as the user pressing a BREAK key), then the signal handler must
+  not call that library function.
+</ul>
+The latter rule is particularly important: code using <code>malloc</code> must not call
+<code>malloc</code> from within signal handlers.
+<p>
+<h2>5.2.4.1</h2>
+<blockquote>
+##&#160;<tt> </tt>A compound statement is a block of code.<br>
+</blockquote>
+A nice sounding statement, but totally meaningless.&#160;<tt> </tt>A compound statement is
+a block of code beginning with { and ending with the matching }.&#160;<tt> </tt>For example,
+the body of a function is a compound statement.
+<p>
+<h2>5.2.4.2</h2>
+<blockquote>
+##&#160;<tt> </tt>First, notice that a character is defined as 8 bits (1 byte).<br>
+##&#160;<tt> </tt>All other types may vary in size, but in C a character is always<br>
+##&#160;<tt> </tt>1 byte long.<br>
+</blockquote>
+Certainly a character is always 1 byte long, since that is what a byte is
+defined as.&#160;<tt> </tt>However, nowhere does the standard require a byte to be 8 bits;
+an implementation with 47-bit bytes can conform to the standard.
+<p>
+The assumption that 1 byte = 8 bits occurs at several other points in the book.
+I won't always bother to point it out.
+<p>
+<h2>6.1</h2>
+The book carefully talks about tokens, and then proceeds to mention
+preprocessing tokens, while totally failing to note the difference, or why
+both concepts exist.&#160;<tt> </tt>I would have thought that this was exactly the sort of
+thing annotation was all about.
+<p>
+<h2>6.1.1</h2>
+<blockquote>
+##&#160;<tt> </tt>No other keywords are allowed in a conforming program.<br>
+</blockquote>
+False.&#160;<tt> </tt>Other keywords are allowed, providing that they either occupy the
+implementation namespace (such as &quot;__far&quot;), or that they are only used after
+inclusion of a non-standard system header.&#160;<tt> </tt>For example, a compiler could
+state that, following &quot;#include &lt;8086.h&gt;&quot;, &quot;far&quot; is a keyword.&#160;<tt> </tt>Since no
+strictly conforming program can include that header, and providing that &quot;far&quot;
+is not treated specially without it, such a compiler would conform to the
+standard.
+<p>
+Of course, no other keywords are allowed in a <em>strictly</em> conforming program.
+<p>
+<h2>6.1.2</h2>
+If one is going to mention that only the first six characters of external
+names are significant, one should also mention that the case of those six
+characters is not.
+<p>
+<h2>6.1.2.1</h2>
+<blockquote>
+##&#160;<tt> </tt>* File scope begins with the beginning of the file and ends with<br>
+##&#160;<tt> </tt>the end of the file<br>
+##&#160;<tt> </tt>* Block scope begins with the opening { of a block and ends with<br>
+##&#160;<tt> </tt>its associated closing }.<br>
+</blockquote>
+This is not true: while the scopes end as described, they begin, for each
+identifier, at the end of its &quot;declarator&quot; (that is, at the comma, equals
+sign, or semicolon after it is declared).&#160;<tt> </tt>This is particularly important for
+identifiers with block scope.&#160;<tt> </tt>Consider this code:
+<pre>
+    /* Line 1 */ {
+    /* Line 2 */    int i = 10;
+    /* Line 3 */    {
+    /* Line 4 */        int j = i;
+    /* Line 5 */        int i = 5;
+    /* Line 6 */        printf (&quot;i = %d, j = %d\n&quot;, i, j);
+    /* Line 7 */    }
+    /* Line 8 */ }
+</pre>
+All three variables have block scope, but they are different:<br>
+outer i:&#160;<tt> </tt>from the &quot;=&quot; on line 2 to the &quot;}&quot; on line 8<br>
+inner i&#160;<tt> </tt>from the &quot;=&quot; on line 5 to the &quot;}&quot; on line 7<br>
+j:&#160;<tt> </tt>from the &quot;=&quot; on line 4 to the &quot;}&quot; on line 7<br>
+<p>
+In particular, the &quot;i&quot; on line 4 refers to the one in the outer block, and
+so j has the value 10, not 5.
+<p>
+<h2>6.1.2.2</h2>
+<blockquote>
+##&#160;<tt> </tt>Identifiers with external linkage are accessible by your entire<br>
+##&#160;<tt> </tt>program<br>
+</blockquote>
+Once again this is in error - for example, an identifier with external linkage
+is not accessible in a translation unit that uses the same name with internal
+linkage.&#160;<tt> </tt>The point of linkage is to indicate when the same identifier refers
+to the same object, yet the annotations omit this entirely.
+<p>
+<h2>6.1.2.3</h2>
+There is no mention of the fact that each structure and union type has its
+own namespace, so that more than one structure or union can have a field
+with a given name.
+<p>
+<h2>6.1.2.5</h2>
+<blockquote>
+##&#160;<tt> </tt>An unsigned integer expression cannot overflow.&#160;<tt> </tt>This is because<br>
+##&#160;<tt> </tt>there is no way to represent such an overflow as an unsigned<br>
+##&#160;<tt> </tt>quantity.<br>
+</blockquote>
+More nonsense.&#160;<tt> </tt>An implementation either does or doesn't have a way to represent
+overflow - usually integers don't, while floating point may or may not (some
+systems have INFINITY values that effectively indicate overflow).&#160;<tt> </tt>However,
+an unsigned integer expression cannot overflow because the standard says so -
+the choice was made that unsigned integer arithmetic is done modulo some
+base (<code>UINT_MAX+1</code> for <code>unsigned int</code>, <code>ULONG_MAX+1</code> for <code>unsigned long</code>).&#160;<tt> </tt>There is
+no magic about this; it was an arbitrary decision by the authors of the
+standard.
+
+<h2><a name="6-1-3-1">6.1.3.1</a></h2>
+[left hand page]
+<blockquote>
+##&#160;<tt> </tt>fractional-constant:<br>
+##&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>digit-sequence[opt]&#160;<tt> </tt><b>.</b>&#160;<tt> </tt>digit-sequence<br>
+##&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>digit-sequence
+</blockquote>
+There should be a dot after the second alternative as well.&#160;<tt> </tt>
+Otherwise this syntax generates "123" (not actually a floating&#173;constant)
+but not "123." (which is).
+
+<h2>6.1.3.4</h2>
+<blockquote>
+##&#160;<tt> </tt><code>x = 'A'; /* give x the value 65 */</code><br>
+</blockquote>
+This comment, and the following text, leave the reader believing that 'A'
+must have the value 65, and by extension that C requires the use of ASCII
+codes.&#160;<tt> </tt>This is of course false, but it would be hard to tell from the book.
+<p>
+This, plus the comments assuming 8-bit bytes, and use of the terms &quot;high byte&quot;
+and &quot;low byte&quot; of integers later on, makes me wonder whether a better title
+for the book is: <i>The ANSI C Standard annotated for some MSDOS compilers</i> :-).
+<p>
+<h2>6.1.4</h2>
+<blockquote>
+##&#160;<tt> </tt>In other words, the executable version of a C program contains<br>
+##&#160;<tt> </tt>a table that contains the string literals used by the program.<br>
+</blockquote>
+While this is one way to implement strings, it is not the only one.&#160;<tt> </tt>Such a
+comment does not belong in a book like this.
+<p>
+<blockquote>
+##&#160;<tt> </tt>Further, the effect of changing the string literal table is<br>
+##&#160;<tt> </tt>implementation dependent.&#160;<tt> </tt>The best practice is to avoid<br>
+##&#160;<tt> </tt>altering the string table.<br>
+</blockquote>
+It's more than just implementation dependent (a term which, by the way, is not
+used by the standard), it's completely undefined.&#160;<tt> </tt>You <em>must not</em> modify a
+string literal.
+<p>
+<h2>6.2.1.2</h2>
+A description which is essentially correct is spoilt by the addition of the
+words:
+<blockquote>
+##&#160;<tt> </tt>In the most general terms, when you convert from a larger <br>
+##&#160;<tt> </tt>integer type to a smaller type, high-order bytes are lost.<br>
+</blockquote>
+When an integer value is converted to a signed type which can't hold that
+value, the result need not be that given by removing some bits.&#160;<tt> </tt>For example,
+a rule that converted all such values to the minimum value of the destination
+type (SCHAR_MIN, SHORT_MIN, INT_MIN) would be conforming.
+<p>
+A simpler way to state what this section means is:
+<ul>
+<li> If the source value can be represented in the destination type, it is
+  unaltered.
+<li> Otherwise, if the destination type is unsigned, reduce the value modulo
+  U&lt;type&gt;_MAX+1.
+<li> Otherwise the destination type is signed and the value is implementation
+  defined.
+</ul>
+<p>
+<h2>6.2.1.4</h2>
+<blockquote>
+##&#160;<tt> </tt>When converting a larger [floating] type into a smaller one, if<br>
+##&#160;<tt> </tt>the value cannot be represented, information content may be lost.<br>
+</blockquote>
+Actually, unlike integers, such conversions are undefined, and the program
+may crash as a result.
+<p>
+<h2>6.2.1.5</h2>
+<blockquote>
+##&#160;<tt> </tt>these automatic conversions are also intuitive.<br>
+</blockquote>
+These conversions have been the subject of much debate.&#160;<tt> </tt>This section would
+benefit from a proper explanation of the &quot;value preserving&quot; rules, and why
+they were chosen.
+<p>
+<h2>6.2.2.1</h2>
+<blockquote>
+##&#160;<tt> </tt>First, an array name without an index is a pointer to the first<br>
+##&#160;<tt> </tt>element of the array and is not an lvalue.<br>
+</blockquote>
+This has to be one of the worst expressions of the Rule I have ever seen !&#160;<tt> </tt>
+First, there are a number of contexts (such as sizeof) where an array name
+does <em>not</em> get changed to a pointer.&#160;<tt> </tt>Second, if the decay to a pointer takes
+place at all, it takes place whether or not there is an index; for example,
+decay takes place when the array name is used as a function argument.&#160;<tt> </tt>Last,
+an array name <em>is</em> an lvalue; it is the resulting pointer that is not.
+<p>
+<h2>6.2.2.3</h2>
+Considering how often they are used, the rather peculiar way they are
+specified, and the need to cast them in some contexts but not others, it is
+odd that null pointer constants are not mentioned at all.
+<p>
+<h2>6.3</h2>
+<blockquote>
+##&#160;<tt> </tt>The standard states that when an expression is evaluated, each<br>
+##&#160;<tt> </tt>object's value is modified only once.&#160;<tt> </tt>In theory, this<br>
+##&#160;<tt> </tt>means the compiler will not physically change the value of a<br>
+##&#160;<tt> </tt>variable in memory until the entire expression has been<br>
+##&#160;<tt> </tt>evaluated.&#160;<tt> </tt>In practice, however, you may not want to rely<br>
+##&#160;<tt> </tt>on this.<br>
+</blockquote>
+The book then in effect goes on to say that &quot;<code>i = ++i + 1</code>&quot; is usually compiled
+as if it were &quot;<code>i += 2</code>&quot;.
+<p>
+As anyone who has survived the &quot;<code>i = i++</code>&quot; thread on <i>comp.lang.c</i> knows, this is
+not only nonsense, but dangerous nonsense.&#160;<tt> </tt>The correct way to discuss this
+part of the standard is to point out what can and can't be done in a strictly
+conforming program, and leave it at that.&#160;<tt> </tt>Suggesting that such code can ever
+have a defined answer is asking for trouble.
+<p>
+<blockquote>
+##&#160;<tt> </tt>The rest of this section formally defined what type of lvalue<br>
+##&#160;<tt> </tt>can refer to an object.<br>
+</blockquote>
+Well, in one sense this is true.&#160;<tt> </tt>However, what is important is <em>why</em> only some
+lvalues can refer to a given object, and the annotations completely skip this.
+The reason is, of course, to indicate when a compiler can assume that two
+identifiers refer to the same object.&#160;<tt> </tt>For example, in:
+<pre>
+    char *cp;
+    int *ip;
+
+    void f (double *d)
+    {
+        *d = 3.14159;
+        *cp = 1;
+        *ip = 2;
+    }
+</pre>
+The rules of this section say that the assignment to <code>*cp</code> could potentially
+alter <code>*d</code>, and the compiler must generate code that takes that into account,
+but the assignment to <code>*ip</code> cannot, and the compiler may assume that <code>*d</code> and <code>*ip</code>
+do not overlap.&#160;<tt> </tt>This is called <i>aliasing</i>, and knowing when aliasing takes
+effect is an important factor in correctly optimising code.
+<p>
+<h2>6.3.2.2</h2>
+<blockquote>
+##&#160;<tt> </tt>When no prototype for a function exists, it is not an error if<br>
+##&#160;<tt> </tt>the types and/or number of parameters and arguments differ.<br>
+##&#160;<tt> </tt>The reason for this seemingly strange rule is to provide<br>
+##&#160;<tt> </tt>compatibility with older C programs in which prototypes do not<br>
+##&#160;<tt> </tt>exist.<br>
+</blockquote>
+On the contrary, when no prototype exists, the number of arguments to a call
+must be the same as the number of parameters in the function (which cannot
+be a varargs function), and the types must be compatible after promotion.
+What should have been written is that no error message is required if these
+rules are broken.
+<p>
+<h2>6.3.2.3</h2>
+Though this section mentions the existence of the &quot;common initial subsequence&quot;
+rule for unions, it does not explain it properly, nor does it mention that
+in all other circumstances assigning to one element of a union makes all other
+elements have undefined values.
+<p>
+<h2>6.3.6</h2>
+There is no mention of the rule that addition and subtraction of pointers and
+integers must yield a pointer to the same array or one past the end of the
+array.
+<p>
+<h2>6.3.7</h2>
+<blockquote>
+##&#160;<tt> </tt>When right-shifting a negative value, generally, ones are<br>
+##&#160;<tt> </tt>shifted in (thus preserving the sign bit), but this is<br>
+##&#160;<tt> </tt>implementation dependent.<br>
+</blockquote>
+The result of signed right shift of a negative number is implementation
+defined; there is no suggestion in the standard that shifting in ones is the
+&quot;best&quot; thing to do.
+<p>
+<h2>6.3.13</h2>
+There is no mention of the fact that &amp;&amp; and || evaluate explicitly left to
+right, and stop when the result is known.&#160;<tt> </tt>This would be an opportunity to
+discuss sequence points, but the opportunity is missed.
+<p>
+<h2>6.3.16.2</h2>
+When talking about compound assignments (<code>+=</code> etc.), the annotations mention
+that &quot;<code>a += b</code>&quot; means the same as &quot;<code>a = a + b</code>&quot;, but do not point out that the
+two are not equivalent; for example, &quot;<code>*a++ *= 2</code>&quot; is strictly conforming code
+which increments a once, while &quot;<code>*a++ = *a++ * 2</code>&quot; is not.
+<p>
+<h2>6.3.17</h2>
+Again, there is no mention of sequence points.
+<p>
+<h2>6.5</h2>
+<blockquote>
+##&#160;<tt> </tt>In simple language, a declarator is the name of the object being<br>
+##&#160;<tt> </tt>declared.<br>
+</blockquote>
+In real C, a declarator is everything about the type and name of the object
+except the basic type and storage class.&#160;<tt> </tt>For example, in &quot;<code>static int *p[5];</code>&quot;,
+the declarator is &quot;<code>*p[5]</code>&quot;, and includes the concepts of pointer, array, and
+size of array as well as the name.
+<p>
+<h2>6.5.1</h2>
+<blockquote>
+##&#160;<tt> </tt>A variable declared using <code>extern</code> is not a definition.<br>
+</blockquote>
+Not only is this wrong, but the annotations to 6.7.2 directly contradict it,
+with the correct example of &quot;<code>extern int count = 10;</code>&quot;.
+<p>
+<blockquote>
+##&#160;<tt> </tt>In essence, a static local variable is a global variable with<br>
+##&#160;<tt> </tt>its scope restricted to a single function.<br>
+</blockquote>
+Actually, a static local variable is a global variable with its scope
+restricted to some block scope; that is, from the end of its declarator to
+the closing } of the block it is declared in.
+<p>
+<blockquote>
+##&#160;<tt> </tt>When <code>static</code> is applied to a global variable or function, it<br>
+##&#160;<tt> </tt>causes that variable or function to have file scope<br>
+</blockquote>
+The global variable or function has file scope whether or not <code>static</code> is
+applied to it.&#160;<tt> </tt>The <code>static</code> keyword causes it to have internal linkage, which
+is a different matter.
+<p>
+<blockquote>
+##&#160;<tt> </tt>The <code>register</code> specifier is only a request to the compiler, which<br>
+##&#160;<tt> </tt>may be completely ignored.<br>
+</blockquote>
+It can't be completely ignored, because whether or not it affects the way in
+which the variable is implemented, it is still illegal to take the address of
+an object declared <code>register</code>.
+<p>
+<h2>6.5.2.1</h2>
+There is no mention of the implementation-defined aspects of bit fields.
+<p>
+<blockquote>
+##&#160;<tt> </tt>This padding must occur at the end, not at the beginning, of the<br>
+##&#160;<tt> </tt>object.<br>
+</blockquote>
+Padding can occur anywhere except at the beginning of a structure.&#160;<tt> </tt>In
+particular, it can occur between two fields.&#160;<tt> </tt>Of course a union can only be
+padded at the end.
+<p>
+<h2>6.5.3</h2>
+<blockquote>
+##&#160;<tt> </tt>(Many compilers display a warning about this fragment, but still<br>
+##&#160;<tt> </tt>accept it.)<br>
+##&#160;<tt> </tt><code>const int i = 10;</code><br>
+##&#160;<tt> </tt><code>int *p;</code><br>
+##&#160;<tt> </tt><code>p = &amp;i;</code><br>
+##&#160;<tt> </tt><code>*p = 0; /* modify a const object through p */</code><br>
+</blockquote>
+Actually, the standard requires a diagnostic for the third line, because
+it violates the third dashed item of the constraints of 6.3.16.1.&#160;<tt> </tt>
+If an explicit cast had been used in that line, I believe that the assignment
+would be strictly conforming.&#160;<tt> </tt>
+If so, then it is true that the standard does
+not require a diagnostic for the last line, but nevertheless it is undefined,
+not just something to warn about.
+<p>
+<h2>6.5.4</h2>
+<blockquote>
+##&#160;<tt> </tt>The information and constraints in this section are mostly<br>
+##&#160;<tt> </tt>applicable to compiler implementors.<br>
+</blockquote>
+Since this section defines how to declare arrays, pointers, and procedure
+prototypes, one has to wonder what the author actually considers interesting !
+<p>
+<h2>6.5.4.3</h2>
+Considering that it has come up in at least two Defect Reports, I would have
+expected some mention of the rule about typedef names within prototypes.
+<p>
+<h2>6.5.5</h2>
+A useful way to think of a type name is as a declaration with the identifier
+being declared omitted.&#160;<tt> </tt>So, for example, if v is declared as:
+<pre>
+    unsigned char *v[5];
+</pre>
+then the type of v is:
+<pre>
+    unsigned char *[5];
+</pre>
+<p>
+<h2>6.5.7</h2>
+<blockquote>
+##&#160;<tt> </tt>The general form of an initialization is<br>
+##&#160;<tt> </tt>type var = initializer;<br>
+</blockquote>
+Once again, the whole concept of declarators is omitted.&#160;<tt> </tt>While it is true that
+that is one form of an initialization, it excludes lines like:
+<pre>
+      int a [5] = { 1, 2, 3, 4, 5 };
+</pre>
+<p>
+<h2>6.6.4.2</h2>
+This is another example where the annotations describe a &quot;general form&quot;
+which isn't.&#160;<tt> </tt>In this case, it implies that the <code>default</code> case label must be
+the last one in the switch, and that it can't have an associated <code>break</code>.&#160;<tt> </tt>
+The problem with these &quot;general&quot; forms is that, while they are fine in a
+teaching context, they omit all the grubby details that a user of the standard
+needs to know, such as fall-through cases, or <a href="duffs-device.html#duffs-device">Duff's Device</a>.
+<p>
+I would also have appreciated a warning that ordinary labels are still allowed
+within the body of a switch statement, so:
+<pre>
+    switch (i)
+    {
+    /* ... */
+    defualt:
+        j = 0;
+        break;
+    }
+</pre>
+is legal code, but is <em>not</em> the default case of the switch.
+<p>
+<h2>6.7.1</h2>
+<blockquote>
+##&#160;<tt> </tt>To understand the difference between the modern and old forms,<br>
+##&#160;<tt> </tt>here is the same function defined using both forms:<br>
+##<br>
+##&#160;<tt> </tt><code>   /* Modern function definition. */</code><br>
+##&#160;<tt> </tt><code>   float f (int a, char c)</code><br>
+##&#160;<tt> </tt><code>   {</code><br>
+##&#160;<tt> </tt><code>     /* ... */</code><br>
+##&#160;<tt> </tt><code>   }</code><br>
+##&#160;<tt> </tt><code>   /* Old-form function definition. */</code><br>
+##&#160;<tt> </tt><code>   float f (a, c)</code><br>
+##&#160;<tt> </tt><code>   int a;</code><br>
+##&#160;<tt> </tt><code>   char c;</code><br>
+##&#160;<tt> </tt><code>   {</code><br>
+##&#160;<tt> </tt><code>     /* ... */</code><br>
+##&#160;<tt> </tt><code>   }</code><br>
+</blockquote>
+<p>
+Unfortunately, these two aren't exactly the same.&#160;<tt> </tt>With the modern function
+definition, the argument corresponding to c is converted to type <code>char</code> and
+passed to the function.&#160;<tt> </tt>With the old-form definition, it is converted to <code>int</code>,
+passed to the function as an <code>int</code>, and then converted to <code>char</code>.
+<p>
+Why does this matter, you may ask ?&#160;<tt> </tt>Well, it matters when we're trying to
+write a prototype for the function.&#160;<tt> </tt>The prototype for the new form definition
+is:
+<pre>
+    float f (int a, char c);
+</pre>
+as you might expect.&#160;<tt> </tt>However, the prototype for the old form is:
+<pre>
+    float f (int a, int c);
+</pre>
+<p>
+<h2>6.8.2</h2>
+<blockquote>
+##&#160;<tt> </tt>The <code>#include</code> statement has these two forms:<br>
+</blockquote>
+Actually, it has three forms.&#160;<tt> </tt>While the third is fairly uncommon, it ought at
+least to be acknowledged.
+<p>
+<h2>6.8.3</h2>
+Probably just a typographical error, but the expansion near the bottom of the
+page is:
+<pre>
+  printf (&quot;%d &quot;, ABS (((-20) &lt; 0 ? -(-20) : (-20)));
+</pre>
+and should be:
+<pre>
+  printf (&quot;%d &quot;, ((-20) &lt; 0 ? -(-20) : (-20)));
+</pre>
+<p>
+<h2>6.8.6</h2>
+There is no mention of the fact that using any <code>#pragma</code> in
+a translation unit (this means after <code>#ifdef</code>'d-out code has
+been removed) prevents it from being strictly conforming.
+<p>
+<h2>7.1.2</h2>
+The title of this subclause is: &quot;Standard headers&quot;, but the annotations
+begin with: &quot;A header file&quot;.&#160;<tt> </tt>This obscures the fairly important point that
+the standard headers need not be files; there is at least one implementation
+where the effect of the standard headers is known by the compiler, and there
+are no such files at all.
+<p>
+<blockquote>
+##&#160;<tt> </tt>All conforming C compilers will supply all of the functions<br>
+##&#160;<tt> </tt>described here.<br>
+</blockquote>
+This only applies to &quot;hosted&quot; implementations, and is not true for
+&quot;freestanding&quot; implementations.
+<p>
+<h2>7.1.3</h2>
+<blockquote>
+##&#160;<tt> </tt>Frankly, many C programmers are not aware of the rules described<br>
+##&#160;<tt> </tt>in this section.<br>
+</blockquote>
+Quite right !&#160;<tt> </tt>Unfortunately, the chance to explain the rules was missed.
+<p>
+<h2>7.1.4</h2>
+<blockquote>
+##&#160;<tt> </tt>If <code>errno</code> is zero, then no error has been detected.<br>
+</blockquote>
+This isn't true at all.&#160;<tt> </tt>No library function will ever set errno to zero, but
+if it <em>is</em> zero before one is called, it can remain zero even if an error does
+occur.
+<p>
+<h2>7.1.6</h2>
+The annotations include an example of <code>offsetof()</code>.&#160;<tt> </tt>Unfortunately, the
+explanation of this example assumes that there is no padding in the structure.&#160;<tt> </tt>
+If structures had no padding, <code>offsetof()</code> wouldn't be needed because the offset
+of a field could be computed from the sizes of the preceding fields.
+<p>
+<h2>7.3</h2>
+These functions are nearly all locale dependent: whether a character is a
+letter depends on the language in use as well as the character set.&#160;<tt> </tt>
+Unfortunately, the opportunity to explain this has been omitted in favour of
+a long example printing lines like:
+<blockquote>
+##&#160;<tt> </tt><code>    x is alphanumeric</code><br>
+</blockquote>
+<p>
+<h2>7.4.1.1</h2>
+<blockquote>
+##&#160;<tt> </tt>The <code>setlocale()</code> function sets all or a specified portion of<br>
+##&#160;<tt> </tt>those items described in the <code>lconv</code> structure<br>
+</blockquote>
+This is true in one sense, but oh so misleading.&#160;<tt> </tt>The <code>setlocale()</code> function
+alters the meaning of many of the functions in the standard.&#160;<tt> </tt>For example, it
+can change which characters are letters, or it can alter the decimal point
+character.&#160;<tt> </tt>It can also affect the order in which <code>strcoll()</code> sorts strings.&#160;<tt> </tt>
+In all, there are five &quot;categories&quot; that it can affect.&#160;<tt> </tt>The <code>lconv</code> structure
+is affected by two of these, but not the other three, and it is not the only
+thing that these two affect.
+<p>
+<h2>7.6</h2>
+The example calls <code>setjmp()</code> using the statement:
+<blockquote>
+##&#160;<tt> </tt><code>     result = setjmp (jumpbuf);</code><br>
+</blockquote>
+Unfortunately, the standard puts strict limits on the places in which <code>setjmp</code>
+can be called; essentially it must be one of the four forms:
+<pre>
+    while (setjmp (jumpbuf))
+    while (setjmp (jumpbuf) &lt; 42)
+    while (!setjmp (jumpbuf))
+    setjmp (jumpbuf);
+</pre>
+[The &quot;<code>while</code>&quot; may be replaced by &quot;<code>if</code>&quot; or &quot;<code>switch</code>&quot;, or may be the implicit
+while of a &quot;<code>for</code>&quot; statement.]
+The example in the annotations, however, doesn't use any of these forms, and
+so the compiler must produce a diagnostic for this code.
+<p>
+The standard also puts limitations on what can be done with local variables
+in functions that call <code>setjmp()</code>.&#160;<tt> </tt>I am surprised to find no mention of these
+limitations at all.
+<p>
+<h2>7.7</h2>
+There is no mention of the type <code>sig_atomic_t</code>, and when it should be used.
+<p>
+<h2>7.9</h2>
+<blockquote>
+##&#160;<tt> </tt>The type <code>fpos_t</code> is some type of an unsigned integer.<br>
+</blockquote>
+Actually, not only is there no such requirement in the standard, but <code>fpos_t</code>
+was designed for the circumstances when a file position <em>can't</em> be fitted
+into an <code>unsigned long</code>.&#160;<tt> </tt>The forthcoming Normative Addendum 1 also puts further
+requirements on <code>fpos_t</code> which, while compatible with the current standard, can
+<em>not</em> be implemented if it is an unsigned integer.
+<p>
+<h2>7.9.2</h2>
+<blockquote>
+##&#160;<tt> </tt>Thus, it is permissible for a text stream to treat all<br>
+##&#160;<tt> </tt>characters as part of one long, uninterrupted line, if it<br>
+##&#160;<tt> </tt>so chooses.<br>
+</blockquote>
+Fine sounding words.&#160;<tt> </tt>I wish I knew what they mean !
+<p>
+The standard states that an implementation may treat spaces at the end of lines
+in text files specially, and may add and remove zero bytes at the end of binary
+files.&#160;<tt> </tt>Neither of these rules are mentioned.
+<p>
+<h2>7.9.5.2</h2>
+There is no mention of <code>fflush(NULL)</code>, nor that <code>fflush</code> cannot be applied to
+an input stream.
+<p>
+<h2>7.9.6.1</h2>
+<blockquote>
+##&#160;<tt> </tt>Note that if stream is a pointer to <code>stdout</code>,<br>
+</blockquote>
+Just a nit, but <code>stdout</code> is a pointer, and <code>stream</code> cannot point to it.
+<p>
+Here, and in many other places, <code>printf()</code> is called with a format of <code>&quot;%lf&quot;</code> and
+a corresponding argument which is a <code>double</code>.&#160;<tt> </tt>Unfortunately, the standard states
+that <code>&quot;%f&quot;</code> is the correct format for a double, and <code>&quot;%lf&quot;</code> is undefined.&#160;<tt> </tt>This is
+a particularly bad sin because the description of the <code>&quot;l&quot;</code> flag is missing
+(left page 132 of the book is a repeat of page 131).
+<p>
+While I cannot of course just copy the missing text, I have <a href="schildt-132.html">summarised what has
+been lost</a> separately.
+<p>
+<h2>7.9.6.2</h2>
+Both the examples of scansets don't use a field width.&#160;<tt> </tt>This means that if the
+user inputs a line which is too long, it will overflow the buffer with
+potentially disastrous results.&#160;<tt> </tt>They also use &quot;<code>fflush(stdin)</code>&quot;, which is
+undefined.&#160;<tt> </tt>
+Finally, the comment after that use is:
+<blockquote>
+##&#160;<tt> </tt><code>/* clear crlf from input buffer */</code>
+</blockquote>
+The Standard doesn't even talk about &quot;crlf&quot; pairs, and except in discussing
+the meaning of text streams (7.9.2), use of the term is inappropriate.
+<p>
+<h2>7.9.7</h2>
+The annotations talk about &quot;high order byte&quot; and &quot;low order byte&quot; as if an
+integer only has two bytes.&#160;<tt> </tt>In any case, these functions are not defined in
+terms of &quot;bytes&quot;, but in terms of conversion to <code>unsigned char</code>.
+<p>
+The first example calls <code>fgetc()</code> and assigns the result to a <code>char</code> variable.&#160;<tt> </tt>
+This means that an error or end-of-file will cause the program to loop forever.
+<p>
+<h2>7.9.10.2</h2>
+<blockquote>
+##&#160;<tt> </tt>The following fragment illustrates how files are commonly read:<br>
+##&#160;<tt> </tt><code> do {</code><br>
+##&#160;<tt> </tt><code>     ch = fgetc (fp);</code><br>
+##&#160;<tt> </tt><code>     /* ... */</code><br>
+##&#160;<tt> </tt><code> } while (!feof (fp));</code><br>
+</blockquote>
+This example suffers from the &quot;Pascal disease&quot;.&#160;<tt> </tt>The function <code>feof()</code> does not
+mean &quot;end of file has been reached&quot;, but means &quot;a previous read hit end of
+file and returned <code>EOF</code>&quot;.&#160;<tt> </tt>Thus, when the last character of the file is read and processed,
+<code>&quot;feof</code> <code>(fp)&quot;</code> will still be false, and the loop will be repeated one
+more time.&#160;<tt> </tt>This time, <code>ch</code> will be set to <code>EOF</code>, but there is no indication in
+the annotations that this must be treated specially.&#160;<tt> </tt>Only after this <code>EOF</code> has
+been processed, probably wrongly - for example, if the file is being copied
+to somewhere else, a spurious character will be output - will the call to
+<code>feof()</code> return true.
+<p>
+<h2>7.9.10.3</h2>
+<blockquote>
+##&#160;<tt> </tt>Also, for files opened for binary operations, <code>EOF</code> is a valid<br>
+##&#160;<tt> </tt>binary value and does not necessarily indicate an error or<br>
+##&#160;<tt> </tt>end-of-file condition.<br>
+</blockquote>
+This is dangerous nonsense, caused because the annotations use <code>char</code> variables
+instead of <code>int</code>s to hold the results of <code>fgetc()</code>.&#160;<tt> </tt>What the standard says is, in
+effect, that <code>fgetc()</code> returns a positive or zero value if it read a character,
+and a negative value (<code>EOF</code>) if it reached end-of-file or an error occurred.
+<p>
+It is true that <code>EOF</code>, cast to the type <code>unsigned char</code>, is identical to a value
+that can be read from a binary file (or even a text file).&#160;<tt> </tt>However, this is
+just the effect of bad programming; anyone with experience in C file handling
+should be aware of this.
+<p>
+<h2>7.10.1</h2>
+<blockquote>
+##&#160;<tt> </tt>Also, remember that if the string does not contain a valid<br>
+##&#160;<tt> </tt>numeric value as defined by the function, then 0 is returned.<br>
+##&#160;<tt> </tt>Although <code>strtod()</code>, <code>strtol()</code>, and <code>strtoul()</code> set <code>errno</code> when an<br>
+##&#160;<tt> </tt>out-of-range condition exists, there is no requirement that<br>
+##&#160;<tt> </tt><code>errno</code> be set when the string does not contain a number.&#160;<tt> </tt>Thus,<br>
+##&#160;<tt> </tt>if this is important to your program, you must manually<br>
+##&#160;<tt> </tt>check for the presence of a number before calling one of the<br>
+##&#160;<tt> </tt>conversion functions.<br>
+</blockquote>
+Actually, it is quite hard to make such a check, but luckily it is also
+unnecessary.&#160;<tt> </tt>If there is no number in the string, all three functions set
+<code>*endptr</code> to the original value of <code>nptr</code>, while if there is (even if it is zero)
+they set it to point after the last character of the number.
+<p>
+<h2>7.10.2</h2>
+The example appears to assume that <code>time_t</code> is an integral type, and so assigns
+the result of <code>time()</code> to a <code>long</code>.&#160;<tt> </tt>In fact, it could be <code>double</code>, and it might be
+that the cast always yields zero.&#160;<tt> </tt>To extract a random number from the value
+returned by <code>time()</code>, it is necessary to do something like the following, which
+constructs an <code>unsigned int</code> from all the bits of a <code>time_t</code> value.
+<pre>
+    unsigned int random_from_time (time_t t)
+    {
+        unsigned int i, j, k;
+        char *p;
+<p>
+        i = 0;
+        p = (char *) &amp;t;
+        /* Divide t up into pieces each the size of an unsigned int */
+        for (k = 0; k + sizeof j &lt;= sizeof t; k += sizeof j)
+        {
+            /* Copy the bits of the piece into j and add the value to i */
+            memcpy ((char *) &amp;j, p + k, sizeof j);
+            i += j;
+        }
+        /* Do the same with any remnant (e.g. if j is 4 bytes and t is 11) */
+        if (k &lt; sizeof t)
+        {
+            j = 0;
+            memcpy ((char *) &amp;j, p + k, sizeof t - k);
+            i += j;
+        }
+        return i;
+    }
+</pre>
+<h2>7.10.7 and 7.10.8</h2>
+<blockquote>
+##&#160;<tt> </tt>Since multibyte characters are implementation-specific, you<br>
+##&#160;<tt> </tt>should refer to your compiler's user manual for details.<br>
+</blockquote>
+There is a lot that can be said about multibyte and wide characters without
+having to know individual encodings, and there is a sore lack of such
+tutorial material.&#160;<tt> </tt>It is a great pity to be faced with two almost blank pages
+instead.
+<p>
+<h2>7.11.4</h2>
+The annotations use the term &quot;rearrange&quot; when discussing <code>strxfrm()</code>.&#160;<tt> </tt>It should
+be noted that the result of <code>strxfrm</code> may be longer than the original string.
+<p>
+The example compares two arrays of floats using <code>memcmp</code>.&#160;<tt> </tt>While such a comparison
+is strictly conforming, it is not useful - the result of the comparison depends
+on the details of the encoding of floats, and is in no way related to which
+number is greater or smaller.&#160;<tt> </tt>(For example, it is possible to have an encoding
+in which <code>0 &lt; 2</code>, but <code>2 &gt; 3</code>, as far as this comparison works.&#160;<tt> </tt>In the same way,
+comparing integers with <code>memcmp</code> is equally useless on a little-endian system.)
+<p>
+<h2>7.12.2.3</h2>
+There is no description of <code>mktime</code> and how it can be used to solve problems
+like &quot;what day is 100 days after December 25th 1993 ?&quot;&#160;<tt> </tt>This appears to be solely
+because there was no room on the page opposite the definition of <code>mktime</code>.
+<p>
+<hr>
+Copyright 1994 by <a href="clive/index.html">Clive Feather</a>, markup by
+jutta@pobox.com.
+</body></html>

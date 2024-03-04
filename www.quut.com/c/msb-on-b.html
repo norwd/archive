@@ -1,0 +1,178 @@
+<html>
+<head>
+<title>Mark Brader on B</title>
+<link rel="made" rev="made" href="mailto:jutta@pobox.com">
+</head>
+<body>
+BCPL to B to C: other articles by
+<a href="alan-on-bcpl.html">Alan Watson</a>,
+<a href="clive-on-history.html">Clive Feather</a>, and
+<a href="dmr-on-histories.html">Dennis Ritchie</a>
+<hr>
+[The text of this article has been slightly edited since its original posting.]
+<p>
+Newsgroups: comp.lang.c<br>
+From: msb@sq.sq.com (<a href="msb/index.html" name="msb">Mark Brader</a>)<br>
+Subject: B (was: int main() (was SUMMARY: CW poll: exit vs. return))<br>
+Message-ID: &lt;1993Sep6.062940.11969@sq.sq.com&gt;<br>
+Organization: SoftQuad Inc., Toronto, Canada<br>
+Date: Mon, 6 Sep 93 06:29:40 GMT<br>
+<p>
+&gt; &gt;&#160;<tt> </tt>It may also be worth noting in this context that C's predecessor language,<br>
+&gt; &gt;&#160;<tt> </tt>B, did not require ...<br>
+<p>
+&gt;&#160;<tt> </tt>I honestly never knew how C got [its] name. ...<br>
+&gt;&#160;<tt> </tt>According to a textbook of mine C was derived from<br>
+&gt;&#160;<tt> </tt>BCPL. I did not know a language called B ever existed. ...<br>
+<p>
+<a name="main">
+To go back to the beginning,</a> once upon a time in England there was
+a language called <i>CPL</i>.&#160;<tt> </tt>I've heard this acronym explained both as
+Cambridge Programming Language and as Combined..., and seen a
+suggestion that both names may have been used at different times.&#160;<tt> </tt>
+Anyway, this gave rise to <a href="alan-on-bcpl.html#bcpl-main">a simpler language called </a><a href="alan-on-bcpl.html#bcpl-main"><i>BCPL</i></a>, the
+B apparently standing for Basic.&#160;<tt> </tt>A paper about BCPL (which I have
+not read) can be found in the proceedings of the 1969 AFIPS Spring
+Joint Computer Conference.&#160;<tt> </tt>For further information about these
+languages, I suggest asking in comp.lang.misc or alt.folklore.computers.
+<p>
+<a name="after-bcpl">
+Also in 1969,</a> the system that <a href="bwk/index.html" name="bwk">Brian
+Kernighan</a> would later name Unix was being developed by Ken
+Thompson &quot;with some assistance from&quot; <a href="https://www.bell-labs.com/usr/dmr/www/index.html"
+name="dmr">Dennis Ritchie</a>.&#160;<tt> </tt>The original system was implemented
+in PDP-7 assembler.
+Once they had it more or less working, the need for a high-level
+language was felt.&#160;<tt> </tt>Doug McIlroy implemented a language called <i>TMG</i>, and
+then, as <a href="https://www.bell-labs.com/usr/dmr/www/index.html">Ritchie</a> later wrote...
+<p>
+<blockquote>
+        ...Thompson decided that we could not pretend to offer a
+        real computing service without Fortran, so he sat down to
+        write a Fortran in TMG.&#160;<tt> </tt>As I recall, the intent to handle
+        Fortran lasted about a week.&#160;<tt> </tt>What he produced instead
+        was a definition of and a compiler for the new language B.
+        B was much influenced by the BCPL language; other influences
+        were Thompson's taste for spartan syntax, and the very small
+        space into which the compiler had to fit.
+<p>
+        [from the Oct 1984 <i>Bell Labs Tech Journal</i> special issue on UNIX]
+</blockquote><p>
+This apparently happened in 1970.&#160;<tt> </tt>The same year a PDP-11 arrived to
+replace the PDP-7, and UNIX began to be moved to it, still in assembler.
+B was soon implemented on the PDP-11.&#160;<tt> </tt>A few years experience with B
+showed that it was not entirely satisfactory, and C was developed
+from it by Ritchie soon afterward, after which most of Unix, of course,
+was reimplemented in C.&#160;<tt> </tt>I understand that during the transition from B
+to C there was also a short-lived intermediate language <i>NB</i> (new B).
+<p>
+&gt; Tell me more about this predecessor language. ...<br>
+&gt; it seems that this 'B' was even worse than old-style C on type-checking.
+<p>
+B didn't believe in type-checking, period.&#160;<tt> </tt>There was only one type,
+the machine word, and the programmer was responsible for applying to
+a variable only such operators as made sense.&#160;<tt> </tt>I never used B on a
+UNIX system, but I used it on GCOS on the Honeywell 6000 series;
+the first version of B there, and I presume the first one on UNIX,
+did not support floating point.&#160;<tt> </tt>Later it was added by means of
+adding floating-point <em>operators</em>:<code> #+</code>,<code> #*</code>,&#160;<tt> </tt>and so on.<p>
+
+Here is a bit of C code and its B equivalent:<p>
+
+<pre>
+    /* infact -- initializes elements from fact[0] = 0! up to
+     * fact[n] = n!.  Returns n!. */
+
+    float infact (n) int n;
+    /* or, of course, the newer float infact (int n) */
+    {
+            float f = 1;
+            int i;
+            extern float fact[];
+
+            for (i = 0; i &lt;= n; ++i)
+                    fact[i] = f *= i;
+
+            return f;
+    }
+
+    #define TOPFACT 10
+    float fact[TOPFACT+1];
+</pre>
+And now in B:
+<pre>
+    infact (n)
+    {
+            auto f, i, j;   /* no initialization for auto variables */
+            extrn fact;     /* &quot;What would I do differently if designing
+                             *  UNIX today?  I'd spell creat() with an e.&quot;
+                             *  -- Ken Thompson, approx. wording */
+
+            f = 1.;         /* floating point constant */
+            j = 0.;
+            for (i = 0; i &lt;= n; ++i) {
+                    fact[i] = f =#* j;      /* note spelling =#* not #*= */
+                    j =#+ 1.;               /* #+ for floating add */
+            }
+
+            return (f);     /* at least, I think the () were required */
+    }
+
+    TOPFACT = 10;   /* equivalent of #define, allows numeric values only */
+    fact[TOPFACT];
+</pre><p>
+The last line is of particular interest because it actually declares
+12, not 10, words of storage.&#160;<tt> </tt>In B the subscripts run from 0 to the
+declared value, so [0] denoted a 1-element array.&#160;<tt> </tt>The extra word was
+a pointer initialized to the first element of the array, so the &quot;fact&quot;
+of the B program was equivalent to this in C:
+<p><pre>
+        float _unnamed[11], *fact = _unnamed;
+</pre><p>
+The C concept of an array reference decaying to a pointer descends from
+this.&#160;<tt> </tt>There were no structs, no arrays of
+arrays, no enums, no unions--
+but you could simulate all of them yourself.&#160;<tt> </tt>(There <em>was</em> an equivalent
+of<code> malloc() </code>-- actually, at least on the implementation I used, it was
+more powerful, because you could free things whether they were allocated
+by it or not.&#160;<tt> </tt>I miss that sometimes.)<p>
+
+There was also none of the <code>char</code>/<code>short</code>/<code>int</code>/<code>long </code>hierarchy, and no unsigned
+operations.&#160;<tt> </tt>If you wanted to deal with character strings, you could
+either store one character per word in an array and index them directly,
+or store one character per byte and access them with library functions.<p>
+
+The library functions performed some of the same sorts of things that
+the ones now standard in C did, but the set of functions was a good deal
+smaller, and generally they were not 100% compatible with the UNIX ones.
+One thing that I miss was that the same function covered both<code> printf()</code>
+and<code> fprintf() </code>-- if its first argument was a small number, it took it
+to be a file descriptor.&#160;<tt> </tt>In the implementation that I used, it was
+possible to stack open file descriptors, a programmatic equivalent of
+the way you can say<p>
+<pre>
+        (cmd1; (cmd2a; cmd2b &gt;xx; cmd2c) &gt;yy; cmd3) &gt;zz
+</pre>
+in UNIX shell language, and strings could be opened as files.
+<p>
+&gt; Was there ever an A ;).
+<p>
+Not spelled that way, but some time after B and C had arrived at the
+University of Waterloo, some people there did create languages called
+Eh and Zed -- in that order, I believe.
+<p>
+Finally, as the Jargon File says, &quot;Before Bjarne Stroustrup settled the
+question by designing C++, there was a humorous debate over whether
+C's successor should be named `D' or `P'.&quot;<br>
+<hr>
+<a href="msb/index.html">Mark Brader</a>&#160;<tt> </tt>utzoo!sq!msb, msb@sq.com<br>
+&quot;We did not try to keep writing until things got full.&quot; -- <a href="https://www.bell-labs.com/usr/dmr/www/index.html">Ritchie</a><br>
+<br>
+This article is in the public domain.<br>
+<hr>
+BCPL to B to C: other articles by
+<a href="alan-on-bcpl.html">Alan Watson</a>,
+<a href="clive-on-history.html">Clive Feather</a>, and
+<a href="dmr-on-histories.html">Dennis Ritchie</a>
+</body>
+</html>

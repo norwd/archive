@@ -1,0 +1,563 @@
+<html><head>
+<link rel="made" rev="made" href="mailto:jutta@cs.tu-berlin.de">
+<title>Miscellaneous</title></head>
+<body>
+<a href="c-16.html"><img SRC="prev.xbm" ALT="[prev]"></a>
+<a href="index.html#comp-lang-c-faq"><img SRC="up.xbm" ALT="[up]"></a>
+<a href="c-faq-toc.html#c-17"><img SRC="overview.xbm" alt="[overview]"></a>
+<a href="index.html#bibliography"><img SRC="next.xbm" ALT="[next]"></a>
+<hr>
+
+<h2>Section 17. Miscellaneous</h2>
+<p>
+<h3>
+<a name="17-1">
+17.1:	What can I safely assume about the initial values of variables
+	which are not explicitly initialized?</a>&#160;<tt> </tt>If global variables start
+	out as &quot;zero,&quot; is that good enough for null pointers and
+	floating-point zeroes?
+</h3><p>
+  	Variables with &quot;static&quot; duration (that is, those declared
+	outside of functions, and those declared with the storage class
+	<code>static</code>), are guaranteed initialized to zero, as if the
+	programmer had typed &quot;<code>= 0</code>&quot;.&#160;<tt> </tt>Therefore, such variables are
+	initialized to the null pointer (of the correct type; see also
+	<a href="c-1.html">Section 1</a>) if they are pointers, and to <code>0.0</code> if they are
+	floating-point.
+<p>
+	Variables with &quot;automatic&quot; duration (i.e. local variables
+	without the <code>static</code> storage class) start out containing garbage,
+	unless they are explicitly initialized.&#160;<tt> </tt>Nothing useful can be
+	predicted about the garbage.
+<p>
+	Dynamically-allocated memory obtained with <code>malloc</code> and <code>realloc</code> is
+	also likely to contain garbage, and must be initialized by the
+	calling program, as appropriate.&#160;<tt> </tt>Memory obtained with <code>calloc</code>
+	contains all-bits-0, but this is not necessarily useful for
+	pointer or floating-point values (see <a href="c-3.html#3-13">question 3.13</a>, and <a href="c-1.html">section 1</a>).
+<p><h3>
+<a name="17-2">
+17.2:   This code, straight out of a book, isn't compiling:</a></h3>
+<pre>
+        f()
+        {
+        char a[] = &quot;Hello, world!&quot;;
+        }
+</pre>
+        Perhaps you have a pre-ANSI compiler, which doesn't allow
+        initialization of "automatic aggregates" (i.e. non-static local
+        arrays and structures).&#160;<tt> </tt>As a workaround, you can make the array
+        global or static, and initialize it with <code>strcpy</code> when
+	<code>f</code> is called.&#160;<tt> </tt>(You can always initialize local
+	<code>char</code> <code>* </code>variables with string literals,
+	but see question <a href="c-17.html#17-20">17.20</a>).&#160;<tt> </tt>See
+        also questions <a href="c-5.html#5-16">5.16</a>
+and <a href="c-5.html#5-17">5.17</a>.
+<p>
+<h3>
+<a name="17-3">
+17.3:	How can I write data files which can be read on other machines
+	with different word size, byte order, or floating point formats?
+</a></h3><p>
+  	The best solution is to use text files (usually ASCII), written
+	with <code>fprintf</code> and read with <code>fscanf</code> or the like.&#160;<tt> </tt>(Similar advice
+	also applies to network protocols.)&#160;<tt> </tt>Be skeptical of arguments
+	which imply that text files are too big, or that reading and
+	writing them is too slow.&#160;<tt> </tt>Not only is their efficiency
+	frequently acceptable in practice, but the advantages of being
+	able to manipulate them with standard tools can be overwhelming.
+<p>
+	If you must use a binary format, you can improve portability,
+	and perhaps take advantage of prewritten I/O libraries, by
+	making use of standardized formats such as Sun's XDR (RFC 1014),
+	OSI's ASN.1, CCITT's X.409, or ISO 8825 &quot;Basic Encoding Rules.&quot;
+	See also <a href="c-9.html#9-11">question 9.11</a>.
+<p>
+<h3><a name="17-4">
+17.4:   How can I insert or delete a line (or record) from the middle of a file?</a></h3>
+<p>
+        Short of rewriting the file, you probably can't.&#160;<tt> </tt>See also
+        question <a href="c-16.html#16-9">16.9</a>.
+<p><h3>
+<a name="17-5">
+17.5:	How can I return several values from a function?
+</a></h3><p>
+  	Either pass pointers to locations which the function can fill
+	in, or have the function return a structure containing the
+	desired values, or (in a pinch) consider global variables.&#160;<tt> </tt>See
+	also questions <a href="c-2.html#2-17">2.17</a>, <a href="c-3.html#3-4">3.4</a>, and <a href="c-9.html#9-2">9.2</a>.
+<p>
+<h3>
+<a name="17-6">
+17.6:	If I have a </a><code>char</code> <code>*</code> variable pointing to the name of a function
+	as a string, how can I call that function?
+</h3><p>
+  	The most straightforward thing to do is maintain a
+	correspondence table of names and function pointers:
+<p>
+<pre>
+	int function1(), function2();
+
+	struct {char *name; int (*funcptr)(); } symtab[] =
+		{
+		&quot;function1&quot;,	function1,
+		&quot;function2&quot;,	function2,
+		};
+</pre>
+<p>
+	Then, just search the table for the name, and call through the
+	associated function pointer.&#160;<tt> </tt>See also questions <a href="c-9.html#9-9">9.9</a> and <a href="c-16.html#16-11">16.11</a>.
+<p>
+
+<h3>
+<a name="17-7">
+17.7:	I seem to be missing the system header file </a><code>&lt;sgtty.h&gt;</code>.&#160;<tt> </tt>Can
+	someone send me a copy?
+</h3><p>
+  	Standard headers exist in part so that definitions appropriate
+	to your compiler, operating system, and processor can be
+	supplied.&#160;<tt> </tt>You cannot just pick up a copy of someone else's
+	header file and expect it to work, unless that person is using
+	exactly the same environment.&#160;<tt> </tt>Ask your compiler vendor why the
+	file was not provided (or to send a replacement copy).
+<p>
+
+<h3>
+<a name="17-8">
+17.8:	How can I call FORTRAN (C++, BASIC, Pascal, Ada, LISP) functions
+	from C?</a>&#160;<tt> </tt>(And vice versa?)
+</h3><p>
+  	The answer is entirely dependent on the machine and the specific
+	calling sequences of the various compilers in use, and may not
+	be possible at all.&#160;<tt> </tt>Read your compiler documentation very
+	carefully; sometimes there is a &quot;mixed-language programming
+	guide,&quot; although the techniques for passing arguments and
+	ensuring correct run-time startup are often arcane.&#160;<tt> </tt>More
+	information may be found in <a href="ftp://suphys.physics.su.oz.au/src/FORT.gz">FORT.gz</a> by Glenn Geers, available via
+	anonymous ftp from suphys.physics.su.oz.au in the src directory.
+<p>
+	<a href="ftp://zebra.desy.de/cfortran">cfortran.h</a>, a C header file, simplifies C/FORTRAN interfacing on
+	many popular machines.&#160;<tt> </tt>It is available via anonymous ftp from
+	zebra.desy.de (131.169.2.244).
+<p>
+	In C++, a &quot;C&quot; modifier in an external function declaration
+	indicates that the function is to be called using C calling
+	conventions.
+<p>
+
+<h3>
+<a name="17-9">
+17.9:	Does anyone know of a program for converting Pascal or FORTRAN
+	(or LISP, Ada, awk, &quot;Old&quot; C, ...) to C?
+</a></h3><p>
+  	Several public-domain programs are available:
+<dl>
+<dt>p2c<dd>	 A Pascal to C converter written by Dave Gillespie, posted to
+		<a href="ftp://ftp.uu.net/usenet/comp.sources.unix/volume21/p2c">comp.sources.unix</a> in March, 1990 (Volume 21); also
+		available by anonymous ftp from csvax.cs.caltech.edu, file <a href="ftp://csvax.cs.caltech.edu/pub/p2c-1.20.tar.Z">pub/p2c-1.20.tar.Z</a> .
+<dt>ptoc<dd>Another Pascal to C converter, this one written
+		in Pascal (<a href="ftp://ftp.uu.net/usenet/comp.sources.unix/volume10/ptoc">comp.sources.unix, Volume 10</a>, also patches in
+		<a href="ftp://ftp.uu.net/usenet/comp.sources.unix/volume13/pas2c.pch.Z">Volume 13</a>?).
+<dt>f2c<dd>A Fortran to C converter jointly developed by people from Bell Labs, Bellcore,
+		and Carnegie Mellon.&#160;<tt> </tt>To find about f2c, send the mail
+		message &quot;send index from f2c&quot; to&#160;<tt> </tt>netlib@research.att.com&#160;<tt> </tt>
+		or&#160;<tt> </tt>research!netlib.&#160;<tt> </tt>(It is also available via anonymous
+		ftp on netlib.att.com, in directory <a href="ftp://netlib.att.com/netlib/f2c">netlib/f2c</a>.)
+</dl>
+	This FAQ list's maintainer also has available a list of other
+	commercial translation products, and some for more obscure
+	languages.
+<p>
+	See also <a href="c-5.html#5-3">question 5.3</a>.
+<p><h3><a name="17-10">
+17.10:  Is C++ a superset of C?  Can I use a C++ compiler to compile C
+        code?</a></h3>
+<p>
+        C++ was derived from C, and is largely based on it, but there
+        are some legal C constructs which are not legal C++.&#160;<tt> </tt>(Many C
+        programs will nevertheless compile correctly in a C++
+        environment.)
+<p>
+<p><h3><a name="17-11">17.11:  I need...</a></h3><p>
+    Look for programs (see also <a href="c-17.html#17-12">question 17.12</a>) named:
+<dl>
+<dt>...a C cross-reference generator<dd>        cflow, calls, cscope<p>
+<dt>...a C beautifier/pretty-printer<dd>	cb, indent
+</dl>
+<p>
+<h3>
+<a name="17-12">
+17.12:	Where can I get copies of all these public-domain programs?
+</a></h3><p>
+  	If you have access to Usenet, see the regular postings in the
+	comp.sources.unix and comp.sources.misc newsgroups, which
+	describe, in some detail, the archiving policies and how to
+	retrieve copies.&#160;<tt> </tt>The usual approach is to use anonymous ftp
+	and/or uucp from a central, public-spirited site, such as uunet
+	(<a href="ftp://ftp.uu.net/">ftp.uu.net</a>, 192.48.96.9).&#160;<tt> </tt>However, this article cannot track
+	or list all of the available archive sites and how to access
+	them.
+<p>
+        Ajay Shah maintains an index of free numerical software; it is
+        posted periodically, and available where this FAQ list is
+        archived (see <a href="c-17.html#17-33">question 17.33</a>).&#160;<tt> </tt>The comp.archives newsgroup
+        contains numerous announcements of anonymous ftp availability of
+        various items.&#160;<tt> </tt>The "archie" mailserver can tell you which
+        anonymous ftp sites have which packages; send the mail message
+        "help" to archie@quiche.cs.mcgill.ca for information.&#160;<tt> </tt>Finally,
+        the newsgroup comp.sources.wanted is generally a more
+        appropriate place to post queries for source availability, but
+        check <em>its</em> FAQ list, "How to find sources," before posting
+        there.
+<p><h3>
+<a name="17-13">
+17.13:	When will the next International Obfuscated C Code Contest
+	(IOCCC) be held?</a>&#160;<tt> </tt>How can I get a copy of the
+	<a href="../ioccc/1994.html/index.html#winners">current</a> and previous winning entries?
+</h3><p>
+The contest schedule is tied to the dates of the USENIX
+conferences at which the winners are announced.  At the time of
+this writing, it is expected that the yearly contest will open
+in October.  To obtain a current copy of the rules and
+guidelines, send e-mail
+	with the Subject: line &quot;send rules&quot; to:
+<blockquote>
+	   {apple,pyramid,sun,uunet}!hoptoad!judges&#160;<tt> </tt>or<br>
+	   judges@toad.com
+</blockquote>
+        (Note that these are <em>not</em> the addresses for submitting
+        entries.)
+<p>
+Contest winners should be announced at the winter USENIX
+conference in January, and are posted to the net sometime
+thereafter.  Winning entries from previous years (to 1984) are
+	archived at uunet (see <a href="c-17.html#17-12">question 17.12</a>) under the directory
+	<a href="ftp://ftp.uu.net/pub/ioccc">~/pub/ioccc</a>.
+<p>
+	As a last resort, previous winners may be obtained by sending
+	e-mail to the above address, using the Subject: &quot;send YEAR
+	winners&quot;, where YEAR is a single four-digit year, a year range,
+	or &quot;all&quot;.
+<p>
+
+<h3>
+<a name="17-14">
+17.14:	Why don't C comments nest?</a>&#160;<tt> </tt>How am I supposed to comment out 
+code containing comments?&#160;<tt> </tt>Are comments legal inside quoted
+        strings?
+</h3><p>
+  	Nested comments would cause more harm than good, mostly because
+	of the possibility of accidentally leaving comments unclosed by
+	including the characters &quot;<code>/*</code>&quot; within them.&#160;<tt> </tt>For this reason, it
+	is usually better to &quot;comment out&quot; large sections of code, which
+	might contain comments, with<code> #ifdef </code>or<code> #if 0 </code>(but see <a href="c-5.html#5-11">question
+	5.11</a>).
+<p>
+	The character sequences <code>/*</code> and <code>*/</code> are not special within
+	double-quoted strings, and do not therefore introduce comments,
+	because a program (particularly one which is generating C code
+	as output) might want to print them.
+<p>
+	References: <a href="index.html#ANSI">ANSI</a> Appendix E p. 198,
+		<a href="../rat/c1.html#3-1-9">Rationale Sec. 3.1.9 p. 33.</a>
+<p>
+<h3><a name="17-15">
+17.15:  How can I get the ASCII value corresponding to a character, or
+        vice versa?</a></h3><p>
+        In C, characters are represented by small integers corresponding
+        to their values (in the machine's character set) so you don't
+        need a conversion routine: if you have the character, you have
+        its value.
+<p>
+<h3>
+<a name="17-16">
+17.16:	How can I implement sets and/or arrays of bits?
+</a></h3><p>
+  	Use arrays of char or int, with a few macros to access the right
+	bit at the right index (try using 8 for <code>CHAR_BIT</code> if you don't
+	have <code>&lt;limits.h&gt;</code>):
+<p>
+<pre>
+	#include &lt;limits.h&gt;		/* for CHAR_BIT */
+
+	#define BITMASK(bit) (1 &lt;&lt; ((bit) % CHAR_BIT))
+	#define BITSLOT(bit) ((bit) / CHAR_BIT)
+	#define BITSET(ary, bit) ((ary)[BITSLOT(bit)] |= BITMASK(bit))
+	#define BITTEST(ary, bit) ((ary)[BITSLOT(bit)] &amp; BITMASK(bit))
+</pre>
+<p>
+
+<h3>
+<a name="17-17">
+17.17:	What is the most efficient way to count the number of bits which
+	are set in a value?
+</a></h3><p>
+  	This and many other similar bit-twiddling problems can often be
+	sped up and streamlined using lookup tables (but see the <a href="c-17.html#17-18">next
+	question</a>).
+<p>
+
+<h3>
+<a name="17-18">
+17.18:	How can I make this code more efficient?
+</a></h3><p>
+  	Efficiency, though a favorite comp.lang.c topic, is not
+	important nearly as often as people tend to think it is.&#160;<tt> </tt>Most
+	of the code in most programs is not time-critical.&#160;<tt> </tt>When code is
+	not time-critical, it is far more important that it be written
+	clearly and portably than that it be written maximally
+	efficiently.&#160;<tt> </tt>(Remember that computers are very, very fast, and
+	that even &quot;inefficient&quot; code can run without apparent delay.)
+<p>
+	It is notoriously difficult to predict what the &quot;hot spots&quot; in a
+	program will be.&#160;<tt> </tt>When efficiency is a concern, it is important
+	to use profiling software to determine which parts of the
+	program deserve attention.&#160;<tt> </tt>Often, actual computation time is
+	swamped by peripheral tasks such as I/O and memory allocation,
+	which can be sped up by using buffering and caching techniques.
+<p>
+	For the small fraction of code that is time-critical, it is
+	vital to pick a good algorithm; it is less important to
+	&quot;microoptimize&quot; the coding details.&#160;<tt> </tt>Many of the &quot;efficient
+	coding tricks&quot; which are frequently suggested (e.g. substituting
+	shift operators for multiplication by powers of two) are
+	performed automatically by even simpleminded compilers.
+	Heavyhanded &quot;optimization&quot; attempts can make code so bulky that
+	performance is degraded.
+<p>
+	For more discussion of efficiency tradeoffs, as well as good
+	advice on how to increase efficiency when it is important, see
+	chapter 7 of Kernighan and Plauger's <a href="index.html#EoPS">The Elements of Programming
+	Style</a>, and Jon Bentley's <a href="index.html#JLB">Writing Efficient Programs</a>.
+<p>
+
+<h3>
+<a name="17-19">
+17.19:	Are pointers really faster than arrays?</a>&#160;<tt> </tt>How much do function
+	calls slow things down?&#160;<tt> </tt>Is<code> ++i </code>faster than<code> i = i + 1 </code>?
+</h3><p>
+  	Precise answers to these and many similar questions depend of
+	course on the processor and compiler in use.&#160;<tt> </tt>If you simply must
+	know, you'll have to time test programs carefully.&#160;<tt> </tt>(Often the
+	differences are so slight that hundreds of thousands of
+	iterations are required even to see them.&#160;<tt> </tt>Check the compiler's
+	assembly language output, if available, to see if two purported
+	alternatives aren't compiled identically.)
+<p>
+	It is &quot;usually&quot; faster to march through large arrays with
+	pointers rather than array subscripts, but for some processors
+	the reverse is true.
+<p>
+	Function calls, though obviously incrementally slower than in-line
+	code, contribute so much to modularity and code clarity
+	that there is rarely good reason to avoid them.
+<p>
+	Before rearranging expressions such as <code>i</code> <code>=</code> <code>i</code> <code>+</code> <code>1</code>, remember that
+	you are dealing with a C compiler, not a keystroke-programmable
+	calculator.&#160;<tt> </tt>Any decent compiler will generate identical code
+	for<code> ++i</code>,<code> i</code> <code>+=</code> <code>1</code>,<code> </code>and<code> i</code> <code>=</code> <code>i</code> <code>+</code> <code>1</code>.&#160;<tt> </tt>The reasons for using<code> ++i </code>or<code> i</code> <code>+=</code> <code>1 </code>over<code> i</code> <code>=</code> <code>i</code> <code>+</code> <code>1 </code>have to do with style, not efficiency.&#160;<tt> </tt>
+<!-- They're coming to take me away, haha... -->
+	(See also question <a href="c-4.html#4-7">4.7</a>.)
+<p>
+<h3><a name="17-20">
+17.20:  Why does this code:</a></h3>
+<pre>
+        char *p = "Hello, world!";
+        p[0] = tolower(p[0]);
+</pre><h3>
+        crash?</h3>
+<p>
+        String literals are not necessarily modifiable, except (in
+        effect) when they are used as array initializers.&#160;<tt> </tt>Try
+<pre>
+        char a[] = "Hello, world!";
+</pre>
+        (For compiling old code, some compilers have a switch
+        controlling whether strings are writable or not.)  See also
+        questions <a href="c-2.html#2-1">2.1</a>, <a href="c-2.html#2-2">2.2</a>, <a href="c-2.html#2-8">2.8</a>, and <a href="c-17.html#17-2">17.2</a>.
+<p>
+        References: <a href="index.html#ANSI">ANSI</a> Sec. 3.1.4 .
+<p>
+<h3>
+<a name="17-21">
+17.21:	This program crashes before it even runs!</a>&#160;<tt> </tt>(When single-stepping
+	with a debugger, it dies before the first statement in<code> main</code>.)
+</h3><p>
+  	You probably have one or more very large (kilobyte or more)
+	local arrays.&#160;<tt> </tt>Many systems have fixed-size stacks, and those
+	which perform dynamic stack allocation automatically (e.g. Unix)
+	can be confused when the stack tries to grow by a huge chunk all
+	at once.
+<p>
+	It is often better to declare large arrays with static duration
+	(unless of course you need a fresh set with each recursive
+	call).
+<p>
+	(See also <a href="c-9.html#9-4">question 9.4</a>.)
+<p>
+<h3>
+<a name="17-22">
+17.22:	What do &quot;Segmentation violation&quot; and &quot;Bus error&quot; mean?
+</a></h3><p>
+  	These generally mean that your program tried to access memory it
+	shouldn't have, invariably as a result of improper pointer use,
+	often involving uninitialized or improperly allocated pointers
+        (see questions <a href="c-3.html#3-1">3.1</a>
+and <a href="c-3.html#3-2">3.2</a>), or<code> malloc </code>(see <a href="c-17.html#17-23">question 17.23</a>) or perhaps<code> scanf </code>(see <a href="c-11.html#11-3">question 11.3</a>).
+<p>
+<h3>
+<a name="17-23">
+17.23:	My program is crashing, apparently somewhere down inside</a><code> malloc</code>,
+	but I can't see anything wrong with it.
+</h3><p>
+  	It is unfortunately very easy to corrupt<code> malloc</code>'s internal data
+	structures, and the resulting problems can be hard to track
+	down.&#160;<tt> </tt>The most common source of problems is writing more to
+	a<code> malloc</code>'ed region than it was allocated to hold; a particularly
+	common bug is to<code> malloc(strlen(s)) </code>instead of <code>strlen(s)</code> <code>+</code> <code>1</code>.&#160;<tt> </tt>
+	Other problems involve freeing pointers not obtained from<code> malloc</code>, or trying to<code> realloc </code>a null pointer (see <a href="c-3.html#3-12">question 3.12</a>).
+<p>
+	A number of debugging packages exist to help track down<code> malloc </code>problems; one popular one is Conor P. Cahill's &quot;<a href="ftp://ftp.uu.net/usenet/comp.sources.misc/volume22/debug_malloc">dbmalloc</a>&quot;,
+	        posted to comp.sources.misc in September of 1992.&#160;<tt> </tt>Others are
+        "<a href="ftp://ftp.uu.net/usenet/comp.sources.unix/volume27/leak">leak</a>," available in volume 27 of the comp.sources.unix
+        archives; JMalloc.c and JMalloc.h in Fidonet's C_ECHO Snippets
+        (or ask archie; see question <a href="c-17.html#17-12">17.12</a>); and <a href="ftp://ftp.crpht.lu/pub/sources/memdebug">MEMDEBUG</a> from
+        ftp.crpht.lu in pub/sources/memdebug .&#160;<tt> </tt>See also <a href="c-17.html#17-12">question 17.12</a>.
+<p>
+<h3>
+<a name="17-24">
+17.24:	Does anyone have a C compiler test suite I can use?
+</a></h3><p>
+  	Plum Hall (formerly in Cardiff, NJ; now in Hawaii) sells one.&#160;<tt> </tt>
+	The FSF's GNU C (gcc) distribution includes a c-torture-test.tar.Z
+	which checks a number of common problems with
+	compilers.&#160;<tt> </tt>Kahan's <a href="ftp://netlib.att.com/netlib/paranoia">paranoia</a> test, found in netlib/paranoia on netlib.att.com, strenuously tests a C implementation's
+	floating point capabilities.
+<p>
+<h3>
+<a name="17-25">
+17.25:	Where can I get a YACC grammar for C?
+</a></h3><p>
+  	The definitive grammar is of course the one in the <a href="index.html#ANSI">ANSI</a>
+	standard.&#160;<tt> </tt>A fleshed-out, working instance of the ANSI
+        grammar (due to Jeff Lee) is on uunet (see question <a href="c-17.html#17-12">17.12</a>) in
+        <a href="ftp://ftp.uu.net/usenet/net.sources/ansi.c.grammar.Z">usenet/net.sources/ansi.c.grammar.Z</a>(including a companion
+        lexer).&#160;<tt> </tt>The FSF's GNU C compiler
+	contains a grammar, as does the appendix to <a href="index.html#K-amp-RII">K&amp;R II</a>.
+<p>
+	References: <a href="index.html#ANSI">ANSI</a> Sec. A.2 .
+<p>
+<h3><a name="17-26">
+17.26:  I need code to parse and evaluate expressions.</a></h3>
+<p>
+        Two available packages are "defunc," posted to comp.source.misc
+        in December, 1993 (V41 i32,33), to alt.sources in January, 1994,
+        and available from
+<a href="ftp://sunsite.unc.edu/pub/packages/development/libraries/defunc-1.3.tar.Z">
+	 sunsite.unc.edu in pub/packages/development/libraries/defunc-1.3.tar.Z</a>; and
+        "<a href="ftp://lamont.ldgo.columbia.edu/pub/parse.tar.Z">parse</a>," at lamont.ldgo.columbia.edu.
+<p>
+<h3><a name="17-27">
+17.27:  I need a sort of an &quot;approximate&quot;</a><code> strcmp </code>routine, for comparing
+        two strings for close, but not necessarily exact, equality.</h3>
+<p>
+        The traditional routine for doing this sort of thing involves
+        the &quot;soundex&quot; algorithm, which maps similar-sounding words to
+        the same numeric codes.&#160;<tt> </tt>Soundex is described in the Searching
+        and Sorting volume of Donald Knuth's classic <em>The Art of
+        Computer Programming</em>.
+<p>
+<h3><a name="17-28">
+17.28:  How can I find the day of the week given the date?
+</a></h3><p>
+        Use<code> mktime </code>(see questions <a href="c-12.html#12-6">12.6</a>
+and <a href="c-12.html#12-7">12.7</a>), or Zeller's
+        congruence, or see the sci.math FAQ list, or try this code
+	posted by Tomohiko Sakamoto:
+<pre>
+    dayofweek(y, m, d)      /* 0 = Sunday */
+    int y, m, d;            /* 1 <= m <= 12,  y > 1752 or so */
+    {
+            static int t[] = {0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
+            y -= m < 3;
+            return (y + y/4 - y/100 + y/400 + t[m-1] + d) % 7;
+    }
+</pre>
+<p>
+<h3><a name="17-29">
+17.29:  Will 2000 be a leap year?</a>&#160;<tt> </tt>Is<code> (year % 4 == 0) </code>an accurate test
+        for leap years?</h3>
+<p>
+        Yes and no, respectively.&#160;<tt> </tt>The full expression for the Gregorian
+        calendar is
+<pre>
+        year % 4 == 0 &amp;&amp; (year % 100 != 0 || year % 400 == 0)
+</pre>
+        See a good astronomical almanac or other reference for details.
+<p>
+<h3>
+<a name="17-30">
+17.30:	How do you pronounce &quot;char&quot;?
+</a></h3><p>
+  	You can pronounce the C keyword &quot;char&quot; in at least three ways:
+	like the English words &quot;char,&quot; &quot;care,&quot; or &quot;car;&quot; the choice is
+	arbitrary.
+<p>
+
+<h3>
+<a name="17-31">
+17.31:	What's a good book for learning C?
+</a></h3><p>
+  	Mitch Wright maintains an <a href="ftp://ftp.rahul.net/pub/mitch/YABL">annotated bibliography of C and Unix
+	books</a>; it is available for anonymous ftp from ftp.rahul.net in
+	directory pub/mitch/YABL.
+<p>
+	<a href="index.html#steve">This FAQ list's editor</a> maintains a collection of previous
+	answers to this question, which is available upon request.
+
+<p>
+<h3>
+<a name="17-32">
+17.32:  Are there any C tutorials on the net?</a></h3>
+<p>
+        There are at least two of them:
+<p>
+        "Notes for C programmers," by Christopher Sawtell,
+        available from:<ul>
+        <li><a href="ftp://svr-ftp.eng.cam.ac.uk/misc/sawtell_C.shar">svr-ftp.eng.cam.ac.uk:misc/sawtell_C.shar</a>
+        <li><a href="ftp://garbo.uwasa.fi/pc/c-lang/c-lesson.zip">garbo.uwasa.fi:/pc/c-lang/c-lesson.zip</a>
+        <li>paris7.jussieu.fr:/contributions/docs
+	</ul>
+<p>
+        Tim Love's "<a href="ftp://svr-ftp.eng.cam.ac.uk/misc/love_C.shar">C for Programmers</a>,"
+        available from svr-ftp.eng.cam.ac.uk in the misc directory.
+<p>
+<h3><a name="17-33">
+17.33:	Where can I get extra copies of this list?</a>&#160;<tt> </tt>What about back
+	issues?
+</h3><p>
+  	For now, just pull it off the net; it is normally posted to
+	comp.lang.c on the first of each month, with an Expires: line
+	which should keep it around all month.&#160;<tt> </tt>An abridged version is
+        also available (and posted), as is a list of changes
+        accompanying each significantly updated version.&#160;<tt> </tt>These lists
+	can also be found in
+	the newsgroups comp.answers and news.answers .&#160;<tt> </tt>Several sites
+	archive news.answers postings and other FAQ lists, including
+	this one; two sites are <a href="ftp://rtfm.mit.edu/pub/usenet">rtfm.mit.edu</a> (directory pub/usenet), and
+	<a href="ftp://ftp.uu.net/usenet">ftp.uu.net</a> (directory usenet).&#160;<tt> </tt>The archie server should help
+	you find others; query it for "prog C-faq".&#160;<tt> </tt>See the meta-FAQ list in news.answers for more
+	information; see also question <a href="c-17.html#17-12">17.12</a>.
+<p>
+	This list is an evolving document of questions which have been
+	Frequent since before the Great Renaming, not just a collection
+	of this month's interesting questions.&#160;<tt> </tt>Older copies are
+	obsolete and don't contain much, except the occasional typo,
+	that the current list doesn't.
+
+<p>
+<hr>
+<a href="c-16.html"><img SRC="prev.xbm" ALT="[prev]"></a>
+<a href="index.html#comp-lang-c-faq"><img SRC="up.xbm" ALT="[up]"></a>
+<a href="c-faq-toc.html#c-17"><img SRC="overview.xbm" alt="[overview]"></a>
+<a href="index.html#bibliography"><img SRC="next.xbm" ALT="[next]"></a></body></html>

@@ -1,0 +1,111 @@
+<!doctype html>
+<meta name=viewport content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../assets/css/simple.css" type="text/css" />
+
+<style>
+	td { padding: 0 10px; vertical-align: top; }
+</style>
+
+<title>Edit - Home Brewed Text Editor</title>
+
+<div class="container">
+<h1><img id="logo" src="logo.png" alt=""/>Edit</h1>
+<h2>Vi + Acme = ☺</h2>
+
+<p> <b>Disclaimer:</b> This software is not ready.  I am using it
+and it is stable but I still have to make it <em>feel great</em>,
+if you have suggestions I would be glad to take them.  I wrote <a
+href="ideas.txt">a list</a> of work that I will attempt in the future.
+
+<p> I like Acme a lot, but without vi keybindings, I cannot edit text.
+So I tried to mix the two together.  I first implemented vi's command
+language as described by POSIX.  Then I tried to mix some Acme features
+by allowing the editor to start external processes and asynchronously
+get their output into an edit buffer.  The file system stuff that is
+very specific to Acme is not implemented, mainly because it is a pain
+on a Unix like OS.
+
+
+<h3>Quick Start</h3>
+<p> When started, use the regular vi keybindings to edit the text in the
+main window, you can load one file by passing it as argument.  To save
+the opened file, use ^W.
+
+<p> To open another file without quitting, open the <em>tag window</em>
+using ^T.  The focus is now on the tag window, you can edit it just like
+the main window using vi keybindings.  Some text is already present in the
+tag, go to the line starting with "Get" and append the name of the file
+you want to open.  Once done, exit insertion mode and press Tab on the
+line.  The file should now be loaded in the main window.
+
+<p> Similarly to look for a certain string, use the "Look" command in the
+tag window.  To find the subsequent matches, use the regular "n" command
+of vi.
+
+<p> If you press tab on a line that does not start by a builtin command
+it is executed in a shell.  The syntax for commands follows Acme's conventions,
+i.e. it understands the sigils <code>|&lt;&gt;</code>.  To select some text,
+use the "y" vi command, or the left button on the mouse.
+
+<p> You can close the tag window anytime using ^T again.  To quit, use ^Q.
+For more details on the possible commands and keybindings, read the files
+<code>vicmd.w</code> and <code>exec.c</code>.
+
+<h3>Differences with Vi</h3>
+<ul>
+<li>"dd" is not implemented, use "d_"
+<li>"cw" will not work as in vi, use "ce" or "cl"
+<li>"r" is not implemented, use "cl"
+<li>"J" is not implemented, use "0i Backspace"
+<li>autoindent is always on
+<li>"/" does not work, see the above section for search
+</ul>
+
+<h3>Code</h3>
+<p> Clone the repository <code>git://c9x.me/ed.git</code> for the latest
+changes.  You can also <a href="http://c9x.me/git/ed.git">browse</a> the repository.
+
+<p> Compile with GNU make, you will also need cweb (as provided by
+most LaTeX distributions) because one file is written in literate
+programming.  A <a href="http://www-cs-faculty.stanford.edu/~uno/cweb.html">minimal
+package</a> is available on Knuth's webpage, note that it is a tarbomb!
+
+<p> For ease of reading of the command definition code, run
+<pre>
+cweave vicmd; tex vicmd
+xdvi vicmd.dvi
+</pre>
+
+<p> The patches listed below are contributed by users, they can be
+applied with the <code>git apply</code> command.  I will do my
+best to make sure they always fit the current version.
+
+<ul>
+<li> <a href="patches/tabs.diff">tabs.diff</a> (07/13/21)
+  &mdash; Replaces the vertical splitting mechanism with tabs. The
+  keybindings "^L + h/l" now switch tabs. Author:
+  <a href="mailto:chin123@1010labs.org">Chinmaya Mahesh</a>.
+<li> <a href="patches/wintitle.diff">wintitle.diff</a> (07/10/15)
+  &mdash; Change the title of the editor window to reflect the
+  name of the file that is currently edited.
+  Author: <a href="mailto:calvin@openmailbox.org">Calvin&nbsp;Buckley</a>.
+</ul>
+
+<h3>Demo</h3>
+<p> The following video shows some features of the current version.  To
+execute commands, I move the cursor on the command line and hit Tab.
+If you checkout the latest version, the look of the editor is slightly
+nicer and there is support for multiple windows (commands New and Del).
+
+<p style="text-align: center">
+<video controls>
+  <source src="demo.mp4" type="video/mp4">
+  <a href="demo.mp4">demo.mp4</a>
+</video>
+
+</div>
+
+<!--
+vi: tw=65
+-->
+<!-- analytics free! -->

@@ -1,0 +1,262 @@
+(do
+    (def peek # )
+    (def bget (fun ()
+        (let c peek
+        (do (def peek (getc)) c))
+    ))
+
+    (let space? (fun (c) (+ (= c 9) (= c 10) (= c 32)))
+    (do
+        (def tok 0)
+        (def seq (fun (wrd p) (do
+            (set p (bget))
+            (let p (+ 1 p)
+            (if (+ (= peek #")
+                   (* wrd (+ (space? peek)
+                             (= peek #()
+                             (= peek #))
+                             (= peek ##))))
+                (set p 0)
+                (seq wrd p)
+            ))
+        )))
+        (def nxt (fun ()
+            (let c peek
+            (if (space? c)
+                (do (bget)
+                    (nxt))
+            (if (+ (= c #() (= c #)))
+                (bget)
+            (if (= c #")
+                (do (def tok (new 64))
+                    (seq 0 tok)
+                    (bget)
+                    #s)
+            (if (= c ##)
+                (do (bget)
+                    (def tok (bget))
+                    #c)
+                (do (def tok (new 16))
+                    (seq 1 tok)
+                    (if (* (<= #0 c) (<= c #9))
+                        #n
+                        #w)
+                    )
+            )))))
+        ))
+    ))
+
+    (def compn (fun (loc)
+        (let nty (nxt)
+        (do (comp loc nty tok)))
+    ))
+
+    (def app (fun (loc nty ntk)
+        (if (= nty #))
+            nil
+            (let a (comp loc nty ntk)
+            (let nty (nxt)
+            (cons a (app loc nty tok))))
+        )
+    ))
+
+    (def arg (fun ()
+        (if (= (nxt) #))
+            nil
+            (let a1 tok
+            (let as (arg)
+            (cons a1 as))))
+    ))
+
+    (def comp (fun (loc nty ntk)
+        (if (= nty #()
+            (let t (nxt)
+            (let w (if (= t #w) tok "")
+            (if (=s w "fun")
+                (let arg (if (= (nxt) #() (arg) (#F))
+                (let fbdy (compn (++ arg loc))
+                (do (def fns (cons fbdy fns))
+                    (nxt)
+		    (cons #F (- (len fns) 1))
+                )))
+            (if (=s w "let")
+                (let var (do (nxt) tok)
+                (let val (compn loc)
+                (let bdy (compn (cons var loc))
+                (do (nxt) (cons #B (cons val bdy)))
+                )))
+            (if (=s w "def")
+                (let var (do (nxt) tok)
+                (let bdy (compn loc)
+                (do (if (in? var glo) 0
+                        (def glo (cons var glo)))
+                    (nxt) (cons #D (cons var bdy))
+                )))
+                (cons #a (app loc t tok))
+            )))))
+        (if (= nty #w)
+            (if (in? ntk reserved)
+                (cons #w tok)
+            (if (in? ntk loc)
+                (cons #L (pos ntk loc))
+                (do (if (in? tok glo) 0
+                        (def glo (cons tok glo)))
+                    (cons #G tok)
+                )
+            ))
+        (if (+ (= nty #n) (= nty #c) (= nty #s))
+            (cons nty ntk)
+            (#c)
+        )))
+    ))
+
+    (def nil 0)
+
+    (def . (fun (f g) (fun (x) (f (g x)))))
+    (def .2 (. car cdr))
+    (let cddr (. cdr cdr)
+    (do (def .3 (. car cddr))
+        (def .4 (. .2 cddr))
+    ))
+
+    (def len (fun (l)
+        (if l (+ 1 (len (cdr l))) 0)))
+
+    (def ++ (fun (l1 l2)
+        (if l1 (++ (cdr l1) (cons (car l1) l2)) l2)))
+
+    (def pos (fun (s l)
+        (if l
+            (if (=s s (car l)) 0
+                (let p (pos s (cdr l))
+                (+ (>= p 0) p)))
+            (- 0 1))
+    ))
+
+    (def in? (fun (s l) (>= (pos s l) 0)))
+
+    (def puti (fun (i)
+        (let d1 (- i (* 10 (/ i 10)))
+        (if i
+            (do (puti (/ i 10))
+                (putc (+ #0 d1)))
+            0)
+        )
+    ))
+
+    (def =s (fun (a b)
+        (let ca (get a)
+        (let cb (get b)
+        (if (= ca cb)
+            (if ca (=s (+ 1 a) (+ 1 b)) 1)
+            0)
+        ))
+    ))
+
+    (def itrs (fun (f s)
+        (if (get s) (do (f (get s)) (itrs f (+ 1 s))) 0)
+    ))
+    (def S (fun (s) (itrs putc s)))
+
+    (def L (fun (p sep l)
+        (if l
+            (do (p (car l))
+                (if (cdr l) (S sep) 0)
+                (L p sep (cdr l))
+            )
+            0)
+    ))
+
+    (def builtins
+        (cons "get" (cons "set" (cons "new" (cons "cons"
+        (cons "car" (cons "cdr" (cons "getc" (cons "putc"
+        nil)))))))))
+
+    (def aritop
+        (cons "+" (cons "-" (cons "*" (cons "/"
+        (cons "<" (cons ">" (cons "<=" (cons ">=" (cons "="
+        nil))))))))))
+
+    (def reserved
+        (cons "def" (cons "do" (cons "fun" (cons "if"
+        (cons "let" (++ aritop builtins)))))))
+
+    (def fns nil)
+    (def glo nil)
+
+    (def qc (fun (c p)
+        (let c' (get p)
+        (if (= c' c) (do (putc #q) (putc (get (+ 1 p))))
+        (if c'       (qc c (+ 2 p))
+                     (putc c))))
+    ))
+    (def Q (fun (s) (do
+        (putc #q)
+        (if (=s s "cons") 0
+        (itrs (fun (c) (qc c "qq@a!b-m+p*s.d=e?w's")) s))
+    )))
+
+    (def F (fun (f)
+        (let f' (+ 1 f)
+        (let !  (fun (p) (fun (x) (do (p x) (F f'))))
+        (let c  (get f)
+        (if (= c #*) (fun (s l) (do (L C s l) (F f')))
+        (if (= c #%) (! C)
+        (if (= c ##) (! puti)
+        (if c        ((! putc) c)
+                     0
+        )))))))
+    ))
+
+    (def C (fun (x)
+        (let ty (car x)
+        (let o  (cdr x)
+        (if (= ty #F) ((F "F(#)") (+ 1 o))
+        (if (= ty #G) (Q o)
+        (if (= ty #L)
+            (if o ((F "L(#)") (+ 1 o)) (S "A"))
+        (if (= ty #a)
+            (let h (if (= (car (car o)) #w)
+                       (cdr (car o)) "")
+            (if (=s h "do")
+                ((F "(*)") "," (cdr o))
+            (if (=s h "if")
+                ((((F "(%?%:%)") (.2 o)) (.3 o)) (.4 o))
+            (if (in? h aritop)
+                (let bop (if (=s h "=") "==" h)
+                ((F "(*)") bop (cdr o)))
+            (if (< (len o) 5)
+                (let l (len o)
+                (((F "Z#(*)") (if (= l 2) 0 l)) "," o))
+                (do ((F "Zn(*,0)") ",C(" o)
+                    (L cdr ")" o)
+                )
+            )))))
+        (if (= ty #D)
+            (do (S "(")
+                (Q (car o))
+                ((F "=%)") (cdr o))
+            )
+        (if (= ty #B)
+            (((F "B(%,%)") (car o)) (cdr o))
+        (if (= ty #s)
+            (do (S "(V)") (S o) (putc #"))
+        (if (= ty #w) (Q o)
+        (if (= ty #c) (do (S "'") (putc o) (S "'"))
+        (if (= ty #n) (S o)
+                      (#C)
+        ))))))))))))
+    ))
+
+    (let cmp (compn nil)
+    (do (L Q "," glo)
+        (S ";\n")
+        (def n 1)
+        (L
+            (fun (x) (do
+                (((F "D(#,%)\n") n) x)
+                (def n (+ n 1))
+            )) "" (++ fns nil))
+        ((F "\nint main(){V E=0;J %;}\n") cmp)
+    ))))
+)

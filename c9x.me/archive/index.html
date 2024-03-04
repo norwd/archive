@@ -1,0 +1,151 @@
+<!doctype html>
+<meta name=viewport content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../assets/css/simple.css" type="text/css" />
+
+<title>memex - Archiving Tool</title>
+
+<style>em { font-weight: bold; }</style>
+
+<div class="container">
+
+<h1>memex</h1>
+<nav>
+<!--<h2>Archiving Tool</h2>-->
+<ul>
+  <li><a class="here" href="index.html">Intro</a>
+  <li><a href="spec.html">Storage model</a>
+  <li><a href="http://c9x.me/git/memex.git/">Code</a>
+  <!-- <li><a href="/archive/story.html">story</a> -->
+</ul>
+</nav>
+
+<p>
+The <em>memex</em> is a secure archiving tool that
+offers a user interface similar to git's.
+
+<p>
+Memex archives are composed of encrypted segments
+that can safely be synced among a group of machines
+and shared with mainstream storage providers such as
+rsync.net or Google drive. This way, personal files
+are shared, archived, and backed up without being
+revealed. Memex archives are not tied to a specific
+storage provider and are easy to relocate, should
+the need arise (e.g., lower costs or unreliable
+infrastructure).
+
+<p>
+The data layer of the memex tool is provided by
+<em>sdar</em>, a secure deduplicated archive
+management tool. Sdar is a generic content-addressed
+database that stores the data encrypted. Values
+in an sdar archive can be as large as multiple
+petabytes. Random access in archives and values
+is possible and efficient.
+
+<h3>Getting started</h3>
+
+<p>
+Using memex is not just yet a walk in the park.
+If you want to give it a shot, the instructions
+below should get you started. Most memex
+subcommands accept a -h flag that concisely
+explains their usage.
+
+<p>
+Start by getting the source code and compiling it;
+GNU make, a C11 compiler and a bare Go installation
+should suffice to build everything.  Then, create an
+archive key and initialize a new repository.
+
+<pre>
+$ git clone git://c9x.me/memex.git
+$ cd memex &amp;&amp; make -j
+$ sudo make install PREFIX=/usr/local
+
+$ sdar keygen
+  choose passphrase:
+  hmac: b5d5e50f68947a7878e7e8a873a4ccd8eb6640df8dbe40f781a2e11a88ca44a2
+  pub: b9121faf343a457a4395b76ea9f1f949c00747abb10db18f7ea1aeef6f175801
+  sec: c8177daa6dae223d052d5c719f3b8f212ae5640515991780c48caaf6987680fc
+
+$ mkdir myarchive &amp;&amp; cd myarchive
+$ memex init .repo
+  initialized new archive in .repo
+
+$ echo "archive=.repo" &gt; .memex
+$ echo "skip=/.repo" &gt;&gt; .memex
+</pre>
+
+<p>
+The sdar key is the key to all data archived by the memex
+tool. It is displayed in clear by the keygen and keydump
+sdar subcommands. I recommend that you back it up on paper
+if you plan to use memex for archival.
+
+<p>
+Once this initial setup is done, you can add data and commit
+it to the archive.
+
+<pre>
+$ echo "hello world!" &gt; hello.txt
+$ dd if=/dev/urandom of=random.bin bs=1024 count=1024
+$ memex diff
+  + hello.txt
+  + random.bin
+
+$ memex commit -m 'a couple files'
+  writing: 1.00MiB
+  committed as seg/0d1b2ffd17b0cb3aec391bdaef81d454
+
+$ memex log
+  Addr: 06879cc0bcba9f617c5053aa5aecaf72bb92be76166b46e31508942609b47df81
+  Date: 2022-04-14 12:46:04 +0200 CEST
+
+      a couple files
+
+</pre>
+
+<p>
+The newly created segment file <code>.repo/seg/0d1b2...</code>
+is safe to share and back up on untrusted storage. Each new
+commit will create a new segment but, if need be, sdar can
+be used to fuse segments. It can be interesting to keep
+segments split in order to only transfer newly committed data
+when re-syncing a memex archive with remote storage.
+
+<p>
+In addition to segments, it is also recommended to back up the
+address of the head commit (here, <code>06879cc...81</code>).
+However, the loss of this information is not critical as it
+can be recovered (inefficiently) from segments and the
+archive key.
+
+<p>
+To wrap the example up, we look at some ways to recover files
+from a commit.
+
+<pre>
+$ echo "hello memex!" &gt; hello.txt
+$ memex diff
+  ! hello.txt
+
+$ memex get hello.txt
+  hello world!
+
+$ memex commit -m "world -&gt; memex"
+  writing: 1.00MiB
+  committed as seg/7232d6a589ff91ebc97185341f6d0f7f
+
+$ ls -l .repo/seg/7232d6a589ff91ebc97185341f6d0f7f
+  -rw-r--r-- 1 user users 608 Apr 14 16:10 .repo/seg/7232d6a589ff91ebc97185341f6d0f7f
+
+$ memex sync main^
+$ cat hello.txt
+  hello world!
+
+$ memex sync main
+</pre>
+
+</div>
+<!-- analytics free! -->

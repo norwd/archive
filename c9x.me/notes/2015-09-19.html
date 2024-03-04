@@ -1,0 +1,75 @@
+<!doctype html>
+<meta name=viewport content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../assets/css/simple.css" type="text/css" />
+
+<link rel="stylesheet" href="assets/notes.css" type="text/css"/>
+<title>Notes from 2015-09-19</title>
+<article>
+<h1><img id="logo" src="assets/logo.png" alt="">Notes</h1>
+<h3>2015-09-19</h3>
+
+<p>
+The x64 architecture is better than i386 in many regards but one surprise
+it reserved to programmers
+is that <em>immediates</em> remain 32 bits constants instead of being
+promoted to 64 bits like everything else.  In case you do not know it
+already, an immediate is a constant in an instruction, for example,
+if you want to add N to the register rax, you would write
+<code>addq $N, %rax</code>. And in that case, we say that N is an immediate.
+</p>
+<p>
+Because immediates are restricted to be only 32 bits long, it is impossible
+to add
+  2<sup>33</sup>
+to rax using
+one instruction only.  One has to load the big constant in another register
+first (say rbx), and then perform the addition, like so:
+<code>addq %rbx, %rax</code>.
+This brings us to the following question, how does one load a constant into
+a 64 bits register?
+The answer to this is simple, if you do not care about the code size.
+But if you do, there are actually three different ways!
+</p>
+<p>
+First, like most 64 bits instruction sets that allow operating 32 bits
+sub-registers, x64 zeroes the high bits of the larger parent 64 bits
+register for any 32 bits operation.  (If you
+wonder why, lookup data-dependencies in computer architecture books.)
+So for instance, when the machine executes <code>movl $42, %eax</code>, the high
+bits of rax will be set to 0, and the full rax register will contain the
+value 42.  This is our first way to load a value, it is also the
+cheapest way and uses 5 bytes only.
+</p>
+<p>
+Because 32 bits operations are zero-extended, the previous technique
+is unsuitable to load a negative value into a 64 bits register.  In that
+case we have to mention rax explicitely in the instruction: <code>movq
+$-42, %rax</code>.  On x64, mentioning a full width register costs you
+two extra bytes (one of them is the REX prefix, required for all 64 bits
+instructions).  So that gives us the second most economical load
+instruction, it uses 7 bytes.
+</p>
+<p>
+Finally if the constant to load does not fit in 32 bits, one has to
+use the only x64 instruction with a 64 bits immediate.  In
+AT&amp;T syntax we write <code>movabsq $4294967296, %rax</code>.  It
+really is a last-resort option because that instruction uses 10 bytes!
+</p>
+<p>
+These three cases give us the following rules for compiling constant
+loads into rax on x64.  (The same works for any other integer register.)
+</p>
+<ul>
+<li> When
+    0 ≤ N &lt; 2<sup>32</sup>,
+    use <code>movl $N, %eax</code> (5 bytes).
+<li> When
+    -2<sup>31</sup> ≤ N &lt; 0,
+    use <code>movq $N, %rax</code> (7 bytes).
+<li> Otherwise, use <code>movabsq $N, %rax</code> (10 bytes).
+</ul>
+<p>
+Isn't that crazy?
+</p>
+</article>
+<!-- analytics free! -->

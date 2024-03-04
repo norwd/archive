@@ -1,0 +1,108 @@
+<!doctype html>
+<meta name=viewport content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../assets/css/simple.css" type="text/css" />
+
+<link rel="stylesheet" href="assets/notes.css" type="text/css"/>
+<title>Notes from 2017-02-09</title>
+<article>
+<h1><img id="logo" src="assets/logo.png" alt="">Notes</h1>
+<h3>2017-02-09</h3>
+
+<p>
+The φ nodes of SSA form are often defined
+as taking one argument per predecessor block.
+In both my compiler and LLVM, the data
+structures are based on this definition.
+However, with some more experience, I think
+it is more sensible to require φ arguments
+to be linked with incoming <em>edges</em>, not
+predecessors. I will give two practical
+examples to prove this point, but first, let
+me clarify the concept of edge.
+</p>
+<p>
+In a control flow graph (CFG), I call edge a link
+between two basic blocks. An essential point is
+that edges to a block are <em>not</em> in one-to-one
+correspondence with the block's predecessors.
+This is because of jumps like <code>if(%cond) goto @b
+else @b</code>, where a conditional jump jumps to the
+same block in two (or more) cases. While such
+a jump may look contrived, it can result from
+optimizations, or even from lowering C-style
+<code>switch</code> statements where multiple cases have
+the same body.
+</p>
+<p>
+The program below will serve to illustrate my
+claim.
+</p>
+<pre>
+@src
+        %var = ....
+        %cond = ...
+        if(%cond) goto @dst else @dst
+@dst
+        %foo = φ(@src %var, ...)
+</pre>
+<p>
+Following the usual requirement, the φ
+node <code>%foo</code> has one argument for the <code>@src</code>
+predecessor block.  Assume now that the
+predecessor is dead code and gets deleted
+by this natural deletion code.
+</p>
+<pre>
+void blockdel(Block block) {
+        /* do stuff... */
+        foreach succ in block.successors {
+                foreach phi in succ.phis {
+                        phi.remove_arg(block)
+                }
+        }
+}
+</pre>
+<p>
+Stepping through this function reveals
+that the <code>remove_arg</code> method will erroneously be
+called twice.  In my compiler, the second
+invocation caused an assertion failure.  On the
+other hand, if φ nodes have one argument per
+incoming edge, the loop above is naturally changed
+to some correct code.
+</p>
+<p>
+Another case where things could go wrong is
+in a CFG simplification pass. Such a pass will
+likely remove spurious empty blocks and adjust
+links elsewhere in consequence.  But consider
+the following program.
+</p>
+<pre>
+@blk0
+        ...
+        if(%cond) goto @blk1 else @blk2
+@blk1
+        jmp @blk3
+@blk2
+        jmp @blk3
+@blk3
+        %foo = φ(@blk1 %v1, @blk2 %v2)
+</pre>
+<p>
+The simplification pass will remove both <code>@blk1</code>
+and <code>@blk2</code>. After deleting <code>@blk1</code> the block
+of the first φ argument will be updated to
+<code>@blk0</code>.  Now if the same thing happens to the
+second empty block, two arguments of the φ node
+will bogusly end up with the same incoming block.
+</p>
+<p>
+Solving these issues in my compiler required
+careful logic to handle the "multiplicity" of
+predecessors.  However I think the edge-based
+design is better, and I might adopt it in the
+future.
+</p>
+</article>
+<!-- analytics free! -->

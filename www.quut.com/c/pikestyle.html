@@ -1,0 +1,417 @@
+<html>
+<head><title>Rob Pike: Notes on Programming in C</title>
+<link rel="made" rev="made" href="mailto:jutta@pobox.com">
+</head>
+<body>
+<ul><ul>
+<h1>Notes on Programming in C</h1>
+</ul></ul>
+<ul><ul><ul><ul><address>
+&#160;<tt> </tt>&#160;<tt> </tt><a href="rob/index.html">Rob Pike</a><br>
+</address></ul></ul></ul></ul>
+<ul><ul><ul>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+February 21, 1989
+</ul></ul></ul></ul>
+<h2>Introduction</h2>
+
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>Kernighan and Plauger's
+<a href="c-faq/index.html#EoPS"><i>The Elements of Programming Style</i></a>
+was an important and rightly influential book.&#160;<tt> </tt>But
+sometimes I feel its concise rules were taken as a cookbook
+approach to good style instead of the succinct expression of
+a philosophy they were meant to be.&#160;<tt> </tt>If the book claims that
+variable names should be chosen meaningfully, doesn't it
+then follow that variables whose names are small essays on
+their use are even better?&#160;<tt> </tt>Isn't<code> MaximumValueUntilOverflow </code>
+a better name than<code> maxval</code>?&#160;<tt> </tt>I don't think so.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>What follows is a set of short essays that collectively
+encourage a philosophy of clarity in programming rather than
+giving hard rules.&#160;<tt> </tt>I don't expect you to agree with all of
+them, because they are opinion and opinions change with the
+times.&#160;<tt> </tt>But they've been accumulating in my head, if not on
+paper until now, for a long time, and are based on a lot of
+experience, so I hope they help you understand how to plan
+the details of a program.&#160;<tt> </tt>(I've yet to see a good essay on
+how to plan the whole thing, but then that's partly what
+this course is about.)&#160;<tt> </tt>If you find them idiosyncratic,
+fine; if you disagree with them, fine; but if they make you
+think about why you disagree, that's better.&#160;<tt> </tt>Under no
+circumstances should you program the way I say to because I say
+to; program the way you think expresses best what you're
+trying to accomplish in the program.&#160;<tt> </tt>And do so consistently
+and ruthlessly.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>Your comments are welcome.
+<p>
+<h2>Issues of typography</h2>
+
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>A program is a sort of publication.&#160;<tt> </tt>It's meant to be
+read by the programmer, another programmer (perhaps yourself
+a few days, weeks or years later), and lastly a machine.&#160;<tt> </tt>
+The machine doesn't care how pretty the program is - if the
+program compiles, the machine's happy - but people do, and
+they should.&#160;<tt> </tt>Sometimes they care too much: pretty printers
+mechanically produce pretty output that accentuates
+irrelevant detail in the program, which is <b>as</b> sensible <b>as</b>
+putting all the prepositions <b>in</b> English text <b>in</b> bold font.&#160;<tt> </tt>
+Although many people think programs should look like the
+Algol-68 report (and some systems even require you to edit
+programs in that style), a clear program is not made any
+clearer by such presentation, and a bad program is only made
+laughable.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>Typographic conventions consistently held are important
+to clear presentation, of course - indentation is probably
+the best known and most useful example - but when the ink
+obscures the intent, typography has taken over.&#160;<tt> </tt>So even if
+you stick with plain old typewriter&#173;like output, be
+conscious of typographic silliness.&#160;<tt> </tt>Avoid decoration; for
+instance, keep comments brief and banner-free.&#160;<tt> </tt>Say what you
+want to say in the program, neatly and consistently.&#160;<tt> </tt>Then
+move on.
+<p>
+
+<h2>Variable names</h2>
+
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>Ah, variable names.&#160;<tt> </tt>Length is not a virtue in a name;
+clarity of expression <em>is</em>.&#160;<tt> </tt>A global variable rarely used may
+deserve a long name,<code> maxphysaddr </code>say.&#160;<tt> </tt>An array index used
+on every line of a loop needn't be named any more elaborately
+than<code> i</code>.&#160;<tt> </tt>Saying<code> index </code>or<code> elementnumber </code>is more to
+type (or calls upon your text editor) and obscures the
+details of the computation.&#160;<tt> </tt>When the variable names are
+huge, it's harder to see what's going on.&#160;<tt> </tt>This is partly a
+typographic issue; consider
+<pre>
+        for(i=0 to 100)
+                array[i]=0
+</pre>
+<i>vs</i>.
+<pre>
+        for(elementnumber=0 to 100)
+                array[elementnumber]=0;
+</pre>
+The problem gets worse fast with real examples.&#160;<tt> </tt>Indices are
+just notation, so treat them as such.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>Pointers also require sensible notation.&#160;<tt> </tt><code>np </code>is just as
+mnemonic as<code> nodepointer </code><em>if</em> you consistently use a naming
+convention from which<code> np </code>means ``node pointer'' is easily
+derived.&#160;<tt> </tt>More on this in the next essay.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>As in all other aspects of readable programming,
+consistency is important in naming.&#160;<tt> </tt>If you call one
+variable<code> maxphysaddr</code>, don't call its cousin<code> lowestaddress</code>.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>Finally, I prefer minimum&#173;length but
+maximum&#173;information names, and then let the context fill in the
+rest.&#160;<tt> </tt>Globals, for instance, typically have little context
+when they are used, so their names need to be relatively
+evocative.&#160;<tt> </tt>Thus I say<code> maxphysaddr </code>(not<code>
+MaximumPhysicalAddress</code>) for a global variable, but<code> np </code>
+not <code> NodePointer </code>for a pointer locally defined and used.&#160;<tt> </tt>This
+is largely a matter of taste, but taste is relevant to clarity.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>I eschew embedded capital letters in names; to my
+prose&#173;oriented eyes, they are too awkward to read
+comfortably.&#160;<tt> </tt>They jangle like bad typography.
+<p>
+
+<h2>The use of pointers.</h2>
+
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>C is unusual in that it allows pointers to point to
+anything.&#160;<tt> </tt>Pointers are sharp tools, and like any such tool,
+used well they can be delightfully productive, but used
+badly they can do great damage (I sunk a wood chisel into my
+thumb a few days before writing this).&#160;<tt> </tt>Pointers have a bad
+reputation in academia, because they are considered too
+dangerous, dirty somehow.&#160;<tt> </tt>But I think they are powerful
+<em>notation</em>, which means they can help us express ourselves
+clearly.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>Consider: When you have a pointer to an object, it is a
+name for exactly that object and no other.&#160;<tt> </tt>That sounds
+trivial, but look at the following two expressions:
+<pre>
+        np
+        node[i]
+</pre>
+The first points to a node, the second evaluates to (say)
+the same node.&#160;<tt> </tt>But the second form is an expression; it is
+not so simple.&#160;<tt> </tt>To interpret it, we must know what<code> node </code>is,
+what<code> i </code>is, and that<code> i </code>and<code> node </code>are related by
+the (probably unspecified) rules of the surrounding program.&#160;<tt> </tt>Nothing
+about the expression in isolation can show that<code> i </code>is a valid
+index of<code> node</code>, let alone the index of the element we want.&#160;<tt> </tt>
+If<code> i </code>and<code> j </code>and<code> k </code>are all indices into the
+node array, it's very easy to slip up, and the compiler cannot help.&#160;<tt> </tt>It's
+particularly easy to make mistakes when passing things to
+subroutines: a pointer is a single thing; an array and an
+index must be believed to belong together in the receiving
+subroutine.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>An expression that evaluates to an object is inherently
+more subtle and error&#173;prone than the address of that object.&#160;<tt> </tt>
+Correct use of pointers can simplify code:
+<pre>
+        parent-&gt;link[i].type</pre>
+<i>vs.</i>
+<pre>
+	lp-&gt;type.
+</pre>
+If we want the next element's type, it's
+<pre>
+        parent-&gt;link[++i].type
+</pre>
+or
+<pre>
+        (++lp)-&gt;type.
+</pre>
+<code>i </code>advances but the rest of the expression must stay constant;
+with pointers, there's only one thing to advance.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>Typographic considerations enter here, too.&#160;<tt> </tt>Stepping
+through structures using pointers can be much easier to read
+than with expressions: less ink is needed and less effort is
+expended by the compiler and computer.&#160;<tt> </tt>A related issue is
+that the type of the pointer affects how it can be used
+correctly, which allows some helpful compile&#173;time error
+checking that array indices cannot share.&#160;<tt> </tt>Also, if the
+objects are structures, their tag fields are reminders of
+their type, so
+<pre>
+             np-&gt;left
+</pre>
+is sufficiently evocative; if an array is being indexed the
+array will have some well&#173;chosen name and the expression
+will end up longer:
+<pre>
+             node[i].left.
+</pre>
+Again, the extra characters become more irritating as the
+examples become larger.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>As a rule, if you find code containing many similar,
+complex expressions that evaluate to elements of a data
+structure, judicious use of pointers can clear things up.&#160;<tt> </tt>
+Consider what
+<pre>
+        if(goleft)
+             p-&gt;left=p-&gt;right-&gt;left;
+        else
+             p-&gt;right=p-&gt;left-&gt;right;
+</pre>
+would look like using a compound expression for <code>p</code>.&#160;<tt> </tt>
+Sometimes it's worth a temporary variable (here<code> p</code>) or a macro to
+distill the calculation.
+
+<h2>Procedure names</h2>
+
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>Procedure names should reflect what they do; function
+names should reflect what they <em>return</em>.&#160;<tt> </tt>Functions are used
+in expressions, often in things like<code> if</code>'s, so they need to
+read appropriately.
+<pre>
+        if(checksize(x))
+</pre>
+is unhelpful because we can't deduce whether checksize
+returns true on error or non-error; instead
+<pre>
+        if(validsize(x))
+</pre>
+makes the point clear and makes a future mistake in using
+the routine less likely.
+
+<h2>Comments</h2>
+
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>A delicate matter, requiring taste and judgement.&#160;<tt> </tt>I
+tend to err on the side of eliminating comments, for several
+reasons.&#160;<tt> </tt>First, if the code is clear, and uses good type
+names and variable names, it should explain itself.&#160;<tt> </tt>Second,
+comments aren't checked by the compiler, so there is no
+guarantee they're right, especially after the code is
+modified.&#160;<tt> </tt>A misleading comment can be very confusing.&#160;<tt> </tt>Third,
+the issue of typography: comments clutter code.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>But I do comment sometimes.&#160;<tt> </tt>Almost exclusively, I use
+them as an introduction to what follows.&#160;<tt> </tt>Examples:
+explaining the use of global variables and types (the one thing I
+always comment in large programs); as an introduction to an
+unusual or critical procedure; or to mark off sections of a
+large computation.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>There is a famously bad comment style:
+<pre>
+        i=i+1;           /* Add one to i */
+</pre>
+and there are worse ways to do it:
+<pre>
+        /**********************************
+         *                                *
+         *          Add one to i          *
+         *                                *
+         **********************************/
+
+                       i=i+1;
+</pre>
+Don't laugh now, wait until you see it in real life.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>Avoid cute typography in comments, avoid big blocks of
+comments except perhaps before vital sections like the
+declaration of the central data structure (comments on data
+are usually much more helpful than on algorithms);
+basically, avoid comments.&#160;<tt> </tt>If your code needs a comment to be
+understood, it would be better to rewrite it so it's easier
+to understand.&#160;<tt> </tt>Which brings us to
+
+<h2>Complexity</h2>
+
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>Most programs are too complicated - that is, more
+complex than they need to be to solve their problems
+efficiently.&#160;<tt> </tt>Why?  Mostly it's because of bad design, but I
+will skip that issue here because it's a big one.&#160;<tt> </tt>But
+programs are often complicated at the microscopic level, and
+that is something I can address here.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>Rule 1.&#160;<tt> </tt>You can't tell where a program is going to
+spend its time.&#160;<tt> </tt>Bottlenecks occur in surprising places, so
+don't try to second guess and put in a speed hack until
+you've proven that's where the bottleneck is.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>Rule 2.&#160;<tt> </tt>Measure.&#160;<tt> </tt>Don't tune for speed until you've
+measured, and even then don't unless one part of the code
+<em>overwhelms</em> the rest.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>Rule 3.&#160;<tt> </tt>Fancy algorithms are slow when <i>n</i> is small, and
+<i>n</i> is usually small.&#160;<tt> </tt>Fancy algorithms have big constants.
+Until you know that <i>n</i> is frequently going to be big, don't
+get fancy.&#160;<tt> </tt>(Even if <i>n</i> does get big, use Rule 2 first.)
+&#160;<tt> </tt>For example, binary trees are always faster than splay trees
+for workaday problems.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>Rule 4.&#160;<tt> </tt>Fancy algorithms are buggier than simple ones,
+and they're much harder to implement.&#160;<tt> </tt>Use simple algorithms
+as well as simple data structures.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>The following data structures are a complete list for
+almost all practical programs:
+<dl><dt><dd>
+array<br>
+linked list<br>
+hash table<br>
+binary tree
+</dl>
+Of course, you must also be prepared to collect these into
+compound data structures.&#160;<tt> </tt>For instance, a symbol table
+might be implemented as a hash table containing linked lists
+of arrays of characters.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>Rule 5.&#160;<tt> </tt>Data dominates.&#160;<tt> </tt>If you've chosen the right
+data structures and organized things well, the algorithms
+will almost always be self&#173;evident.&#160;<tt> </tt>Data structures, not
+algorithms, are central to programming.&#160;<tt> </tt>(See Brooks p.
+102.)
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>Rule 6.&#160;<tt> </tt>There is no Rule 6.
+
+<h2>Programming with data.</h2>
+
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>Algorithms, or details of algorithms, can often be
+encoded compactly, efficiently and expressively as data
+rather than, say, as lots of<code> if </code>statements.&#160;<tt> </tt>The reason is
+that the <em>complexity</em> of the job at hand, if it is due to a
+combination of independent details, <em>can be encoded</em>.&#160;<tt> </tt>A classic
+example of this is parsing tables, which encode the
+grammar of a programming language in a form interpretable by
+a fixed, fairly simple piece of code.&#160;<tt> </tt>Finite state machines
+are particularly amenable to this form of attack, but almost
+any program that involves the `parsing' of some abstract
+sort of input into a sequence of some independent `actions'
+can be constructed profitably as a data&#173;driven algorithm.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>Perhaps the most intriguing aspect of this kind of
+design is that the tables can sometimes be generated by
+another program - a parser generator, in the classical case.
+As a more earthy example, if an operating system is driven
+by a set of tables that connect I/O requests to the
+appropriate device drivers, the system may be `configured'
+by a program that reads a description of the particular
+devices connected to the machine in question and prints the
+corresponding tables.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>One of the reasons data-driven programs are not common,
+at least among beginners, is the tyranny of Pascal.&#160;<tt> </tt>Pascal,
+like its creator, believes firmly in the separation of code
+and data.&#160;<tt> </tt>It therefore (at least in its original form) has
+no ability to create initialized data.&#160;<tt> </tt>This flies in the
+face of the theories of Turing and von Neumann, which define
+the basic principles of the stored-program computer.&#160;<tt> </tt>Code
+and data <em>are</em> the same, or at least they can be.&#160;<tt> </tt>How else
+can you explain how a compiler works?  (Functional languages
+have a similar problem with I/O.)
+
+<h2>Function pointers</h2>
+
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>Another result of the tyranny of Pascal is that
+beginners don't use function pointers.&#160;<tt> </tt>(You can't have
+function-valued variables in Pascal.) Using function
+pointers to encode complexity has some interesting
+properties.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>Some of the complexity is passed to the routine pointed
+to.&#160;<tt> </tt>The routine must obey some standard protocol - it's one
+of a set of routines invoked identically - but beyond that,
+what it does is its business alone.&#160;<tt> </tt>The complexity is
+<em>distributed</em>.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>There is this idea of a protocol, in that all functions
+used similarly must behave similarly.&#160;<tt> </tt>This makes for easy
+documentation, testing, growth and even making the program
+run distributed over a network - the protocol can be encoded
+as remote procedure calls.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>I argue that clear use of function pointers is the
+heart of object&#173;oriented programming.&#160;<tt> </tt>Given a set of
+operations you want to perform on data, and a set of data types
+you want to respond to those operations, the easiest way to
+put the program together is with a group of function
+pointers for each type.&#160;<tt> </tt>This, in a nutshell, defines class
+and method.&#160;<tt> </tt>The O&#173;O languages give you more of course -
+prettier syntax, derived types and so on - but conceptually
+they provide little extra.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>Combining data-driven programs with function pointers
+leads to an astonishingly expressive way of working, a way
+that, in my experience, has often led to pleasant surprises.
+Even without a special O&#173;O language, you can get 90% of the
+benefit for no extra work and be more in control of the
+result.&#160;<tt> </tt>I cannot recommend an implementation style more
+highly.&#160;<tt> </tt>All the programs I have organized this way have
+survived comfortably after much development - far better
+than with less disciplined approaches.&#160;<tt> </tt>Maybe that's it: the
+discipline it forces pays off handsomely in the long run.
+
+<h2>Include files</h2>
+
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>Simple rule: include files should never include include
+files.&#160;<tt> </tt>If instead they state (in comments or implicitly)
+what files they need to have included first, the problem of
+deciding which files to include is pushed to the user
+(programmer) but in a way that's easy to handle and that, by
+construction, avoids multiple inclusions.&#160;<tt> </tt>Multiple
+inclusions are a bane of systems programming.&#160;<tt> </tt>It's not rare to
+have files included five or more times to compile a single C
+source file.&#160;<tt> </tt>The Unix<code> /usr/include/sys </code>stuff is terrible
+this way.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>There's a little dance
+involving<code> #ifdef</code>'s that can prevent a file being read twice,
+but it's usually done wrong
+in practice - the<code> #ifdef</code>'s are in the file itself, not the
+file that includes it.&#160;<tt> </tt>The result is often thousands of
+needless lines of code passing through the lexical analyzer,
+which is (in good compilers) the most expensive phase.
+<p>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>Just follow the simple rule.
+</body></html>

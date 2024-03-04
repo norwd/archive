@@ -1,0 +1,212 @@
+<html><head>
+<link rel="made" rev="made" href="mailto:jutta@cs.tu-berlin.de">
+<title>Stdio</title></head><body>
+
+<a href="c-10.html"><img SRC="prev.xbm" ALT="[prev]"></a>
+<a href="index.html#comp-lang-c-faq"><img SRC="up.xbm" ALT="[up]"></a>
+<a href="c-faq-toc.html#c-11"><img SRC="overview.xbm" alt="[overview]"></a>
+<a href="c-12.html"><img SRC="next.xbm" ALT="[next]"></a>
+<hr>
+
+<h2>Section 11. Stdio</h2>
+<p>
+<h3>
+<a name="11-1">
+11.1:	What's wrong with this code:
+</a></h3><p>
+<pre>
+	char c;
+	while((c = getchar()) != EOF)...
+</pre>
+<p><h3>
+</h3><p>
+  	For one thing, the variable to hold getchar's return value must
+	be an int.&#160;<tt> </tt><code>getchar</code> can return all possible character values, as
+	well as <code>EOF</code>.&#160;<tt> </tt>By passing <code>getchar</code>'s return value through a <code>char</code>,
+	either a normal character might be misinterpreted as <code>EOF</code>, or the
+	<code>EOF</code> might be altered (particularly if type <code>char</code> is unsigned) and
+	so never seen.
+
+<p>
+	References: <a href="index.html#CT-amp-P">CT&amp;P</a> Sec. 5.1 p. 70.
+<p>
+
+<h3>
+<a name="11-2">
+11.2: How can I print a</a><code>'%'</code> character in a <code>printf</code>
+format string?&#160;<tt> </tt>I tried <code>\%</code>, but it didn't work.
+</h3><p>
+	Simply double the percent sign:<code> %% </code>.
+<p>
+	References:
+	<a href="index.html#K-amp-RI">K&amp;R I</a> Sec. 7.3 p. 147;
+	<a href="index.html#K-amp-RII">K&amp;R II</a> Sec. 7.2 p. 154;
+	<a href="index.html#ANSI">ANSI</a> Sec. 4.9.6.1 .
+<p>
+<a name="11-3">11.3</a>:   Why doesn't the code <code>scanf("%d", i);</code> work?
+
+  <code> scanf </code>needs pointers to the variables it is to fill in; you must
+        call<code> scanf(&quot;%d&quot;, &amp;i);</code>
+<h3><a name="11-4">
+11.4:	Why doesn't this code:
+</a></h3><p>
+<pre>
+	double d;
+	scanf(&quot;%f&quot;, &amp;d);
+</pre>
+<p><h3>
+	work?
+</h3><p>
+  <code> scanf </code>uses<code> %lf </code>for values of type<code> double</code>,&#160;<tt> </tt>and<code> %f </code>for<code> float</code>.
+        (Note the discrepancy with<code> printf </code>, which uses<code> %f </code>for both<code> double </code>
+        and<code> float</code>,&#160;<tt> </tt>due to C's default argument promotion rules.)
+<p>
+<h3>
+<a name="11-5">
+11.5:	Why won't the code
+</a></h3><p>
+<pre>
+	while(!feof(infp)) {
+		fgets(buf, MAXLINE, infp);
+		fputs(buf, outfp);
+	}
+</pre><p><h3>
+	work?
+</h3><p>
+  	C's I/O is not like Pascal's.&#160;<tt> </tt><code>EOF</code> is only indicated <em>after</em> an
+	input routine has tried to read, and has reached end-of-file.
+	Usually, you should just check the return value of the input
+	routine (<code>fgets</code> in this case); often, you don't need to use
+	<code>feof()</code> at all.
+<p>
+
+<h3>
+<a name="11-6">
+11.6:	Why does everyone say not to use</a> <code>gets()</code>?
+</h3><p>
+  	It cannot be told the size of the buffer it's to read into, so
+        it cannot be prevented from overflowing that buffer.&#160;<tt> </tt>See
+        question <a href="c-3.html#3-1">3.1</a> for a code fragment illustrating the replacement of
+        <code> gets() </code>with<code> fgets()</code>.
+<p>
+<h3>
+<a name="11-7">
+11.7:	Why does errno contain</a> <code>ENOTTY</code> after a call to <code>printf</code>?
+</h3><p>
+  	Many implementations of the <code>stdio</code> package adjust their behavior
+	slightly if <code>stdout</code> is a terminal.&#160;<tt> </tt>To make the determination,
+	these implementations perform an operation which fails (with
+	<code>ENOTTY</code>) if <code>stdout</code> is not a terminal.&#160;<tt> </tt>Although the output
+	operation goes on to complete successfully, <code>errno</code> still contains
+	<code>ENOTTY</code>.
+<p>
+	References: <a href="index.html#CT-amp-P">CT&amp;P</a> Sec. 5.4 p. 73.
+<p>
+
+<h3>
+<a name="11-8">
+11.8:	My program's prompts and intermediate output don't always show
+	up on the screen, especially when I pipe the output through
+	another program.
+</a></h3><p>
+  	It is best to use an explicit <code>fflush(stdout)</code> whenever output
+	should definitely be visible.&#160;<tt> </tt>Several mechanisms attempt to
+	perform the <code>fflush</code> for you, at the &quot;right time,&quot; but they tend
+	to apply only when <code>stdout</code> is a terminal.&#160;<tt> </tt>(See <a href="c-11.html#11-7">question 11.7</a>.)
+<p>
+
+<h3>
+<a name="11-9">
+11.9:	When I read from the keyboard with</a> <code>scanf</code>, it seems to hang until
+	I type one extra line of input.
+</h3><p>
+  	<code>scanf</code> was designed for free-format input, which is seldom what
+	you want when reading from the keyboard.&#160;<tt> </tt>In particular, <code>&quot;\n&quot;</code> in
+	a format string does <em>not</em> mean to expect a newline, but rather
+	to read and discard characters as long as each is a whitespace
+	character.
+<p>
+	A related problem is that unexpected non-numeric input can cause
+	<code>scanf</code> to &quot;jam.&quot;&#160;<tt> </tt>Because of these problems, it is usually better
+	to use <code>fgets</code> to read a whole line, and then use <code>sscanf</code> or other
+	string functions to pick apart the line buffer.&#160;<tt> </tt>If you do use
+	<code>sscanf</code>, don't forget to check the return value to make sure that
+	the expected number of items were found.
+<p>
+
+<h3>
+<a name="11-10">
+11.10:	I'm trying to update a file in place, by using </a><code>fopen</code> mode <code>&quot;r+&quot;</code>,
+	then reading a certain string, and finally writing back a
+	modified string, but it's not working.
+</h3><p>
+  	Be sure to call <code>fseek</code> before you write, both to seek back to the
+	beginning of the string you're trying to overwrite, and because
+	an <code>fseek</code> or <code>fflush</code> is always required between reading and
+	writing in the read/write <code>&quot;+&quot;</code> modes.&#160;<tt> </tt>Also, remember that you
+	can only overwrite characters with the same number of
+	replacement characters; see also <a href="c-17.html#17-4">question 17.4</a>.
+<p>
+	References: <a href="index.html#ANSI">ANSI</a> Sec. 4.9.5.3 p. 131.
+<p>
+
+<h3>
+<a name="11-11">
+11.11:	How can I read one character at a time, without waiting for the
+	RETURN key?
+</a></h3><p>
+  	See <a href="c-16.html#16-1">question 16.1</a>.
+<p>
+
+<h3>
+<a name="11-12">
+11.12:	How can I flush pending input so that a user's typeahead isn't
+	read at the next prompt?</a>&#160;<tt> </tt>Will <code>fflush(stdin)</code> work?
+</h3><p>
+  	<code>fflush</code> is defined only for output streams.&#160;<tt> </tt>Since its definition
+	of &quot;flush&quot; is to complete the writing of buffered characters
+	(not to discard them), discarding unread input would not be an
+	analogous meaning for <code>fflush</code> on input streams.&#160;<tt> </tt>There is no
+	standard way to discard unread characters from a <code>stdio</code> input
+	buffer, nor would such a way be sufficient; unread characters
+	can also accumulate in other, OS-level input buffers.
+<p>
+
+<h3>
+<a name="11-13">
+11.13:	How can I redirect </a><code>stdin</code> or <code>stdout</code> to a file from within a
+	program?
+</h3><p>
+  	Use <code>freopen</code>.
+<p>
+
+<h3>
+<a name="11-14">
+11.14:	Once I've used </a><code>freopen</code>, how can I get the original <code>stdout</code> (or
+	<code>stdin</code>) back?
+</h3><p>
+  	If you need to switch back and forth, the best all-around
+	solution is not to use <code>freopen</code> in the first place.&#160;<tt> </tt>Try using
+	your own explicit output (or input) stream variable, which you
+	can reassign at will, while leaving the original <code>stdout</code> (or
+	<code>stdin</code>) undisturbed.
+<p>
+
+<h3>
+<a name="11-15">
+11.15:	How can I recover the file name given an open file descriptor?
+</a></h3><p>
+  	This problem is, in general, insoluble.&#160;<tt> </tt>Under Unix, for
+	instance, a scan of the entire disk, (perhaps requiring special
+	permissions) would theoretically be required, and would fail if
+	the file descriptor was a pipe or referred to a deleted file
+	(and could give a misleading answer for a file with multiple
+	links).&#160;<tt> </tt>It is best to remember the names of files yourself when
+	you open them (perhaps with a wrapper function around <code>fopen</code>).
+<p>
+<hr>
+<a href="c-10.html"><img SRC="prev.xbm" ALT="[prev]"></a>
+<a href="index.html#comp-lang-c-faq"><img SRC="up.xbm" ALT="[up]"></a>
+<a href="c-faq-toc.html#c-11"><img SRC="overview.xbm" alt="[overview]"></a>
+<a href="c-12.html"><img SRC="next.xbm" ALT="[next]"></a>
+</body></html>

@@ -1,0 +1,785 @@
+<html>
+<head>
+<link rev="made" href="mailto:jutta@pobox.com">
+<title>A brief description of Normative Addendum 1
+</title>
+</head>
+<body>
+<ul><ul><ul>
+<h1>
+&#160;<tt> </tt>A brief description of
+<br>
+Normative Addendum 1
+</h1>
+</ul></ul></ul>
+<center>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;
+<i>by </i><a href="clive/index.html"><i>Clive D.W. Feather</i></a>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;
+
+<!-- #@%*! -->
+</center>
+</ul>
+</ul>
+
+<h1>Introduction
+</h1>
+
+When the (then draft) ANSI C Standard was being considered for
+adoption of an International Standard in 1990, there were several
+objections because it didn't address internationalization
+issues.&#160;<tt> </tt>
+Because the Standard had already been several years in the making,
+it was agreed that a few changes would be made to provide the basis
+(for example, the functions in subclause 7.10.7 were added), and work
+would be carried out separately to provide proper internationalization
+of the Standard.&#160;<tt> </tt>
+This work has culminated in Normative Addendum 1.
+<p>
+Normative Addendum 1 embodies C's reaction to both the limitations
+and promises of international character sets.&#160;<tt> </tt>
+Digraphs and the
+<code>&lt;iso646.h&gt;</code> header were meant to improve the appearance of C
+programs written in national variants of ISO 646 without, e.g., <code>{</code>
+or <code>}</code> characters.&#160;<tt> </tt>
+On the other end of the spectrum, the facilities
+connected to <code>&lt;wchar.h&gt;</code> and <code>&lt;wctype.h&gt;</code>
+extend the old Standard's barely adequate basis into a complete and
+consistent set of utilities for handling wide characters and multibyte strings.
+<p>
+This document summarizes Normative Addendum 1.&#160;<tt> </tt>
+It is intended
+to quickly inform readers who are already familiar with the
+Standard; it does not, and cannot, introduce the complex subject
+matter behind NA1, nor can it replace the original document
+as a reference manual.&#160;<tt> </tt>
+(Nevertheless, it tries to be as accurate
+as possible, and its author would like to hear about any
+errors or omissions.)
+
+
+<h1>Version</h1>
+
+The macro __<code>STDC</code>_<code>VERSION</code>__ shall expand to
+<code>199409L</code>.&#160;<tt> </tt>
+(The Normative Addendum was formally registered with ISO in September 1994.)
+<p>
+<hr>
+
+<h1>Alternative Spellings
+</h1>
+
+The following two <a href="na1-NNI.html">controversial</a> changes became
+known as the ``Danish Proposal'' during their discussion,
+and were intended to make C programs more visually
+appealing on terminals that only offer the seven&#173;bit ISO 646
+character set (which does not contain the characters [] {} #, and some
+others.)&#160;<tt> </tt>
+They add no new functionality to the trigraphs introduced by
+ISO/IEC 9989:1990.
+
+
+<h2>Digraphs</h2>
+
+The following new tokens and preprocessing tokens are added:
+
+<pre><tt>    &lt;:   :&gt;   &lt;%   %&gt;   %:   %:%:
+</tt></pre>
+
+	These tokens behave identically to the tokens and
+	preprocessing tokens:
+
+<pre><tt>    [    ]    {    }    #    ##
+</tt></pre>
+	
+	respectively (except that they are spelled differently,
+	and so stringize differently).
+<br>
+	It is possible to construct source files
+	which undergo a quiet change because of the introduction
+	of<code> %: </code> and<code> %:%:</code>.
+
+<h2>Header &lt;iso646.h&gt;
+</h2>
+
+	This defines the following 11 macros as shown:
+
+<pre><tt>    #define  and     &amp;&amp;
+    #define  and_eq  &amp;=
+    #define  bitand  &amp;
+    #define  bitor   |
+    #define  compl   ~
+    #define  not     !
+    #define  not_eq  !=
+    #define  or      ||
+    #define  or_eq   |=
+    #define  xor     ^
+    #define  xor_eq  ^=
+</tt></pre>
+	These macro names are reserved for all purposes in translation
+	units that include the header,
+	but are not reserved in those that do not (this is
+	the same as for any other Standard macros).
+<p>
+<hr>
+<h1>Extended character sets
+</h1>
+
+The remainder of NA1 is designed to improve the facilities for handling text
+in complex or multiple character sets.&#160;<tt> </tt>
+In the C model, each locale defines
+a set of characters - abstract entities - that can be represented in two
+ways:
+<dl>
+<dt> as <em>wide characters:</em>&#160;<tt> </tt>
+	each character is given a code value that can be stored<dd>
+	in an object of type<code> wchar</code>_<code>t</code>.&#160;<tt> </tt>
+	Not all code values have to represent a character;
+	those that do not must not appear in wide
+	strings that are converted to multibyte characters.&#160;<tt> </tt>
+	Code value 0 is reserved for the ``end of string''
+	indicator.
+<p>
+<dt> as <em>multibyte characters:</em>&#160;<tt> </tt>each character
+	is represented by a sequence of<dd>
+	one or more bytes
+	(values that can be stored in an object of type <code>char</code>).<br>
+	The interpretation of a <em>multibyte string</em> (a sequence of bytes)
+	depends on the current <em>state</em>.&#160;<tt> </tt>There
+	is a special state called the <em>initial state</em>, and most strings
+	are interpreted starting in the initial state.&#160;<tt> </tt>
+	A multibyte string is then a sequence of zero or more of
+	the following:
+<p>
+<ul>
+<li>  a byte sequence that represents a character and might or
+	might not also change the state;
+<p>
+<li>  a byte sequence which changes the state but does not represent a character
+    (this is called a <em>shift sequence</em>).
+</ul>
+<p>
+ 	A character can have representations in more than
+	one state, and can have more than one representation
+	in any given state.&#160;<tt> </tt>The representation
+	in different states can differ.&#160;<tt> </tt>
+	Not all byte sequences are necessarily valid;
+	an invalid sequence causes an <em>encoding error</em>
+	when interpreted (normally shown by setting<code> errno </code>
+	to<code> EILSEQ</code>).
+</dl>  
+	For the encoding of file contents,
+	the above rules are complete.&#160;<tt> </tt>
+	For example, Unicode uses 16&#173;bit values to represent each
+	character.&#160;<tt> </tt>
+	On a file system based on bytes, this means that each
+	character is represented by two bytes - the upper and lower half of the
+	value (in some order).&#160;<tt> </tt>
+	This is a valid multibyte encoding for files.&#160;<tt> </tt>
+<p>
+	However, for encodings used by other
+	library functions, there are further restrictions:
+<ul>
+<li> 	the zero byte is reserved as the ``end of string''
+	indicator, and may not occur in any other byte sequence.
+<p>
+<li>	in the C locale, the <a href="na1-c99.html">99 characters
+	required by the Standard</a> have representations in the
+	initial state which are one byte long and do not alter the state.
+</ul>
+	The Unicode encoding described above cannot be used here, because
+	there are many codes where one or the other byte is zero,
+	and because no code is one byte long.
+
+
+<h2>Reserved Identifiers </h2>
+
+	Certain identifiers are defined with external linkage by
+	NA1, but were not reserved as identifiers with external
+	linkage by the original Standard (for example
+	<code>fwprintf</code>);
+	all these identifiers are declared by <code>&lt;wctype.h&gt;</code>
+	or <code>&lt;wchar.h&gt;</code>.&#160;<tt> </tt>
+	These identifiers are reserved with external linkage in
+	all the translation units of a program if and only if
+	any translation unit includes either of those
+	headers (thus changes in one translation unit may cause <em>another</em>
+	translation unit to invoke undefined behavior).
+
+<h2>	Header &lt;errno.h&gt;
+</h2>
+	A new macro <code>EILSEQ</code> is added to the list of error
+	conditions (currently this list consists of <code>EDOM</code>
+	and <code>ERANGE</code>).
+
+<h2>Header &lt;wctype.h&gt;
+</h2>
+
+<dl>
+<dt>
+<code>typedef </code>...<code> wint</code>_<code>t;</code>
+<dd>
+	An integral type unchanged by integral promotion.&#160;<tt> </tt>
+	It must be capable of holding every valid wide character,
+	and also the value<code> WEOF</code> (described
+		<a href="na1.html#WEOF">below</a>).&#160;<tt> </tt>
+	It can be the same type as<code> wchar</code>_<code>t</code>.
+<p>
+<dt>
+<code>typedef </code>...<code> wctrans</code>_<code>t;</code><br>
+<code>typedef </code>...<code> wctype</code>_<code>t;</code>
+<dd>
+	Scalar types used to hold magic cookies.&#160;<tt> </tt>
+	<code>wctype</code>_<code>t</code> represents a
+	classification of characters (like ``is lower case'' or
+	``is accented''), while <code>wctrans</code>_<code>t</code>
+	represents a character conversion (like ``change to upper case'' or
+	``remove any accent'').
+<p>
+	<dt><a name="WEOF">WEOF</a><dd> is an object&#173;like
+		macro which evaluates to a constant expression
+	of type<code> wint</code>_<code>t</code>.&#160;<tt> </tt>
+	It need not be negative nor equal <code>EOF</code>,
+	but it serves the same purpose:
+	the value, which must not be a valid wide character, is used to
+	represent an end of file or as an error indication.
+</dl>
+	All the following functions are affected by the
+	<code>LC</code>_<code>CTYPE</code> category
+	of the current locale.
+
+<h3>Extended character testing functions</h3>
+
+<dl><dt>
+<code>int iswalnum</code> <code>(wint</code>_<code>t);</code><br>
+<code>int iswalpha</code> <code>(wint</code>_<code>t);</code><br>
+<code>int iswcntrl</code> <code>(wint</code>_<code>t);</code><br>
+<code>int iswdigit</code> <code>(wint</code>_<code>t);</code><br>
+<code>int iswgraph</code> <code>(wint</code>_<code>t);</code><br>
+<code>int iswlower</code> <code>(wint</code>_<code>t);</code><br>
+<code>int iswprint</code> <code>(wint</code>_<code>t);</code><br>
+<code>int iswpunct</code> <code>(wint</code>_<code>t);</code><br>
+<code>int iswspace</code> <code>(wint</code>_<code>t);</code><br>
+<code>int iswupper</code> <code>(wint</code>_<code>t);</code><br>
+<code>int iswxdigit</code> <code>(wint</code>_<code>t);</code>
+<dd>
+	The argument must be <code>WEOF</code> or representable as
+	a<code> wchar</code>_<code>t</code>.&#160;<tt> </tt>
+	The function will
+	return non&#173;zero if and only if the argument is a wide character of the
+	appropriate type.&#160;<tt> </tt>
+	The types are the same as for the <code>&lt;ctype.h&gt;</code>
+	functions, except that <code>iswprint</code> and <code>iswgraph</code>
+	are guaranteed to return false not only for
+	<em>space</em> (as their <code>char</code> counterparts do),
+	but for any character
+	that <code>iswspace()</code> considers white space.&#160;<tt> </tt>
+	Thus <code>isgraph('\t')</code> is true,
+	but <code>iswgraph(L'\t')</code> is false.&#160;<tt> </tt>
+	For the remaining nine functions the expression
+<code> (!isXXXXX(wctob(wc))</code> <code>||</code> <code>iswXXXXX(wc))</code>
+	is true for every wide
+	 character.&#160;<tt> </tt>
+	 That is, for any wide character which has a corresponding
+	 single&#173;byte character (which is what
+		 <a href="na1.html#wctob"><code>wctob</code></a> returns),
+	 if the latter has the given property, then so does the
+	 former.&#160;<tt> </tt>
+	 Note that this is not a symmetric relationship.
+<p>
+<dt>
+<code>wctype</code>_<code>t wctype</code> <code>(const char *);</code><br>
+<code>int iswctype</code> <code>(wint</code>_<code>t, wctype</code>_<code>t);</code>
+<dd>
+	While an implementation can add extra <code>is</code><i>XXXXX</i>
+	or <code>isw</code><i>XXXXX</i> functions to
+	test for other properties (e.g. ``is a katakana character''),
+	it was felt that this cluttered the namespace (though the names are
+	all reserved) without being flexible enough for
+	future needs.&#160;<tt> </tt>
+	Instead, the committee introduced a mechanism that can be extended
+	at run-time.&#160;<tt> </tt>
+	<br>
+	The string argument to <code>wctype()</code>
+	names a category to test for; <code>wctype()</code>
+	returns a <code>wctype</code>_<code>t</code> magic cookie that can
+	be handed to <code>iswctype</code> to test for the
+	named category, or zero if it does not recognize the
+	category.&#160;<tt> </tt>
+	The eleven builtin categories <code>"alnum"</code>,
+	<code>"alpha"</code>, ... <code>"xdigit"</code>
+	must be recognized by all
+	implementations.&#160;<tt> </tt>
+	Thus, <code>iswctype(ch, wctype("punct"))</code>
+	is the same as 
+	<code>iswpunct(ch)</code>.&#160;<tt> </tt>
+
+	The <code>wctype</code>_<code>t</code> value is only valid for the
+	<code>LC</code>_<code>CTYPE</code> category used to create it.
+</dl>
+
+<h3>Extended character conversion functions</h3>
+
+<dl>
+<dt>
+<code>wint</code>_<code>t towlower</code> <code>(wint</code>_<code>t);</code><br>
+<code>wint</code>_<code>t towupper</code> <code>(wint</code>_<code>t);</code>
+<dd>
+	Wide character versions of
+	<code>toupper</code> and <code>tolower</code>.&#160;<tt> </tt><br>
+	There is no requirement that the mapping corresponds to
+	that of single&#173;byte characters (thus it might be that
+<br>
+<code>&#160; &#160; &#160; toupper('&eacute;')</code> <code>==</code> <code>'E'</code>,<br>
+	while<br>
+<code>&#160; &#160; &#160; towupper(L'&eacute;')</code> <code>==</code> <code>L'&Eacute;'</code><br>
+on a system where &Eacute; is not a single&#173;byte character).
+<p>
+<dt>
+<code>wctrans</code>_<code>t wctrans</code> <code>(const char *);</code><br>
+<code>wint</code>_<code>t towctrans</code> <code>(wint</code>_<code>t, wctrans</code>_<code>t);</code>
+<dd>
+	Provide extensible conversions, in just the same way as
+	<code>wctype()</code> and
+	<code>iswctype()</code> provide extensible tests.
+</dl>
+
+<h2>Header &lt;wchar.h&gt;
+</h2>
+
+<dl><dt>
+<code>struct tm;</code><br>
+<code>typedef</code> ... <code>size</code>_<code>t;</code><br>
+<code>typedef</code> ... <code>wchar</code>_<code>t;</code><br>
+<code>typedef</code> ... <code>wint</code>_<code>t;</code><br>
+<code>#define NULL</code> ...<br>
+<code>#define WEOF</code> ...
+<dd>
+	All described elsewhere.&#160;<tt> </tt>
+	This header does not complete the definition of
+	<code>struct</code> <code>tm</code> ;
+	it is still necessary to include <code>&lt;time.h&gt;</code>
+	before defining a
+	variable of this type.
+<p>
+<dt>
+<code>typedef</code> ... <code>mbstate</code>_<code>t;</code>
+<dd>
+	A non&#173;array object type that can represent a conversion state
+	(the internals of the representation are not specified).
+<p>
+<dt>
+	<code>WCHAR</code>_<code>MAX</code> and
+	<code>WCHAR</code>_<code>MIN</code>
+<dd>
+	evaluate to the maximum and
+	minimum values a
+	<code>wchar</code>_<code>t</code> can hold.&#160;<tt> </tt>
+	They are integral
+	constant expressions of type <code>wchar</code>_<code>t</code>,
+	but not necessarily valid
+	as wide characters.&#160;<tt> </tt>
+	For example, if <code>wchar</code>_<code>t</code> is a typedef for
+	<code>unsigned</code> <code>short</code>, then
+	<code>WCHAR_MIN</code> will be zero
+	and <code>WCHAR</code>_<code>MAX</code> will
+	be the same as <code>USHRT_MAX</code>.
+</dl>
+
+<h3>	Input and output
+</h3>
+
+	Each stream has associated with it an object of type
+	<code>mbstate</code>_<code>t</code>, and an <em>orientation</em>;
+	it can be <em>byte&#173;oriented</em>, <em>wide&#173;oriented</em>,
+	or <em>unoriented</em>.&#160;<tt> </tt>
+	When a stream is opened (including <code>stdin</code> etc.,
+	and calls to <code>freopen</code>), it is
+	unoriented.&#160;<tt> </tt>
+	The functions <code>ungetc</code>, <code>fgetc</code>,
+	<code>fputc</code>, and those defined to work though them,
+	change an unoriented stream to byte&#173;oriented, and shall
+	not be called on a wide&#173;oriented stream.&#160;<tt> </tt>
+	The functions <code>ungetwc</code>, <code>fgetwc</code>,
+	<code>fputwc</code>, and those defined to work though them,
+	change an unoriented stream to wide&#173;oriented,
+	and shall not be called on a byte&#173;oriented stream.
+<p>
+	Wide binary streams shall obey the positioning
+	restrictions of both text and binary streams.&#160;<tt> </tt>
+	Positioning a wide&#173;oriented stream within the middle of an existing
+	character representation and then writing makes all
+	following contents undefined.
+<p>
+	The <code>mbstate</code>_<code>t</code> object associated with a
+	stream is saved by <code>fgetpos</code> and restored
+	by <code>fsetpos</code>.&#160;<tt> </tt>
+	The object is initialized when the stream is opened as if it were
+	an object declared with static lifetime (i.e. all
+	zeroes and null pointers).
+<p>
+	The *<code>scanf</code> and *<code>printf</code>
+	functions have the ability to handle strings of
+	the opposite type to the majority (that is,
+	wide strings in <code>fprintf</code> etc.
+	and multibyte strings in <code>fwprintf</code> etc.).&#160;<tt> </tt>
+	These strings are converted to the majority form before
+	(for *<code>printf</code>) or after (for *<code>scanf</code>)
+	any other processing.&#160;<tt> </tt>
+	This conversion is done as if using calls to
+	<a href="na1.html#mbrtowc"><code>mbrtowc</code></a> or
+	<a href="na1.html#wcrtomb"><code>wcrtomb</code></a>,
+	but with an <code>mbstate</code>_<code>t</code>
+	object set to the initial state before each
+	such conversion.
+<p>
+<dl>
+<dt><code>wint</code>_<code>t fgetwc</code> <code>(FILE *);</code>
+<dd>
+	Reads bytes from the stream and passes them to
+	<a href="na1.html#mbrtowc"><code>mbrtowc</code></a>
+	(using the stream's
+	<code>mbstate</code>_<code>t</code> object) until a complete wide
+	character has been read, or an error
+	occurs.&#160;<tt> </tt>
+	The character or <code>WEOF</code> is returned; the latter can indicate
+	end of file (the eof indicator is set), a read error (the error
+	indicator is set), or a conversion error (<code>errno</code> is set to
+	<code>EILSEQ</code>).&#160;<tt> </tt>
+	All other wide character
+	input is done as if via <code>fgetwc</code>.
+<p>
+<dt><code>wint</code>_<code>t fputwc</code> <code>(wchar</code>_<code>t, FILE *);</code>
+<dd>
+	Passes the wide character to <a href="na1.html#wcrtomb"><code>wcrtomb</code></a>
+	(using the
+	stream's <code>mbstate</code>_<code>t</code> object)
+	and writes the resulting bytes to the stream.&#160;<tt> </tt>
+	The character or <code>WEOF</code> is
+	returned; the latter can indicate a write error (the error
+	indicator is set) or a conversion error
+	(<code>errno</code> is set to <code>EILSEQ</code>).&#160;<tt> </tt>
+	All other wide character output is done as if via <code>fputwc</code>.
+<p>
+<dt>
+	Two new conversions are added to <code>fprintf</code> (and
+	<code>printf</code> and <code>sprintf</code>):
+<dd>
+	<code>%lc</code>,
+		which requires a <code>wint</code>_<code>t</code> argument,
+	and <code>%ls</code>,
+	which requires a <code>wchar_t</code> <code>*</code>
+		argument.&#160;<tt> </tt>
+	<code>%lc</code> is equivalent to <code>%ls</code> called with
+	a two element array (the argument in
+	the first element, and zero in the second).&#160;<tt> </tt>
+	<code>%ls</code> converts the wide characters to bytes;
+	the precision indicates the maximum number of bytes
+	written (conversion will also stop on a zero wide character);
+	a partial multibyte character will not be output,
+	though complete trailing shift sequences might be.
+<p>
+<dt>
+	Three new conversions are added to <code>fscanf</code> (and
+		<code>scanf</code> and <code>sscanf</code>):
+	<dd><code>%lc,</code> <code>%ls,</code> and <code>%l[</code>;
+	all take a pointer to <code>wchar</code>_<code>t</code>,
+	and convert the input to multibyte representation after
+	matching.&#160;<tt> </tt>
+	(The qualified and unqualified conversions match the same input.)
+<p>
+<dt><code>int fwprintf</code> <code>(FILE *, const wchar</code>_<code>t *, ...);</code><br>
+<code>int wprintf</code> <code>(const wchar</code>_<code>t *, ...);</code><br>
+<code>int swprintf</code> <code>(wchar</code>_<code>t *, size</code>_<code>t, const wchar</code>_<code>t *, ...);</code><br>
+<code>int vfwprintf</code> <code>(FILE *, const wchar</code>_<code>t *, va</code>_<code>list);</code><br>
+<code>int vwprintf</code> <code>(const wchar</code>_<code>t *, va</code>_<code>list);</code><br>
+<code>int vswprintf</code> <code>(wchar</code>_<code>t</code> <code>*,</code> <code>size</code>_<code>t,</code> <code>const wchar</code>_<code>t*, va</code>_<code>list);</code>
+<dd>
+	Valid conversions are the same as for <code>fprintf</code>,
+	including the extensions
+	above.&#160;<tt> </tt>
+	With <code>%c</code>, the character is converted
+	using <a href="na1.html#btowc"><code>btowc</code></a>;
+	with <code>%s</code>, the string
+	is converted to wide characters before output.&#160;<tt> </tt>
+	With all formats, width and precision are measured in wide
+	characters.&#160;<tt> </tt>
+	The second argument of
+	<code>swprintf</code> is the the number of elements
+	of the destination array
+	(including the terminating zero which is always written).
+<p>
+<dt><code>int fwscanf</code> <code>(FILE *, const wchar</code>_<code>t *, ...);</code><br>
+<code>int wscanf</code> <code>(const wchar</code>_<code>t *, ...);</code><br>
+<code>int swscanf</code> <code>(const wchar</code>_<code>t *, const wchar</code>_<code>t *, ...);</code>
+<dd>
+	Valid conversions are the same as for <code>fscanf</code>,
+	including the extensions above.&#160;<tt> </tt>
+	With <code>%c</code>, <code>%s</code>, and <code>%[</code>,
+	the accepted input field will be converted
+	to its multibyte equivalent after being matched.&#160;<tt> </tt>
+	With all formats, width and precision are
+	measured in wide characters.
+<p>
+<dt><code>wchar</code>_<code>t *fgetws</code> <code>(wchar</code>_<code>t *, int, FILE *);</code><br>
+<code>int fputws</code> <code>(const wchar</code>_<code>t *, FILE *);</code><br>
+<code>wint</code>_<code>t getwc</code> <code>(FILE *);</code><br>
+<code>wint</code>_<code>t getwchar</code> <code>(void);</code><br>
+<code>wint</code>_<code>t putwc</code> <code>(wchar</code>_<code>t, FILE *);</code><br>
+<code>wint</code>_<code>t putwchar</code> <code>(wchar</code>_<code>t);</code><br>
+<code>wint</code>_<code>t ungetwc</code> <code>(wint</code>_<code>t, FILE *);
+</code><dd>
+	Equivalent to the corresponding functions in subclause 7.9.7 of the
+	Standard (including the multiple expansion rules for <code>getwc</code>
+	and <code>putwc</code>'s <code>FILE</code> <code>*</code> argument.)
+<p>
+<dt><code>int fwide (FILE *, int);</code>
+<dd>
+	If the second argument is greater than zero,
+	attempts to make the stream
+	wide&#173;oriented;
+	if it is less than zero,
+	attempts to make it byte&#173;oriented.&#160;<tt> </tt>
+	Returns the orientation of the stream after the call
+	(&lt;0 for byte&#173;oriented, 0 for unoriented, &gt;0 for
+	wide&#173;oriented).&#160;<tt> </tt>
+	Once a stream has been given an orientation, it cannot be changed.
+</dl>
+
+<h3>String handling facilities
+</h3>
+
+<dl>
+<dt>
+<code>double wcstod</code> <code>(const wchar</code>_<code>t *, wchar</code>_<code>t **);</code><br>
+<code>long int wcstol</code> <code>(const wchar</code>_<code>t *, wchar</code>_<code>t **, int);</code><br>
+<code>unsigned</code> <code>long</code> <code>int wcstoul</code> <code>(const</code> <code>wchar</code>_<code>t*,</code> <code>wchar</code>_<code>t**,</code> <code>int);</code><br>
+<code>wchar</code>_<code>t *wcscpy</code> <code>(wchar</code>_<code>t *, const wchar</code>_<code>t *);</code><br>
+<code>wchar</code>_<code>t *wcsncpy</code> <code>(wchar</code>_<code>t *, const wchar</code>_<code>t *, size</code>_<code>t);</code><br>
+<code>wchar</code>_<code>t *wcscat</code> <code>(wchar</code>_<code>t *, const wchar</code>_<code>t *);</code><br>
+<code>wchar</code>_<code>t *wcsncat</code> <code>(wchar</code>_<code>t *, const wchar</code>_<code>t *, size</code>_<code>t);</code><br>
+<code>int wcscmp</code> <code>(const wchar</code>_<code>t *, const wchar</code>_<code>t *);</code><br>
+<code>int wcscoll</code> <code>(const wchar</code>_<code>t *, const wchar</code>_<code>t *);</code><br>
+<code>int wcsncmp</code> <code>(const wchar</code>_<code>t *, const wchar</code>_<code>t *, size</code>_<code>t);</code><br>
+<code>size</code>_<code>t wcsxfrm</code> <code>(wchar</code>_<code>t *, const wchar</code>_<code>t *, size</code>_<code>t);</code><br>
+<code>wchar</code>_<code>t *wcschr</code> <code>(const wchar</code>_<code>t *, wchar</code>_<code>t);</code><br>
+<code>size</code>_<code>t wcscspn</code> <code>(const wchar</code>_<code>t *, const wchar</code>_<code>t *);</code><br>
+<code>wchar</code>_<code>t *wcspbrk</code> <code>(const wchar</code>_<code>t *, const wchar</code>_<code>t *);</code><br>
+<code>wchar</code>_<code>t *wcsrchr</code> <code>(const wchar</code>_<code>t *, wchar</code>_<code>t);</code><br>
+<code>size</code>_<code>t wcsspn</code> <code>(const wchar</code>_<code>t *, const wchar</code>_<code>t *);</code><br>
+<code>wchar</code>_<code>t *wcsstr</code> <code>(const wchar</code>_<code>t *, const wchar</code>_<code>t *);</code><br>
+<code>size</code>_<code>t wcslen</code> <code>(const wchar</code>_<code>t *);</code><br>
+<code>wchar</code>_<code>t *wmemchr</code> <code>(const wchar</code>_<code>t *, wchar</code>_<code>t, size</code>_<code>t);</code><br>
+<code>int wmemcmp</code> <code>(const wchar</code>_<code>t *, const wchar</code>_<code>t *, size</code>_<code>t);</code><br>
+<code>wchar</code>_<code>t *wmemcpy</code> <code>(wchar</code>_<code>t *, const wchar</code>_<code>t *, size</code>_<code>t);</code><br>
+<code>wchar</code>_<code>t *wmemmove</code> <code>(wchar</code>_<code>t *, const wchar</code>_<code>t *, size</code>_<code>t);</code><br>
+<code>wchar</code>_<code>t *wmemset</code> <code>(wchar</code>_<code>t *, wchar</code>_<code>t, size</code>_<code>t);</code><br>
+<code>size</code>_<code>t wcsftime</code> <code>(wchar</code>_<code>t *, size</code>_<code>t, const wchar</code>_<code>t *, const struct tm *);</code>
+<dd>
+	Equivalent to the corresponding functions in
+	subclauses 7.10, 7.11, and 7.12 of the Standard.
+<p>
+<dt><code>wchar</code>_<code>t *wcstok</code> <code>(wchar</code>_<code>t*, const wchar</code>_<code>t*, wchar</code>_<code>t**);
+</code><dd>
+	Tokenizes a wide string in the same way as <code>strtok</code>,
+	but uses the object pointed to
+	by the third argument to keep state, rather than keeping it
+	internally as <code>strtok</code> does.&#160;<tt> </tt>
+	This change makes it possible to interleave
+	calls to <code>wcstok</code> over different input strings.
+</dl>
+
+<h3>Conversion facilities
+</h3>
+
+	Most of these functions take a pointer to an
+	<code>mbstate</code>_<code>t</code>
+	object that they keep their <i>conversion state</i> in.&#160;<tt> </tt>
+	Such an object can be set to all zeroes (e.g. by
+	assigning to it the value of an <code>mbstate</code>_<code>t</code>
+	object with static lifetime which has not been explicitly
+	initialized)
+	and is then in its <i>initial state</i>.&#160;<tt> </tt>
+	When an object is in the initial state
+	(no matter how this occurred),
+	it is prepared for conversion in either direction
+	(from multibyte to wide characters or vice versa)
+	starting in the initial state.&#160;<tt> </tt>
+	Once an object has left its initial state
+	(which happens whenever it is used with one
+	of the following functions unless the description says otherwise),
+	it shall only be used in the same
+	<code>LC</code>_<code>CTYPE</code> category [*]
+	and same direction as the previous call,
+	and shall not be used after a conversion error.&#160;<tt> </tt>
+	If a null pointer is passed, each
+	function uses its own internal object
+	which is initialized to all zeroes at program startup.
+<br>
+___________________________________________________________________<br>
+[*] The <code>mbstate</code>_<code>t</code> object associated with a stream is bound
+to an encoding by the first <code>fgetwc</code> or <code>fputwc</code>
+call after the stream is opened, and can then be used with any locale.
+<p>
+<dl>
+<dt><a name="btowc"><code>wint</code></a>_<code>t btowc</code> <code>(int);
+</code><dd>
+	Converts the argument (treated as an <code>unsigned char</code>)
+	to the corresponding wide character, if any, or else returns
+	<code>WEOF</code>.
+
+<p><dt><a name="wctob"><code>int wctob</code></a> <code>(wint</code>_<code>t);
+</code><dd>
+	If the argument wide character has a multibyte encoding in the initial
+	shift state which is a single byte, returns that byte.&#160;<tt> </tt>
+	Otherwise returns <code>EOF</code>.
+
+<p><dt><code>int mbsinit</code> <code>(const mbstate</code>_<code>t *);
+</code><dd>
+	Returns non&#173;zero if passed a null pointer,
+	or if the <code>mbstate</code>_<code>t</code> object is
+	in the initial state (the object is unaffected).
+
+<p><dt><code>size</code>_<code>t mbrlen</code> <code>(const char *s, size</code>_<code>t n, mbstate</code>_<code>t *pcs);
+</code><dd>
+	Equivalent to
+	<a href="na1.html#mbrtowc"><code>mbrtowc</code></a><code>(NULL,</code>
+	<code>s,</code> <code>n,</code>
+	<code>pcs)</code>, except
+	that it uses its own internal<code> mbstate</code>_<code>t </code>object,
+	not that of<code> mbrtowc</code>, when given a null pointer.
+
+<p><dt><a name="mbrtowc"><code>size</code></a>_<code>t</code> <code>mbrtowc</code>
+	<code>(wchar</code>_<code>t</code> <code>*ws,</code>
+	<code>const</code> <code>char</code> <code>*s,</code>
+	<code>size</code>_<code>t</code> <code>n,</code>
+<dd>
+	<code>mbstate</code>_<code>t</code> <code>*pcs);</code><br>
+
+	Converts a multibyte character from <code>s</code> (inspecting no
+	more than <code>n</code> bytes) to a wide character.&#160;<tt> </tt>
+	If <code>ws</code> is not a null pointer, the wide character
+	is stored in <code>*ws</code>.&#160;<tt> </tt>
+	If <code>s</code> is a null pointer, <code>mbrtowc</code> 
+	ignores <code>ws</code> and <code>n</code> and acts as if the first
+	three arguments are a null pointer, an empty string, and 1 respectively.
+  <br>
+	The return value can be:
+<dl>
+<dt><code>(size</code>_<code>t)-2</code><dd>    The inspected bytes have been used to update the <code>mbstate</code>_<code>t</code>, but no
+           complete wide character has been found.
+
+<dt><code>(size</code>_<code>t)-1</code><dd>    An encoding error has occurred.
+
+<dt><code>0</code><dd>     The inspected bytes represent a zero wide character, which is stored
+           in the array pointed to by the first argument (if not null), and
+           the <code>mbstate</code>_<code>t</code> object has been restored to the initial state.
+
+<dt>other<dd> That number of bytes represent a single wide character, which is
+           stored in the array pointed to by the first argument (if not null),
+           and the <code>mbstate</code>_<code>t</code> object has been updated.
+</dl>
+  Note that a return value of -2 means that a partial sequence might have
+  been stored in the <code>mbstate</code>_<code>t</code> object; the inspected
+  bytes do not need to be
+  passed to the function a second time.
+
+<p><dt><a name="wcrtomb"><code>size</code></a>_<code>t wcrtomb</code> <code>(char *, wchar</code>_<code>t, mbstate</code>_<code>t *);
+</code><dd>
+	If the first argument is a null pointer,
+	ignores the second argument and acts
+	as if they are a pointer to an internal
+	buffer and zero respectively.&#160;<tt> </tt>
+	Otherwise it converts the wide character to
+	at most <code>MB</code>_<code>CUR</code>_<code>MAX</code> bytes and
+	places them in the array pointed to by the
+	first argument; if the wide character is zero,
+	the resulting sequence will end in the initial 
+	state,
+	followed by a zero byte, and the <code>mbstate</code>_<code>t</code>
+	object will be in the initial state.
+  <br>
+  <code>wcrtomb</code> returns the number of bytes written to the
+  character buffer, or <code>(size</code>_<code>t)-1</code> to indicate an encoding
+  error (<code>errno</code> is set to <code>EILSEQ</code>).
+
+<p><dt><code>size</code>_<code>t mbsrtowcs</code> <code>(wchar</code>_<code>t *ws, const char **ps, size</code>_<code>t n,</code>
+<dd>
+	<code>mbstate</code>_<code>t *pcs);</code>
+<br>
+	Converts the multibyte character sequence
+	pointed to by<code> *ps</code> to wide characters.&#160;<tt> </tt>
+	The result is either <code>(size</code>_<code>t)-1</code> if a
+	conversion error occurs (in which case <code>errno</code> is set to
+	<code>EILSEQ</code>), or else the number
+	of bytes processed.&#160;<tt> </tt>
+	<ul>
+	<li> If <code>ws</code> is a null pointer,
+	     processing stops at the end of the string
+	     (the terminating zero byte is not counted in the returned value),
+	     and <code>*pcs</code> will be set to the initial state.
+	<li> If <code>ws</code> is not a null pointer,
+	     the resulting wide character sequence
+	     is stored in the array it points to.&#160;<tt> </tt>
+	     Conversion stops when:
+	     <ul>
+	     <li> <code>n</code> wide characters have been stored;
+		 <code>*pcs</code> will be set to the conversion state
+		 after processing the indicated number of bytes,
+		 and <code>*ps</code> will point to the first unprocessed byte
+	     <li> at the end of the string if this comes first (the terminating
+		 zero byte is not counted in the returned value);
+		 <code>*pcs</code> will be set to the initial state, 
+		 <code>*ps</code> will be set to a null pointer, and a zero
+		 wide character will have been stored.
+	      </ul>
+	</ul>
+
+<p><dt><code>
+size</code>_<code>t wcsrtombs</code> <code>(char *s, const wchar</code>_<code>t **pws, size</code>_<code>t n,</code>
+<dd>
+<code>mbstate</code>_<code>t *pcs);</code><br>
+	Converts the wide character sequence pointed to by <code>pws</code>
+	to a multibyte character sequence.&#160;<tt> </tt>
+	The result is either <code>(size</code>_<code>t)-1</code> if a conversion
+	error occurs (in which case <code>errno</code> is set to
+	<code>EILSEQ</code>), or else the number of bytes in the
+	resulting multibyte string.&#160;<tt> </tt>
+	Processing of the wide string stops either when a zero wide
+	character - indicating the end of the wide string - is reached
+	(the resulting multibyte string will end with a zero byte
+	which is not included in the returned result), or (if s 
+	is not a null pointer) when it is not possible to process another wide
+	character without placing more than<code> n </code>bytes into the
+	array pointed to by
+	<code>s</code>.&#160;<tt> </tt>In the first case,<code> *pcs </code>
+	will be left in the initial state.&#160;<tt> </tt>
+	If<code> s </code>is a null pointer, the value of<code> n </code>
+	is ignored.&#160;<tt> </tt>Otherwise<code> *pws </code>will
+	be set to either a null pointer (if conversion stopped on a
+	zero wide character) or a pointer to the first unprocessed
+	wide character.&#160;<tt> </tt>In the latter case, the returned
+	value will be at least <code>(n-MB</code>_<code>CUR</code>_<code>MAX+1)</code>.
+</dl>
+
+
+<h2>Future directions
+</h2>
+
+	<code>&lt;wctype.h&gt;</code> reserves function names beginning
+	with <i>is</i> or <i>to</i> followed by a lowercase
+	letter.&#160;<tt> </tt>
+	<code>&lt;wchar.h&gt;</code> reserves function names beginning
+	with <i>wcs</i> followed by a lowercase letter.&#160;<tt> </tt>
+	Lowercase letters are reserved as conversion
+	specifiers for <code>fwprintf</code> and <code>fwscanf</code>.
+</body>
+</html>

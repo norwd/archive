@@ -1,0 +1,52 @@
+<!doctype html>
+<meta name=viewport content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../assets/css/simple.css" type="text/css" />
+
+<link rel="stylesheet" href="assets/notes.css" type="text/css"/>
+<title>Notes from 2014-09-22</title>
+<article>
+<h1><img id="logo" src="assets/logo.png" alt="">Notes</h1>
+<h3>2014-09-22</h3>
+
+<p>
+I am grading some verified code submitted by students and observe
+one interesting fact.  The code they have to verify is the classic
+inefficient bubble sort, they are given an array and need to convince
+Microsoft Research's Dafny verifier that the returned array is
+indeed sorted.
+</p>
+<p>
+Now comes the interesting bit.  It turns out that
+all students have in the precondition that the pointer to the array
+is not null, but most of them also require that <code>a.Length &gt; 1</code>
+or <code>a.Length &gt; 0</code>.  That is, their sorting function can
+only be called on arrays that are either two elements long (in the
+worst case) or, non empty.  This additional requirement helps
+the verifier going through but most of the time their code actually
+works for empty arrays!  In other words, the requirement is useless
+but they did not go through the pain of trying to eliminate or
+understand it.  I see this as disdain for small cases and would
+like to argue it is poor programming practice.
+</p>
+<p>
+Now that I think about it, it reminds me of a mail I read some
+time ago, somebody implemented a vi clone and in its first
+versions, editing commands at the end of the file would crash
+or misbehave in most cases.  To me, it is an indication of
+poor design.  This software is undoubtedly still flawed since
+the corner case was patched afterwards, good code and data
+design would have allowed uniform programming and probably made
+the program safer.
+</p>
+<p>
+I see going through the thinking to eliminate corner cases as
+an essential part of programming.  The more your function or
+data structure is general the easier and more comfortable it is
+to use.  By experience, adapting your code to the corner case will
+not make it unclear but more elegant and easier to read/use
+(assuming you don't dumbly patch it)!  So, next time you write
+some code, ask yourself what happens when the window is 0 pixels
+wide, or if the file you are reading contains a nul byte...
+</p>
+</article>
+<!-- analytics free! -->

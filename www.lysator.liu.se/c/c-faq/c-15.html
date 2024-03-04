@@ -1,0 +1,110 @@
+<html><head>
+<link rel="made" rev="made" href="mailto:jutta@cs.tu-berlin.de">
+<title>Floating Point</title></head>
+<body>
+<a href="c-14.html"><img SRC="prev.xbm" ALT="[prev]"></a>
+<a href="index.html#comp-lang-c-faq"><img SRC="up.xbm" ALT="[up]"></a>
+<a href="c-faq-toc.html#c-15"><img SRC="overview.xbm" alt="[overview]"></a>
+<a href="c-16.html"><img SRC="next.xbm" ALT="[next]"></a>
+<hr>
+<h2>Section 15. Floating Point</h2>
+<p>
+<h3>
+<a name="15-1">
+15.1:	My floating-point calculations are acting strangely and giving
+	me different answers on different machines.
+</a></h3><p>
+  	First, make sure that you have #included <code>&lt;math.h&gt;</code>, and correctly
+	declared other functions returning <code>double</code>.
+<p>
+	If the problem isn't that simple, recall that most digital
+	computers use floating-point formats which provide a close but
+	by no means exact simulation of real number arithmetic.
+	Underflow, cumulative precision loss, and other anomalies are
+	often troublesome.
+<p>
+	Don't assume that floating-point results will be exact, and
+	especially don't assume that floating-point values can be
+	compared for equality.&#160;<tt> </tt>(Don't throw haphazard &quot;fuzz factors&quot;
+	in, either.)
+<p>
+	These problems are no worse for C than they are for any other
+	computer language.&#160;<tt> </tt>Floating-point semantics are usually defined
+	as &quot;however the processor does them;&quot; otherwise a compiler for a
+	machine without the &quot;right&quot; model would have to do prohibitively
+	expensive emulations.
+<p>
+	This article cannot begin to list the pitfalls associated with,
+	and workarounds appropriate for, floating-point work.&#160;<tt> </tt>A good
+	programming text should cover the basics.
+<p>
+	References: <a href="index.html#EoPS">EoPS</a> Sec. 6 pp. 115-8.
+<p>
+
+<h3>
+<a name="15-2">
+15.2:	I'm trying to do some simple trig, and I am #including </a><code>&lt;math.h&gt</code>;,
+	but I keep getting &quot;<code>undefined: _sin</code>&quot; compilation errors.
+</h3><p>
+  	Make sure you're linking with the correct math library.&#160;<tt> </tt>For
+	instance, under Unix, you usually need to use the<code> -lm </code>option,
+	and at the <em>end</em> of the command line, when compiling/linking.
+        See also <a href="c-12.html#12-14">question 12.14</a>.
+<p>
+<h3>
+<a name="15-3">
+15.3:	Why doesn't C have an exponentiation operator?
+</a></h3><p>
+  	Because few processors have an exponentiation instruction.
+	Instead, you can <code>#include &lt;math.h&gt;</code> and use the <code>pow()</code> function,
+	although explicit multiplication is often better for small
+	positive integral exponents.
+<p>
+	References: <a href="index.html#ANSI">ANSI</a> Sec. 4.5.5.1 .
+<p>
+<h3><a name="15-4">
+15.4:   How do I round numbers?
+</a></h3>
+<p>
+        The simplest and most straightforward way is with code like
+<p>
+<pre>
+        (int)(x + 0.5)
+</pre>
+<p>
+        This won't work properly for negative numbers, though.
+<p>
+<h3><a name="15-5">15.5:   How do I test for IEEE NaN and other special values?
+</a></h3>
+<p>
+        Many systems with high-quality IEEE floating-point
+        implementations provide facilities (e.g. an isnan() macro) to
+        deal with these values cleanly, and the Numerical C Extensions
+        Group (NCEG) is working to formally standardize such facilities.
+        A crude but usually effective test for NaN is exemplified by
+<p><pre>
+        #define isnan(x) ((x) != (x))
+</pre><p>
+        although non-IEEE-aware compilers may optimize the test away.
+<p>
+<h3>
+<a name="15-6">
+15.6:	I'm having trouble with a Turbo C program which crashes and says
+	something like &quot;floating point formats not linked.&quot;
+</a></h3><p>
+  	Some compilers for small machines, including Turbo C (and
+	Ritchie's original PDP-11 compiler), leave out floating point
+	support if it looks like it will not be needed.&#160;<tt> </tt>In particular,
+	the non-floating-point versions of printf and scanf save space
+	by not including code to handle <code>%e</code>, <code>%f</code>, and <code>%g</code>.&#160;<tt> </tt>It happens that
+	Turbo C's heuristics for determining whether the program uses
+	floating point are insufficient, and the programmer must
+	sometimes insert an extra, explicit call to a floating-point
+	library routine to force loading of floating-point support.
+
+<p>
+<hr>
+<a href="c-14.html"><img SRC="prev.xbm" ALT="[prev]"></a>
+<a href="index.html#comp-lang-c-faq"><img SRC="up.xbm" ALT="[up]"></a>
+<a href="c-faq-toc.html#c-15"><img SRC="overview.xbm" alt="[overview]"></a>
+<a href="c-16.html"><img SRC="next.xbm" ALT="[next]"></a></body></html>
