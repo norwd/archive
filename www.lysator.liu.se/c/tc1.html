@@ -1,0 +1,840 @@
+<html><head>
+<title>Normative Changes to ISO/IEC 9899:1990 in Technical Corrigendum 1</title>
+<link rev="made" rel="made" href="mailto:jutta@pobox.com">
+</head>
+<body>
+<h1><a name="introduction">Introduction</a></h1>
+<p>
+When the ANSI C standard X3.159-1989 was adopted as an International
+Standard in 1990, not only did "sections" turn into "clauses" and
+"subclauses" (and incidentally get renumbered), but there also suddenly
+appeared a protocol for gradually changing and updating the standard in
+reaction to complaints by its users, something ANSI had not provided for.
+<p>
+Thus, the letters that had started out as as humble <i>Requests For
+Interpretation</i> to ANSI X3J11 - many of which didn't want the standard
+explained, but changed - overnight became <i>Defect Reports</i> to ISO/IEC
+committee JTC1/SC22/WG14.
+<p>
+Four years later, the first batch of 59 Defect Reports has received
+answers, some of which recommended changes to the text of the standard.
+These questions and answers are assembled as <i>Record of Response
+Number 1</i>, and those which recommend changes are also put together as
+<i>Technical Corrigendum Number 1</i>. After being reviewed and voted
+on by the member bodies such as ANSI and BSI, both documents have been
+formally accepted: the C standard has changed !
+<p>
+<a name="credits">
+TC1 is the result of many people's work.</a>&#160;<tt> </tt>There are a large number
+of sources for the original Defect Reports (and often a single name
+hides many others).&#160;<tt> </tt>The answers were discussed at several
+WG14 and X3J11 meetings, sometimes received further, more informal,
+commentary from other experts, and underwent a final review by
+<a href="clive/index.html" name="clive">Clive Feather</a>
+and Doug Gwyn.
+<p>
+However, if any single person should take credit for TC1, it is P.J. Plauger,
+who assembled and edited it, and generally drove the process to completion.
+<p>
+This HTML document is <em>not</em> Technical Corrigendum Number 1.
+With very few exceptions, ISO documents are sold by ISO and their national
+member organizations to finance their work.&#160;<tt> </tt>Instead, this is a
+collection of the <em>Normative Changes</em> contained within the
+Technical Corrigendum.&#160;<tt> </tt>It contains all the actual changes
+to the standard, but not the questions and explanations surrounding them.
+<p>
+The changes are listed in the order they occur within the standard;
+see the end of the document for a <a href="tc1.html#index">permuted index</a> of
+topics.
+<p>
+<hr>
+<h1><a name="main">Normative Changes to ISO/IEC 9899:1990</a></h1>
+<!-- DR017Q3 -->
+<dl>
+<dt><a name="DR017Q3"><i>In subclause 5.1.1.3, page 6, lines 15-17,
+change:</i></a>
+<dd>
+    A conforming implementation shall produce at least one diagnostic message
+    (identified in an implementation-defined manner) for every translation
+    unit that contains a violation of any syntax rule or constraint.
+<dt><i>to:</i>
+<dd>
+    A conforming implementation shall produce at least one diagnostic message
+    (identified in an implementation-defined manner) for every translation
+    unit that contains a 
+    violation of any syntax rule or constraint, even if the behavior is
+    also explicitly specified as undefined or implementation-defined.
+</dl>
+<dl>
+<dt><i>Add to subclause 5.1.1.3, page 6:</i>
+<dd>
+    <b>Example</b>
+    <br>
+    An implementation shall issue a diagnostic for the translation unit:
+<pre>    char i;
+    int i;</pre>
+    because in those cases where wording in this International Standard
+    describes the behavior for a construct as being both a constraint error
+    and resulting in undefined behavior, the constraint error shall be 
+    diagnosed.
+</dl>
+<!-- DR017Q38 -->
+<dl>
+<dt><a name="DR017Q38"><i>In subclause 5.2.4.1, page 13, lines 1-2, change:</i></a>
+<dd>
+   <ul>
+   <li>15 nested levels of compound statements, iteration control structures,
+      and selection control structures
+   </ul>
+<dt><i>to:</i>
+<dd>
+   <ul>
+   <li>15 nested levels of compound statements, iteration statements,
+      and selection statements
+   </ul>
+</dl>
+<!-- DR017Q39 -->
+<dl>
+<dt><a name="DR017Q39-a"><i>Add to subclause 6.1, page 18
+(</i></a><b>Semantics</b>):<dd>
+    A header name preprocessing token is only recognized within a
+    <code>#include</code> preprocessing directive, and within such a directive,
+    a sequence of characters that could be either a header name or a
+    string literal is recognized as the former.
+</dl>
+<dl>
+<dt><a name="DR017Q39-b"><i>Add to subclause 6.1.2, page 20
+(</i></a><b>Semantics</b>):
+<dd>
+    When preprocessing tokens are converted to tokens during translation
+    phase 7, if a preprocessing token could be converted to either a
+    keyword or an identifier, it is converted to a keyword.
+</dl>
+<!-- DR011Q2 -->
+<dl>
+<dt><a name="DR011Q2"><i>In subclause 6.1.2.2, page 21, change:</i></a><dd>
+    If the declaration of an identifier for an object or a function
+    contains the storage-class specifier <code>extern</code>, the identifier has the
+    same linkage as any visible declaration of the identifier with file
+    scope. If there is no visible declaration with file scope, the
+    identifier has external linkage.
+<dt><i>to:</i>
+<dd>
+    For an identifier declared with the storage-class specifier <code>extern</code> in a
+    scope in which a prior declaration of that identifier is visible*,
+    if the prior declaration specifies internal or external linkage,
+    the linkage of the identifier at the latter declaration becomes the
+    linkage specified at the prior declaration. If no prior declaration
+    is visible, or if the prior declaration specifies no linkage, then
+    the identifier has external linkage.<br>
+    _______________________________________________________________<br>
+    * As specified in 6.1.2.1, the latter declaration might hide the
+    prior declaration.
+</dl>
+<!-- DR011Q1 -->
+<dl>
+<dt><a name="DR011Q1"><i>In subclause 6.1.2.6, page 25, lines 19-20, change:</i></a>
+<dd>
+    For an identifier with external or internal linkage declared in the
+    same scope as another declaration for that identifier, the type of
+    the identifier becomes the composite type.
+<dt><i>to:</i>
+<dd>
+    For an identifier with internal or external linkage declared in a
+    scope in which a prior declaration of that identifier is visible*,
+    if the prior declaration specifies internal or external linkage,
+    the type of the identifier at the latter declaration becomes the
+    composite type.<br>
+    _______________________________________________________________<br>
+    * As specified in 6.1.2.1, the latter declaration might hide the
+    prior declaration.
+</dl>
+<!-- DR017Q39 -->
+<dl>
+<dt><a name="DR017Q39-c"><i>In subclause 6.1.7, page 32, lines 32-34, delete</i></a><dd>
+    <b>Constraint</b>
+    <br>
+    Header name preprocessing tokens shall only appear within
+    a<code> #include </code>preprocessing directive.
+<dt><i>Add to subclause 6.1.7, page 32 (</i><b>Semantics</b>):
+<dd>
+    A header name preprocessing token is recognized only within
+    a<code> #include </code>preprocessing directive.
+</dl>
+<!-- DR053Q1 -->
+<dl>
+<dt><a name="DR053Q1"><i>In subclause 6.3, page 38, lines 18-21, change:</i></a><dd>
+    An object shall have its stored value accessed only by an lvalue
+    expression that has one of the following types:[36]
+    <ul>
+    <li>the declared type of the object,
+    <li>a qualified version of the declared type of the object,
+    </ul>
+<dt><i>to:</i><dd>
+    An object shall have its stored value accessed only by an lvalue
+    expression that has one of the following types:[36]
+    <ul>
+    <li>a type compatible with the declared type of the object,
+    <li>a qualified version of a type compatible with the declared type of
+      the object,
+    </ul>
+</dl>
+<!-- DR017Q37 -->
+<dl>
+<dt><a name="DR017Q37"><i>In subclause 6.3.2.2, page 40, line 35, change:</i></a><dd>
+    The value of the function call expression is specified in 6.6.6.4.
+<dt><i>to:</i>
+<dd>
+    If the expression that denotes the called function has type pointer
+    to function returning an object type, the function call expression
+    has the same type as that object type, and has the value determined
+    as specified in 6.6.6.4.&#160;<tt> </tt>Otherwise, the function call has
+    type <code>void</code>.
+</dl>
+<!-- DR017Q9 -->
+<dl>
+<dt><a name="DR017Q9"><i>Add to subclause 6.3.16.1, page 54, another </i></a><b>Example</b>:<dd>
+    In the fragment:<pre>
+        char c;
+        int i;
+        long l;
+
+        l = ( c = i );
+</pre>
+the value of <code>i</code> is converted to the type of the
+assignment-expression <code>c = i</code>, that is, <code>char</code>
+type.&#160;<tt> </tt>The value of the expression enclosed in parenthesis is
+then converted to the type of the outer assignment-expression, that is,
+<code>long</code> type.
+</dl>
+<!-- DR017Q6 -->
+<dl>
+<dt><a name="DR017Q6"><i>Add to subclause 6.5.1, page 58 (</i></a><b>Semantics</b>):<dd>
+    If an aggregate or union object is declared with a storage-class
+    specifier other than <code>typedef</code>, the properties resulting from the
+    storage-class specifier, except with respect to linkage, also apply
+    to the members of the object, and so on recursively for any aggregate
+    or union member objects.
+</dl>
+<!-- DR013Q4 -->
+<dl>
+<dt><a name="DR013Q4"><i>In subclause 6.5.2.3, page 62, line 27, change:</i></a><dd>
+    occurs prior to the declaration that defines the content
+<dt><i>to:</i><dd>
+    occurs prior to the <code>}</code> following the
+    <tt>struct-declaration-list</tt> that defines the content
+</dl>
+<!-- DR013Q5 -->
+<dl>
+<dt><a name="DR013Q5"><i>Add to subclause 6.5.2.3, page 63, another </i></a><b>Example:</b>
+<dd>
+    An enumeration type is compatible with some integral type.&#160;<tt> </tt>
+    An implementation may delay the choice of which integral
+    type until all enumeration constants have been seen.&#160;<tt> </tt>Thus in:
+<pre>
+    enum f { c = sizeof(enum f) };
+</pre>the behavior is undefined since the size of the respective enumeration
+    type is not necessarily known when <code>sizeof</code> is encountered.
+</dl>
+<!-- DR009Q1 -->
+<dl>
+<dt><a name="DR009Q1"><i>In subclause 6.5.4.3, page 68, lines 2-4, replace:</i></a><dd>
+    In a parameter declaration, a single typedef name in parentheses is
+    taken to be an abstract declarator that specifies a function 
+    with a single parameter, not as redundant parentheses around the 
+    identifier for a declarator.
+<dt><i>with:</i><dd>
+    If, in a parameter declaration, an identifier can be treated as a
+    typedef name or as a parameter name, it shall be taken as a typedef
+    name.
+</dl>
+<!-- DR013Q1 -->
+<dl>
+<dt><a name="DR013Q1"><i>In subclause 6.5.4.3, page 68, lines 22-25, change:</i></a><dd>
+    (For each parameter declared with function or array type, its type
+    for these comparisons is the one that results from conversion to a
+    pointer type, as in 6.7.1.&#160;<tt> </tt>For each parameter declared with qualified
+    type, its type for these comparisons is the unqualified version of its
+    declared type.)
+<dt><i>to:</i><dd>
+    (In the determination of type compatibility and of a composite type,
+    each parameter declared with function or array type is taken as
+    having the type that results from conversion to a pointer type, as
+    in 6.7.1, and each parameter declared with qualified type is taken
+    as having the unqualified version of its declared type.)
+</dl>
+<!-- DR017Q17 -->
+<dl>
+<dt><a name="DR017Q17-a"><i>In subclause 6.5.7, page 71, line 39, change:</i></a><dd>
+    All unnamed structure or union members are ignored during initialization.
+<dt><i>to:</i><dd>
+    Except where explicitly stated otherwise, for the purposes of this
+    subclause unnamed members of objects of structure and union type do not
+    participate in initialization.&#160;<tt> </tt>Unnamed members of structure objects have
+    indeterminate value even after initialization.&#160;<tt> </tt>A union object
+    containing only unnamed members has indeterminate value even after
+    initialization. 
+</dl>
+<!-- DR016Q2 -->
+<dl>
+<dt><a name="DR016Q2"><i>In subclause 6.5.7, page 71, line 41 through page 72, line 2, change:</i></a><dd>
+    If an object that has static storage duration is not initialized
+    explicitly, it is initialized implicitly as if every member that has
+    arithmetic type were assigned 0 and every member that has pointer type
+    were assigned a null pointer constant.<br>
+<dt><i>to:</i><dd>
+    If an object that has static storage duration is not initialized
+    explicitly, then:
+    <ul>
+    <li>if it has pointer type, it is initialized to a null pointer;
+    <li>if it has arithmetic type, it is initialized to zero;
+    <li>if it is an aggregate, every member is initialized (recursively)
+        according to these rules;
+    <li>if it is a union, the first named member is initialized (recursively)
+        according to these rules.
+    </ul>
+</dl>
+<!-- DR017Q17 -->
+<dl>
+<dt><a name="DR017Q17-b"><i>In subclause 6.5.7, page 72, line 11, change:</i></a><dd>
+    The initial value of the object is that of the expression.
+<dt><i>to:</i><dd>
+    The initial value of the object, including unnamed members, is that
+    of the expression.
+</dl>
+<!-- DR001Q1 -->
+<dl>
+<dt><a name="DR001Q1"><i>In subclause 6.6.6.4, page 80, lines 30-32, replace:</i></a><dd>
+    If the expression has a type different from that of the function in
+    which it appears, it is converted as if it were assigned to an
+    object of that type.
+<dt><i>with:</i><dd>
+    If the expression has a type different from the return type of the
+    function in which it appears, the value is converted as if by assignment
+    to an object having the return type of the function*.<br>
+    _______________________________________________________________<br>
+    * The <code>return</code> statement is not an assignment.&#160;<tt> </tt>The
+    overlap restriction in subclause 6.3.16.1 does not apply to the case
+    of function return.
+<p>
+<dt><i>Add to subclause 6.6.6.4, page 80:</i><dd>
+
+    <b>Example</b><br>
+    In:
+<pre>
+    struct s {double i;} f(void);
+    union {struct {int f1;
+                   struct s f2;} u1;
+           struct {struct s f3; 
+                   int f4;} u2;
+          } g;
+    struct s f(void)
+         {
+         return g.u1.f2;
+         }
+    /* ... */
+    g.u2.f3 = f();
+</pre>
+    the behavior is defined.
+</dl>
+<!-- DR011Q4 -->
+<dl>
+<dt><a name="DR011Q4"><i>Add to subclause 6.7.2, page 84, a second </i></a><b>Example</b>:<dd>
+    If at the end of the translation unit containing <pre>
+    int i[];
+</pre>the array <code>i</code> still has incomplete type, the array is assumed
+    to have one element.&#160;<tt> </tt>This element is initialized to zero on program
+    startup.
+</dl>
+<!-- DR017Q1 -->
+<dl>
+<dt><a name="DR017Q1"><i>Add to subclause 6.8, page 86, line 5 (</i></a><b>Description</b>):<dd>
+    A new-line character ends the preprocessing directive even if it
+    occurs within what would otherwise be an invocation of a function-like
+    macro.
+</dl>
+<!-- DR027Q1 -->
+<dl>
+<dt><a name="DR027Q1"><i>Add to subclause 6.8, page 86 (</i></a><b>Constraints</b>):
+<dd>
+    In the definition of an object-like macro, if the first character of a
+    replacement list is not a character required by subclause 5.2.1, then
+    there shall be white-space separation between the identifier and the
+    replacement list.*<br>
+    _______________________________________________________________<br>
+    * This allows an implementation to choose to interpret the directive:
+<pre>
+    #define THIS$AND$THAT(a,b) ((a) + (b))
+</pre>
+    as defining a function-like macro <code>THIS$AND$THAT</code>, rather than an
+    object-like macro <code>THIS</code>.&#160;<tt> </tt>Whichever choice it makes, it must also
+    issue a diagnostic.
+</dl>
+<!-- DR017Q22 -->
+<dl>
+<dt><a name="DR017Q22"><i>Add to subclause 6.8.3.3, page 90:</i></a><dd>
+    <b>Example</b>
+<pre>
+  #define hash_hash # ## #
+  #define mkstr(a) # a
+  #define in_between(a) mkstr(a)
+  #define join(c, d) in_between(c hash_hash d)
+  char p[] = join(x, y); /* equivalent to char p[] = &quot;x ## y&quot;; */
+</pre>
+  The expansion produces, at various stages:
+<pre>
+  join(x, y)
+
+  in_between(x hash_hash y)
+
+  in_between(x ## y)
+
+  mkstr(x ## y)
+
+  &quot;x ## y&quot;
+</pre>
+    In other words, expanding <code>hash_hash</code> produces a new
+    token, consisting of two adjacent sharp signs, but this
+    new token is not the catenation operator.
+</dl>
+<!-- DR017Q24 -->
+<dl>
+<dt><a name="DR017Q24"><i>In subclause 7.1.2, page 96, lines 32-33, change:</i></a><dd>
+    However, if the identifier is declared or defined in more than one
+    header,
+<dt><i>to:</i><dd>
+    However, if an identifier is declared or defined in more than one
+    header,
+</dl>
+<!-- DR043Q1 -->
+<dl>
+<dt><a name="DR043Q1"><i>Add to subclause 7.1.2, page 96 (before </i></a><b>Forward references</b>):<br>
+<dd>
+    Any definition of an object-like macro described in this clause shall
+    expand to code that is fully protected by parentheses where necessary,
+    so that it groups in an arbitrary expression as if it were a single
+    identifier.
+</dl>
+<!-- DR055Q1 -->
+<dl>
+<dt><a name="DR055Q1"><i>In subclause 7.7, page 120, lines 14-16, change:</i></a><dd>
+    and the following, each of which expands to a positive integral
+    constant expression that is the signal number corresponding to the
+    specified condition:
+<dt><i>to:</i><dd>
+    and the following, which expand to positive integral constant expressions
+    with distinct values that are the signal numbers, each corresponding to
+    the specified condition:
+</dl>
+<!-- DR021Q1 -->
+<dl>
+<dt><a name="DR021Q1"><i>In subclause 7.9.6.1, page 132, lines 37-38, change:</i></a><dd>
+    For <code>o</code> conversion, it increases the precision to force the first
+    digit of the result to be a zero.
+<dt><i>to:</i><dd>
+    For <code>o</code> conversion, it increases the precision, if and only if
+    necessary, to force the first digit of the result to be a zero.
+</dl>
+<!-- DR022Q1 -->
+<dl>
+<dt><a name="DR022Q1"><i>In subclause 7.9.6.2, page 135, lines 31-33,
+change:</i></a><dd>
+    An input item is defined as the longest matching sequence of input
+    characters, unless that exceeds a specified field width, in which
+    case it is the initial subsequence of that length in the sequence.
+<dt><i>to:</i><dd>
+    An input item is defined as the longest sequence of input characters
+    which does not exceed any specified field width and which is, or is
+    a prefix of, a matching input sequence.
+<p>
+<dt><i>In subclause 7.9.6.2, page 137, delete:</i>
+<dd>
+    If conversion terminates on a conflicting input character, the
+    offending input character is left unread in the input stream.
+<dt><i>Add to subclause 7.9.6.2, page 137:</i><dd>
+    If conversion terminates on a conflicting input character, the
+    offending input character is left unread in the input stream*.<br>
+    _______________________________________________________________<br>
+    * <code>fscanf</code> pushes back at most one input character onto the input
+    stream.&#160;<tt> </tt>Therefore, some sequences that are acceptable to
+    <code>strtod</code>, <code>strtol</code>, or <code>strtoul</code>
+    are unacceptable to <code>fscanf</code>.
+</dl>
+<!-- DR014Q2 -->
+<dl>
+<dt><a name="DR014Q2"><i>Add to subclause 7.9.6.2, page 137, line 4 (the </i></a><code>n</code>
+<i>conversion specifier):</i><dd>
+    No argument is converted, but one is consumed.&#160;<tt> </tt>If the conversion
+    specification with this conversion specifier is not one of <code>%n</code>, <code>%ln</code>,
+    or <code>%hn</code>, the behavior is undefined.
+<dt><i>Add to subclause 7.9.6.2, page 138, another </i><b>Example</b>:
+<dd>
+    In:
+<pre>
+    #include &lt;stdio.h&gt;
+    /* ... */
+    int d1, d2, n1, n2, i;
+    i = sscanf(&quot;123&quot;, &quot;%d%n%n%d&quot;, &amp;d1, &amp;n1, &amp;n2, &amp;d2);
+</pre>
+the value 123 is assigned to <code>d1</code> and the value 3 to <code>n1</code>.
+    Because <code>%n</code> can never get an input failure the value of 3 is
+    also assigned to <code>n2</code>.&#160;<tt> </tt>The value of <code>d2</code> is not affected.
+    The value 3 is assigned to <code>i</code>.
+</dl>
+<!-- DR017Q30 -->
+<dl>
+<dt><a name="DR017Q30"><i>In subclause 7.9.9.2, page 145, lines 39-40,
+change:</i></a><dd>
+    a value returned by an earlier call to the <code>ftell</code> function
+<dt><i>to:</i><dd>
+    a value returned by an earlier successful call to the <code>ftell</code>
+        function
+<dt><i>In subclause 7.9.9.3, page 146, lines 10-11, change:</i><dd>
+    a value obtained from an earlier call to the <code>fgetpos</code> function
+<dt><i>to:</i><dd>
+    a value obtained from an earlier successful call to the <code>fgetpos</code> function
+</dl>
+<!-- DR054Q1 -->
+<dl>
+<dt><a name="DR054Q1"><i>Add to subclause 7.11.1, page 162:</i></a><dd>
+    Where an argument declared as <code>size_t n</code> specifies the length of the
+    array for a function, <code>n</code> can have the value zero on a call to that
+    function.&#160;<tt> </tt>Unless explicitly stated otherwise in the description of a
+    particular function in this subclause, pointer arguments on such a call
+    must still have valid values, as described in subclause 7.1.7.&#160;<tt> </tt>On such
+    a call, a function that locates a character finds no occurrence, a
+    function that compares two character sequences returns zero, and a
+    function that copies characters copies zero characters.
+</dl>
+<!-- DR052Q1 -->
+<dl>
+<dt><a name="DR052Q1"><i>In subclause 7.12.2.3, page 172, line 16,
+change:</i></a><dd>
+<code>if (mktime(&amp;time_str) == -1)</code>
+<dt><i>to:</i><dd>
+<code>if (mktime(&amp;time_str) == (time_t)-1)</code>
+</dl>
+<!-- DR017Q2 -->
+<dl>
+<dt><a name="DR017Q2"><i>Add to subclause G.2, page 200:</i></a><dd>
+   <ul>
+   <li>A program contains no function called <code>main</code> (5.1.2.2.1).
+   </ul>
+</dl>
+<!-- DR017Q14 -->
+<dl>
+<dt><a name="DR017Q14"><i>Add to subclause G.2, page 200:</i></a><dd>
+   <ul>
+   <li>A storage-class specifier or type qualifier modifies the keyword
+    <code>void</code> as a function parameter type list (6.5.4.3).
+   </ul>
+</dl>
+<!-- DR017Q16 -->
+<dl>
+<dt><a name="DR017Q16"><i>Add to subclause G.2, page 201:</i></a><dd>
+   <ul>
+   <li>An array subscript is out of range, even if an object is apparently
+   accessible with the given subscript (as in the lvalue expression
+   <code>a[1][7]</code> given the declaration <code>int a[4][5]</code>) (6.3.6).
+   </ul>
+</dl>
+<!-- DR017Q19 -->
+<dl>
+<dt><a name="DR017Q19"><i>Add to subclause G.2, page 202:</i></a><dd>
+   <ul>
+   <li> A fully expanded macro replacement list contains a function-like
+    macro name as its last preprocessing token (6.8.3).
+   </ul>
+</dl>
+<!-- DR040Q1 -->
+<dl>
+<dt><a name="DR040Q1"><i>Add to subclause G.2, page 203:</i></a><dd>
+   <ul>
+   <li> A call to a library function exceeds an <b>environmental limit</b>
+    (7.9.2, 7.9.3, 7.9.4.4, 7.9.6.1, 7.10.2.1).
+   </ul>
+</dl>
+<!-- DR052Q2 -->
+<dl>
+<dt><a name="DR052Q2"><i>In the index, page 217, change:</i></a><dd>
+    <code>static</code> storage-class specifier, 3.1.2.2, 6.1.2.4, <b>6.5.1</b>, 6.7
+<dt><i>to:</i><dd>
+    <code>static</code> storage-class specifier, 6.1.2.2, 6.1.2.4, <b>6.5.1</b>, 6.7
+</dl>
+<hr>
+<h1><a name="index">Permuted Index</a></h1>
+(This index was compiled to facilitate hypertext access to the changes that are
+relevant to a given subject; it is not part of any standard document.)
+<p>
+<dl>
+<dt><i>access</i><dd>
+	of an object's <a href="tc1.html#DR053Q1">stored value</a>,
+		legal types for lvalue used to<br>
+<dt><i>array</i><dd> 
+        <a href="tc1.html#DR011Q4">type completion</a> through
+                default initialization<br>
+	struct, and union: see <a href="tc1.html#aggregate-union">aggregate
+                and union types</a><br>
+        <a href="tc1.html#DR017Q16">subscript</a> out of range, even if
+                apparently accessible<br>
+<dt><a name="aggregate-union"><i>aggregate and union types</i></a>,<dd> 
+	effects of <a href="tc1.html#DR017Q6">storage-class specifiers</a>
+                other than <code>typedef</code> on<br>
+        <a href="tc1.html#DR016Q2">recursive initialization</a> of<br>
+<dt><i>assignment</i><dd>
+        type, example for <a href="tc1.html#DR017Q9">conversion</a> to<br>
+	of <a href="tc1.html#DR001Q1">function result</a> to storage
+                overlapping its source<br>
+<dt><i>behavior, undefined</i><dd>
+	see <a href="tc1.html#undefined-behavior">undefined behavior</a><br>
+<dt><i>compatible type</i><dd>
+	of functions with parameters that have <a href="tc1.html#DR013Q1">function,
+                array, or qualified type</a><br>
+        use for <a href="tc1.html#DR053Q1">accessing an object's stored value</a>,
+                lvalue having<br>
+<dt><i>composite type</i><dd>
+	of functions with parameters that have
+		<a href="tc1.html#DR013Q1">function, array, or qualified type</a><br>
+        of <a href="tc1.html#DR011Q1">redeclared identifiers</a> with
+                internal or external linkage<br>
+<dt><i>constraint</i>,<dd>
+        on <a href="tc1.html#DR017Q39-c">header name tokens</a> only in
+                <code>#include</code> directives, deleted<br>
+        on <a href="tc1.html#DR027Q1">white space</a> between object-like
+                macro name and special character, added<br>
+	<a href="tc1.html#DR017Q3">violation</a>, precedence
+                over undefined behavior<br>
+<dt><i>control structure</i>,<dd>
+	<a href="tc1.html#DR017Q38">iteration or selection</a><br>
+<dt><i>conversion</i><dd>
+	of <a href="tc1.html#DR013Q1">array and function type parameters</a> to
+                pointers<br>
+        of preprocessing tokens to <a href="tc1.html#DR017Q39-b">keywords or
+                identifiers</a><br>
+<dt><i>declaration</i><dd>
+	of already visible <a href="tc1.html#DR011Q2">identifiers with internal or
+                external linkage</a>, resulting type<br>
+        that defines the contents, <a href="tc1.html#DR013Q4">occurrence of
+                struct tag prior to</a><br>
+<dt><i>diagnostic message</i><dd>
+	for <a href="tc1.html#DR017Q3">constraint violation</a>, even
+		when behavior is undefined<br>
+<dt><i>elements</i>,<dd>
+        effects of <a href="tc1.html#DR017Q6">storage-class specifier</a> on array<br>
+	recursive <a href="tc1.html#DR016Q2">initialization</a> of array<br>
+<dt><i>enum</i>,<dd>
+	unknown <a href="tc1.html#DR013Q5">compatible integral type</a> before
+		all constants have been seen<br>
+<dt><i>environmental limit</i>,<dd>
+	calls to <a href="tc1.html#DR040Q1">library functions</a> that exceed<br>
+<dt><i>example</i><dd>
+        for code that is both <a href="tc1.html#DR017Q3">undefined
+                and violates a constraint</a><br>
+        for <a href="tc1.html#DR011Q4">completion of array type</a> through
+                default initialization <br>
+        for conversion to type of <a href="tc1.html#DR017Q9">assignment
+                expression</a><br>
+	for delayed choice of the <a href="tc1.html#DR013Q5">integral type
+                that is compatible with an enum</a><br>
+        for <a href="tc1.html#DR017Q22"><code>##</code></a> that is not
+                a catenation operator<br>
+        for legal assignment of function result to
+                <a href="tc1.html#DR001Q1">overlapping</a> object<br>
+        for use of <code>%n</code> specification in
+		<a href="tc1.html#DR014Q2"><code>fscanf</code></a><br>
+<dt><i>extern</i>,<dd>
+        <a href="tc1.html#DR011Q2">linkage</a> of identifiers with internal or
+                external linkage that are redeclared as<br>
+	<a href="tc1.html#DR011Q1">type</a> of identifiers with internal or external
+                linkage that are redeclared as<br>
+<dt><i>fprintf</i>,<dd>
+	effect of <a href="tc1.html#DR021Q1"># flag character</a> on
+		        <code>o</code> (octal) conversion<br>
+<dt><i>fscanf</i>,<dd>    
+	behavior of <a href="tc1.html#DR014Q2"><code>n</code></a> specifier for<br>
+	definition of <a href="tc1.html#DR022Q1">input item</a> for<br>
+<dt><i>ftell and fgetpos</i>,<dd>
+	use of results from <a href="tc1.html#DR017Q30">successful</a> calls to<br>
+<dt><i>function</i><dd>
+	call expression, <a href="tc1.html#DR017Q37">value</a> of<br>
+	exceeding <a href="tc1.html#DR040Q1">environmental limit</a> in
+              call to library <br>
+	parameter: see <a href="tc1.html#parameter">parameter</a><br>
+	source of <a href="tc1.html#DR001Q1">result</a> may overlap the area
+              it is copied to<br>
+<dt><i>function-like macro</i><dd> 
+        name <a href="tc1.html#DR017Q19">ending macro replacement list</a><br>
+	<a href="tc1.html#DR027Q1">names with nonstandard characters</a>, undefined
+                behavior of<br>
+<dt><i>header name</i><dd>
+	<a href="tc1.html#DR017Q39-a">preprocessing token</a>, recognition
+		in <code>#include</code> directives<br>
+<dt><i>identifier,</i><dd>
+        declared in more than one header, <a href="tc1.html#DR017Q24">an</a><br>
+        in function parameter declaration that is either
+                <a href="tc1.html#DR009Q1">parameter or typedef name</a><br>
+        redeclared <code>extern</code>, <a href="tc1.html#DR011Q2">linkage</a> of<br>
+        redeclared <code>extern</code>, <a href="tc1.html#DR011Q1">type</a> of<br>
+<dt><i>#include</i><dd>
+	directive, <a href="tc1.html#DR017Q39-a">header name tokens</a> in<br>
+<dt><i>incomplete</i><dd>
+        <a href="tc1.html#DR011Q4">array type</a>, completion by default
+		initialization<br>
+        <a href="tc1.html#DR013Q4">struct type</a>, completion of<br>
+<dt><i>index</i><dd>	
+	entry for <a href="tc1.html#DR052Q2"><code>static</code></a>
+       		 storage-class specifier in standard<br>
+	past the declared limits in <a href="tc1.html#DR017Q16">array</a><br>
+<dt><i>initialization,</i><dd>
+        <a href="tc1.html#DR017Q17-b">copying of unnamed members during</a><br>
+        <a href="tc1.html#DR017Q17-a">ignoring unnamed structure or union
+                members</a> in<br>
+        of <a href="tc1.html#DR011Q4">array of unspecified size</a><br>
+        of <a href="tc1.html#DR016Q2">static objects with 0</a><br>
+<dt><i>input item</i>,<dd>
+	definition of <a href="tc1.html#DR022Q1"><code>fscanf</code></a>'s<br>
+<dt><i>integral type</i><dd>
+	compatible with <a href="tc1.html#DR013Q5">enum type</a>, unknown<br>
+<dt><i>keyword</i>,<dd>
+	conversion of <a href="tc1.html#DR017Q39-b">preprocessing token</a> to<br>
+<dt><i>library functions</i><dd>
+	calls that exceed an <a href="tc1.html#DR040Q1">environmental limit</a><br>
+<dt><i>linkage</i><dd>
+	of <a href="tc1.html#DR011Q2"><code>extern</code></a> identifiers
+		with visible declaration<br>
+<dt><i>lvalue</i><dd>
+	used to access the <a href="tc1.html#DR053Q1">value of an object</a>,
+		legal type of<br>
+<dt><i>macro</i><dd>
+        argument list with <a href="tc1.html#DR017Q1">new-line character</a> in
+                preprocessing directive<br>
+        object-like require <a href="tc1.html#DR027Q1">white space</a> between
+                name and nonstandard characters<br>
+        <a href="tc1.html#DR043Q1">parentheses</a> around replacement list of
+                standard object-like<br>
+        replacement list <a href="tc1.html#DR017Q19">ending with function-like macro
+                name</a><br>
+<dt><i>main</i>,<dd>
+	program <a href="tc1.html#DR017Q2">without</a><br>
+<dt><a name="members"><i>members</i></a>,<dd>
+        effects of <a href="tc1.html#DR017Q6">storage-class specifier</a> on
+                struct or union<br>
+        <a href="tc1.html#DR017Q17-a">unnamed</a><br>
+        <a href="tc1.html#DR016Q2">recursive initialization</a> with 0<br>
+<dt><i>mktime()</i>,<dd>
+	<a href="tc1.html#DR052Q1">error</a> result of<br>
+<dt><i>n</i><dd>
+	conversion specifier for <a href="tc1.html#DR014Q2"><code>fscanf</code></a><br>
+<dt><i>new-line character</i><dd>
+	<a href="tc1.html#DR017Q1">ends a preprocessing directive</a>, even within
+		function-like macro invocation<br>
+<dt><i>o</i><dd>
+	conversion specification, effect of <a href="tc1.html#DR021Q1"># flag
+        character</a> on.<br>
+<dt><i>object</i>,<dd>
+	access of <a href="tc1.html#DR053Q1">value stored in</a><br>
+<dt><a name="parameter"><i>parameter</i></a><dd>    
+	name or typedef name in <a href="tc1.html#DR009Q1">function
+                parameter declaration</a>, ambiguity<br>
+        <a href="tc1.html#DR017Q14">type list</a> consisting
+                of qualified <code>void</code><br>
+        with <a href="tc1.html#DR013Q1">function, array, or qualified type</a><br>
+<dt><i>parentheses</i><dd>
+	around standard object-like macro
+		<a href="tc1.html#DR043Q1">replacement lists</a><br>
+<dt><i>preprocessing</i><dd>
+        directive with <a href="tc1.html#DR017Q1">new-line character</a>
+                in macro argument list<br>
+        <a href="tc1.html#DR017Q39-b">token converted to keyword</a> if possible<br>
+<dt><i>recognition</i><dd>
+	of <a href="tc1.html#DR017Q39-c">header name tokens</a> in
+		<code>#include</code> directives<br>
+<dt><i>redeclaration</i><dd>
+	of identifiers with internal or external linkage, resulting
+		<a href="tc1.html#DR011Q1">linkage</a><br>
+	of identifiers with internal or external linkage, resulting
+		<a href="tc1.html#DR011Q2">type</a><br>
+<dt><i>return</i><dd>
+	value of function, pass by <a href="tc1.html#DR001Q1">copying</a><br>
+<dt><i>signal</i><dd>
+	numbers, <a href="tc1.html#DR055Q1">different integral constant expressions</a>
+		for<br>
+<dt><i>sizeof</i><dd>
+	<a href="tc1.html#DR013Q5">enum type</a> in its enum constant declaration
+<dt><i>storage-class specifier</i><dd>
+        for <a href="tc1.html#DR017Q14"><code>void</code></a> as a function
+                parameter type list<br>
+	<a href="tc1.html#DR052Q2"><code>static</code></a>, index entry for<br>
+	<a href="tc1.html#DR017Q6">unions or aggregate objects</a> declared with<br>
+<dt><i>string</i><dd>
+	functions, value 0 for <a href="tc1.html#DR054Q1">length</a> parameter
+       		 <code>n</code> in<br>
+	literal recognized as <a href="tc1.html#DR017Q39-a">header name</a>
+	        in <code>#include</code> directive<br>
+<dt><i>strtol</i>,<dd>
+	difference between <a href="tc1.html#DR022Q1"><code>fscanf</code></a> and<br>
+<dt><i>struct</i>,<dd>
+	hack, <a href="tc1.html#DR017Q16">undefined behavior</a> of<br>
+	members: see <a href="tc1.html#members">members</a><br>
+        or union type, point of <a href="tc1.html#DR013Q4">completion</a> of
+		incomplete<br>
+        union and array, see <a href="tc1.html#aggregate-union">aggregate
+                and union types</a><br>
+<dt><i>subscript</i><dd>
+	<a href="tc1.html#DR017Q16">exceeding declared range</a> in array<br>
+<dt><i>time_t</i>,<dd>
+	missing cast to in <a href="tc1.html#DR052Q1"><code>mktime()</code></a>
+		example<br>
+<dt><i>type</i><dd>
+        and value of <a href="tc1.html#DR017Q37">function call</a><br>
+        <a href="tc1.html#DR013Q4">incomplete struct</a><br>
+        of <a href="tc1.html#DR017Q9">assignment-expression</a>, example for
+                conversion to<br>
+        of lvalue used to <a href="tc1.html#DR053Q1">access the value of an object</a>,
+                legal<br>
+        of <a href="tc1.html#DR011Q1">redeclared identifiers</a> with internal
+                or external linkage<br>
+        qualifier for <a href="tc1.html#DR017Q14"><code>void</code></a> as a 
+                function parameter type list<br>
+        qualifier of function parameters in <a href="tc1.html#DR013Q1">type
+                compatibility and composite type</a><br>
+        that is compatible to <a href="tc1.html#DR013Q5">enum type</a>,
+                integral<br>
+<dt><i>typedef name</i><dd>
+	or parameter name in <a href="tc1.html#DR009Q1">function parameter
+		declaration</a>, ambiguity
+<dt><a name="undefined-behavior"><i>undefined behavior</i></a><dd>
+        doesn't override need to diagnose <a href="tc1.html#DR017Q3">constraint
+                violations</a><br>
+        for <a href="tc1.html#DR017Q19">function-like macro name</a> at the end
+                of an expanded replacement list<br>
+        for parameter type list consisting
+                of qualified <a href="tc1.html#DR017Q14"><code>void</code></a><br>
+        if a call to a library function exceeds an
+                <a href="tc1.html#DR040Q1">environmental limit</a><br>
+        of program without <a href="tc1.html#DR017Q2"><code>main()</code></a><br>
+        of <a href="tc1.html#DR013Q5"><code>sizeof</code></a> when applied to an enum
+                in its enum constant declaration<br>
+        when <a href="tc1.html#DR017Q16">array subscript</a> exceeds declared range<br>
+        when <code>n</code>-specifier for <code>fscanf</code> isn't one of
+		<a href="tc1.html#DR014Q2"><code>%n %hn %ln</code></a><br>
+<dt><i>union</i>,<dd>
+	members: see <a href="tc1.html#members">members</a><br>
+        or struct type, point of <a href="tc1.html#DR013Q4">completion</a> of
+		incomplete<br>
+	structs, and arrays:
+		see <a href="tc1.html#aggregate-union">aggregate and union types</a><br>
+<dt><i>value</i><dd>
+        and type of <a href="tc1.html#DR017Q37">function call</a><br>
+        stored in an object, legal ways of
+                <a href="tc1.html#DR053Q1">accessing</a> the<br>
+<dt><i>void</i><dd>
+      in parameter type list with <a href="tc1.html#DR017Q14">type qualifier or storage-class specifier</a><br>
+<dt><i>white space</i><dd>
+	between object-like macro name and <a href="tc1.html#DR027Q1">special
+		character</a><br>
+</dl>
+<hr>
+Markup by Jutta Degener; introduction by <a href="clive/index.html">Clive
+Feather</a> and Jutta Degener, 1994
+</body></html>

@@ -1,0 +1,1503 @@
+<html>
+<head>
+<title>Annual IAQ Posting
+</title>
+</head>
+<body>
+<h2>Infrequently Asked Questions in comp.lang.c</h2>
+
+<p>
+[Last modified April 1, 1995 by <a href="http://www.plethora.net/%7Eseebs/"
+	>seebs</a>.] [Revision: yes]
+<p>
+Certain topics never (well, hardly ever) come up on this newsgroup.
+They are stupid questions, to which the answers are immediately obvious,
+but they would be more fun to talk about than these arcane details of
+loop control.
+<p>
+This article, which is posted yearly, attempts to answer these questions
+definitively, succinctly, and in such a way as to discourage further
+discussion.&#160;<tt> </tt>The answers have
+been carefully checked for periodic accuracy,
+and for blatant inaccuracy where relevant.
+
+<ol>
+<li> Null Statements
+<li> Arrays and Pointers
+<li> Memory Allocation
+<li> Expressions
+<li> ANSI C
+<li> C Preprocessor
+<li> Variable&#173;Length Argument Lists
+<li> Boolean Expressions and Variables
+<li> Structs, Enums, and Unions
+<li> Declarations
+<li> Stdio
+<li> Library Subroutines
+<li> Lint
+<li> Style
+<li> Floating Point
+<li> System Dependencies
+<li> Miscellaneous (Fortran to C converters, YACC grammars, etc.)
+</ol>
+
+Herewith, some infrequently&#173;asked questions and their answers:
+
+
+<h2>Section 1. Null Statements</h2>
+
+<h3>1.1:        What is this infamous null statement, anyway?</h3>
+
+        A null statement is an expression statement consisting solely
+        of the terminating semicolon.&#160;<tt> </tt>The optional expression is dropped.&#160;<tt> </tt>
+        It can be distinguished from any other statement by byte count
+        or study of side&#173;effects.
+
+<h3>1.2:        How do I &quot;get&quot; a null statement in my programs?</h3>
+
+        In ANSI C, there are six types of statements; labeled statements,
+        compound statements, expression&#173;statements, selection statements,
+        iteration statements, and
+	jump statements.&#160;<tt> </tt>All of them, except
+        the jump and expression statments, are defined in terms of optional
+        preceeding text, and other statements.&#160;<tt> </tt>The jump
+	statements are
+        never null statements.&#160;<tt> </tt>An expression statement is considered to
+        be &quot;a null statement&quot; if the optional expression part of it has
+        been left out.&#160;<tt> </tt>A null statement can appear on its own, or (most
+        frequently) as the statement body of an iteration statement.&#160;<tt> </tt>These
+        two null statements are equivalent, though neither of them is
+        equivalent to any non&#173;null statement.&#160;<tt> </tt>[*]
+<p>
+        You may accidentally get a null statement by deleting the body of
+        a non&#173;null statement.
+<p>
+        [*] Actually, they are functionally equivalent to a large set of
+        non&#173;null statements, namely, those with no side&#173;effects.&#160;<tt> </tt>However,
+        the FDA has yet to approve any such, as their lack of side effects
+        is conjectured, and not clinically proven.&#160;<tt> </tt>This applies only to
+        the ANSI standard, and not the ISO standard, as the FDA has no
+        jurisdiction outside the U.S.
+
+<h3>1.3:        Is there more than one null statement?</h3>
+
+<dl><dt>
+        Sort of.&#160;<tt> </tt>You can use
+<dd>
+                <tt>;</tt>
+<dt>
+        or
+<dd>
+                <tt>0;</tt>
+<dt>
+        or
+<dd>
+                <tt>1;</tt>
+</dl>
+        - they will all act like a null statement.&#160;<tt> </tt>Only
+	the first is
+        a &quot;true&quot; null statement (all bits zero).&#160;<tt> </tt>They
+        are basically
+        equivalent.&#160;<tt> </tt>Note that <code>(void *) 0;</code>
+        is a null statement of type <i>pointer to void</i>, for instance.
+
+<h3>1.4 But I thought <code>{ }</code> was a null statement!</h3>
+
+        No.&#160;<tt> </tt><i>{ statement&#173;list[opt] }</i> is a compound statement.&#160;<tt> </tt>An empty
+        block is not the same as a null statement, however, although it
+        can be used in many of the same places.&#160;<tt> </tt>It's really a null
+        block.
+
+<h3>1.5 I use the statement<br>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt><tt>#define NULLSTMT(F) (F) ;</tt><br>
+        to allow me to cast a null statement to an appropriate type.
+</h3>
+
+        This trick, though popular in some circles, does not buy much.&#160;<tt> </tt>
+        The resulting code is illegal, and will not compile.&#160;<tt> </tt>This (in
+        the author's opinion) outweighs any arguable type consistency.
+        It may be more common in industrial code.&#160;<tt> </tt>If it
+	becomes common
+        practice, C++ will probably legalize it.
+
+<h3>1.6 I use the statement<br>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt><tt>    #define NULLSTMT(F)     (F) 0;</tt><br>
+        to allow me to cast a null statement to an appropriate type.
+</h3>
+        This trick will likely work, but think: what does it really buy
+        you?&#160;<tt> </tt>
+        Mostly, it will indicate to even the most casual observer
+        that you are shakey on the concept of null statements,
+	making it
+        harder for them to check your code.
+
+<h3>1.7:        But wouldn't it be better to use <code>';'</code> (rather
+	than <code>'0;'</code>) in case
+        the value of <code>0</code> changes, perhaps on a machine with nonzero
+        no&#173;op instructions?</h3>
+
+        No.&#160;<tt> </tt>The <code>'0'</code> of <code>'0;'</code>
+		is not evaluated as an instruction, rather, it is
+        just ignored.&#160;<tt> </tt>The advantages of <code>';'</code> over <code>'0;'</code> have only to do with
+        poor optimizers and savings of keystrokes.
+
+<h3>1.8:        Is a null statement a null pointer?</h3>
+
+        No.&#160;<tt> </tt>A null pointer is a pointer where all of the address bits
+        are zero (no matter what the segment bits are), and can be
+        obtained by typing <code>'(char *) (int) 0'</code>.&#160;<tt> </tt>A null statement is
+        not a pointer to anything.&#160;<tt> </tt>They are not interchangeable, although
+        you can combine them to get an effectively&#173;null statement, such
+        as
+<pre><tt>   NULL;
+</tt></pre>
+
+        This does not buy you anything.
+
+<h3>1.9:        I'm still confused.&#160;<tt> </tt>I just can't understand all this null
+        statement stuff.</h3>
+
+        Follow these two simple rules:
+
+<ol>
+<li>    When you don't want to do anything in source code, don't write it.
+<p>
+<li>    If you need a null statement to round out an expression,
+                use an unadorned <code>';'</code> to provide it.
+<p>
+<li>    Send large donations, checks, and money orders to the
+                <a href="http://www.plethora.net/%7Eseebs/">author of
+		the FAQ</a>, or the <a href="mailto:seebs@plethora.net"
+			>moderator of the group</a>, whichever
+                you prefer.&#160;<tt> </tt>Then, cross the top question off the FAQ,
+                answer the question at the bottom, and mail it to three
+                people.&#160;<tt> </tt>Within two weeks, you will receive 729 answers
+                to various questions!&#160;<tt> </tt> Do not break the chain; Emily
+                Postnews broke the chain, and now no one listens to her.
+</ol>
+<p>
+
+<h2>Section 2. Arrays and Pointers</h2>
+
+<h3>2.1:        I had the definition <code>char a[6]</code> in one source file, and in
+        another I declared <code>extern char a[]</code>.&#160;<tt> </tt>Why
+	did it work?</h3>
+
+        The declaration <code>extern char a[]</code> simply matches the actual
+        definition.&#160;<tt> </tt>
+        The type <i>array&#173;of&#173;type&#173;T</i> is
+        the same as <i>array&#173;of&#173;type&#173;T.</i>&#160;<tt> </tt>
+        Go ahead and use <code>extern char a[]</code>.&#160;<tt> </tt>(For
+	greater portability, use
+        it in both files, not only in one of them.)
+
+<h3>2.2:        But I heard that <code>char a[]</code> was different from <code>char a[6]</code>.</h3>
+
+        This is true.&#160;<tt> </tt>However, the declaration <code>a[]</code> is compatible with the
+        definition <code>a[6]</code>.
+
+<h3>2.3:        So what is meant by the &quot;equivalence of pointers and arrays&quot; in
+        C?</h3>
+
+        Very little.
+
+<h3>2.4:        Then why are array and pointer declarations interchangeable as
+        function formal parameters?</h3>
+
+        Classism.&#160;<tt> </tt>We consider arrays
+        &quot;second class objects&quot;.&#160;<tt> </tt>They don't
+        vote, and they get treated as
+        pointers.&#160;<tt> </tt>Additionally, they're
+        merely objects, not citizens.&#160;<tt> </tt>
+        Marx wrote about this a lot.
+
+<h3>2.6:        Why doesn't sizeof properly report the size of an array which is
+        a parameter to a function?</h3>
+
+        Part of the ANSI conspiracy to restrict people to passing pointers;
+        this was undertaken after the first discovery that passing large
+        arrays recursively could cause crashes.&#160;<tt> </tt>Since then,
+        with the passing
+        of MS&#173;DOS, it has become a non&#173;issue; since all serious machines
+        have virtual memory, you can pass as much data as you want on the
+        stack without detectable problems.
+
+<h3>2.7:        Someone explained to me that arrays were really just constant
+        pointers.</h3>
+
+        Cool.&#160;<tt> </tt>Someone I know says he saw Elvis in a local bar.
+
+<h3>2.8:        Practically speaking, what is the difference between arrays and
+        pointers?</h3>
+
+        About the difference between alcohol and marijuana; they have
+        different characteristics, and that's not a problem if you don't
+        mix them too carelessly.
+
+<h3>2.9:        I came across some &quot;joke&quot; code containing the &quot;expression&quot;
+        <code>5[&quot;abcdef&quot;]</code>.&#160;<tt> </tt>How can this be legal C?</h3>
+
+        It was added to allow people to avoid the character constant
+        'f' which may not be available on some systems.&#160;<tt> </tt>(Actually, it's
+        a side&#173;effect of the equivalence of arrays and pointers.)
+<p>
+
+<h2>Section 3. Memory Allocation</h2>
+
+<h3>3.1:        Why doesn't this fragment work?</h3>
+<dl><dt><dd>
+	<tt>char *answer</tt><br>
+        <tt>printf(&quot;Type something:\n&quot;);</tt><br>
+        <tt>gets(answer);</tt><br>
+        <tt>printf(&quot;You typed \&quot;%s\&quot;\n&quot;, answer);</tt><br>
+</dl>
+        The semicolon after 'answer' is missing.
+
+<h3>3.2:        I have a function that is supposed to return a string,
+        but when it returns to its caller, the returned string is
+        garbage.</h3>
+
+        You probably returned a pointer to a local array.&#160;<tt> </tt>That
+        doesn't work.&#160;<tt> </tt>Try using a temporary file, instead.
+
+<h3>3.3:        Why does some code carefully cast the values returned by <code>malloc</code>
+        to the pointer type being allocated?</h3>
+
+        In interrupt&#173;riddled code, it may be necessary to cast values to
+        force the CPU to resolve pointer types.
+
+<h3>3.4:        You can't use dynamically&#173;allocated memory after
+	you free it, can you?</h3>
+
+        Yes.&#160;<tt> </tt>However, what happens when you do is not clearly defined.
+
+<h3>3.5:        How does <code>free()</code> know how many bytes to free?</h3>
+
+        Interrupt 41h.&#160;<tt> </tt>On macs, amigas,
+	and other &quot;big&#173;endian&quot; processors,
+        that would be interrupt 14h; be wary of portability problems.
+
+<h3>3.6:        So can I query the malloc package to find out how big an
+        allocated block is?</h3>
+
+        Yup.&#160;<tt> </tt>Don't expect an answer though.
+
+<h3>3.7:        I'm allocating structures which contain pointers to other
+        dynamically&#173;allocated objects.&#160;<tt> </tt>When I free a structure, do I
+        have to free each subsidiary pointer first?</h3>
+
+        No.&#160;<tt> </tt>You just have to keep track of them somewhere else also.
+
+<h3>3.8:        Was Proust's masterwork, <i>A Remembrance of Things Past</i>,
+	the
+        basis for the C library's allocation scheme, based largely on
+        contextual analysis?</h3>
+
+        The standard does not specify an allocation scheme; the famous
+        author the allocation scheme is based on is implementation
+        specified.&#160;<tt> </tt>Proust is a common choice, however.
+
+<h3>3.9:        I have a program which mallocs but then frees a lot of memory,
+        but memory usage (as reported by ps) doesn't seem to go back
+        down.</h3>
+
+        You're probably not freeing the memory completely.&#160;<tt> </tt>Try replacing
+<pre><tt>      free(foo);
+</tt></pre>
+        with
+<pre><tt>      free(foo);
+      free(foo);
+      free(foo);
+</tt></pre>
+
+        in case the first <code>free()</code> frees the memory
+	only partially.&#160;<tt> </tt>
+        (Unix wizards may recognize the parallel with syncing
+        three times before rebooting.)
+<p>
+        Alternatively,
+        <code>free(foo + 4);</code> may free
+	the remaining four bytes.&#160;<tt> </tt>(Before using
+        this, make sure <code>realloc(foo, 0)</code> returned 4).
+
+
+<h2>Section 4. Expressions</h2>
+
+<h3>4.1:        Why doesn't this code:<br>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt><tt> a[i] = i++;</tt><br>
+
+        work?</h3>
+
+        You didn't declare either <code>i</code> or <code>a</code>.
+
+<h3>4.2:        Under my compiler, the code<br>
+&#160;<tt> </tt>&#160;<tt> </tt><tt>int i = 7;</tt><br>
+&#160;<tt> </tt>&#160;<tt> </tt><tt>printf(&quot;%d\n&quot;, i++ * i++);</tt><br>
+        prints 49.&#160;<tt> </tt>Regardless of the order of evaluation, shouldn't it
+        print 56?</h3>
+<p>
+        No.&#160;<tt> </tt>The only logical answer would be <code>81</code> - two postfix <code>++</code>'s are
+        automatically converted to prefix.
+
+<h3>4.3:        I've experimented with the code<br>
+&#160;<tt> </tt>&#160;<tt> </tt><tt>int i = 2;</tt><br>
+&#160;<tt> </tt>&#160;<tt> </tt><tt>i = i++;</tt><br>
+
+        on several compilers.&#160;<tt> </tt>Some gave <code>i</code> the value <code>2</code>, some gave <code>3</code>, but
+        one gave <code>4</code>.&#160;<tt> </tt>I know the behavior is undefined, but how could it
+        give <code>4</code>?</h3>
+
+        Because <code>i</code> is <code>2</code>, the loop is executed <em>twice</em>.
+
+<h3>4.4:        People keep saying the behavior is undefined, but I just tried
+        it on an ANSI&#173;conforming compiler, and got the results I
+        expected.</h3>
+
+        They were probably wrong.&#160;<tt> </tt>Flame
+	them mercilessly.&#160;<tt> </tt>Be sure before
+        you do that your compiler
+	is <em>really</em> ANSI conforming, though.&#160;<tt> </tt>If
+        it turns out you were wrong, they get a legal claim on your firstborn.
+
+<h3>4.5:        Can I use explicit parentheses to force the order of evaluation
+        I want?&#160;<tt> </tt>
+	Even if I don't, doesn't precedence dictate it?</h3>
+
+        No.&#160;<tt> </tt>To force order of evaluation,
+	you must threaten it.&#160;<tt> </tt>Take the
+        comma operator hostage.&#160;<tt> </tt>Using it,
+	you can force the other operators
+        to do what you want.
+
+<h3>4.6:        But what about the <tt>&amp;&amp;</tt>, <tt>||</tt>,
+		and comma operators?&#160;<tt> </tt>
+        I see code like<br><tt>if((c = getchar()) == EOF || c == '\n')</tt> ...</h3>
+
+        As noted, once you've captured the comma operator, the others
+        become docile.
+
+<h3>4.7:        If I'm not using the value of the expression, should I use <code>i++</code>
+        or <code>++i</code> to increment a variable?</h3>
+
+        <code>++i</code>.&#160;<tt> </tt>Only losers and idiots use <code>i++</code>.&#160;<tt> </tt>This is different if your
+        native language would idiomatically use &quot;i increment&quot;, but in
+        English and related languages, you must use &quot;<code>++i</code>&quot;.&#160;<tt> </tt>Note that
+        a modern program must use both, dependent on the current locale.
+
+<h3>4.8:        Why is <code>i = ++i</code> undefined?</h3>
+
+        Because it is unclear whether it is shorthand for
+<pre><tt>        i = 42;
+</tt></pre>
+        or
+<pre><tt>        i = (char *) &quot;forty two&quot;;
+</tt></pre>
+        
+        Given the ambiguity, the standards committee decided to leave it
+        undefined.
+<p>
+
+<h2>Section 5. ANSI C</h2>
+
+<h3>5.1:        What is the &quot;ANSI C Standard?&quot;</h3>
+
+        A whiny bunch of lusers who haven't written as many books as
+        Herbert Schildt.
+
+<h3>5.2:        How can I get a copy of the Standard?</h3>
+
+        <code>ftp</code> <a href="ftp://ftp.borland.com/"><code>ftp.borland.com</code></a>.
+
+<h3>5.3:        Does anyone have a tool for converting old&#173;style C programs to
+        ANSI C, or vice versa, or for automatically generating
+        prototypes?</h3>
+
+        A router helps, but
+	your best bet is still the band saw.&#160;<tt> </tt>Quick,
+        efficient, and powerful.
+
+<h3>5.4:        I'm trying to use the ANSI &quot;stringizing&quot;
+preprocessing operator
+        <code>#</code>
+	to insert the value of a symbolic constant into a message, but
+        it keeps stringizing the macro's name rather than its value.</h3>
+
+        This is because <code>&quot;3&quot;</code> is not a legal integral constant in
+	C - it's
+        a string constant.
+
+<h3>5.5:        I don't understand why I can't use const values in initializers
+        and array dimensions, as in<br>
+&#160;<tt> </tt>&#160;<tt> </tt><tt>const int n = 5;</tt><br>
+&#160;<tt> </tt>&#160;<tt> </tt><tt>int a[n];</tt><br>
+</h3>
+        Because you're not using <i>C++</i>.
+
+<h3>5.6:        What's the difference between <code>char const *p</code> and
+        <code>char * const p</code>?</h3>
+
+        One &quot; &quot; character.&#160;<tt> </tt>There are some trivial differences having
+        to do with the distinction between a pointer to a constant, and
+        a constant pointer, but since you can cast either to a
+        (char *) it hardly matters.
+
+<h3>5.7:        Can I declare <code>main</code> as <code>void</code>, to shut off these annoying &quot;main
+        returns no value&quot; messages?  (I'm calling <code>exit()</code>, so <code>main</code>
+        doesn't return.)</h3>
+<p>
+        Certainly.&#160;<tt> </tt>You can also declare it as <code>double</code>.&#160;<tt> </tt>It may not
+        compile, or it may crash, but who cares?
+
+<h3>5.8:        Why does the ANSI Standard not guarantee more than six monocase
+        characters of external identifier significance?</h3>
+
+        Because none of the members of the committee had names over
+        six letters, or in which letters other than the first were
+        capitalized.
+
+<h3>5.9:        What is the difference between <code>memcpy</code> and <code>memmove</code>?</h3>
+
+        <code>memmove</code> moves memory, and <code>memcpy</code> copies it.&#160;<tt> </tt><code>memmove</code> may not be
+        supported on machines without internal robot arms.&#160;<tt> </tt>Do not use
+        <code>memmove</code> while the machine is powered up - you can destroy your
+        memory.
+
+<h3>5.10:       Why won't the Frobozz Magic C Compiler, which claims to be ANSI
+        compliant, accept this code?  I know that the code is ANSI,
+        because gcc accepts it.</h3>
+
+        The Frobozz Magic Company lies through its teeth.&#160;<tt> </tt>Consider:
+        does Flood Control Dam #3 actually control floods?&#160;<tt> </tt>
+	Didn't
+        think so.&#160;<tt> </tt>The wands are excellent for making useless via
+        casts of Float, though.
+
+<h3>5.11:       Why can't I perform arithmetic on a <code>void *</code>
+	pointer?</h3>
+
+        You're too big and clumsy.&#160;<tt> </tt>When you try to push the numbers
+        together, you lose your balance.&#160;<tt> </tt>Perhaps you should get some
+        angels from the rave over on pin 3.
+
+<h3>5.12:       What are #pragmas and what are they good for?</h3>
+
+        They are useful ways to eliminate compiler features which are not
+        helpful to your goals; contrast #utility, which introduces useful
+        compiler features, and #absolutist, which introduces those compiler
+        features believed to be right.
+
+<h3>5.13:       What does <code>#pragma once</code> mean?&#160;<tt> </tt>
+	I found it in some header files.</h3>
+
+        It means that your program will only run once; it's used to create
+        &quot;crippled demos&quot;.
+
+<h3>5.14:       People seem to make a point of distinguishing between
+        implementation&#173;defined, unspecified, and undefined
+	behavior.&#160;<tt> </tt>
+        What's the difference?</h3>
+
+        There isn't really one; people just enjoy flaming over nits.
+        (To be technical, one has a hyphen, one has a space, and one
+        is a single word.)
+
+<h3>5.15:       Is C an acronym?</h3>
+
+        Yes, it stands for &quot;C&quot;.&#160;<tt> </tt>It's another 
+	of those funky recursive
+        acronyms.
+
+
+<h2>Section 6. C Preprocessor</h2>
+
+<h3>6.1:        How can I use a preprocessor #if expression to tell if a machine
+        is big&#173;endian or little&#173;endian?</h3>
+
+        <code>#ifdef __BIG_ENDIAN</code> should work on all known machines; Borland
+        defines it.
+
+<h3>6.2:        I've got this tricky processing I want to do at compile time and
+        I can't figure out a way to get cpp to do it.</h3>
+
+        Poor baby.
+
+<h3>6.3:        How can I list all of the pre#defined identifiers?</h3>
+
+        <code>#define __ALL_CPP_IDS</code> - put this in a source file, and run it
+        through your C preprocessor.
+<p>
+<h3>6.4:        How can I write a cpp macro which takes a variable number of
+        arguments?</h3>
+
+        <code>#utility varargs define ...</code>
+
+<h3>6.5:        Shouldn't the following code:<br>
+&#160;<tt> </tt>&#160;<tt> </tt><tt>#define ROSE 1</tt><br>
+&#160;<tt> </tt>&#160;<tt> </tt><tt>#define CHRYSANTHEMUM 2</tt><br>
+&#160;<tt> </tt>&#160;<tt> </tt><tt>#define RHODODENDRON 3</tt><br>
+&#160;<tt> </tt>&#160;<tt> </tt><tt>#define WATER_LILY 4</tt><br>
+<br>
+&#160;<tt> </tt>&#160;<tt> </tt><tt>printf(&quot;%d\n&quot;, CHRYSATHNEMUM);</tt><br>
+        print &quot;2&quot;?</h3>
+<p>
+        You misspelled <code>CHRYSANTHEMUM</code>.&#160;<tt> </tt>Use abbreviations
+	for long flower
+        names in C code.
+
+
+<h2>Section 7. Variable&#173;Length Argument Lists</h2>
+
+<h3>7.1:        How can I write a function that takes a variable number of
+        arguments?</h3>
+
+        <code>#utility varargs int foo()</code>
+
+<h3>7.2:        How can I write a function that takes a format string and a
+        variable number of arguments, like <code>printf</code>, and passes them to
+        <code>printf</code> to do most of the work?</h3>
+
+        Redefine <code>printf</code>; the call to <code>printf</code> inside yours will be
+        resolved to the library version, because the C language doesn't
+        allow recursion.
+
+<h3>7.3:        How can I discover how many arguments a function was actually
+        called with?</h3>
+
+        <code>_args</code> is an external integer constant.&#160;<tt> </tt>It
+	evaluates to three
+        times the number of arguments the current function was called
+        with.&#160;<tt> </tt>You can then look at<br>
+        <code>_argdata[args]</code> to get the address of the last arg,<br>
+        <code>_argdata[args - 1]</code> to get the size of the last
+		arg, and<br>
+        <code>_argdata[args - 2]</code> to get the type of the last arg (as an int).
+<p>
+                N.B.&#160;<tt> </tt>You *MUST* not refer to <code>_args</code> or
+		<code>_argdata</code> between
+                the <code>()</code>'s of a function call; their value will be
+                indeterminate.&#160;<tt> </tt>Use temporary storage.
+
+<h3>7.4:        Why doesn't<br>
+
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt><tt>printf(&quot;hello, &quot;, &quot;world!&quot;, '\n');</tt><br>
+
+        work?  I thought <code>printf()</code> took a variable number of arguments.</h3>
+
+        It will probably work some of the time; the number of arguments
+        used by <code>printf()</code> may vary.
+
+
+<h2>Section 8. Boolean Expressions and Variables</h2>
+
+<h3>8.1:        What is the right type to use for boolean values in C?&#160;<tt> </tt>
+Why
+        isn't it a standard type?&#160;<tt> </tt>
+	Should #defines or enums be used for
+        the true and false values?</h3>
+
+        <code>int (*)(int, char **)</code>
+	makes a good boolean type.&#160;<tt> </tt>You can use
+        <code>main</code> for true, and <code>exit</code>
+	for false.&#160;<tt> </tt>On some compilers, you
+        may need to cast <code>exit()</code> to an appropriate type.
+
+<h3>8.2:        Isn't #defining TRUE to be 1 dangerous,
+	since any nonzero value
+        is considered &quot;true&quot; in C?  What if a built&#173;in boolean or
+        relational operator &quot;returns&quot; something other than 1?</h3>
+
+        Yes.&#160;<tt> </tt>In fact, my aunt was killed by a true value
+	other than one.
+        However, even more dangerous is defining true to
+	be 0x256.&#160;<tt> </tt>
+	<br>
+        (All kidding aside, folks, the stupidist programming error I ever
+        saw had to do with
+        <tt>#define IS_TRUE(x) ((x) &amp; 0x256)</tt>
+	- it was intended to help the
+        programmer work with Fortran, which had a non&#173;1 true value.)
+
+
+<h2>Section 9. Structs, Enums, and Unions</h2>
+
+<h3>9.1:        What is the difference between an enum and a series of
+        preprocessor #defines?</h3>
+
+        The enum doesn't require the preprocessor.
+
+<h3>9.2:        I heard that structures could be assigned to variables and
+        passed to and from functions, but K&amp;R I says not.</h3>
+
+        K&amp;R I was wrong; they hadn't actually learned C very well before
+        writing the book.&#160;<tt> </tt><a name="dmr">Later</a>, Ritchie got a job at
+	Bell Labs, and worked
+        closely with the authors of C,
+	allowing the 2nd edition of the book to be much more accurate.
+
+<h3>9.3:        How does struct passing and returning work?</h3>
+
+        The structures are put into the low part of the VGA card's VRAM.
+        They are then removed before the next video update.&#160;<tt> </tt>This is why
+        struct passing was not supported for a long time; VGA cards were
+        prohibitively expensive.
+
+<h3>9.4:        Why can't you compare structs?</h3>
+
+        Compare them to what?&#160;<tt> </tt> A summer's day?
+
+<h3>9.5:        How can I read/write structs from/to data files?</h3>
+
+        Loop with <code>putchar</code>.&#160;<tt> </tt>Be careful; if your machine uses signed chars
+        by default, all of the sign bits in your structure elements will
+        be reversed.
+
+<h3>9.6:        How can I determine the byte offset of a field within a
+        structure?</h3>
+
+        It's generally 4 times the number of members of the structure.
+        It may be more or less on some machines.
+
+<h3>9.7:        How can I access structure fields by name at run time?</h3>
+
+        <code>foo.&quot;name&quot;</code> should work.&#160;<tt> </tt>You may need to overload the . operator,
+        which, in turn, may overload your C compiler.
+
+<h3>9.8:        Why does sizeof report a larger size than I expect for a
+        structure type, as if there was padding at the end?</h3>
+
+        Because there's padding at the end.&#160;<tt> </tt>*DUH*.
+
+<h3>9.9:        My compiler is leaving holes in structures, which is wasting
+        space and preventing &quot;binary&quot; I/O to external data files.&#160;<tt> </tt>Can I
+        turn off the padding, or otherwise control the alignment of
+        structs?</h3>
+
+        The holes were left by bullets; your computer has probably been
+        in a serious firefight.
+
+<h3>9.10:       Can I initialize unions?</h3>
+
+        Depends.&#160;<tt> </tt>They may go on strike when provoked.&#160;<tt> </tt>Luckily, if your
+        program involves air traffic control, the ISO standard guarantees
+        that Ronald Reagan will fire any unions that go on strike, and
+        replace them with structs, which should be close enough.
+
+<h3>9.13:       How can I pass constant values to routines which accept struct
+        arguments?</h3>
+
+        Try <code>foo((struct foo) 3)</code>.
+
+
+<h2>Section 10. Declarations</h2>
+
+<h3>10.1:       How do you decide which integer type to use?</h3>
+
+        Flip a coin.&#160;<tt> </tt>Heads are <code>short</code>, tails are <code>long</code>, and the edge is <code>int</code>.
+
+<h3>10.2:       What should the 64&#173;bit type on new, 64&#173;bit machines be?</h3>
+
+        <code>extern volatile short auto char</code>.
+
+<h3>10.3:       If I write the code<br>
+&#160;<tt> </tt>&#160;<tt> </tt><tt>int i, j;</tt><br>
+        can I assume that <tt>(&amp;i + 1) == &amp;j?</tt></h3>
+
+        Only sometimes.&#160;<tt> </tt>It's not portable, because in EBCDIC, <code>i</code> and <code>j</code> are
+        not adjacent.
+
+<h3>10.4:       What's the best way to declare and define global variables?</h3>
+
+        In headers; this way, you can get link errors when you include the
+        same header twice.
+
+<h3>10.5:       What does <code>extern</code> mean in a function declaration?</h3>
+
+        It refers to a variable which is not actually in your program.
+
+<h3>10.6:       I finally figured out the syntax for declaring pointers to
+        functions, but now how do I initialize one?</h3>
+
+        With the assignment operator.&#160;<tt> </tt>You were perhaps expecting
+        a screwdriver?
+
+<h3>10.7:       I've seen different methods used for calling through pointers to
+        functions.&#160;<tt> </tt>What's the story?</h3>
+
+        There is no story.&#160;<tt> </tt>Nothing to see.&#160;<tt> </tt>Move along.
+
+<h3>10.8:       What's the <code>auto</code> keyword good for?</h3>
+
+        Declaring vehicles.
+
+
+<h2>Section 11. Stdio</h2>
+
+<h3>11.1:       What's wrong with this code:<br>
+&#160;<tt> </tt>&#160;<tt> </tt><tt>char c;</tt><br>
+&#160;<tt> </tt>&#160;<tt> </tt><tt>while((c = getchar()) != EOF)</tt>...?</h3>
+
+        It's stupid.&#160;<tt> </tt>It contains an obvious bug.
+
+<h3>11.2:       How can I print a <code>'%'</code> character in a printf format string?  I
+        tried <code>&quot;\%&quot;</code> but it didn't work.</h3>
+
+        Break the <code>'%'</code> sign out.&#160;<tt> </tt>i.e.,<br>
+        <tt>fprintf(&quot;foo &quot; &quot;%&quot; &quot;%d\n&quot;, foo);</tt>
+<br>
+<i>[Peter obviously didn't test this; actually, the % sign needs to be
+broken </i>up<i>, not out: e.g., </i><tt>"foo o" "/" "o%d"</tt><i>. -JD]</i>
+
+<h3>11.3:       Why doesn't the code scanf(&quot;%d&quot;, i); work?</h3>
+
+        You probably didn't include <code>&lt;stdio.h&gt;</code>
+
+<h3>11.4:       Once I've used <code>freopen</code>,
+	how can I get the original <code>stdout</code> (or
+        <code>stdin</code>) back?</h3>
+
+        Call <code>main()</code> - the environment will be restored.
+
+<h3>11.5:       Why won't the code<br>
+&#160;<tt> </tt>&#160;<tt> </tt><tt>while(!feof(infp)) {</tt><br>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt><tt>fgets(buf, MAXLINE, infp);</tt><br>
+&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt>&#160;<tt> </tt><tt>fputs(buf, outfp);</tt><br>
+&#160;<tt> </tt>&#160;<tt> </tt><tt>}</tt><br>
+        work?</h3>
+
+        Because the end of file character is not detected on files named
+        <code>&quot;infp&quot;</code>.&#160;<tt> </tt>
+	(Introverted&#173;iNtuitive&#173;Feeling&#173;Perceptive,
+	that is.)&#160;<tt> </tt>
+	Also,
+        it may be that the file was opened in text mode, where an end of
+        file is read as a capital <code>'Z'</code> on most machines, and
+	<code>feof()</code> only
+        looks for <code>'control Z'</code>.
+
+<h3>11.6:       Why does everyone say not to use <code>gets()</code>?</h3>
+
+        Because they're trying to spoil your fun.&#160;<tt> </tt><code>gets()</code> can make an
+        otherwise droll and predictable program a lot more exciting.
+<p>
+<h3>11.7:       Why does <code>errno</code> contain <code>ENOTTY</code> after a call to <code>printf</code>?</h3>
+
+        Because <code>stdout</code> is not a mammal.
+<p>
+<h3>11.8:       My program's prompts and intermediate output don't always show
+        up on the screen, especially when I pipe the output through
+        another program.</h3>
+
+        Have you turned your monitor on?
+
+<h3>11.9:       How can I read one character at a time, without waiting for the
+        RETURN key?</h3>
+
+        Ask the user to press <i>enter</i> after hitting a single character.
+
+<h3>11.10:      People keep telling me that <code>getch()</code> is not standard, but my C
+        compiler has it.&#160;<tt> </tt>Are they wrong?</h3>
+
+        They've been programming
+	more than ten years.&#160;<tt> </tt>You haven't.&#160;<tt> </tt>Draw
+        your own conclusions.&#160;<tt> </tt>That's right!&#160;<tt> </tt>
+	They hadn't noticed it.&#160;<tt> </tt>
+        No doubt their compilers have it too, and its behavior is identical
+        everywhere else in the world, also.&#160;<tt> </tt>That would
+	explain everything.
+
+<h3>11.11:      What does it matter that <code>getch()</code> isn't
+	standard; it works, doesn't it?</h3>
+
+        Well, that would depend on the definition you're using for
+	&quot;works&quot;.
+
+<h3>11.12:      I tried to port some code from a PC to a unix machine,
+	and now it
+        crashes immediately on startup.&#160;<tt> </tt>It isn't using <code>getch()</code> - it's
+        reading directly from the keyboard.&#160;<tt> </tt>How can this be wrong?</h3>
+
+        This is why we keep telling you non&#173;standard things don't work;
+        because they don't.
+
+<h3>11.13:      How can I redirect <code>stdin</code> or <code>stdout</code> to a file from within a
+        program?</h3>
+
+        <code>ececlv(&quot;main()&quot; &quot;&gt; file&quot;, argv);</code>
+
+<h3>11.14:      How can I recover the file name given an open file descriptor?</h3>
+
+        <code>fname(fd)</code>.
+
+<h3>11.15:  How do I open Flood Control Dam #3?</h3>
+<pre><tt>        PUSH THE YELLOW BUTTON.
+        TURN THE BOLT WITH THE WRENCH.
+        [You must have the wrench, first.]
+</tt></pre>
+
+
+<h2>Section 12. Library Subroutines</h2>
+
+<h3>12.1:       How can I convert numbers to strings
+	(the opposite of <code>atoi</code>)?  Is
+        there an <code>itoa</code> function?</h3>
+
+        There's frequently an <code>itoa</code> function.&#160;<tt> </tt>Better
+		yet, write your own;
+        it'll be good practice.&#160;<tt> </tt>On some implementations,
+	<code>(char *) x;</code>
+        will convert <code>x</code> to a string.
+
+<h3>12.2:       How can I get the current date or time of day in a
+		C program?</h3>
+<pre><tt>        fprintf(stderr, &quot;please enter the current time and date...&quot;);
+        fflush(stderr);
+        gets(stdin);
+</tt></pre>
+
+<h3>12.3:       I need a random number generator.</h3>
+
+        Count errors in Herbert Schildt's C books.&#160;<tt> </tt>No
+	one has detected
+        any consistent pattern.
+
+<h3>12.4:       How can I get random integers in a certain range?</h3>
+
+        <code>random(n)</code> returns random numbers between <code>n</code> and <code>INT_MAX</code>.
+
+<h3>12.5:       Each time I run my program, I get the same sequence of numbers
+        back from <code>rand()</code>.</h3>
+
+        This is so your results will be reproducible.
+
+<h3>12.6:       I need a random true/false value, so I'm taking
+	<code>rand()</code> <code>%</code> <code>2</code>, but
+        it's just alternating 0, 1, 0, 1, 0...</h3>
+
+        That seems pretty random to me.
+
+<h3>12.7:       I need some code to do regular expression matching.</h3>
+
+        So do I.&#160;<tt> </tt>Let me know if you find some.
+
+<h3>12.8:       I read through the standard library, but there's no function
+        to multiply two floating point numbers!  Help!</h3>
+
+        Many C compilers offer an extension <code>&quot;mult&quot;</code>
+	to do just this.
+        If your compiler doesn't, just hang tight; ANSI is likely to
+        add it in the next revision.
+<p>
+        For now, you can try
+<pre><tt>        float mult(float m, n)
+        {
+        float i = 0, j = 0;
+        for (i = 0; i &lt; n; ++i)
+                j += m;
+        return j;
+        }
+</tt></pre>
+        which is fine as long as n is an integer.
+
+<h3>12.9:       How do I get past the snake?</h3>
+
+        Release the bird.&#160;<tt> </tt>You will have to drop the rod
+	to get the
+        bird in the cage.
+
+
+<h2>Section 13. Lint</h2>
+
+<h3>13.1:       I just typed in this program, and it's acting strangely.&#160;<tt> </tt>Can
+        you see anything wrong with it?</h3>
+
+        Yes.&#160;<tt> </tt>There's too much
+	lint in it.&#160;<tt> </tt>You should get a shop vac.
+
+<h3>13.2:       How can I shut off the &quot;warning: possible pointer alignment
+        problem&quot; message lint gives me for each call to <code>malloc</code>?</h3>
+
+        Don't run lint.
+
+<h3>13.3:       Where can I get an ANSI&#173;compatible lint?</h3>
+
+        There is an LCLint package, but it depends on a garbage collecting
+        <code>malloc</code>
+	that may not run on your system.&#160;<tt> </tt>You may
+	wish to check your
+        spouse's bellybutton occasionally, especially if your spouse works
+        for a standards committee.
+
+<h3>13.4:       What does LINT stand for, anyway?</h3>
+
+        Laser Interactive Neutopian Technology - it's a kind of virtual
+        reality developed by the readers of alt.religion.kibology.
+
+<h2>Section 14. Style</h2>
+
+<h3>14.1:       Here's a neat trick:<br>
+&#160;<tt> </tt>&#160;<tt> </tt><tt>if(!strcmp(s1, s2))</tt><br>
+        Is this good style?</h3>
+
+        Excellent.&#160;<tt> </tt>It's short, it's terse, and
+	experienced programmers
+        will understand it.&#160;<tt> </tt>(True
+	Confessions time: I use this all the
+        time.&#160;<tt> </tt>Oh, well.&#160;<tt> </tt>Habits.)
+	<i>[So do I. -JD]</i>
+
+<h3>14.2:       Here's an even neater trick:<br>
+&#160;<tt> </tt>&#160;<tt> </tt><tt>volatile int True_Tester = 3;</tt><br>
+&#160;<tt> </tt>&#160;<tt> </tt><tt>#define TRUE (!True_Tester == !True_Tester)</tt><br>
+&#160;<tt> </tt>&#160;<tt> </tt><tt>#define FALSE ((!TRUE) != (!TRUE))</tt><br>
+<br>
+&#160;<tt> </tt>&#160;<tt> </tt><tt>#define STR_DISSIMILAR(x,</tt> <tt>y)</tt> <tt>(strcmp((x),</tt> <tt>(y))</tt> <tt>!=</tt> <tt>FALSE)</tt><br>
+
+        Isn't this cool?</h3>
+
+        Very impressive.&#160;<tt> </tt>The <code>volatile</code> <code>int</code>
+	type assures that even seemingly
+        redundant calculations involving
+	<code>True_Tester</code> will be performed,
+	making
+        sure that if the compiler's
+	ANSI&#173;compliant values of <code>0</code> for false and
+        <code>1</code> for true vary during runtime, your program will
+	detect it - and
+        producing meaningful error messages if this change occurs during
+        a boolean computation!&#160;<tt> </tt>
+	Similarly, the <code>STR_DISSIMILAR</code> macro allows
+        you to make quite clear what the real effects of <code>strcmp()</code> are.
+
+<h3>14.3:       What's the best style for code layout in C?</h3>
+
+        1TBS.
+
+<h3>14.4:       Is <code>goto</code> a good thing or a bad thing?</h3>
+
+        Yes.
+
+<h3>14.5:       No, really, should I use <code>goto</code> statements in my code?</h3>
+
+        Any loop control construct can be written with <code>gotos</code>; similarly,
+        any <code>goto</code> can be emulated by some loop control constructs and
+        additional logic.
+
+        However, <code>gotos</code> are unclean.&#160;<tt> </tt>For
+	instance, compare the
+        following two code segments:
+
+<pre><tt>do {                            foo();
+        foo();                  if (bar())
+        if (bar())                      goto SKIP;
+                break;          baz();
+        baz();                  quux();
+        quux();                 
+} while (1 == 0);               SKIP:
+buz();                          buz();
+</tt></pre>
+
+        Note how the loop control makes it quite clear that the statements
+        inside it will be looped on for a while, where the <code>goto</code> statement
+        gives the impression that, if <code>bar()</code> returned a nonzero value, the
+        statements <code>baz()</code> and <code>quux()</code> will be skipped.
+
+<h3>14.6:       What's this &quot;white space&quot; I keep
+	hearing about?</h3>
+
+        White space is a racist, segregational term.&#160;<tt> </tt>Implicitly,
+		&quot;dark&quot;
+        or &quot;colored&quot; space (i.e., the <code>'_'</code> character)
+	is not good enough
+        to seperate tokens.&#160;<tt> </tt>More interestingly, the
+	white space characters
+        keep the other tokens apart.&#160;<tt> </tt>They
+	say it's for parsing, but
+        there's ample evidence the goal of white space is to keep the
+        other characters from &quot;taking over&quot; the
+	program.&#160;<tt> </tt>This is
+        disguised by the description of C
+	as &quot;white space insensitive&quot; -
+        a simple ploy for sympathy.
+
+
+<h2>Section 15. Floating Point</h2>
+
+<h3>15.1:       My floating&#173;point calculations are
+	acting strangely and giving
+        me different answers on different machines.</h3>
+
+        One of the machines is probably a
+	Pentium.&#160;<tt> </tt>Scrap it and get a real
+        machine.
+
+<h3>15.2:       I'm trying to do some simple trig, and I am #including <code>&lt;math.h&gt;</code>,
+        but I keep getting &quot;undefined: _sin&quot; compilation errors.</h3>
+
+        You forgot to define the <code>sin()</code>
+	function.&#160;<tt> </tt>Most math texts should
+        cover it in some detail.&#160;<tt> </tt>The easiest way to
+	fix this should be:
+
+<pre><tt>        double sin(double x) {
+                return sqrt(1 - cos(x) * cos(x));
+        }
+</tt></pre>
+
+<h3>15.3:       Why doesn't C have an exponentiation operator?</h3>
+
+        It does.&#160;<tt> </tt>It looks like the multiplication operator,
+	but you use
+        it more.&#160;<tt> </tt>For instance, the C way of expressing
+	&quot;x squared&quot; is
+        <code>&quot;x*x&quot;</code>.&#160;<tt> </tt>&quot;x cubed&quot; would be <code>&quot;x*x*x&quot;</code>.&#160;<tt> </tt>Easy, isn't it?
+
+<h3>15.4:       How do I round numbers?</h3>
+
+        Multiply by 10.&#160;<tt> </tt><i>Numerical Recipies in C</i> has
+	a section on this,
+        but there's reputedly a bug in their algorithm.
+
+<h3>15.5:       How do I test for IEEE NaN and other special values?</h3>
+
+        Using an electron microscope; the patterns are obvious once you
+        know them.
+
+<h3>15.6:       I'm having trouble with a Turbo C program which crashes and says
+        something like &quot;floating point formats not linked.&quot;</h3>
+
+        Turbo C is notoriously buggy.&#160;<tt> </tt>Get a compiler with
+	floating
+        point support.
+
+<h3>15.7:       What is so &quot;unsafe&quot; about floating point?</h3>
+
+        Have you tried <code>EXAMINE STICK</code>?  The stick has a sharp point, which
+        punctures the raft, which no longer floats.&#160;<tt> </tt>Don't
+	bring the stick
+        into the raft with you.
+
+<h3>15.8:       Which is larger, &quot;2&quot; or &quot;2.0&quot;?</h3>
+
+        <i>Numerical Recipes in C</i> has a function for comparing two values
+        to see which is greater.&#160;<tt> </tt>It may have a slight
+	bug, where it would
+        report incorrect results if the numbers differ by less than
+        <code>FLOAT_MAX / INT_MAX</code>.
+
+
+<h2>Section 16. System Dependencies</h2>
+
+<h3>16.1:       How can I read a single character from the keyboard without
+        waiting for a newline?</h3>
+
+        Try '<code>stty eol ^M</code>' to wait for a carriage return.
+
+<h3>16.2:       How can I find out if there are characters available for reading
+        (and if so, how many)?&#160;<tt> </tt>
+	Alternatively, how can I do a read that
+        will not block if there are no characters available?</h3>
+
+        The buffer is normally at <code>&amp;main - 0x100</code>.&#160;<tt> </tt>Lower if you have more
+        than 256 characters of typeahead.
+
+<h3>16.3:       How can I clear the screen?&#160;<tt> </tt> How can I print things in inverse
+        video?</h3>
+
+        You can clear the screen by sending several formfeed characters.
+        Additionally, some operating systems (like NetBSD) support a
+        feature called &quot;whiteouts&quot;.
+
+<h3>16.4:       How do I read the mouse?</h3>
+
+        Flip it over, put on your reading glasses.
+
+<h3>16.5:       How can my program discover the complete pathname to the
+        executable file from which it was invoked?</h3>
+
+        By asking the user.
+
+<h3>16.6:       How can a process change an environment variable in its caller?</h3>
+
+        Only by force.
+
+<h3>16.7:       How can I check whether a file exists?&#160;<tt> </tt>I
+	want to query the user
+        before overwriting existing files.</h3>
+
+        Time an attempt to truncate it to zero length; if it takes more than
+        20-30 ms, the file existed.&#160;<tt> </tt>The
+	exact values will depend on the
+        system and the load; before testing, create several large files
+        and time attempts to truncate them, for calibration.
+
+<h3>16.8:       How can I find out the size of a file, prior to reading it in?</h3>
+
+        There are two good ways:
+<ol>
+   <li> Vernier calipers work well.
+    <li> <code>mmap()</code> the file, then use <code>sizeof()</code>.
+</ol>
+
+<h3>16.9:       How can I implement a delay, or time a user's response, with
+        sub&#173;second resolution?</h3>
+
+        Time writes of large files to disks; then you can wait for a certain
+        amount of time by writing a certain amount of data, and time a
+        response by how much you could write before the response arrived.
+
+<h3>16.10:      How can I read in an object file and jump to routines in it?</h3>
+
+        <code>fopen</code> and <code>goto</code>.
+
+<h3>16.11:      How can I invoke an operating system command from within a
+        program?</h3>
+
+        Ask the user to open a new shell.&#160;<tt> </tt>The best way to do this is
+
+<pre><tt>        system(&quot;echo Please open a new shell now.&quot;);
+        sprintf(cmdstring, &quot;echo Enter the command '%s' in it.&quot;, cmd);
+        system(cmdstring);
+</tt></pre>
+        
+        This will not work if you haven't declared <code>cmdstring</code> properly.
+
+<h3>16.12:      How can I ensure objects of my class are always created via
+        &quot;new&quot; rather than as locals or global/static objects?</h3>
+
+        Read the C++ FAQ.
+
+<h2>Section 17. Miscellaneous</h2>
+
+<h3>17.1:       What can I safely assume about the initial values of variables
+        which are not explicitly initialized?&#160;<tt> </tt>
+	If global variables start
+        out as &quot;zero,&quot; is that good enough for null pointers and
+        floating&#173;point zeroes?</h3>
+
+        They're always zero.
+
+<h3>17.2:       How can I write data files which can be read on other machines
+        with different word size, byte order, or floating point formats?</h3>
+
+        The traditional solution, pioneered by Microsoft, is to sell enough
+        copies of your proprietary, slow, and limited software that everyone
+        else supports your formats.
+
+<h3>17.3:       How can I insert or delete a line (or record) in the middle of a
+        file?</h3>
+
+        Using <code>fcntl()</code>, lock the line or record in the file
+	exclusively.&#160;<tt> </tt>
+        Now, using another thread, read the file, at each byte, trying
+        to write that byte back.&#160;<tt> </tt>Whenever
+	you succeed, write that byte
+        into another file.&#160;<tt> </tt>Then copy the new file over the old file,
+        releasing the lock first.
+
+<h3>17.4:       How can I return several values from a function?</h3>
+
+        Code like this ought to work.
+
+<pre><tt>int int foo() {
+        return 2 3;
+}</tt></pre>
+
+        Not all compilers will support this feature; complain if your vendor
+        doesn't cover it.&#160;<tt> </tt>A compiler that does can probably be found at
+        <a href="ftp://127.0.0.1/pub/vapor/cc">ftp://127.0.0.1/pub/vapor/cc</a>
+
+<h3>17.5:       If I have a <code>char *</code> variable pointing to the name of a function
+        as a string, how can I call that function?</h3>
+
+        <tt>eval s;</tt>
+
+<h3>17.6:       I seem to be missing the system header file <code>&lt;math.h&gt;</code>.&#160;<tt> </tt>Can
+        someone send me a copy?</h3>
+
+        A lot of people claim that it is useless to send people headers
+        from other machines.&#160;<tt> </tt>Not so!  It can be informative, and can
+        show you a lot about how blatantly stupid your request was,
+        although it can't show you anything you wouldn't have known in
+        an instant had you thought before posting.
+<p>
+        Of course, we'd be happy to send you the header files...
+<p>
+        ----cut here----
+<pre>
+/* math.h rev 7.0b (3/7/95) */
+
+/* RCS log: #log% - can anyone tell me why this doesn't work?
+ * - joe, 2/12/93
+ */
+
+/*
+ * Copyright 1995 Berserkley Software Systems
+ */
+
+/* Parts of this header, including in particular the second and
+ * third clauses of the first sentance of the third comment, were
+ * based on copyright agreements from other sources, including
+ * Xerox corporation.
+ */
+
+/*
+ * math.h - math related macros and headers
+ */
+
+#ifndef _MATH_H
+#define _MATH_H
+
+/*
+ * global data and definitions
+ */
+
+#ifdef __LITERAL_BIBLICAL_FUNDEMENTALISM
+#define PI 3.0                                  /* 1 Kings 7:23 */
+#endif
+
+/*
+ * common (portable) structures and functions
+ */
+
+/*
+ * machine specific data
+ */
+#include &lt;machine/math.h&gt;
+
+#endif /* _MATH_H // prevent multiple inclusion by using C++ comments*/
+</pre>
+----cut here----
+<p>
+        (Morons.)
+
+<h3>17.7:       How can I call FORTRAN (C++, BASIC, Pascal, Ada, LISP) functions
+        from C?  (And vice versa?)</h3>
+
+<pre><tt>DO CALL FORTRAN;                fortran();
+__LINE__ BASIC;                 basic();
+sub pascal;                     pascal();
+(((((lisp)))))                  lithp(); [*]
+</tt></pre>
+
+        [*] C is pass by value, of course.
+
+<h3>17.8:       Does anyone know of a program for converting Pascal or FORTRAN
+        (or LISP, Ada, awk, &quot;Old&quot; C, ...) to C?</h3>
+
+        Nope.&#160;<tt> </tt>However, the psychic friends network may
+		have a lead.&#160;<tt> </tt>And
+        they're not just a psychic, they're a friend.
+
+<h3>17.9:       Is C++ a superset of C?&#160;<tt> </tt>
+	Can I use a C++ compiler to compile C
+        code?</h3>
+
+        C++ is a superset of something, we're not sure
+	what.&#160;<tt> </tt>You can use a C++ compiler
+	to compile C code, but the results may surprise you.
+
+<h3>17.10:      Where can I get copies of all these public&#173;domain
+	programs?</h3>
+
+        From <a href="ftp://ftp.microsoft.com/">ftp.microsoft.com</a>.&#160;<tt> </tt>Some of the code may look copyrighted;
+        don't worry!&#160;<tt> </tt>
+	The small companies that wrote it in the first place
+        are not available for comment.
+
+<h3>17.11:      When will the next International Obfuscated C Code Contest
+        (IOCCC) be held?  How can I get a copy of the current and
+        previous winning entries?</h3>
+
+        Next week.&#160;<tt> </tt>You missed
+	the deadline.&#160;<tt> </tt>Tough, sucker.
+
+<h3>17.12:      Why don't C comments nest?&#160;<tt> </tt>
+	How am I supposed to comment out
+        code containing comments?  Are comments legal inside quoted
+        strings?</h3>
+
+        We believe it has something to do with captivity; C comments in
+        the wild mate and nest normally.&#160;<tt> </tt>The San Diego
+	Zoo believes it
+        has managed to convince some C comments to nest, but it's hard
+        to tell how much of that is really in the preprocessor, and how
+        much of it is just bovine fecal matter.
+
+<h3>17.13:      How can I get the ASCII value corresponding
+	to a character, or
+        vice versa?</h3>
+
+        <code>chr$(foo);</code>&#160;<tt> </tt>
+	You would have known this if you had an integer basic
+        in ROM.
+
+<h3>17.14:      How can I implement sets and/or arrays of bits?</h3>
+
+        With linked lists of bitfields.&#160;<tt> </tt>You may also wish to simply use a
+        large set of constants and some clever use of the <code>switch</code> statement,
+        i.e.:
+
+<pre>        int zero = 0;
+        int one = 1;
+        int two = 2;
+        int three = 3;
+
+        int bitwise_or(int n, int m) {
+                switch (n) {
+                case 3:
+                        return three;
+                        break;
+                case 2:
+                        switch (m) {
+                        case 1: case 3: return three; break;
+                        default: return two; break;
+                        }
+                        break;
+                case 1:
+                        switch (m) {
+                        case 2: case 3: return three; break;
+                        default: return 1; break;
+                        }
+                        break;
+                default: case 0:
+                        switch (m) {
+                        case 1: return one; break;
+                        case 2: return two; break;
+                        case 3: return three; break;
+                        default: return zero; break;
+                        }
+                        break;
+                }
+        }
+</pre>
+<p>
+        Obviously, you'll need to increase this slightly to deal with
+        more than two bits.&#160;<tt> </tt>This is much more readable than the alleged
+        &quot;C&quot; solution:
+
+<pre>        int bitwise_or(int n,int m){return n|m;}
+</pre>
+<p>
+        Note how the lack of whitespace around operators obscures the
+        functionality of the code.&#160;<tt> </tt>A clear argument for explicit
+        statement of program logic over arcane operators, if I
+        ever saw one.
+
+<h3>17.15:      What is the most efficient way to count the number of bits which
+        are set in a value?</h3>
+
+        Start a counter at zero and add one to it for each bit set.&#160;<tt> </tt>Some
+        operating systems may provide a call to do this.&#160;<tt> </tt>For values over
+        <code>INT_MAX/2</code>, start the counter at <code>CHAR_BIT * sizeof(int)</code> and subtract
+        one for each bit not set.
+<p>
+<h3>17.16:      How can I make this code more efficient?</h3>
+<p>
+        Remove the comments; the no&#173;op instructions generated by comments
+        can slow your code down signifigantly.&#160;<tt> </tt>Similarly, shorten variable
+        names.&#160;<tt> </tt>Most compilers, to implement pass by value, actually pass
+        the names of variables in the stack; shorter variable names will
+        reduce stack usage, and consequently execution time.&#160;<tt> </tt>If your compiler
+        has good loop optimization, replace
+
+<pre>        foo();
+</pre>
+        with
+
+<pre>        do {
+                foo();
+        } while (1 != 1);
+</pre>
+        
+        which will likely receive more optimization.
+
+<h3>17.17:      Are pointers really faster than arrays?&#160;<tt> </tt>
+	How much do function
+        calls slow things down?&#160;<tt> </tt>
+	Is <code>++i</code> faster than <code>i = i + 1</code>?</h3>
+
+        Yes.&#160;<tt> </tt>About 10 ms per call.&#160;<tt> </tt>Only
+	on machines which feature
+        preincrement addressing.
+
+<h3>17.18:      This program crashes before it even runs!&#160;<tt> </tt>
+	(When single&#173;stepping
+        with a debugger, it dies before the first statement in <code>main</code>.)</h3>
+
+        You probably declared <code>main</code> as <code>void
+	main(void)</code>.&#160;<tt> </tt>It's also possible
+        that the first statement in <code>main</code> is <code>abort();</code> - by the as if rule,
+        the compiler can abort at any time before then, too.&#160;<tt> </tt>
+	Some compilers
+        have bugs, and will produce buggy code for any module which includes
+        the letters 'a', 'b', 'o', 'r', and 't' in that order before the
+        first function declaration.
+
+<h3>17.19:      What do &quot;Segmentation violation&quot; and &quot;Bus error&quot; mean?</h3>
+
+        C programs are very territorial, and divide their code into
+        segments.&#160;<tt> </tt>Violating these segments can trigger riots; similarly,
+        pointers and integral constants are at the front of the bus,
+        wheras arrays, strings, and other second&#173;class data types are
+        required to be at the rear of the bus.&#160;<tt> </tt>When they start forgetting
+        their places, you can get a bus error.
+
+<h3>17.20:      My program is crashing, apparently somewhere down inside <code>malloc</code>,
+        but I can't see anything wrong with it.</h3>
+
+        Your vendor's library is buggy; complain loudly.&#160;<tt> </tt>Don't send them
+        any example code; they just ask for that so they can steal your
+        trade secrets.
+
+<h3>17.21:      Does anyone have a C compiler test suite I can use?</h3>
+
+        Yes.&#160;<tt> </tt>Unfortunately, it's probably broken.&#160;<tt> </tt>It's hard to tell.
+
+<h3>17.22:      Where can I get a YACC grammar for C?</h3>
+
+        You can't; YACC is written in C.
+
+<h3>17.23:      I need code to parse and evaluate expressions.</h3>
+<p>
+        Ask any first year CS student.&#160;<tt> </tt>You may also wish to use your C
+        compiler.
+
+<h3>17.24:      I need a sort of an &quot;approximate&quot; <code>strcmp</code> routine, for comparing
+        two strings for close, but not necessarily exact, equality.</h3>
+
+        Just try comparing pointers near the original pointers.
+
+<h3>17.25:      Will 2000 be a leap year?</h3>
+
+        Yes, you pathetic moron.&#160;<tt> </tt>Duh!
+
+<h3>17.26:      How do you pronounce &quot;char&quot;?</h3>
+
+        Like the first word of &quot;char *&quot;.&#160;<tt> </tt>The
+	accent is generally on
+        the first syllable.
+
+<h3>17.27:      Is this FAQ for real?</h3>
+
+        *sigh*  I knew someone would ask that.
+
+<h2>Credits:</h2>
+
+        The original comp.lang.c FAQ is maintained by Steve Summit, and
+        many of the questions were stolen from it.&#160;<tt> </tt>Some of the
+	idiotic
+        misconceptions here are original, but many are from other
+	sources.&#160;<tt> </tt>
+        The Zork series may well be trademarked, but it was certainly
+        an excellent game.&#160;<tt> </tt>Some of the
+	mistakes may look similar to things
+        warned against in <em>C Traps and
+	Pitfalls</em>.&#160;<tt> </tt>And, of course, if
+        Dennis Ritchie hadn't written C, these jokes would all make a lot
+        less sense.
+<p>
+<hr>
+Posted to comp.lang.c et al. by
+<a  href="http://www.plethora.net/%7Eseebs/">Peter Seebach</a> on 4/1/95. 
+</body>
+</html>

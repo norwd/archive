@@ -1,0 +1,274 @@
+<html><head>
+<link rel="made" rev="made" href="mailto:jutta@cs.tu-berlin.de">
+<title>Library Subroutines</title></head><body>
+
+<a href="c-11.html"><img SRC="prev.xbm" ALT="[prev]"></a>
+<a href="index.html#comp-lang-c-faq"><img SRC="up.xbm" ALT="[up]"></a>
+<a href="c-faq-toc.html#c-12"><img SRC="overview.xbm" alt="[overview]"></a>
+<a href="c-13.html"><img SRC="next.xbm" ALT="[next]"></a>
+<hr>
+
+<h2>Section 12. Library Subroutines</h2>
+<p>
+<h3>
+<a name="12-1">
+12.1:	Why does </a><code>strncpy</code> not always place a <code>'\0'</code> termination in the
+	destination string?
+</h3><p>
+  	<code>strncpy</code> was first designed to handle a now-obsolete data
+	structure, the fixed-length, not-necessarily-<code>\0</code>-terminated
+	&quot;string.&quot;&#160;<tt> </tt><code>strncpy</code> is admittedly a bit cumbersome to use in
+	other contexts, since you must often append a <code>'\0'</code> to the
+	destination string by hand.
+<p>
+
+<h3>
+<a name="12-2">
+12.2:	I'm trying to sort an array of strings with </a><code>qsort</code>, using <code>strcmp</code>
+	as the comparison function, but it's not working.
+</h3><p>
+  	By &quot;array of strings&quot; you probably mean &quot;array of pointers to
+	<code>char</code>.&quot;&#160;<tt> </tt>The arguments to <code>qsort</code>'s comparison function are
+	pointers to the objects being sorted, in this case, pointers to
+	pointers to <code>char</code>.&#160;<tt> </tt>(<code>strcmp</code>, of course, accepts simple pointers
+	to <code>char</code>.)
+<p>
+	The comparison routine's arguments are expressed as &quot;generic
+	pointers,&quot; <code>const void</code> <code>*</code> or <code>char</code> <code>*</code>.&#160;<tt> </tt>They must be converted back
+	to what they &quot;really are&quot; (<code>char</code> <code>**</code>) and dereferenced, yielding
+	<code>char</code> <code>*</code>'s which can be usefully compared.&#160;<tt> </tt>Write a comparison
+	function like this:
+<p>
+<pre>
+	int pstrcmp(p1, p2)	/* compare strings through pointers */
+	char *p1, *p2;		/* const void * for ANSI C */
+	{
+		return strcmp(*(char **)p1, *(char **)p2);
+	}
+</pre>
+<p>
+        Beware of the discussion in <a href="index.html#K-amp-RII">K&amp;R II</a> Sec. 5.11 pp. 119-20, which
+        is not discussing Standard library qsort.
+<p>
+<h3>
+<a name="12-3">
+12.3:	Now I'm trying to sort an array of structures with </a><code>qsort</code>.&#160;<tt> </tt>My
+	comparison routine takes pointers to structures, but the
+	compiler complains that the function is of the wrong type for
+	<code>qsort</code>.&#160;<tt> </tt>How can I cast the function pointer to shut off the
+	warning?
+</h3><p>
+  	The conversions must be in the comparison function, which must
+	be declared as accepting &quot;generic pointers&quot; (<code>const void</code> <code>*</code> or<code> char</code> <code>*</code>) as discussed in <a href="c-12.html#12-2">question 12.2</a> above.  The code might
+        look like
+<pre>
+        int mystructcmp(p1, p2)
+        char *p1, *p2;          /* const void * for ANSI C */
+        {
+                struct mystruct *sp1 = (struct mystruct *)p1;
+                struct mystruct *sp2 = (struct mystruct *)p2;
+                /* now compare sp1-&gt;whatever and sp2-&gt; ... */
+        }
+</pre>
+        (If, on the other hand, you're sorting pointers to structures,
+        you'll need indirection, as in <a href="c-12.html#12-2">question 12.2</a>:
+<pre>
+        sp1 = *(struct mystruct **)p1 .)
+</pre>
+<p>
+
+<h3>
+<a name="12-4">
+12.4:	How can I convert numbers to strings (the opposite of </a><code>atoi</code>)?&#160;<tt> </tt>Is
+	there an <code>itoa</code> function?
+</h3><p>
+  	Just use <code>sprintf</code>.&#160;<tt> </tt>(You'll have to allocate space for the result
+	somewhere anyway; see questions <a href="c-3.html#3-1">3.1</a> and <a href="c-3.html#3-2">3.2</a>.&#160;<tt> </tt>Don't worry that
+	<code>sprintf</code> may be overkill, potentially wasting run time or code
+	space; it works well in practice.)
+<p>
+	References: <a href="index.html#K-amp-RI">K&amp;R I</a> Sec. 3.6 p. 60; <a href="index.html#K-amp-RII">K&amp;R II</a> Sec. 3.6 p. 64.
+<p>
+
+<h3>
+<a name="12-5">
+12.5:	How can I get the current date or time of day in a C program?
+</a></h3><p>
+  	Just use the <code>time</code>, <code>ctime</code>, and/or <code>localtime</code> functions.&#160;<tt> </tt>(These
+	routines have been around for years, and are in the <a href="index.html#ANSI">ANSI</a>
+	standard.)&#160;<tt> </tt>Here is a simple example:
+<p>
+<pre>
+	#include &lt;stdio.h&gt;
+	#include &lt;time.h&gt;
+
+	main()
+	{
+		time_t now = time((time_t *)NULL);
+		printf(&quot;It's %.24s.\n&quot;, ctime(&amp;now));
+		return 0;
+	}
+</pre>
+<p>
+	References: <a href="index.html#ANSI">ANSI</a> Sec. 4.12 .
+<p>
+
+<h3>
+<a name="12-6">
+12.6:	I know that the library routine </a><code>localtime</code> will convert a <code>time_t</code>
+	into a broken-down <code>struct tm</code>, and that <code>ctime</code> will convert a
+	<code>time_t</code> to a printable string.&#160;<tt> </tt>How can I perform the inverse
+	operations of converting a <code>struct tm</code> or a string into a <code>time_t</code>?
+</h3><p>
+  	<a href="index.html#ANSI">ANSI</a> C specifies a library routine, <code>mktime</code>, which converts a
+	<code>struct tm</code> to a <code>time_t</code>.&#160;<tt> </tt>Several public-domain versions of this
+	routine are available in case your compiler does not support it
+	yet.
+<p>
+	Converting a string to a <code>time_t</code> is harder, because of the wide
+	variety of date and time formats which should be parsed.&#160;<tt> </tt>Some
+        systems provide a strptime function; another popular routine is
+        partime (widely distributed with the RCS package), but these are
+        less likely to become standardized.
+<p>
+	References: <a href="index.html#K-amp-RII">K&amp;R II</a> Sec. B10 p. 256; <a href="index.html#H-amp-S">H&amp;S</a> Sec. 20.4 p. 361; <a href="index.html#ANSI">ANSI</a>
+	Sec. 4.12.2.3 .
+<p>
+<h3><a name="12-7">
+12.7:   How can I add n days to a date?</a>&#160;<tt> </tt>How can I find the difference
+        between two dates?</h3>
+<p>
+        The ANSI/ISO Standard C <code>mktime</code> and <code>difftime</code> functions provide
+        some support for both problems.&#160;<tt> </tt><code>mktime()</code> accepts non-normalized
+        dates, so it is straightforward to take a filled-in struct tm,
+        add or subtract from the tm_mday field, and call <code>mktime()</code> to
+        normalize the year, month, and day fields (and convert to a
+        <code>time_t</code> value).&#160;<tt> </tt><code>difftime()</code> computes the difference, in seconds,
+        between two <code>time_t</code> values; <code>mktime()</code> can be used to compute
+        <code>time_t</code> values for two dates to be subtracted.&#160;<tt> </tt>(Note, however,
+        that these solutions only work for dates in the range which can
+        be represented as <code>time_t</code>'s, and that not all days are 86400
+        seconds long.)&#160;<tt> </tt>
+        See also questions <a href="c-12.html#12-6">12.6</a> and <a href="c-17.html#17-28">17.28</a>.
+<p>
+        References: <a href="index.html#K-amp-RII">K&amp;R II</a> Sec. B10 p. 256; <a href="index.html#H-amp-S">H&amp;S</a> Secs. 20.4, 20.5
+        pp. 361-362; <a href="index.html#ANSI">ANSI</a> Secs. 4.12.2.2, 4.12.2.3 .
+<p>
+<h3>
+<a name="12-8">
+12.8:	I need a random number generator.
+</a></h3><p>
+  	The standard C library has one: <code>rand()</code>.&#160;<tt> </tt>The implementation on
+	your system may not be perfect, but writing a better one isn't
+	necessarily easy, either.
+<p>
+	References: <a href="index.html#ANSI">ANSI</a> Sec. 4.10.2.1 p. 154; <a href="index.html#Knuth">Knuth Vol. 2 Chap. 3
+	pp. 1-177</a>.
+<p>
+<h3><a name="12-9">
+12.9:   How can I get random integers in a certain range?
+</a></h3><p>
+        The obvious way,
+<pre>
+        rand() % N
+</pre>
+        (where N is of course the range) is poor, because the low-order
+        bits of many random number generators are distressingly non-random.&#160;<tt> </tt>(See <a href="c-12.html#12-11">question 12.11</a>.)&#160;<tt> </tt>A better method is something
+        like
+<pre>
+        (int)((double)rand() / ((double)RAND_MAX + 1) * N)
+</pre>
+        If you're worried about using floating point, you could try
+<pre>
+        rand() / (RAND_MAX / N + 1)
+</pre>
+        Both methods obviously require knowing<code> RAND_MAX </code>(which ANSI
+        defines in<code> &lt;stdlib.h&gt;</code>), and assume that<code> N </code>is much less than<code> RAND_MAX</code>.
+<p>
+<h3><a name="12-10">
+12.10:	Each time I run my program, I get the same sequence of numbers
+	back from </a><code>rand()</code>.
+</h3><p>
+  	You can call <code>srand()</code> to seed the pseudo-random number generator
+	with a more random initial value.&#160;<tt> </tt>Popular seed values are the
+	time of day, or the elapsed time before the user presses a key
+	(although keypress times are hard to determine portably; see
+	<a href="c-16.html#16-10">question 16.10</a>).
+<p>
+	References: <a href="index.html#ANSI">ANSI</a> Sec. 4.10.2.2 p. 154.
+<p>
+
+<h3>
+<a name="12-11">
+12.11:	I need a random true/false value, so I'm taking</a><code> rand() % 2</code>,&#160;<tt> </tt>but
+	it's just alternating 0, 1, 0, 1, 0...
+</h3><p>
+  	Poor pseudorandom number generators (such as the ones
+	unfortunately supplied with some systems) are not very random in
+	the low-order bits.&#160;<tt> </tt>Try using the higher-order bits.&#160;<tt> </tt>
+See question <a href="c-12.html#12-9">12.9</a>.
+
+<p>
+
+<h3>
+<a name="12-12">
+12.12
+I'm trying to port this old program.</a>&#160;<tt> </tt>Why do I get &quot;undefined external&quot;
+errors	for ..:</h3>
+Those routines are variously
+obsolete; you should
+instead...:
+<dl>
+<dt>index?<dd>use <code>strchr</code>.
+<dt>rindex?<dd>use <code>strrchr</code>.
+<dt>bcopy?<dd>use <code>memmove</code>, after interchanging the first and
+second arguments (see also <a href="c-5.html#5-15">question 5.15</a>).
+<dt>bcmp?<dd>use <code>memcmp</code>.
+<dt>bzero?<dd>use <code>memset</code>, with a second argument of 0.
+</dl>
+<p><h3><a name="12-13">
+12.13:  I keep getting errors due to library routines being undefined,
+        but I'm #including all the right header files.</a>
+</h3><p>
+        In some cases (especially if the routines are nonstandard) you
+        may have to explicitly ask for the correct libraries to be
+        searched when you link the program.&#160;<tt> </tt>See also question <a href="c-15.html#15-2">15.2</a>.
+<p><h3><a name="12-14">
+12.14:  I'm still getting errors due to library routines being
+        undefined, even though I'm using</a><code> -l </code>to request the libraries
+        while linking.
+</h3><p>
+        Many linkers make one pass over the list of object files and
+        libraries you specify, and extract from libraries only those
+        modules which satisfy references which have so far come up as
+        undefined.&#160;<tt> </tt>Therefore, the order in which libraries are listed
+        with respect to object files (and each other) is significant;
+	usually, you want to search the libraries last.&#160;<tt> </tt>(For example,
+	under Unix, put any <code>-l</code> switches towards the end of
+	the command line.)
+
+<p><h3><a name="12-15">
+12.15:  I need some code to do regular expression matching.</a></h3>
+<p>
+        Look for the regexp library (supplied with many Unix systems),
+        or get Henry Spencer's regexp package from <a href="ftp://ftp.cs.toronto.edu/pub/regexp.shar.Z">ftp.cs.toronto.edu in
+        pub/regexp.shar.Z</a> (see also question <a href="c-17.html#17-12">17.12</a>).
+<p><h3><a name="12-16">
+12.16:  How can I split up a command line into whitespace-separated arguments,
+like </a><code>main</code>'s <code>argc</code> and <code>argv</code>?</h3>
+<p>
+        Most systems have a routine called<code> strtok</code>, although
+it can be tricky to use and it may not do everything you want it to (e.g.,
+quoting).
+<p>
+        References: <a href="index.html#ANSI">ANSI</a> Sec. 4.11.5.8;
+		<a href="index.html#K-amp-RII">K&amp;R II</a> Sec. B3 p. 250;
+		<a href="index.html#H-amp-S">H&amp;S</a>
+        Sec. 15.7; PCS p. 178.
+<p>
+<hr>
+<a href="c-11.html"><img SRC="prev.xbm" ALT="[prev]"></a>
+<a href="index.html#comp-lang-c-faq"><img SRC="up.xbm" ALT="[up]"></a>
+<a href="c-faq-toc.html#c-12"><img SRC="overview.xbm" alt="[overview]"></a>
+<a href="c-13.html"><img SRC="next.xbm" ALT="[next]"></a>
+</body></html>

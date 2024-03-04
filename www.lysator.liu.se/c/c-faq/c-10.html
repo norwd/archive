@@ -1,0 +1,284 @@
+<html><head>
+<link rel="made" rev="made" href="mailto:jutta@cs.tu-berlin.de">
+<title>Declarations</title></head><body>
+<a href="c-9.html"><img SRC="prev.xbm" alt="[prev]"></a>
+<a href="index.html#comp-lang-c-faq"><img SRC="up.xbm" alt="[up]"></a>
+<a href="c-faq-toc.html#c-10"><img SRC="overview.xbm" alt="[overview]"></a>
+<a href="c-11.html"><img SRC="next.xbm" ALT="[next]"></a>
+<hr>
+
+<h2>Section 10. Declarations</h2>
+<p>
+<h3>
+<a name="10-1">
+10.1:	How do you decide which integer type to use?
+</a></h3><p>
+  	If you might need large values (above 32767 or below -32767),
+	use <code>long</code>.&#160;<tt> </tt>Otherwise, if space is very important (there are
+	large arrays or many structures), use <code>short</code>.&#160;<tt> </tt>Otherwise, use
+	<code>int</code>.&#160;<tt> </tt>If well-defined overflow characteristics are important
+	and/or negative values are not, use the corresponding <code>unsigned</code>
+	types.&#160;<tt> </tt>(But beware of mixing <code>signed</code> and <code>unsigned</code> in
+	expressions.)&#160;<tt> </tt>Similar arguments apply when deciding between
+	<code>float</code> and <code>double</code>.
+<p>
+	Although <code>char</code> or <code>unsigned char</code> can be used as a &quot;tiny&quot; <code>int</code> type,
+	doing so is often more trouble than it's worth, due to
+	unpredictable sign extension and increased code size.
+<p>
+	These rules obviously don't apply if the address of a variable
+	is taken and must have a particular type.
+<p>
+	If for some reason you need to declare something with an <em>exact</em>
+	size (usually the only good reason for doing so is when
+	attempting to conform to some externally-imposed storage layout,
+	but see <a href="c-17.html#17-3">question 17.3</a>), be sure to encapsulate the choice behind
+	an appropriate <code>typedef</code>.
+<p>
+
+<h3>
+<a name="10-2">
+10.2:	What should the 64-bit type on new, 64-bit machines be?
+</a></h3><p>
+  	Some vendors of C products for 64-bit machines support 64-bit
+	long ints.&#160;<tt> </tt>Others fear that too much existing code depends on
+	<code>sizeof(int)</code> == <code>sizeof(long)</code> == 32 bits, and introduce a
+	new 64-bit<code> long long int </code>(or<code> __longlong</code>)&#160;<tt> </tt>type instead.
+<p>
+	Programmers interested in writing portable code should therefore
+	insulate their 64-bit type needs behind appropriate typedefs.
+	Vendors who feel compelled to introduce a new, longer integral type
+	should advertise it as being &quot;at least 64 bits&quot; (which is truly
+	new; a type traditional C doesn't have), and not &quot;exactly 64
+	bits.&quot;
+<p>
+
+<h3>
+<a name="10-3">
+10.3:	I can't seem to define a linked list successfully</a>.&#160;<tt> </tt>I tried</h3>
+<p>
+<pre>
+	typedef struct
+		{
+		char *item;
+		NODEPTR next;
+		} *NODEPTR;
+</pre>
+<p><h3>
+	but the compiler gave me error messages.&#160;<tt> </tt>Can't a struct in C
+	contain a pointer to itself?
+</h3><p>
+  	Structs in C can certainly contain pointers to themselves; the
+	discussion and example in section 6.5 of K&amp;R make this clear.
+	The problem with this example is that the <code>NODEPTR</code> typedef is not
+	complete at the point where the &quot;next&quot; field is declared.&#160;<tt> </tt>To
+	fix it, first give the structure a tag (&quot;<code>struct node</code>&quot;).&#160;<tt> </tt>Then,
+	declare the &quot;<code>next</code>&quot; field as &quot;<code>struct node</code> <code>*next;</code>&quot;, and/or move
+	the <code>typedef</code> declaration wholly before or wholly after the struct
+	declaration.&#160;<tt> </tt>One corrected version would be
+<p>
+<pre>
+	struct node
+		{
+		char *item;
+		struct node *next;
+		};
+
+	typedef struct node *NODEPTR;
+</pre>
+<p>
+	, and there are at least three other equivalently correct ways
+	of arranging it.
+<p>
+	A similar problem, with a similar solution, can arise when
+	attempting to declare a pair of <code>typedef</code>'ed mutually referential
+	structures.
+<p>
+	References: <a href="index.html#K-amp-RI">K&amp;R I</a> Sec. 6.5 p. 101; <a href="index.html#K-amp-RII">K&amp;R II</a> Sec. 6.5 p. 139; <a href="index.html#H-amp-S">H&amp;S</a>
+	Sec. 5.6.1 p. 102; <a href="index.html#ANSI">ANSI</a> Sec. 3.5.2.3 .
+<p>
+
+<h3>
+<a name="10-4">
+10.4:	How do I declare an array of N pointers to functions returning
+	pointers to functions returning pointers to characters?
+</a></h3><p>
+  	This question can be answered in at least three ways:
+<p>
+<ol>
+<li><code>char *(*(*a[N])())();</code><p>
+<li>Build the declaration up in stages, using typedefs:<p>
+<code>
+        typedef char *pc;       /* pointer to char */</code><br><code>
+        typedef pc fpc();       /* function returning pointer to char */</code><br><code>
+        typedef fpc *pfpc;      /* pointer to above */</code><br><code>
+        typedef pfpc fpfpc();   /* function returning... */</code><br><code>
+        typedef fpfpc *pfpfpc;  /* pointer to... */</code><br><code>
+        pfpfpc a[N];            /* array of... */</code><p>
+<li>Use the cdecl program, which turns English into C and vice versa:
+<p>
+<code>
+	cdecl&gt; declare a as array of pointer to function returning
+		 pointer to function returning pointer to char</code><br><code>
+	char *(*(*a[])())()
+</code>
+<p>
+	    cdecl can also explain complicated declarations, help with
+	    casts, and indicate which set of parentheses the arguments
+	    go in (for complicated function definitions, like the
+	    above).  Versions of cdecl are in volume 14 of
+	    comp.sources.unix (see <a href="c-17.html#17-12">question 17.12</a>) and <a href="index.html#K-amp-RII">K&amp;R II</a>.
+</ol>
+<p>
+	Any good book on C should explain how to read these complicated
+	C declarations &quot;inside out&quot; to understand them (&quot;declaration
+	mimics use&quot;).
+<p>
+	References: <a href="index.html#K-amp-RII">K&amp;R II</a> Sec. 5.12 p. 122; <a href="index.html#H-amp-S">H&amp;S</a> Sec. 5.10.1 p. 116.
+<p>
+
+<h3>
+<a name="10-5">
+10.5:	I'm building a state machine with a bunch of functions, one for
+	each state.</a>&#160;<tt> </tt>I want to implement state transitions by having
+	each function return a pointer to the next state function.&#160;<tt> </tt>I
+	find a limitation in C's declaration mechanism: there's no way
+	to declare these functions as returning a pointer to a function
+	returning a pointer to a function returning a pointer to a
+	function...
+</h3><p>
+  	You can't do it directly.&#160;<tt> </tt>Either have the function return a
+	generic function pointer type, and apply a cast before calling
+	through it; or have it return a structure containing only a
+	pointer to a function returning that structure.
+
+<p><h3><a name="10-6">
+10.6:   My compiler is complaining about an invalid redeclaration of a
+        function, but I only define it once and call it once.</a></h3>
+<p>
+        Functions which are called without a declaration in scope (or
+        before they are declared) are assumed to be declared as
+        returning <code>int</code>, leading to discrepancies if the
+	function is later declared otherwise.&#160;<tt> </tt>Non-int functions
+	must be declared before they are called.
+<p>
+        References: <a href="index.html#K-amp-RI">K&amp;R I</a> Sec. 4.2 pp. 70; <a href="index.html#K-amp-RII">K&amp;R II</a> Sec. 4.2 p. 72; <a href="index.html#ANSI">ANSI</a>
+        Sec. 3.3.2.2 .
+<p>
+<h3>
+<a name="10-7">
+10.7:	What's the best way to declare and define global variables?
+</a></h3><p>
+  	First, though there can be many <em>declarations</em> (and in many
+	translation units) of a single &quot;global&quot; (strictly speaking,
+	&quot;external&quot;) variable (or function), there must be exactly one
+	<em>definition</em>.&#160;<tt> </tt>(The definition is the declaration that actually
+	allocates space, and provides an initialization value, if any.)
+	It is best to place the definition in some central (to the
+	program, or to the module) .c file, with an external declaration
+	in a header (&quot;.h&quot;) file, which is #included wherever the
+	declaration is needed.&#160;<tt> </tt>The .c file containing the definition
+	should also #include the header file containing the external
+	declaration, so that the compiler can check that the
+	declarations match.
+<p>
+	This rule promotes a high degree of portability, and is
+	consistent with the requirements of the <a href="index.html#ANSI">ANSI</a> C Standard.&#160;<tt> </tt>Note
+	that Unix compilers and linkers typically use a &quot;common model&quot;
+	which allows multiple (uninitialized) definitions.&#160;<tt> </tt>A few very
+	odd systems may require an explicit initializer to distinguish a
+	definition from an external declaration.
+<p>
+	It is possible to use preprocessor tricks to arrange that the
+	declaration need only be typed once, in the header file, and
+	&quot;turned into&quot; a definition, during exactly one #inclusion, via a
+	special #define.
+<p>
+	References: <a href="index.html#K-amp-RI">K&amp;R I</a> Sec. 4.5 pp. 76-7;
+	<a href="index.html#K-amp-RII">K&amp;R II</a> Sec. 4.4 pp. 80-1;
+	<a href="index.html#ANSI">ANSI</a> Sec. 3.1.2.2
+	(esp. <a href="../rat/c1.html#3-1-2-2">Rationale</a>), Secs. 3.7, 3.7.2,
+	Sec. F.5.11; <a href="index.html#H-amp-S">H&amp;S</a> Sec. 4.8 pp. 79-80; <a href="index.html#CT-amp-P">CT&amp;P</a> Sec. 4.2 pp. 54-56.
+<p>
+<h3><a name="10-8">
+10.8:   What does</a><code> extern </code>mean in a function declaration?
+</h3><p>
+        It can be used as a stylistic hint to indicate that the
+        function's definition is probably in another source file, but
+        there is no formal difference between
+<pre>
+        extern int f();
+</pre>
+        and
+<pre>
+        int f();
+</pre>
+        References: <a href="index.html#ANSI">ANSI</a> Sec. 3.1.2.2 .
+<p><h3>
+<a name="10-9">
+10.9:	I finally figured out the syntax for declaring pointers to
+	functions, but now how do I initialize one?
+</a></h3><p>
+  	Use something like
+<p>
+<pre>
+	extern int func();
+	int (*fp)() = func;
+</pre>
+<p>
+	When the name of a function appears in an expression but is not
+	being called (i.e. is not followed by a &quot;(&quot;), it &quot;decays&quot; into a
+	pointer (i.e. it has its address implicitly taken), much as an
+	array name does.
+<p>
+	An explicit extern declaration for the function is normally
+	needed, since implicit external function declaration does not
+	happen in this case (again, because the function name is not
+	followed by a &quot;(&quot;).
+<p>
+
+<h3>
+<a name="10-10">
+10.10:	I've seen different methods used for calling through pointers to
+	functions</a>.&#160;<tt> </tt>What's the story?
+</h3><p>
+  	Originally, a pointer to a function had to be &quot;turned into&quot; a
+	&quot;real&quot; function, with the <code>*</code> operator (and an extra pair of
+	parentheses, to keep the precedence straight), before calling:
+<p>
+<pre>
+	int r, func(), (*fp)() = func;
+	r = (*fp)();
+</pre>
+<p>
+	It can also be argued that functions are always called through
+	pointers, but that &quot;real&quot; functions decay implicitly into
+	pointers (in expressions, as they do in initializations) and so
+	cause no trouble.&#160;<tt> </tt>This reasoning, made widespread through pcc
+	and adopted in the <a href="index.html#ANSI">ANSI</a> standard, means that
+<p>
+<pre>
+	r = fp();
+</pre>
+<p>
+	is legal and works correctly, whether <code>fp</code> is a function or a
+	pointer to one.&#160;<tt> </tt>(The usage has always been unambiguous; there
+	is nothing you ever could have done with a function pointer
+	followed by an argument list except call through it.)&#160;<tt> </tt>An
+	explicit <code>*</code> is harmless, and still allowed (and recommended, if
+	portability to older compilers is important).
+<p>
+	References: <a href="index.html#ANSI">ANSI</a> Sec. 3.3.2.2 p. 41,
+		<a href="../rat/c3.html#3-3-2-2">Rationale</a> p. 41.
+<p>
+<h3><a name="10-11">
+10.11:  What's the</a><code> auto </code>keyword good for?
+</h3><p>
+        Nothing; it's obsolete.
+<p>
+<hr>
+<a href="c-9.html"><img SRC="prev.xbm" ALT="[prev]"></a>
+<a href="index.html#comp-lang-c-faq"><img SRC="up.xbm" ALT="[up]"></a>
+<a href="c-faq-toc.html#c-10"><img SRC="overview.xbm" alt="[overview]"></a>
+<a href="c-11.html"><img SRC="next.xbm" ALT="[next]"></a>
+</body></html>

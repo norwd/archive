@@ -1,0 +1,347 @@
+<html><head>
+<link rel="made" rev="made" href="mailto:jutta@cs.tu-berlin.de">
+<title>Comp.lang.c FAQ Table Of Contents</title></head><body>
+<a href="index.html#comp-lang-c-faq"><img SRC="up.xbm" alt="[up]"></a>
+<hr>
+[Last modified April 16, 1994 by scs.]
+<p>
+This article is a table of contents for the comp.lang.c
+frequently-asked questions (FAQ) list, listing the questions
+which the abridged and full versions of the FAQ list answer.
+(Both lists answer all questions; the wordings of the questions
+in this article are taken from the abridged list.)
+<p>
+If you have only just come across this article, you will
+naturally be wondering where the lists which it indexes can be
+found.&#160;<tt> </tt>The unabridged version is normally posted on the first of
+each month, and the unabridged version twice per month, both with
+Expires: lines which should keep them around all month.&#160;<tt> </tt>They can
+also be found in the newsgroups comp.answers and news.answers .&#160;<tt> </tt>
+Several sites archive news.answers postings and other FAQ lists,
+including comp.lang.c's: two sites are rtfm.mit.edu (directories
+<a href="ftp://rtfm.mit.edu/pub/usenet/news.answers/C-faq/">pub/usenet/news.answers/C-faq/</a> and <a href="ftp://rtfm.mit.edu/pub/usenet/comp.lang.c/">pub/usenet/comp.lang.c/</a> ) and
+<a href="ftp://ftp.uu.net/usenet/news.answers/C-faq/">ftp.uu.net (directory usenet/news.answers/C-faq/ )</a>.&#160;<tt> </tt>The archie
+server should help you find others; query it for &quot;prog C-faq&quot;.
+See the meta-FAQ list in news.answers for more information<a name="main">.</a>
+<p>
+<hr>
+<h1>Frequently Asked Questions in comp.lang.c<br>
+Table Of Contents</h1>
+<hr>
+<p>
+<h2>1. <a name="c-1" href="c-1.html">Null Pointers</a></h2>
+<ol>
+<li>What is this infamous <a href="c-1.html#1-1">null pointer</a>, anyway?
+<li>How do I &quot;<a href="c-1.html#1-2">get</a>&quot; a null pointer in my programs?
+<li>What is <a href="c-1.html#1-3">NULL</a> and how is it #defined?
+<li>How should NULL be #defined on a machine which uses a <a href="c-1.html#1-4">nonzero bit pattern</a>
+as the internal representation of a null pointer?
+<li>If NULL were defined as &quot;<a href="c-1.html#1-5">((char *)0)</a>,&quot; wouldn't that make function calls which pass an uncast NULL work?
+<li>I use the preprocessor macro &quot;<a href="c-1.html#1-6">#define Nullptr(type) (type *)0</a>&quot; to help me build null pointers of the correct type.
+<li>Is the abbreviated pointer comparison &quot;<a href="c-1.html#1-7">if(p)</a>&quot; to test for non-null pointers valid?  What if the internal representation for null pointers is nonzero?
+<li>If &quot;NULL&quot; and &quot;0&quot; are equivalent, <a href="c-1.html#1-8">which should I use</a>?
+<li>But wouldn't it be better to use NULL (rather than 0) in case the value of NULL <a href="c-1.html#1-9">changes</a>, perhaps on a machine with nonzero null pointers?
+<li>I'm confused.  NULL is <a href="c-1.html#1-10">guaranteed to be 0</a>, but the null pointer is not?
+<li>Why is there so much <a href="c-1.html#1-11">confusion</a>
+surrounding null pointers?  Why do these questions come up so often?
+<li>I'm still confused.  I just <a href="c-1.html#1-12">can't understand</a>
+all this null pointer stuff.
+<li>Given all the confusion surrounding null pointers, wouldn't it be easier simply to <a href="c-1.html#1-13">require them to be represented internally by zeroes</a>?
+<li>Seriously, have any actual machines really used <a href="c-1.html#1-14">nonzero null pointers</a>?
+<li>What does a run-time &quot;<a href="c-1.html#1-15">null pointer assignment</a>&quot; error mean?
+</ol><p>
+<h2>2. <a name="c-2" href="c-2.html">Arrays and Pointers</a></h2>
+<ol>
+<li>I had the definition <a href="c-2.html#2-1">char a[6]</a>
+in one source file, and in another I declared&#160;<tt> </tt><a href="c-2.html#2-1">extern char *a</a>.  Why didn't it work?
+<li>But I heard that char a[] was <a href="c-2.html#2-2">identical to</a>
+ char *a.
+<li>So what is meant by the &quot;<a href="c-2.html#2-3">equivalence of pointers and arrays</a>&quot; in C?
+<li>Why are array and pointer declarations <a href="c-2.html#2-4">interchangeable as function formal parameters</a>?
+<li>How can an <a href="c-2.html#2-5">array be an lvalue</a>, if you can't assign to it?
+<li>Why doesn't sizeof properly report the <a href="c-2.html#2-6">size of an array</a>
+which is a parameter to a function?
+<li>Someone explained to me that arrays were really just <a href="c-2.html#2-7">constant pointers</a>.
+<li>What is the real <a href="c-2.html#2-8">difference between arrays and pointers</a>?
+<li>I came across some &quot;joke&quot; code containing the &quot;expression&quot; <a href="c-2.html#2-9">5[&quot;abcdef&quot;]</a>.&#160;<tt> </tt>
+How can this be legal C?
+<li>My compiler complained when I passed a <a href="c-2.html#2-10">two-dimensional array</a>
+to a routine expecting a pointer to a pointer.
+<li>How do I write functions which accept 2-dimensional arrays when the <a href="c-2.html#2-11">&quot;width&quot; is not known at compile time</a>?
+<li>How do I declare a <a href="c-2.html#2-12">pointer to an array</a>?
+<li>What's the <a href="c-2.html#2-13">difference between array and &amp;array</a>?
+<li>How can I <a href="c-2.html#2-14">dynamically allocate</a>
+a multidimensional array?
+<li>How can I use <a href="c-2.html#2-15">statically- and dynamically-allocated multidimensional arrays interchangeably</a>
+when passing them to functions?
+<li>Can I simulate a <a href="c-2.html#2-16">non-0-based array</a>
+with a pointer?
+<li>I passed a pointer to a function which initialized it, but the <a href="c-2.html#2-17">pointer in the caller</a> was unchanged.
+<li>I have a char * pointer that happens to point to some ints, and I want to step it over them.  Why doesn't &quot;<a href="c-2.html#2-18">((int *)p)++;</a>&quot; work?
+<li>Can I use a void ** pointer to pass a <a href="c-2.html#2-19">generic pointer</a>
+to a function by reference?
+
+</ol><p>
+<h2>3. <a name="c-3" href="c-3.html">Memory Allocation</a></h2>
+<ol>
+<li>Why doesn't the code &quot;<a href="c-3.html#3-1">char *answer; gets(answer);</a>&quot; work?
+<li>I can't get strcat to work.  I tried &quot;<a href="c-3.html#3-2">char *s1 = &quot;Hello, &quot;, *s2 = &quot;world!&quot;, *s3 = strcat(s1, s2);</a>&quot; but I got strange results.
+<li>But the man page for strcat says that it takes two char *'s as arguments.&#160;<tt> </tt>
+How am I supposed to know to <a href="c-3.html#3-3">allocate</a> things?
+<li>I have a function that is supposed to return a string, but when it returns to its caller, the <a href="c-3.html#3-4">returned string is garbage</a>.
+<li>Why does some code carefully <a href="c-3.html#3-5">cast the values returned by malloc</a>
+to the pointer type being allocated?
+<li>You can't <a href="c-3.html#3-6">use dynamically-allocated memory after you free it</a>, can you?
+<li>How does free() know <a href="c-3.html#3-7">how many bytes</a>
+to free?
+<li>So can I query the malloc package to <a href="c-3.html#3-8">find out</a>
+how big an allocated block is?
+<li>When I free a dynamically-allocated structure containing pointers, do I have to free each subsidiary pointer <a href="c-3.html#3-9">first</a>?
+<li>Why doesn't my program's <a href="c-3.html#3-10">memory usage</a>
+go down when I free memory?
+<li>Must I free allocated memory before the program <a href="c-3.html#3-11">exits</a>?
+<li>Is it legal to pass a null pointer as the <a href="c-3.html#3-12">first argument to realloc()</a>?
+<li>Is it safe to use calloc's <a href="c-3.html#3-13">zero-fill guarantee for pointer and floating-point values</a>?
+<li>What is <a href="c-3.html#3-14">alloca</a>
+and why is its use discouraged?
+
+</ol><p><h2>4. <a name="c-4" href="c-4.html">Expressions</a></h2>
+<ol>
+<li>Why doesn't the code &quot;<a href="c-4.html#4-1">a[i] = i++;</a>&quot; work?
+<li>Under my compiler, the code &quot;int i = 7; printf(&quot;%d\n&quot;, i++ * i++);&quot; prints 49.  Regardless of the order of evaluation, <a href="c-4.html#4-2">shouldn't it print 56</a>?
+<li>How could the code &quot;<a href="c-4.html#4-3">int i = 2; i = i++;</a>&quot; ever give 4?
+<li>I just tried some allegedly-<a href="c-4.html#4-4">undefined</a>
+code on an ANSI-conforming compiler, and got the results I expected.
+<li>Don't precedence and parentheses dictate <a href="c-4.html#4-5">order of evaluation</a>?
+<li>But what about the <a href="c-4.html#4-6">&amp;&amp;, ||, and comma</a>
+operators?
+<li>If I'm not using the value of the expression, should I use <a href="c-4.html#4-7">i++ or ++i</a>
+to increment a variable?
+<li>Why doesn't the code &quot;<a href="c-4.html#4-8">int a = 1000, b = 1000; long int c = a * b;</a>&quot; work?
+
+</ol><p><h2>5. <a name="c-5" href="c-5.html">ANSI C</a></h2>
+<ol>
+<li><a href="c-5.html#5-1">What is</a>
+the &quot;ANSI C Standard?&quot;
+<li>How can I <a href="c-5.html#5-2">get a copy</a>
+of the Standard?
+<li>Does anyone have a tool for <a href="c-5.html#5-3">converting old-style C programs to ANSI C</a>, or for automatically generating prototypes?
+<li>How do I keep the ANSI &quot;<a href="c-5.html#5-4">stringizing</a>&quot; preprocessing operator from stringizing the macro's name rather than its value?
+<li>Why can't I use <a href="c-5.html#5-5">const values in initializers</a>
+and array dimensions?
+<li>What's the difference between &quot;<a href="c-5.html#5-6">char const *p&quot; and &quot;char * const p</a>&quot;?
+<li>Why can't I pass a char ** to a function which expects a <a href="c-5.html#5-7">const char **</a>?
+<li>My ANSI compiler complains about a <a href="c-5.html#5-8">mismatch</a>
+when it sees
+<br><br>
+  	extern int func(float);<br>
+<br>
+       	int func(x)<br>
+       	float x;<br>
+        {...<br>
+<br>
+<li>Can you <a href="c-5.html#5-9">mix old-style and new-style</a>
+function syntax?
+<li>Why does the declaration &quot;<a href="c-5.html#5-10">extern f(struct x {int s;} *p);</a>&quot; give me a warning message?
+<li>I'm getting strange syntax errors inside code which I've <a href="c-5.html#5-11">#ifdeffed out</a>.
+<li>Can I <a href="c-5.html#5-12">declare main as void</a>, to shut off these annoying &quot;main returns no value&quot; messages?
+<li>Is <a href="c-5.html#5-13">exit(status)</a>
+truly equivalent to returning status from main?
+<li>Why does the ANSI Standard not guarantee more than <a href="c-5.html#5-14">six monocase characters of external identifier</a>
+significance?
+<li>What is the difference between <a href="c-5.html#5-15">memcpy and memmove</a>?
+<li>My compiler is rejecting the simplest possible test programs, with <a href="c-5.html#5-16">all kinds</a>
+of syntax errors.
+<li>Why are some ANSI/ISO Standard <a href="c-5.html#5-17">library routines</a>
+showing up as undefined, even though I've got an ANSI compiler?
+<li>Why won't frobozz-cc, which claims to be ANSI compliant, <a href="c-5.html#5-18">accept this code</a>?
+<li>Why can't I perform <a href="c-5.html#5-19">arithmetic on a void *</a>
+pointer?
+<li>Is <a href="c-5.html#5-20">char a[3] = &quot;abc&quot;;</a>
+legal?
+<li>What are <a href="c-5.html#5-21">#pragmas</a>
+and what are they good for?
+<li>What does "<a href="c-5.html#5-22">#pragma once</a>" mean?
+<li>What's the difference between <a href="c-5.html#5-23">implementation-defined, unspecified, and undefined</a> behavior?
+
+</ol><p><h2>6. <a name="c-6" href="c-6.html">C Preprocessor</a></h2>
+<ol>
+<li>How can I write a generic <a href="c-6.html#6-1">macro to swap</a> two values?
+<li>I have some old code that tries to construct identifiers with a macro like &quot;#<a href="c-6.html#6-2">define Paste(a, b) a/**/b</a> &quot;, but it doesn't work any more.
+<li>What's the best way to write a <a href="c-6.html#6-3">multi-statement</a> cpp macro?
+<li>Is it acceptable for one header file to <a href="c-6.html#6-4">#include</a> another?
+<li>Does the <a href="c-6.html#6-5">sizeof</a> operator work in preprocessor #if directives?
+<li>How can I use a preprocessor #if expression to detect <a href="c-6.html#6-6">endianness</a>?
+<li>I've got this <a href="c-6.html#6-7">tricky processing</a> I want to do at compile time and I can't figure out a way to get cpp to do it.
+<li>How can I preprocess some code to <a href="c-6.html#6-8">remove selected conditional compilations</a>, without preprocessing everything?
+<li>How can I list all of the <a href="c-6.html#6-9">pre#defined identifiers</a>?
+<li>How can I write a cpp macro which takes a <a href="c-6.html#6-10">variable number of arguments</a>?
+
+</ol><p><h2>7. <a name="c-7" href="c-7.html">Variable-Length Argument Lists</a></h2>
+<ol>
+<li>How can I write a function that takes a <a href="c-7.html#7-1">variable number of arguments</a>?
+<li>How can I write a function that takes a format string and a variable number of arguments, like printf, and <a href="c-7.html#7-2">passes them to printf</a> to do most of the work?
+<li>How can I discover <a href="c-7.html#7-3">how many arguments</a> a function was actually called with?
+<li>I can't get the va_arg macro to pull in an argument of type <a href="c-7.html#7-4">pointer-to-function</a>.
+<li>How can I write a function which takes a variable number of arguments and <a href="c-7.html#7-5">passes them to some other function</a> (which takes a variable number of arguments)?
+<li>How can I call a function with an argument list <a href="c-7.html#7-6">built up at run time</a>?
+</ol><p><h2>8. <a name="c-8" href="c-8.html">Boolean Expressions and Variables</a></h2>
+<ol>
+<li>What is the right <a href="c-8.html#8-1">type to use for boolean values</a> in C?  Why isn't it a standard type?  Should #defines or enums be used for the true and false values?
+<li>What if a built-in boolean or relational operator &quot;returns&quot; <a href="c-8.html#8-2">something other than 1</a>?
+
+</ol><p><h2>9. <a name="c-9" href="c-9.html">Structs, Enums, and Unions</a></h2>
+<ol>
+<li>What is the <a href="c-9.html#9-1">difference</a> between an enum and a series of preprocessor #defines?
+<li>I heard that <a href="c-9.html#9-2">structures could be assigned</a> to variables and passed to and from functions, but K&amp;R I says not.
+<li>How does struct passing and returning <a href="c-9.html#9-3">work</a>?
+<li>I have a program which works correctly, but <a href="c-9.html#9-4">dumps core after it finishes</a>.  Why?
+<li>Why can't you <a href="c-9.html#9-5">compare</a> structs?
+<li>How can I <a href="c-9.html#9-6">read/write</a> structs from/to data files?
+<li>I came across some code that declared a <a href="c-9.html#9-7">structure
+with the last member an array of one element</a>, and then did some tricky
+allocation to make the array act like it had several elements.&#160;<tt> </tt>
+Is this legal and/or portable?
+<li>How can I determine the <a href="c-9.html#9-8">byte offset of a field</a> within a structure?
+<li>How can I access structure fields <a href="c-9.html#9-9">by name</a> at run time?
+<li>Why does sizeof report a larger size than I expect for a structure type, as if there was <a href="c-9.html#9-10">padding</a> at the end?
+<li>How can I <a href="c-9.html#9-11">turn off</a> structure padding?
+<li>Can I <a href="c-9.html#9-12">initialize unions</a>?
+<li>Can I pass <a href="c-9.html#9-13">constant values</a> to routines which accept struct arguments?
+</ol><p>
+<h2>10. <a name="c-10" href="c-10.html">Declarations</a></h2>
+<ol>
+<li>How do you decide <a href="c-10.html#10-1">which integer type to use</a>?
+<li>What should the <a href="c-10.html#10-2">64-bit type</a> on new, 64-bit machines be?
+<li>I can't seem to define a <a href="c-10.html#10-3">linked list</a> node which contains a pointer to itself.
+<li>How do I declare an <a href="c-10.html#10-4">array of N pointers to functions returning pointers to functions returning pointers</a> to characters?
+<li>How can I declare a <a href="c-10.html#10-5">function that returns a pointer to a function of its own type</a>?
+<li>My compiler is complaining about an <a href="c-10.html#10-6">invalid redeclaration of a function</a>, but I only define it once and call it once.
+<li>What's the best way to <a href="c-10.html#10-7">declare and define global variables</a>?
+<li>What does <a href="c-10.html#10-8">extern</a> mean in a function declaration?
+<li>How do I <a href="c-10.html#10-9">initialize a pointer to a function</a>?
+<li>I've seen different methods used for <a href="c-10.html#10-10">calling through pointers</a> to functions.
+<li>What's the <a href="c-10.html#10-11">auto</a> keyword good for?
+
+</ol><p><h2>11. <a name="c-11" href="c-11.html">Stdio</a></h2>
+<ol>
+<li>What's wrong with the code &quot;<a href="c-11.html#11-1">char c; while((c = getchar()) != EOF)...</a>&quot; ?
+<li>How can I print a <a href="c-11.html#11-2"><code>'%'</code></a> character with printf?
+<li>Why doesn't the code <a href="c-11.html#11-3">scanf(&quot;%d&quot;, i);</a> work?
+<li>Why doesn't the code <a href="c-11.html#11-4">double d; scanf(&quot;%f&quot;, &amp;d);</a> work?
+<li>Why won't the code &quot;<a href="c-11.html#11-5">while(!feof(infp))</a> { fgets(buf, MAXLINE, infp); fputs(buf, outfp); }&quot; work?
+<li>Why does everyone say <a href="c-11.html#11-6">not to use gets()</a>?
+<li>Why does errno contain <a href="c-11.html#11-7">ENOTTY</a> after a call to printf?
+<li>My program's prompts and intermediate <a href="c-11.html#11-8">output don't always show up</a> on the screen, especially when I pipe the output through another program.
+<li>When I read from the keyboard <a href="c-11.html#11-9">with scanf, it seems to hang</a> until I type one extra line of input.
+<li>I'm trying to <a href="c-11.html#11-10">update a file in place</a>, by using fopen mode &quot;r+&quot;, but it's not working.
+<li>How can I read <a href="c-11.html#11-11">one character at a time</a>, without waiting for the RETURN key?
+<li>Will <a href="c-11.html#11-12">fflush(stdin)</a> flush unread characters from the standard input stream?
+<li>How can I <a href="c-11.html#11-13">redirect stdin or stdout</a> from within a program?
+<li>Once I've used <a href="c-11.html#11-14">freopen</a>, how can I get the original stdout back?
+<li>How can I recover the <a href="c-11.html#11-15">file name</a> given an open file descriptor?
+
+</ol><p><h2>12. <a name="c-12" href="c-12.html">Library Subroutines</a></h2>
+<ol>
+<li>Why does <a href="c-12.html#12-1">strncpy</a> not always write a '\0'?
+<li>I'm trying to sort an array of strings with <a href="c-12.html#12-2">qsort</a>, using strcmp as the comparison function, but it's not working.
+<li>Now I'm trying to sort an array of structures with qsort.  My comparison routine takes pointers to structures, but the <a href="c-12.html#12-3">compiler complains that the function is of the wrong type for qsort</a>.  How can I cast the function pointer to shut off the warning?
+<li>How can I convert <a href="c-12.html#12-4">numbers to strings</a>?
+<li>How can I get the <a href="c-12.html#12-5">time of day</a> in a C program?
+<li>How can I convert a <a href="c-12.html#12-6">struct tm or a string into a time_t</a>?
+<li>How can I perform <a href="c-12.html#12-7">calendar</a> manipulations?
+<li>I need a <a href="c-12.html#12-8">random number generator</a>.
+<li>How can I get random integers in a certain <a href="c-12.html#12-9">range</a>?
+<li>Each time I run my program, I get the <a href="c-12.html#12-10">same sequence of numbers</a> back from rand().
+<li>I need a <a href="c-12.html#12-11">random true/false value</a>, so I'm taking rand() % 2, but it's just alternating 0, 1, 0, 1, 0...
+<li>I'm trying to port this old program.  Why do I get &quot;<a href="c-12.html#12-12">undefined external</a>&quot; errors for some library routines?
+<li>I get errors due to library routines being undefined even though I #include the right <a href="c-12.html#12-13">header files</a>.
+<li>I'm still getting errors due to library routines being undefined, even though I'm <a href="c-12.html#12-14">requesting the right libraries</a>.
+<li>I need some code to do <a href="c-12.html#12-15">regular expression matching</a>.
+<li>How can I <a href="c-12.html#12-16">split up a string</a> into whitespace-separated arguments?
+
+</ol><p><h2>13. <a name="c-13" href="c-13.html">Lint</a></h2>
+<ol>
+<li>I just typed in this program, and it's acting <a href="c-13.html#13-1">strangely</a>.  Can you see anything wrong with it?
+<li>How can I shut off the &quot;<a href="c-13.html#13-2">warning: possible pointer alignment problem</a>&quot; message lint gives me for each call to malloc?
+<li>Where can I get an <a href="c-13.html#13-3">ANSI-compatible</a> lint?
+
+</ol><p><h2>14. <a name="c-14" href="c-14.html">Style</a></h2>
+<ol>
+<li>Is the code &quot;if(<a href="c-14.html#14-1">!strcmp(s1, s2)</a>)&quot; good style?
+<li>What's the best style for <a href="c-14.html#14-2">code layout</a> in C?
+<li>Where can I get the &quot;<a href="c-14.html#14-3">Indian Hill Style Guide</a>&quot; and other coding standards?
+
+</ol><p><h2>15. <a name="c-15" href="c-15.html">Floating Point</a></h2>
+<ol>
+<li>My floating-point calculations are acting strangely and giving me <a href="c-15.html#15-1">different answers on different machines</a>.
+<li>I keep getting &quot;<a href="c-15.html#15-2">undefined: _sin</a>&quot; compilation errors.
+<li>Where is C's <a href="c-15.html#15-3">exponentiation</a> operator?
+<li>How do I <a href="c-15.html#15-4">round</a> numbers?
+<li>How do I test for IEEE <a href="c-15.html#15-5">NaN</a> and other special values?
+<li>I'm having trouble with a Turbo C program which crashes and says something like &quot;<a href="c-15.html#15-6">floating point formats not linked</a>.&quot;
+
+</ol><p><h2>16. <a name="c-16" href="c-16.html">System Dependencies</a></h2>
+<ol>
+<li>How can I read a <a href="c-16.html#16-1">single character from the keyboard</a> without waiting for a newline?
+<li>How can I find out if there are characters available for reading (and if so, <a href="c-16.html#16-2">how many</a>)?  Alternatively, how can I do a read that will not block if there are no characters available?
+<li>How can I <a href="c-16.html#16-3">clear the screen</a>?
+<li>How do I read the <a href="c-16.html#16-4">mouse</a>?
+<li>How can my program discover the complete <a href="c-16.html#16-5">pathname to the executable file</a> from which it was invoked?
+<li>How can a process change an <a href="c-16.html#16-6">environment variable</a> in its caller?
+<li>How can I check whether a file <a href="c-16.html#16-7">exists</a>?
+<li>How can I find out the <a href="c-16.html#16-8">size of a file</a>, prior to reading it in?
+<li>How can a file be <a href="c-16.html#16-9">shortened in-place</a> without completely clearing or rewriting it?
+<li>How can I implement a delay, or time a user's response, with <a href="c-16.html#16-10">sub-second resolution</a>?
+<li>How can I <a href="c-16.html#16-11">read in an object file and jump to routines</a> in it?
+<li>How can I invoke an <a href="c-16.html#16-12">operating system command</a> from within a program?
+<li>How can I invoke an operating system command and <a href="c-16.html#16-13">trap its output</a>?
+<li>How can I <a href="c-16.html#16-14">read a directory</a> in a C program?
+<li>How can I do <a href="c-16.html#16-15">serial (&quot;comm&quot;) port I/O</a>?
+
+</ol><p><h2>17. <a name="c-17" href="c-17.html">Miscellaneous</a></h2>
+<ol>
+<li>What can I safely assume about the <a href="c-17.html#17-1">initial values</a> of variables which are not explicitly initialized?
+<li>What's wrong with<br> f() { <a href="c-17.html#17-2">char a[] = "Hello, world!";</a> }<br> ?
+<li>How can I write data files which can be read on other machines with <a href="c-17.html#17-3">different data formats?</a>
+<li>How can I <a href="c-17.html#17-4">insert or delete a line from the middle of a file</a>?
+<li>How can I return <a href="c-17.html#17-5">several values</a> from a function?
+<li>How can I <a href="c-17.html#17-6">call a function, given its name</a> as a string?
+<li>I seem to be missing the <a href="c-17.html#17-7">system header file</a> &lt;sgtty.h&gt;.  Can someone send me a copy?
+<li>How can I <a href="c-17.html#17-8">call FORTRAN (C++, BASIC, Pascal, Ada, LISP) functions</a> from C?
+<li>Does anyone know of a program for <a href="c-17.html#17-9">converting Pascal or FORTRAN</a> to C?
+<li>Can I use a <a href="c-17.html#17-10">C++</a> compiler to compile C code?
+<li>I'm looking for C <a href="c-17.html#17-11">development tools</a> (cross-reference generators, code beautifiers, etc.).
+<li>Where can I get copies of all these <a href="c-17.html#17-12">public-domain programs</a>?
+<li>When will the next <a href="c-17.html#17-13">Obfuscated C Code Contest</a> be held?  How can I get a copy of the previous winning entries?
+<li>Why don't C <a href="c-17.html#17-14">comments</a> nest?  Are they legal inside quoted strings?
+<li>How can I get the <a href="c-17.html#17-15">ASCII value</a> corresponding to a character?
+<li>How can I implement <a href="c-17.html#17-16">sets and/or arrays of bits</a>?
+<li>What is the most efficient way to count the <a href="c-17.html#17-17">number of bits</a> which are set in a value?
+<li>How can I make this code more <a href="c-17.html#17-18">efficient</a>?
+<li>Are pointers really <a href="c-17.html#17-19">faster</a> than arrays?  How much do function calls <a href="c-17.html#17-19">slow</a> things down?
+<li>Why does the code &quot;<a href="c-17.html#17-20">char *p = &quot;Hello, world!&quot;; p[0] = tolower(p[0]);</a>&quot; crash?
+<li>This <a href="c-17.html#17-21">program crashes before it even runs</a>!
+<li>What does &quot;<a href="c-17.html#17-22">Segmentation violation</a>&quot; mean?
+<li>My program is <a href="c-17.html#17-23">crashing, apparently somewhere down inside malloc</a>.
+<li>Does anyone have a <a href="c-17.html#17-24">C compiler test suite</a> I can use?
+<li>Where can I get a <a href="c-17.html#17-25">YACC grammar</a> for C?
+<li>I need code to <a href="c-17.html#17-26">parse and evaluate expressions.</a>
+<li>I need to <a href="c-17.html#17-27">compare two strings for close, but not necessarily exact, equality.</a>
+<li>How can I <a href="c-17.html#17-28">find the day of the week given the date</a>?
+<li>Will 2000 be a <a href="c-17.html#17-29">leap year</a>?
+<li>How do you <a href="c-17.html#17-30">pronounce &quot;char&quot;</a>?
+<li>What's a good <a href="c-17.html#17-31">book</a> for learning C?
+<li>Are there any <a href="c-17.html#17-32">C tutorials</a> on the net?
+<li>Where can I get <a href="c-17.html#17-33">extra copies of this list</a>?
+</ol>
+<hr>
+					<a href="http://www.eskimo.com/%7Escs/index.html">Steve Summit</a><br>
+					scs@eskimo.com<br>
+<p>
+This article is Copyright 1994 by Steve Summit.<br>
+It may be freely redistributed so long as the author's name, and this
+notice, are retained.
+<hr>
+<a href="index.html#comp-lang-c-faq"><img SRC="up.xbm" alt="[up]"></a>
+</body></html>

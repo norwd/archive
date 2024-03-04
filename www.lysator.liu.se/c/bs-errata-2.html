@@ -1,0 +1,281 @@
+<html>
+<head>
+<title>
+Bjarne Stroustrup: The C++ Programming Language (2nd edition)
+(errata, first year)
+</title>
+<link rev="made" rel="made" href="mailto:jutta@pobox.com">
+</head>
+<body>
+This is for the first year.&#160;<tt> </tt>Also available are errata for printings
+<a href="bs-errata-1.html">1</a>,
+<a href="bs-errata-6.html">6</a>, and
+<a href="bs-errata-9.html">9</a>.
+<hr>
+Errata for
+<h1>
+Bjarne Stroustrup:<br>
+The C++ Programming Language (2nd edition)</h1>
+Addison-Wesley, 1991, ISBN0-201-53992-6, first year.
+<hr>
+Here is about a year's worth of errata for
+<blockquote>
+        The C++ Programming Language (Second edition)
+</blockquote>
+Thanks to all who sent me comments.&#160;<tt> </tt>I am only able to correct minor
+problems.&#160;<tt> </tt>Sorry.&#160;<tt> </tt>Adding new sections, examples, and introducing new
+topics can only be done for new editions and not between printings.
+<p>
+Comments of all sorts both on the book and this errata are welcome.
+<blockquote>
+        - Bjarne Stroustrup (bs@research.att.com)
+</blockquote>
+
+I have posted some of this errata before, but I thought it useful for
+some to have it all together.&#160;<tt> </tt>In several case, I have simply listed
+the corrected text (leaving you to find the original error).&#160;<tt> </tt>In other
+cases I have used the old ed substitute syntax: s/old/new/
+<p>
+<dl>
+<dt><i>Pg79</i>&#160;<tt> </tt>Add to first paragraph:<dd>
+
+        Declaring a variable in a switch case requires the introduction
+        of a block to indicate the scope of that variable. This prevents
+        the variable from being used in another case where its initialization
+        would have been by-passed; see also sec r.6.7.
+<p>
+        and add { } around case DIV on page 78 and case LP on page 79.
+<p>
+<dt><i>pg 80 and pg82</i>&#160;<tt> </tt>remove<dd><ul>
+                cin&gt;&gt;ws; // skip whitespace<br>
+	</ul>
+        (operator &gt;&gt; is quite capable of skipping whitespace without
+        explicit help from the programmer).
+<p>
+<dt><i>pg80</i>&#160;<tt> </tt>the correct declaration of look is:<dd><ul>
+                name* look(const char* p, int ins =0);</ul>
+<p>
+<dt><i>pg89</i>&#160;<tt> </tt>use .* and -&gt;* int the third column for .* and -&gt;*, respectively.
+<p>
+<dt><i>pg90</i>&#160;<tt> </tt>add line<dd><ul>
+                throw&#160;<tt> </tt>throw exception&#160;<tt> </tt>throw expr</ul>
+        just above the comma(sequencing) line.
+<p>
+<dt><i>pg98</i>&#160;<tt> </tt>s/arg[1]/arg<b>v</b>[1]/
+<p>
+<dt><i>pg100</i>&#160;<tt> </tt>add<dd><ul>
+                try { statement-list(opt) }</ul>
+        to the statement production.
+<p>
+<dt><i>pg119</i>&#160;<tt> </tt>add to syn.c:<dd><ul>
+        #include &quot;table.h&quot;</ul>
+<p>
+<dt><i>pg124</i>&#160;<tt> </tt>inline fac(int n) { return n&lt;2? 1 : n*fac(n-1); }
+<dd><p>
+<dt><i>pg 131</i>&#160;<tt> </tt>print(f); // float to double promotion: invoke print(double)
+<dd><p>
+<dt><i>pg159</i>&#160;<tt> </tt>s/delete x;/delete<b>[]</b> x;/
+<dd><p>
+<dt><i>pg166</i>&#160;<tt> </tt>s/<b>task_</b>chain/chain/ thrice
+<dd><p>
+<dt><i>pg194</i>&#160;<tt> </tt>s/&lt;stream.h&gt;/&lt;<b>io</b>stream.h&gt;/
+<dd><p>
+
+<dt><i>pg214</i>&#160;<tt> </tt>add argument lists to f():<dd>
+<pre>
+    class Z2 : public Y2 { void f(Y1*, Y2*, Y3*); };
+
+    class Y3 : private X { void f(Y1*, Y2*, Y3*); };
+</pre>
+<dt><i>pg215</i>&#160;<tt> </tt>add ; after last } on page.
+<dd><p>
+<dt><i>pg218-220</i>&#160;<tt> </tt>corrected lines:
+<dd><pre>
+    void copy(expr* s, int deep = 0);
+
+    void expr::copy(expr* s, int deep)
+
+    left = s-&gt;left-&gt;clone(1);
+    right = s-&gt;right-&gt;clone(1);
+
+    class conditional : public expr {
+
+    void copy(conditional* s, int deep = 0);
+
+    void conditional::copy(conditional* s, int deep)
+</pre>
+
+<dt><i>pg242</i>&#160;<tt> </tt>s/delete vec;/ delete<b>[]</b> vec;/
+<dd><p>
+<dt><i>pg245</i>&#160;<tt> </tt>s/so that the Rec<b>ord</b> type/so that the Rec type/
+<dd><p>
+<dt><i>pg250</i>
+<dd><pre>
+    char&amp; string::operator[](int i)
+    {
+        if (i&lt;0 || strlen(p-&gt;s)&lt;i) error(&quot;index out of range&quot;);
+        if (p-&gt;n&gt;1) { // clone to maintain value semantics
+            srep* np = new srep;
+            np-&gt;s = new char[ strlen(p-&gt;s)+1 ];
+            strcpy(np-&gt;s, p-&gt;s);
+            p-&gt;n--;
+            p = np;
+        }
+        return p-&gt;s[i];
+    }
+</pre>
+
+<dt><i>pg266</i>&#160;<tt> </tt>slink* slist_base::get()
+<dd><p>
+<dt><i>pg267</i>&#160;<tt> </tt>inline slink* operator()();
+<dd><p>
+<dt><i>pg268</i>
+<dd><pre>    template&lt;class T&gt; T* Slist_iter&lt;T&gt;::operator()()
+    {
+            Tlink&lt;T&gt;* lnk = (Tlink&lt;T&gt;*) slist_base_iter::operator()();
+            return lnk ? &amp;lnk-&gt;info: 0;
+    }
+</pre>
+<dt><i>pg269</i>
+<dd><pre>
+    void f(name* n)
+    {
+            Islist&lt;name&gt; lst1;
+            Slist&lt;name&gt; lst2;
+
+            lst1.insert(n);
+            lst2.insert(n);
+            // ...
+
+            Islist_iter&lt;name&gt; iter1(lst1);
+            const name* p;
+            while (p=iter1()) {
+                    Slist_iter&lt;name&gt; iter2(lst2);
+                    const name* q;
+                    while (q=iter2()) {
+                    if (p == q) cout &lt;&lt; &quot;found &quot; &lt;&lt; *p &lt;&lt; '\en';
+                    }
+            }
+    }
+</pre>
+
+<dt><i>pg274</i>&#160;<tt> </tt>add } at end of f()'s definition
+<dd><p>
+<dt><i>pg 276</i>
+
+By wrapping the sort() function in a class we can allow the<dd>
+Comparator to be specified directly:
+<pre>
+    template&lt;class T, class Comp&gt; class Sort {
+    public:
+        static void sort(Vector&lt;T&gt;&amp;);
+    };
+
+    template&lt;class T, class Comp&gt;
+    void Sort&lt;T,Comp&gt;::sort(Vector&lt;T&gt;&amp; v)
+    {
+        unsigned int n = v.size();
+
+        for (int i=0; i&lt;n-1; i++)
+            for (int j=n-1; i&lt;j; j--)
+                if (Comp::lessthan(v[j],v[j-1])) {
+                    T temp = v[j];
+                    v[j] = v[j-1];
+                    v[j-1] = temp;
+                }
+    }
+</pre>
+We can now select the appropriate sort() by qualifying it with a
+Sort class with appropriate element and comparator types:
+<pre>
+    void f(Vector&lt;int&gt;&amp; vi,
+           Vector&lt;String&gt;&amp; vc,
+           Vector&lt;int&gt;&amp; vi2,
+           Vector&lt;char*&gt;&amp; vs)
+    {
+        Sort&lt; int,Comparator&lt;int&gt; &gt;::sort(vi);
+        Sort&lt; String,Comparator&lt;String&gt; &gt;::sort(vc);
+        Sort&lt; int,Comparator&lt;int&gt; &gt;::sort(vi2);
+        Sort&lt; char*,Comparator&lt;char*&gt; &gt;::sort(vs);
+    }
+</pre>
+This last variant is a powerful model for composition of code from separate parts.
+The example can even be further simplified by using the comparator type
+as the only template argument:
+<pre>
+    template&lt;class Comp&gt; class Sort {
+    public:
+        class Comp::T; // Comp must have a member type T
+        static void sort(Vector&lt;Comp::T&gt;&amp;);
+    };
+</pre>
+The sort() function will sort any Vector that Comp can compare elements of:
+<pre>
+    void f(Vector&lt;int&gt;&amp; vi,
+           Vector&lt;String&gt;&amp; vc,
+           Vector&lt;int&gt;&amp; vi2,
+           Vector&lt;char*&gt;&amp; vs)
+    {
+        Sort&lt; Comparator&lt;int&gt; &gt;::sort(vi);
+        Sort&lt; Comparator&lt;String&gt; &gt;::sort(vc);
+        Sort&lt; Comparator&lt;int&gt; &gt;::sort(vi2);
+        Sort&lt; Comparator&lt;char*&gt; &gt;::sort(vs);
+    }
+</pre>
+This implies that the comparator must give a name to its element type
+<pre>
+        template&lt;class T&gt; class Comparator {
+        public:
+            typedef T T; // define Comparator&lt;T&gt;::T
+            static int lessthan (T&amp; a, T&amp; b) {
+                return a &lt; b;
+            }
+            // ...
+        };
+</pre>
+so that Sort&lt;Comp&gt;::sort() can refer to the element type as Comp::T.
+<p>
+<dt><i>pg310</i>&#160;<tt> </tt>add private member<dd><ul>
+                void init();</ul>
+        to class X.
+<p>
+<dt><i>pg338</i>&#160;<tt> </tt>cin.tie(&amp;cout)<dd><p>
+
+<dt><i>pg339</i>&#160;<tt> </tt>cout &lt;&lt; '(' &lt;&lt; 12 &lt;&lt; &quot;),(&quot; &lt;&lt; 12 &lt;&lt; &quot;)\n;&quot;<dd><p>
+
+<dt><i>pg345</i>&#160;<tt> </tt>ostream&amp; operator&lt;&lt;(ostream&amp; (*)(ostream&amp;));<dd>
+        istream&amp; operator&gt;&gt;(istream&amp; (*)(istream&amp;));
+<p>
+<dt><i>pg346</i>&#160;<tt> </tt>s/four digits <b>after the point</b>./four digits./
+<p>
+        s/Omanip&amp; m/Omanip<b>_int</b>&amp; m/
+<p>
+        s/_set_// twice
+<dd><p>
+<dt><i>pg350</i>&#160;<tt> </tt>int peek();
+<dd><p>
+<dt><i>pg351</i>&#160;<tt> </tt>if (mystream.bad()) {
+<dd><p>
+<dt><i>pg352</i>&#160;<tt> </tt>for completeness add<dd><ul>
+                int Io_init::count = 0; // in some .c file</ul>
+        before (or after)<ul>
+                static Io_init io_init;</ul>
+<p>
+<dt><i>pg409</i>&#160;<tt> </tt>in C2:  s/C/C<b>2</b>/ twice
+<dt><i>pg410</i>&#160;<tt> </tt>in C3:  s/C/C<b>3</b>/
+        in C4:  s/C/C<b>4</b>/
+</dl>
+<hr>
+To track new developments, both the Annotated Reference Manual and
+Bjarne Stroustrup's book have an identical ``extra'' chapter that is
+updated a couple of times a
+year.&#160;<tt> </tt><a href="ftp://ftp.std.com/AW/stroustrup2e/iso.ps">Its most
+recent version</a> and the most recent errata sheet are available from
+Software, Tool &amp; Die's ftp server in
+directory <a href="ftp://ftp.std.com/AW/stroustrup2e">AW/stroustrup2e</a>.
+<hr>
+Thanks to Bjarne Stroustrup (bs@research.att.com) for errata and pointer.<br>
+Markup, etc. by jutta@pobox.com, corrections and comments welcomed.
+</body>
+</html>
+
