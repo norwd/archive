@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<meta name="generator" content="hypermail 2.3.0, see http://www.hypermail-project.org/" />
+<title>[scc-dev] [PATCH] tests/cc: Fix 0225-func.c pointer type from Michael Forney on 2024-04-13 (scc-dev)</title>
+<meta name="Author" content="Michael Forney (mforney_at_mforney.org)" />
+<meta name="Subject" content="[scc-dev] [PATCH] tests/cc: Fix 0225-func.c pointer type" />
+<meta name="Date" content="2024-04-13" />
+<style type="text/css">
+/*<![CDATA[*/
+/* To be incorporated in the main stylesheet, don't code it in hypermail! */
+body {color: black; background: #ffffff}
+dfn {font-weight: bold;}
+pre { background-color:inherit;}
+.head { border-bottom:1px solid black;}
+.foot { border-top:1px solid black;}
+th {font-style:italic;}
+table { margin-left:2em;}map ul {list-style:none;}
+#mid { font-size:0.9em;}
+#received { float:right;}
+address { font-style:inherit ;}
+/*]]>*/
+.quotelev1 {color : #990099}
+.quotelev2 {color : #ff7700}
+.quotelev3 {color : #007799}
+.quotelev4 {color : #95c500}
+.period {font-weight: bold}
+</style>
+</head>
+<body>
+<div class="head">
+<h1>[scc-dev] [PATCH] tests/cc: Fix 0225-func.c pointer type</h1>
+<!-- received="Sat, 13 Apr 2024 12:51:44 -0700" -->
+<!-- isoreceived="20240413195144" -->
+<!-- sent="Sat, 13 Apr 2024 12:51:44 -0700" -->
+<!-- isosent="20240413195144" -->
+<!-- name="Michael Forney" -->
+<!-- email="mforney_at_mforney.org" -->
+<!-- subject="[scc-dev] [PATCH] tests/cc: Fix 0225-func.c pointer type" -->
+<!-- id="20240413195144.1464-1-mforney_at_mforney.org" -->
+<!-- inreplyto=" sizeof(__func__); i++) {" -->
+<!-- expires="-1" -->
+<map id="navbar" name="navbar">
+<ul class="links">
+<li>
+<dfn>This message</dfn>:
+[ <a href="0055.html#start55" name="options1" id="options1" tabindex="1">Message body</a> ]
+ [ More options (<a href="0055.html#options2">top</a>, <a href="0055.html#options3">bottom</a>) ]
+</li>
+<li>
+<dfn>Related messages</dfn>:
+<!-- unext="start" -->
+[ <a href="../202403/0054.html" title="Roberto E. Vargas Caballero: &quot;Re: [scc-dev] musl compilation on aarch64&quot;">Previous message</a> ]
+<!-- unextthread="start" -->
+<!-- ureply="end" -->
+</li>
+</ul>
+</map>
+<ul class="links">
+<li><a name="options2" id="options2"></a><dfn>Contemporary messages sorted</dfn>: [ <a href="date.html#msg55" title="Contemporary messages by date">by date</a> ] [ <a href="index.html#msg55" title="Contemporary discussion threads">by thread</a> ] [ <a href="subject.html#msg55" title="Contemporary messages by subject">by subject</a> ] [ <a href="author.html#msg55" title="Contemporary messages by author">by author</a> ] [ <a href="attachment.html" title="Contemporary messages by attachment">by messages with attachments</a> ]</li>
+</ul>
+</div>
+<!-- body="start" -->
+<div class="mail">
+<address class="headers">
+<span id="from">
+<dfn>From</dfn>: Michael Forney &lt;<a href="mailto:mforney_at_mforney.org?Subject=Re%3A%20%5Bscc-dev%5D%20%5BPATCH%5D%20tests%2Fcc%3A%20Fix%200225-func.c%20pointer%20type">mforney_at_mforney.org</a>&gt;
+</span><br />
+<span id="date"><dfn>Date</dfn>: Sat, 13 Apr 2024 12:51:44 -0700</span><br />
+</address>
+<br />
+According to C99 6.4.2.2p1, __func__ is declared as array of const
+<br />
+char, so when used as an initializer, it is converted to const char *.
+<br />
+<br />An initializer for a scalar follows the same type constraints as
+<br />
+simple assignment, which for pointers requires that both are to
+<br />
+compatible types, and char and const char are not compatible since
+<br />
+the have different qualifiers.
+<br />
+<pre>
+---
+ tests/cc/execute/0225-func.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+diff --git a/tests/cc/execute/0225-func.c b/tests/cc/execute/0225-func.c
+index 823866d6..698e2ef3 100644
+--- a/tests/cc/execute/0225-func.c
++++ b/tests/cc/execute/0225-func.c
+_at_&#64; -1,7 +1,7 &#64;&#64;
+ int
+ main(void)
+ {
+-	char *p = __func__;
++	const char *p = __func__;
+ 	int i;
+ 
+ 	for (i = 0; i &lt; sizeof(__func__); i++) {
+-- 
+2.44.0
+--
+To unsubscribe send a mail to scc-dev+unsubscribe_at_simple-cc.org
+</pre>
+<span id="received"><dfn>Received on</dfn> Sat 13 Apr 2024 - 21:51:44 CEST</span>
+</div>
+<!-- body="end" -->
+<div class="foot">
+<map id="navbarfoot" name="navbarfoot" title="Related messages">
+<ul class="links">
+<li><dfn>This message</dfn>: [ <a href="0055.html#start55">Message body</a> ]</li>
+<!-- lnext="start" -->
+<li><dfn>Previous message</dfn>: <a href="../202403/0054.html" title="Previous message in the list">Roberto E. Vargas Caballero: "Re: [scc-dev] musl compilation on aarch64"</a></li>
+<!-- lnextthread="start" -->
+<!-- lreply="end" -->
+</ul>
+<ul class="links">
+<li><a name="options3" id="options3"></a><dfn>Contemporary messages sorted</dfn>: [ <a href="date.html#msg55" title="Contemporary messages by date">by date</a> ] [ <a href="index.html#msg55" title="Contemporary discussion threads">by thread</a> ] [ <a href="subject.html#msg55" title="Contemporary messages by subject">by subject</a> ] [ <a href="author.html#msg55" title="Contemporary messages by author">by author</a> ] [ <a href="attachment.html" title="Contemporary messages by attachment">by messages with attachments</a> ]</li>
+</ul>
+</map>
+</div>
+<!-- trailer="footer" -->
+<p><small><em>
+This archive was generated by <a href="http://www.hypermail-project.org/">hypermail 2.3.0</a>
+: Sat 13 Apr 2024 - 22:00:30 CEST
+</em></small></p>
+</body>
+</html>

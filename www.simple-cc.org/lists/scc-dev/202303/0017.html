@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="generator" content="hypermail 2.3.0, see http://www.hypermail-project.org/" />
+<title>[scc-dev] C99 standard for a particular floating point format from Tim Kelly on 2023-03-08 (scc-dev)</title>
+<meta name="Author" content="Tim Kelly (gtkelly_at_dialectronics.com)" />
+<meta name="Subject" content="[scc-dev] C99 standard for a particular floating point format" />
+<meta name="Date" content="2023-03-08" />
+<style type="text/css">
+/*<![CDATA[*/
+/* To be incorporated in the main stylesheet, don't code it in hypermail! */
+body {color: black; background: #ffffff}
+dfn {font-weight: bold;}
+pre { background-color:inherit;}
+.head { border-bottom:1px solid black;}
+.foot { border-top:1px solid black;}
+th {font-style:italic;}
+table { margin-left:2em;}map ul {list-style:none;}
+#mid { font-size:0.9em;}
+#received { float:right;}
+address { font-style:inherit ;}
+/*]]>*/
+.quotelev1 {color : #990099}
+.quotelev2 {color : #ff7700}
+.quotelev3 {color : #007799}
+.quotelev4 {color : #95c500}
+.period {font-weight: bold}
+</style>
+</head>
+<body>
+<div class="head">
+<h1>[scc-dev] C99 standard for a particular floating point format</h1>
+<!-- received="Wed, 08 Mar 2023 08:16:53 -0500" -->
+<!-- isoreceived="20230308131653" -->
+<!-- sent="Wed, 08 Mar 2023 08:16:53 -0500" -->
+<!-- isosent="20230308131653" -->
+<!-- name="Tim Kelly" -->
+<!-- email="gtkelly_at_dialectronics.com" -->
+<!-- subject="[scc-dev] C99 standard for a particular floating point format" -->
+<!-- id="64088AC5.9030104_at_dialectronics.com" -->
+<!-- charset="UTF-8" -->
+<!-- expires="-1" -->
+<map id="navbar" name="navbar">
+<ul class="links">
+<li>
+<dfn>This message</dfn>:
+[ <a href="0017.html#start17" name="options1" id="options1" tabindex="1">Message body</a> ]
+ [ More options (<a href="0017.html#options2">top</a>, <a href="0017.html#options3">bottom</a>) ]
+</li>
+<li>
+<dfn>Related messages</dfn>:
+<!-- unext="start" -->
+[ <a href="0018.html" title="Roberto E. Vargas Caballero: &quot;Re: [scc-dev] additional error handling in cc1/error.c&quot;">Next message</a> ]
+[ <a href="0016.html" title="Tim Kelly: &quot;[scc-dev] additional error handling in cc1/error.c&quot;">Previous message</a> ]
+<!-- unextthread="start" -->
+<!-- ureply="end" -->
+</li>
+</ul>
+</map>
+<ul class="links">
+<li><a name="options2" id="options2"></a><dfn>Contemporary messages sorted</dfn>: [ <a href="date.html#msg17" title="Contemporary messages by date">by date</a> ] [ <a href="index.html#msg17" title="Contemporary discussion threads">by thread</a> ] [ <a href="subject.html#msg17" title="Contemporary messages by subject">by subject</a> ] [ <a href="author.html#msg17" title="Contemporary messages by author">by author</a> ] [ <a href="attachment.html" title="Contemporary messages by attachment">by messages with attachments</a> ]</li>
+</ul>
+</div>
+<!-- body="start" -->
+<div class="mail">
+<address class="headers">
+<span id="from">
+<dfn>From</dfn>: Tim Kelly &lt;<a href="mailto:gtkelly_at_dialectronics.com?Subject=Re%3A%20%5Bscc-dev%5D%20C99%20standard%20for%20a%20particular%20floating%20point%20format">gtkelly_at_dialectronics.com</a>&gt;
+</span><br />
+<span id="date"><dfn>Date</dfn>: Wed, 08 Mar 2023 08:16:53 -0500</span><br />
+</address>
+<br />
+Hello,
+<br />
+Perhaps someone on the list with more access to the C99 standard and/or 
+<br />
+experience can enlighten me on how
+<br />
+<br />double ddb = 0x400921FB54442D18;
+<br />
+<br />should be interpreted during parsing.  At first glance, one would be 
+<br />
+inclined to say the above is an integer, but in reading the draft of 
+<br />
+C99, I can not rule out that it should be interpreted as an IEE-754 
+<br />
+representation of a real number.  If it was shorter, I would concur that 
+<br />
+it is an integer, but it is of the correct length for a double.
+<br />
+<br />Although not common, it might be possible the programmer already knows 
+<br />
+the floating point representation of the number in question.  The above 
+<br />
+example is pi to 15 digits past the decimal.  I can not recall precisely 
+<br />
+where, but in one of cases when porting software to Minix 3.1.6, I have 
+<br />
+came across some manually encoded floating point values.
+<br />
+<br />&nbsp;From the standard, I can glean that hexadecimal representation is 
+<br />
+completely legal, before and after the decimal point, but only base 10 
+<br />
+numbers can be in the exponent (to avoid conflicting with the suffix 'F' 
+<br />
+to denote single precision).
+<br />
+<br />Beyond that, I am unable to find a specific statement saying hexadecimal 
+<br />
+numbers must contain a decimal point, which means the above number is 
+<br />
+ambiguous.  However, I do not find the draft to be particularly succinct 
+<br />
+in its discussions, and aspects appear to be contained in several 
+<br />
+different sections.
+<br />
+<br />Base 10 numbers are not required to have a decimal point when being 
+<br />
+declared:
+<br />
+<br />double ten = 10;
+<br />
+<br />is perfectly legal, obviously.  Therefore, I can infer neither is it a 
+<br />
+requirement that base 16 representation requires a decimal point.
+<br />
+<br />An argument could be made to follow what clang and/or pcc do, but at 
+<br />
+least with clang, the method seems to be do what gcc does.  I would 
+<br />
+rather be compliant with the standard, and if there is ambiguity about 
+<br />
+implementation, do the opposite of what gcc does (it's not really a 
+<br />
+choice if all the options do the same thing).
+<br />
+<br />I can say that clang and pcc appear to require a 'P' if the base 16 
+<br />
+number contains a decimal point and interprets the number as an integer 
+<br />
+if it is not present, but I am unable to find the specific clause 
+<br />
+requiring this.  If the decimal place and P are not required and P is 
+<br />
+omitted, I would make the assumption that the exponent is 0, i.e.
+<br />
+<br />double dec = 0x3FF3C28.F5C28F5C3;
+<br />
+<br />would be interpreted as
+<br />
+<br />double dec = 0x3FF3C28.F5C28F5C3P0;
+<br />
+<br />As a result, if the decimal place is not required, the original example 
+<br />
+of pi in IEEE-754 is ambiguous.
+<br />
+<br />Does anyone know what the standard is requiring regarding the specific 
+<br />
+format above?
+<br />
+<br />Thank you,
+<br />
+tim
+<br />
+<br /><pre>
+-- 
+&quot;We believe that when you create a machine to do the work of a man,
+you take something away from the man.&quot;
+					-- Sojef
+--
+To unsubscribe send a mail to scc-dev+unsubscribe_at_simple-cc.org
+</pre>
+<span id="received"><dfn>Received on</dfn> Wed 08 Mar 2023 - 14:16:53 CET</span>
+</div>
+<!-- body="end" -->
+<div class="foot">
+<map id="navbarfoot" name="navbarfoot" title="Related messages">
+<ul class="links">
+<li><dfn>This message</dfn>: [ <a href="0017.html#start17">Message body</a> ]</li>
+<!-- lnext="start" -->
+<li><dfn>Next message</dfn>: <a href="0018.html" title="Next message in the list">Roberto E. Vargas Caballero: "Re: [scc-dev] additional error handling in cc1/error.c"</a></li>
+<li><dfn>Previous message</dfn>: <a href="0016.html" title="Previous message in the list">Tim Kelly: "[scc-dev] additional error handling in cc1/error.c"</a></li>
+<!-- lnextthread="start" -->
+<!-- lreply="end" -->
+</ul>
+<ul class="links">
+<li><a name="options3" id="options3"></a><dfn>Contemporary messages sorted</dfn>: [ <a href="date.html#msg17" title="Contemporary messages by date">by date</a> ] [ <a href="index.html#msg17" title="Contemporary discussion threads">by thread</a> ] [ <a href="subject.html#msg17" title="Contemporary messages by subject">by subject</a> ] [ <a href="author.html#msg17" title="Contemporary messages by author">by author</a> ] [ <a href="attachment.html" title="Contemporary messages by attachment">by messages with attachments</a> ]</li>
+</ul>
+</map>
+</div>
+<!-- trailer="footer" -->
+<p><small><em>
+This archive was generated by <a href="http://www.hypermail-project.org/">hypermail 2.3.0</a>
+: Fri 21 Apr 2023 - 16:20:39 CEST
+</em></small></p>
+</body>
+</html>
