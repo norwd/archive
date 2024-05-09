@@ -1,0 +1,561 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<meta name="generator" content="hypermail 2.3.0, see http://www.hypermail-project.org/" />
+<title>[PATCH] cc1: Use FATAL() instead of abort() from Roberto E. Vargas Caballero on 2023-03-02 (scc-dev)</title>
+<meta name="Author" content="Roberto E. Vargas Caballero (k0ga_at_shike2.com)" />
+<meta name="Subject" content="[PATCH] cc1: Use FATAL() instead of abort()" />
+<meta name="Date" content="2023-03-02" />
+<style type="text/css">
+/*<![CDATA[*/
+/* To be incorporated in the main stylesheet, don't code it in hypermail! */
+body {color: black; background: #ffffff}
+dfn {font-weight: bold;}
+pre { background-color:inherit;}
+.head { border-bottom:1px solid black;}
+.foot { border-top:1px solid black;}
+th {font-style:italic;}
+table { margin-left:2em;}map ul {list-style:none;}
+#mid { font-size:0.9em;}
+#received { float:right;}
+address { font-style:inherit ;}
+/*]]>*/
+.quotelev1 {color : #990099}
+.quotelev2 {color : #ff7700}
+.quotelev3 {color : #007799}
+.quotelev4 {color : #95c500}
+.period {font-weight: bold}
+</style>
+</head>
+<body>
+<div class="head">
+<h1>[PATCH] cc1: Use FATAL() instead of abort()</h1>
+<!-- received="Mon Sep 17 00:00:00 2001" -->
+<!-- isoreceived="20010916220000" -->
+<!-- sent="Thu, 2 Mar 2023 18:42:24 +0100" -->
+<!-- isosent="20230302174224" -->
+<!-- name="Roberto E. Vargas Caballero" -->
+<!-- email="k0ga_at_shike2.com" -->
+<!-- subject="[PATCH] cc1: Use FATAL() instead of abort()" -->
+<!-- id="1682087407.0000_at_hypermail.dummy" -->
+<!-- inreplyto="&lt; 0,      /* type qualifier tokens are used as flags */" -->
+<!-- expires="-1" -->
+<map id="navbar" name="navbar">
+<ul class="links">
+<li>
+<dfn>This message</dfn>:
+[ <a href="0041.html#start41" name="options1" id="options1" tabindex="1">Message body</a> ]
+ [ More options (<a href="0041.html#options2">top</a>, <a href="0041.html#options3">bottom</a>) ]
+</li>
+<li>
+<dfn>Related messages</dfn>:
+<!-- unext="start" -->
+[ <a href="0042.html" title="Roberto E. Vargas Caballero: &quot;[PATCH] doc: Add more information about toolchain settings&quot;">Next message</a> ]
+[ <a href="../202303/0040.html" title="Tim Kelly: &quot;Re: [scc-dev] introductions&quot;">Previous message</a> ]
+<!-- unextthread="start" -->
+<!-- ureply="end" -->
+</li>
+</ul>
+</map>
+<ul class="links">
+<li><a name="options2" id="options2"></a><dfn>Contemporary messages sorted</dfn>: [ <a href="date.html#msg41" title="Contemporary messages by date">by date</a> ] [ <a href="index.html#msg41" title="Contemporary discussion threads">by thread</a> ] [ <a href="subject.html#msg41" title="Contemporary messages by subject">by subject</a> ] [ <a href="author.html#msg41" title="Contemporary messages by author">by author</a> ] [ <a href="attachment.html" title="Contemporary messages by attachment">by messages with attachments</a> ]</li>
+</ul>
+</div>
+<!-- body="start" -->
+<div class="mail">
+<address class="headers">
+<span id="from">
+<dfn>From</dfn>: Roberto E. Vargas Caballero &lt;<a href="mailto:k0ga_at_shike2.com?Subject=Re%3A%20%5BPATCH%5D%20cc1%3A%20Use%20FATAL()%20instead%20of%20abort()">k0ga_at_shike2.com</a>&gt;
+</span><br />
+<span id="date"><dfn>Date</dfn>: Thu, 2 Mar 2023 18:42:24 +0100</span><br />
+</address>
+<br />
+FATAL() allows to give some additional information about
+<br />
+the reason to abort.
+<br />
+<pre>
+---
+ include/scc/scc/scc.h   |   5 ++
+ src/cmd/cc/cc1/cc1.h    |   5 +-
+ src/cmd/cc/cc1/code.c   |   6 +-
+ src/cmd/cc/cc1/error.c  | 169 ++++++++++++++++++++++++++++++++++++++++
+ src/cmd/cc/cc1/expr.c   |   4 +-
+ src/cmd/cc/cc1/fold.c   |   2 +-
+ src/cmd/cc/cc1/init.c   |   6 +-
+ src/cmd/cc/cc1/lex.c    |   4 +-
+ src/cmd/cc/cc1/symbol.c |   2 +-
+ src/cmd/cc/cc1/types.c  |   8 +-
+ src/libscc/Makefile     |   1 +
+ src/libscc/fatal.c      |  18 +++++
+ 12 files changed, 213 insertions(+), 17 deletions(-)
+ create mode 100644 src/libscc/fatal.c
+diff --git a/include/scc/scc/scc.h b/include/scc/scc/scc.h
+index e18b38ea..eee2179c 100644
+--- a/include/scc/scc/scc.h
++++ b/include/scc/scc/scc.h
+_at_&#64; -5,9 +5,11 &#64;&#64; extern int enadebug;
+ #ifndef NDEBUG
+ #define DBG(...) dbg(__VA_ARGS__)
+ #define DBGON() (enadebug = 1)
++#define FATAL(...) fatal(__FILE__, __LINE__, __VA_ARGS__)
+ #else
+ #define DBG(...)
+ #define DBGON()
++#define FATAL(...) abort()
+ #endif
+ 
+ #define TINT        long long
+_at_&#64; -17,6 +19,8 &#64;&#64; extern int enadebug;
+ #define TFLOAT      double
+ #define SIZET       size_t
+ 
++#define NELEM(x) (sizeof(x)/sizeof((x)[0]))
++
+ struct items {
+ 	char **s;
+ 	unsigned n;
+_at_&#64; -26,6 +30,7 &#64;&#64; typedef struct alloc Alloc;
+ 
+ extern void die(const char *fmt, ...);
+ extern void dbg(const char *fmt, ...);
++extern void fatal(char *, int, char *, ...);
+ extern void newitem(struct items *items, char *item);
+ extern void *xmalloc(size_t size);
+ extern void *xcalloc(size_t nmemb, size_t size);
+diff --git a/src/cmd/cc/cc1/cc1.h b/src/cmd/cc/cc1/cc1.h
+index e64cbf3f..33792454 100644
+--- a/src/cmd/cc/cc1/cc1.h
++++ b/src/cmd/cc/cc1/cc1.h
+_at_&#64; -129,7 +129,7 &#64;&#64; enum {
+ 	CPPMODE
+ };
+ 
+-/* input tokens */
++/* input tokens (see error.c for strings) */
+ enum tokens {
+ 	CONST      = 1 &lt;&lt; 0,      /* type qualifier tokens are used as flags */
+ 	RESTRICT   = 1 &lt;&lt; 1,
+_at_&#64; -216,7 +216,7 &#64;&#64; enum tokens {
+ 	EOFTOK
+ };
+ 
+-/* operations */
++/* operations (see error.c for strings) */
+ enum op {
+ 	OADD,
+ 	OMUL,
+_at_&#64; -433,6 +433,7 &#64;&#64; extern void unexpected(void);
+ extern void errorp(char *fmt, ...);
+ extern void cpperror(char *fmt, ...);
+ extern Type *deftype(Type *tp);
++extern char *opstr(int), *tokstr(int);
+ 
+ /* types.c */
+ extern int eqtype(Type *tp1, Type *tp2, int eqflag);
+diff --git a/src/cmd/cc/cc1/code.c b/src/cmd/cc/cc1/code.c
+index 89e3033e..5c8144b0 100644
+--- a/src/cmd/cc/cc1/code.c
++++ b/src/cmd/cc/cc1/code.c
+_at_&#64; -230,7 +230,7 &#64;&#64; emitconst(Node *np)
+ 		        (long long) u &amp; ones(tp-&gt;size));
+ 		break;
+ 	default:
+-		abort();
++		FATAL(&quot;default abort: tp-&gt;op = %s\n&quot;, tokstr(tp-&gt;op));
+ 	}
+ }
+ 
+_at_&#64; -306,7 +306,7 &#64;&#64; emittype(int op, void *arg)
+ 	case ENUM:
+ 		return;
+ 	default:
+-		abort();
++		FATAL(&quot;default abort: tp-&gt;op = %s\n&quot;, tokstr(tp-&gt;op));
+ 	}
+ }
+ 
+_at_&#64; -404,7 +404,7 &#64;&#64; emitdesig(Node *np, Type *tp, SIZET *addr)
+ 		emitpadding(tp, addr);
+ 		break;
+ 	default:
+-		abort();
++		FATAL(&quot;default abort: tp-&gt;op = %s\n&quot;, tokstr(tp-&gt;op));
+ 	}
+ 
+ 	if (sym) {
+diff --git a/src/cmd/cc/cc1/error.c b/src/cmd/cc/cc1/error.c
+index a89b7e7f..716811ed 100644
+--- a/src/cmd/cc/cc1/error.c
++++ b/src/cmd/cc/cc1/error.c
+_at_&#64; -10,6 +10,175 &#64;&#64;
+ extern int failure;
+ static unsigned nerrors;
+ 
++#ifndef NDEBUG
++char *
++tokstr(int tok)
++{
++	char *strings[] = {
++		[CONST] = &quot;CONST&quot;,
++		[RESTRICT] = &quot;RESTRICT&quot;,
++		[VOLATILE] = &quot;VOLATILE&quot;,
++		[INLINE] = &quot;INLINE&quot;,
++		[TQUALIFIER] = &quot;TQUALIFIER&quot;,
++		[MACROPAR] = &quot;MACROPAR&quot;,
++		[CONCAT] = &quot;CONCAT&quot;,
++		[STRINGIZE] = &quot;STRINGIZE&quot;,
++		[TYPE] = &quot;TYPE&quot;,
++		[IDEN] = &quot;IDEN&quot;,
++		[SCLASS] = &quot;SCLASS&quot;,
++		[CONSTANT] = &quot;CONSTANT&quot;,
++		[STRING] = &quot;STRING&quot;,
++		[SIZEOF] = &quot;SIZEOF&quot;,
++		[INDIR] = &quot;INDIR&quot;,
++		[INC] = &quot;INC&quot;,
++		[DEC] = &quot;DEC&quot;,
++		[SHL] = &quot;SHL&quot;,
++		[SHR] = &quot;SHR&quot;,
++		[LE] = &quot;LE&quot;,
++		[GE] = &quot;GE&quot;,
++		[EQ] = &quot;EQ&quot;,
++		[NE] = &quot;NE&quot;,
++		[AND] = &quot;AND&quot;,
++		[OR] = &quot;OR&quot;,
++		[MUL_EQ] = &quot;MUL_EQ&quot;,
++		[DIV_EQ] = &quot;DIV_EQ&quot;,
++		[MOD_EQ] = &quot;MOD_EQ&quot;,
++		[ADD_EQ] = &quot;ADD_EQ&quot;,
++		[SUB_EQ] = &quot;SUB_EQ&quot;,
++		[AND_EQ] = &quot;AND_EQ&quot;,
++		[XOR_EQ] = &quot;XOR_EQ&quot;,
++		[OR_EQ] = &quot;OR_EQ&quot;,
++		[SHL_EQ] = &quot;SHL_EQ&quot;,
++		[SHR_EQ] = &quot;SHR_EQ&quot;,
++		[ELLIPSIS] = &quot;ELLIPSIS&quot;,
++		[CASE] = &quot;CASE&quot;,
++		[DEFAULT] = &quot;DEFAULT&quot;,
++		[IF] = &quot;IF&quot;,
++		[ELSE] = &quot;ELSE&quot;,
++		[SWITCH] = &quot;SWITCH&quot;,
++		[WHILE] = &quot;WHILE&quot;,
++		[DO] = &quot;DO&quot;,
++		[FOR] = &quot;FOR&quot;,
++		[GOTO] = &quot;GOTO&quot;,
++		[VOID] = &quot;VOID&quot;,
++		[FLOAT] = &quot;FLOAT&quot;,
++		[INT] = &quot;INT&quot;,
++		[BOOL] = &quot;BOOL&quot;,
++		[VA_LIST] = &quot;VA_LIST&quot;,
++		[STRUCT] = &quot;STRUCT&quot;,
++		[UNION] = &quot;UNION&quot;,
++		[CHAR] = &quot;CHAR&quot;,
++		[DOUBLE] = &quot;DOUBLE&quot;,
++		[SHORT] = &quot;SHORT&quot;,
++		[LONG] = &quot;LONG&quot;,
++		[LLONG] = &quot;LLONG&quot;,
++		[COMPLEX] = &quot;COMPLEX&quot;,
++		[TYPEDEF] = &quot;TYPEDEF&quot;,
++		[EXTERN] = &quot;EXTERN&quot;,
++		[STATIC] = &quot;STATIC&quot;,
++		[AUTO] = &quot;AUTO&quot;,
++		[REGISTER] = &quot;REGISTER&quot;,
++		[ENUM] = &quot;ENUM&quot;,
++		[TYPEIDEN] = &quot;TYPEIDEN&quot;,
++		[UNSIGNED] = &quot;UNSIGNED&quot;,
++		[SIGNED] = &quot;SIGNED&quot;,
++		[CONTINUE] = &quot;CONTINUE&quot;,
++		[BREAK] = &quot;BREAK&quot;,
++		[RETURN] = &quot;RETURN&quot;,
++		[DEFINE] = &quot;DEFINE&quot;,
++		[DEFINED] = &quot;DEFINED&quot;,
++		[INCLUDE] = &quot;INCLUDE&quot;,
++		[LINE] = &quot;LINE&quot;,
++		[PRAGMA] = &quot;PRAGMA&quot;,
++		[ERROR] = &quot;ERROR&quot;,
++		[IFDEF] = &quot;IFDEF&quot;,
++		[ELIF] = &quot;ELIF&quot;,
++		[IFNDEF] = &quot;IFNDEF&quot;,
++		[UNDEF] = &quot;UNDEF&quot;,
++		[ENDIF] = &quot;ENDIF&quot;,
++		[BUILTIN] = &quot;BUILTIN&quot;,
++		[EOFTOK] = &quot;EOFTOK&quot;
++	};
++
++	if (tok &gt;= NELEM(strings) || !strings[tok])
++		return &quot;unkown token&quot;;
++	return strings[tok];
++}
++
++char *
++opstr(int op)
++{
++	char *strings[] = {
++		[OADD] = &quot;OADD&quot;,
++		[OMUL] = &quot;OMUL&quot;,
++		[OSUB] = &quot;OSUB&quot;,
++		[OINC] = &quot;OINC&quot;,
++		[ODEC] = &quot;ODEC&quot;,
++		[ODIV] = &quot;ODIV&quot;,
++		[OMOD] = &quot;OMOD&quot;,
++		[OSHL] = &quot;OSHL&quot;,
++		[OSHR] = &quot;OSHR&quot;,
++		[OBAND] = &quot;OBAND&quot;,
++		[OBXOR] = &quot;OBXOR&quot;,
++		[OBOR] = &quot;OBOR&quot;,
++		[OSNEG] = &quot;OSNEG&quot;,
++		[ONEG] = &quot;ONEG&quot;,
++		[OCPL] = &quot;OCPL&quot;,
++		[OAND] = &quot;OAND&quot;,
++		[OOR] = &quot;OOR&quot;,
++		[OEQ] = &quot;OEQ&quot;,
++		[ONE] = &quot;ONE&quot;,
++		[OLT] = &quot;OLT&quot;,
++		[OGE] = &quot;OGE&quot;,
++		[OLE] = &quot;OLE&quot;,
++		[OGT] = &quot;OGT&quot;,
++		[OASSIGN] = &quot;OASSIGN&quot;,
++		[OA_MUL] = &quot;OA_MUL&quot;,
++		[OA_DIV] = &quot;OA_DIV&quot;,
++		[OA_MOD] = &quot;OA_MOD&quot;,
++		[OA_ADD] = &quot;OA_ADD&quot;,
++		[OA_SUB] = &quot;OA_SUB&quot;,
++		[OA_SHL] = &quot;OA_SHL&quot;,
++		[OA_SHR] = &quot;OA_SHR&quot;,
++		[OA_AND] = &quot;OA_AND&quot;,
++		[OA_XOR] = &quot;OA_XOR&quot;,
++		[OA_OR] = &quot;OA_OR&quot;,
++		[OADDR] = &quot;OADDR&quot;,
++		[OCOMMA] = &quot;OCOMMA&quot;,
++		[OCAST] = &quot;OCAST&quot;,
++		[OPTR] = &quot;OPTR&quot;,
++		[OSYM] = &quot;OSYM&quot;,
++		[OASK] = &quot;OASK&quot;,
++		[OCOLON] = &quot;OCOLON&quot;,
++		[OFIELD] = &quot;OFIELD&quot;,
++		[OLABEL] = &quot;OLABEL&quot;,
++		[ODEFAULT] = &quot;ODEFAULT&quot;,
++		[OCASE] = &quot;OCASE&quot;,
++		[OJUMP] = &quot;OJUMP&quot;,
++		[OBRANCH] = &quot;OBRANCH&quot;,
++		[OEXPR] = &quot;OEXPR&quot;,
++		[OEFUN] = &quot;OEFUN&quot;,
++		[OELOOP] = &quot;OELOOP&quot;,
++		[OBLOOP] = &quot;OBLOOP&quot;,
++		[OFUN] = &quot;OFUN&quot;,
++		[OPAR] = &quot;OPAR&quot;,
++		[OCALL] = &quot;OCALL&quot;,
++		[OCALLE] = &quot;OCALLE&quot;,
++		[ORET] = &quot;ORET&quot;,
++		[ODECL] = &quot;ODECL&quot;,
++		[OBSWITCH] = &quot;OBSWITCH&quot;,
++		[OESWITCH] = &quot;OESWITCH&quot;,
++		[OINIT] = &quot;OINIT&quot;,
++		[OBUILTIN] = &quot;OBUILTIN&quot;,
++		[OTYP] = &quot;OTYP&quot;,
++	};
++
++	if (op &gt;= NELEM(strings) || !strings[op])
++		return &quot;unkown operation&quot;;
++	return strings[op];
++}
++#endif
++
+ static void
+ warn_error(int flag, char *fmt, va_list va)
+ {
+diff --git a/src/cmd/cc/cc1/expr.c b/src/cmd/cc/cc1/expr.c
+index 75edb4b4..dcba095f 100644
+--- a/src/cmd/cc/cc1/expr.c
++++ b/src/cmd/cc/cc1/expr.c
+_at_&#64; -81,7 +81,7 &#64;&#64; promote(Node *np)
+ 		tp = doubletype;
+ 		break;
+ 	default:
+-		abort();
++		FATAL(&quot;default abort: tp-&gt;op = %s\n&quot;, tokstr(tp-&gt;op));
+ 	}
+ 	if ((new = convert(np, tp, 1)) != NULL)
+ 		return new;
+_at_&#64; -466,7 +466,7 &#64;&#64; negop(int op)
+ 	case OGE:  return OLT;
+ 	case OLE:  return OGT;
+ 	case OGT:  return OLE;
+-	default:   abort();
++	default:   FATAL(&quot;default abort: op = %s\n&quot;, opstr(op));
+ 	}
+ 	return op;
+ }
+diff --git a/src/cmd/cc/cc1/fold.c b/src/cmd/cc/cc1/fold.c
+index e43fff79..124f9081 100644
+--- a/src/cmd/cc/cc1/fold.c
++++ b/src/cmd/cc/cc1/fold.c
+_at_&#64; -305,7 +305,7 &#64;&#64; foldconst(int type, int op, Type *tp, Symbol *ls, Symbol *rs)
+ 			return NULL;
+ 		break;
+ 	default:
+-		abort();
++		FATAL(&quot;default abort: type = %s\n&quot;, tokstr(type));
+ 	}
+ 	sym = newsym(NS_IDEN, NULL);
+ 	sym-&gt;flags |= SCONSTANT;
+diff --git a/src/cmd/cc/cc1/init.c b/src/cmd/cc/cc1/init.c
+index b3360cec..65967f3c 100644
+--- a/src/cmd/cc/cc1/init.c
++++ b/src/cmd/cc/cc1/init.c
+_at_&#64; -343,8 +343,10 &#64;&#64; repeat:
+ 		goto repeat;
+ 	case ARY:
+ 	case STRUCT:
+-		if (!(np-&gt;flags &amp; NCONST))
+-			abort(); /* TODO */
++		if (!(np-&gt;flags &amp; NCONST)) {
++			/* TODO */
++			FATAL(&quot;default abort: tp-&gt;op = %s\n&quot;, tokstr(tp-&gt;op));
++		}
+ 		hidden = newsym(NS_IDEN, NULL);
+ 		hidden-&gt;id = newid();
+ 		hidden-&gt;type = sym-&gt;type;
+diff --git a/src/cmd/cc/cc1/lex.c b/src/cmd/cc/cc1/lex.c
+index 22f0928c..c356fec9 100644
+--- a/src/cmd/cc/cc1/lex.c
++++ b/src/cmd/cc/cc1/lex.c
+_at_&#64; -107,7 +107,7 &#64;&#64; addinput(int type, void *arg, int fail)
+ 		DBG(&quot;INPUT: file input 'stdin'&quot;);
+ 		break;
+ 	default:
+-		abort();
++		FATAL(&quot;default abort: type = %d\n&quot;, type);
+ 	}
+ 
+ 	if (!buffer) {
+_at_&#64; -153,7 +153,7 &#64;&#64; delinput(void)
+ 		DBG(&quot;INPUT: stdin finished&quot;);
+ 		break;
+ 	default:
+-		abort();
++		FATAL(&quot;default abort: type = %d\n&quot;, ip-&gt;flags &amp; ITYPE);
+ 	}
+ 
+ 	input = ip-&gt;next;
+diff --git a/src/cmd/cc/cc1/symbol.c b/src/cmd/cc/cc1/symbol.c
+index 7055ff03..879df899 100644
+--- a/src/cmd/cc/cc1/symbol.c
++++ b/src/cmd/cc/cc1/symbol.c
+_at_&#64; -40,7 +40,7 &#64;&#64; dumpstab(Symbol **tbl, char *msg)
+ 	else if (tbl == htablbl)
+ 		size = NR_LBL_HASH;
+ 	else
+-		abort();
++		FATAL(&quot;default abort; tbl = %d\n&quot;, tbl);
+ 
+ 	for (bp = tbl; bp &lt; &amp;tbl[size]; ++bp) {
+ 		if (*bp == NULL)
+diff --git a/src/cmd/cc/cc1/types.c b/src/cmd/cc/cc1/types.c
+index fc2b84a9..53cf4e9c 100644
+--- a/src/cmd/cc/cc1/types.c
++++ b/src/cmd/cc/cc1/types.c
+_at_&#64; -98,7 +98,7 &#64;&#64; getlimits(Type *tp)
+ 		}
+ 		break;
+ 	default:
+-		abort();
++		FATAL(&quot;default abort: tp-&gt;op = %s\n&quot;, tokstr(tp-&gt;op));
+ 	}
+ 
+ 	return &amp;limits[ntable][ntype];
+_at_&#64; -240,7 +240,7 &#64;&#64; typesize(Type *tp)
+ 	case FTN:
+ 		return;
+ 	default:
+-		abort();
++		FATAL(&quot;default abort: tp-&gt;op = %s\n&quot;, tokstr(tp-&gt;op));
+ 	}
+ }
+ 
+_at_&#64; -337,7 +337,7 &#64;&#64; mktype(Type *tp, int op, TINT nelem, Type *pars[])
+ 	create_type:
+ 		return newtype(&amp;type);
+ 	default:
+-		abort();
++		FATAL(&quot;default abort: op = %s\n&quot;, tokstr(op));
+ 	}
+ 
+ 	tbl = &amp;typetab[HASH(&amp;type)];
+_at_&#64; -467,7 +467,7 &#64;&#64; eqtype(Type *tp1, Type *tp2, int equiv)
+ 	case FLOAT:
+ 		return tp1-&gt;letter == tp2-&gt;letter;
+ 	default:
+-		abort();
++		FATAL(&quot;default abort: tp1-&gt;op = %s\n&quot;, tokstr(tp1-&gt;op));
+ 	}
+ }
+ 
+diff --git a/src/libscc/Makefile b/src/libscc/Makefile
+index a0a0b070..752c8f7d 100644
+--- a/src/libscc/Makefile
++++ b/src/libscc/Makefile
+_at_&#64; -6,6 +6,7 &#64;&#64; include $(PROJECTDIR)/scripts/rules&#46;<!--nospam-->mk
+ OBJS =\
+ 	debug.o\
+ 	die.o\
++	fatal.o\
+ 	newitem.o\
+ 	xcalloc.o\
+ 	xmalloc.o\
+diff --git a/src/libscc/fatal.c b/src/libscc/fatal.c
+new file mode 100644
+index 00000000..259de16e
+--- /dev/null
++++ b/src/libscc/fatal.c
+_at_&#64; -0,0 +1,18 &#64;&#64;
++#include &lt;stdarg.h&gt;
++#include &lt;stdio.h&gt;
++#include &lt;stdlib.h&gt;
++
++#include &lt;scc/arg.h&gt;
++#include &lt;scc/scc.h&gt;
++
++void
++fatal(char *fname, int lineno, char *fmt, ...)
++{
++	va_list va;
++
++	va_start(va, fmt);
++	fprintf(stderr, &quot;%s:&quot;, argv0);
++	vfprintf(stderr, fmt, va);
++	fputc('\n', stderr);
++	abort();
++}
+-- 
+2.39.2
+--
+To unsubscribe send a mail to scc-dev+unsubscribe_at_simple-cc.org
+</pre>
+<span id="received"><dfn>Received on</dfn> Mon 17 Sep 2001 - 00:00:00 CEST</span>
+</div>
+<!-- body="end" -->
+<div class="foot">
+<map id="navbarfoot" name="navbarfoot" title="Related messages">
+<ul class="links">
+<li><dfn>This message</dfn>: [ <a href="0041.html#start41">Message body</a> ]</li>
+<!-- lnext="start" -->
+<li><dfn>Next message</dfn>: <a href="0042.html" title="Next message in the list">Roberto E. Vargas Caballero: "[PATCH] doc: Add more information about toolchain settings"</a></li>
+<li><dfn>Previous message</dfn>: <a href="../202303/0040.html" title="Previous message in the list">Tim Kelly: "Re: [scc-dev] introductions"</a></li>
+<!-- lnextthread="start" -->
+<!-- lreply="end" -->
+</ul>
+<ul class="links">
+<li><a name="options3" id="options3"></a><dfn>Contemporary messages sorted</dfn>: [ <a href="date.html#msg41" title="Contemporary messages by date">by date</a> ] [ <a href="index.html#msg41" title="Contemporary discussion threads">by thread</a> ] [ <a href="subject.html#msg41" title="Contemporary messages by subject">by subject</a> ] [ <a href="author.html#msg41" title="Contemporary messages by author">by author</a> ] [ <a href="attachment.html" title="Contemporary messages by attachment">by messages with attachments</a> ]</li>
+</ul>
+</map>
+</div>
+<!-- trailer="footer" -->
+<p><small><em>
+This archive was generated by <a href="http://www.hypermail-project.org/">hypermail 2.3.0</a>
+: Fri 21 Apr 2023 - 16:30:07 CEST
+</em></small></p>
+</body>
+</html>

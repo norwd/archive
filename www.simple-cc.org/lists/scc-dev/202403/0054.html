@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=us-ascii" />
+<meta name="generator" content="hypermail 2.3.0, see http://www.hypermail-project.org/" />
+<title>Re: [scc-dev] musl compilation on aarch64 from Roberto E. Vargas Caballero on 2024-03-27 (scc-dev)</title>
+<meta name="Author" content="Roberto E. Vargas Caballero (k0ga_at_shike2.com)" />
+<meta name="Subject" content="Re: [scc-dev] musl compilation on aarch64" />
+<meta name="Date" content="2024-03-27" />
+<style type="text/css">
+/*<![CDATA[*/
+/* To be incorporated in the main stylesheet, don't code it in hypermail! */
+body {color: black; background: #ffffff}
+dfn {font-weight: bold;}
+pre { background-color:inherit;}
+.head { border-bottom:1px solid black;}
+.foot { border-top:1px solid black;}
+th {font-style:italic;}
+table { margin-left:2em;}map ul {list-style:none;}
+#mid { font-size:0.9em;}
+#received { float:right;}
+address { font-style:inherit ;}
+/*]]>*/
+.quotelev1 {color : #990099}
+.quotelev2 {color : #ff7700}
+.quotelev3 {color : #007799}
+.quotelev4 {color : #95c500}
+.period {font-weight: bold}
+</style>
+</head>
+<body>
+<div class="head">
+<h1>Re: [scc-dev] musl compilation on aarch64</h1>
+<!-- received="Wed, 27 Mar 2024 08:07:12 +0100" -->
+<!-- isoreceived="20240327070712" -->
+<!-- sent="Wed, 27 Mar 2024 08:07:12 +0100" -->
+<!-- isosent="20240327070712" -->
+<!-- name="Roberto E. Vargas Caballero" -->
+<!-- email="k0ga_at_shike2.com" -->
+<!-- subject="Re: [scc-dev] musl compilation on aarch64" -->
+<!-- id="ZgPFoAqOBSjxnLzX_at_simple-cc.openbsd.amsterdam" -->
+<!-- charset="us-ascii" -->
+<!-- inreplyto="CAB3eKoArAxOjYEHXPWaY29_0AXFStpQRLZGT8BQVAuAp4DsCkQ_at_mail.gmail.com" -->
+<!-- expires="-1" -->
+<map id="navbar" name="navbar">
+<ul class="links">
+<li>
+<dfn>This message</dfn>:
+[ <a href="0054.html#start54" name="options1" id="options1" tabindex="1">Message body</a> ]
+ [ More options (<a href="0054.html#options2">top</a>, <a href="0054.html#options3">bottom</a>) ]
+</li>
+<li>
+<dfn>Related messages</dfn>:
+<!-- unext="start" -->
+[ <a href="../202404/0055.html" title="Michael Forney: &quot;[scc-dev] [PATCH] tests/cc: Fix 0225-func.c pointer type&quot;">Next message</a> ]
+[ <a href="0053.html" title="Brian Mayer: &quot;[scc-dev] musl compilation on aarch64&quot;">Previous message</a> ]
+[ <a href="0053.html" title="Brian Mayer: &quot;[scc-dev] musl compilation on aarch64&quot;">In reply to</a> ]
+[ <a href="0053.html" title="Message to which this message replies: &quot;Brian Mayer&quot;">[scc-dev] musl compilation on aarch64</a> ]
+<!-- unextthread="start" -->
+<!-- ureply="end" -->
+</li>
+</ul>
+</map>
+<ul class="links">
+<li><a name="options2" id="options2"></a><dfn>Contemporary messages sorted</dfn>: [ <a href="date.html#msg54" title="Contemporary messages by date">by date</a> ] [ <a href="index.html#msg54" title="Contemporary discussion threads">by thread</a> ] [ <a href="subject.html#msg54" title="Contemporary messages by subject">by subject</a> ] [ <a href="author.html#msg54" title="Contemporary messages by author">by author</a> ] [ <a href="attachment.html" title="Contemporary messages by attachment">by messages with attachments</a> ]</li>
+</ul>
+</div>
+<!-- body="start" -->
+<div class="mail">
+<address class="headers">
+<span id="from">
+<dfn>From</dfn>: Roberto E. Vargas Caballero &lt;<a href="mailto:k0ga_at_shike2.com?Subject=Re%3A%20%5Bscc-dev%5D%20musl%20compilation%20on%20aarch64">k0ga_at_shike2.com</a>&gt;
+</span><br />
+<span id="date"><dfn>Date</dfn>: Wed, 27 Mar 2024 08:07:12 +0100</span><br />
+</address>
+<br />
+Hi,
+<br />
+<br /><br />First,I would like to apolgize for the delay, but I am in a travel in the
+<br />
+opposite side of the world,  so I didn't have too much time to look this mail.
+<br />
+<br />On Thu, Mar 14, 2024 at 05:14:45PM -0300, Brian Mayer wrote:
+<br />
+<a href="0053.html#0054qlink1">&gt; Following up with the aarch64 support, now I'm trying to compile it
+</a><br>
+<em class="quotelev1">&gt; for a musl system, I'm using buildroot that uses GCC with a musl libc
+</em><br><em class="quotelev1">&gt; compiled.
+</em><br><em class="quotelev1">&gt; 
+</em><br><em class="quotelev1">&gt; My build commands are:
+</em><br><em class="quotelev1">&gt; 
+</em><br><em class="quotelev1">&gt; make LIBPROFILE=musl config
+</em><br><em class="quotelev1">&gt; make
+</em><br><br />They seem correct.  I suppose you ran them after a make distclean to be
+<br />
+sure that the tree is clean. You should be aware of this part of the
+<br />
+README file too:
+<br />
+<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;It will generate the files sys.h configured to be used with
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a musl libc. Beware that it is likely that those files have
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;to be customized to fit your system because the macro
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GCCLIBPATH used by the musl template depends heavily of the
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;toolchain used to compile musl. As the musl libc is likely
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;installed in a different prefix the scc compilation must
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;be modified to:
+<br />
+<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$ make LIBPREFIX=/usr/local/musl # point to the prefix used by your musl
+<br />
+<br /><a href="0053.html#0054qlink2">&gt; Build fails while compiling something on qbe submodule:
+</a><br>
+<br />Following your log seems an error linking scc-ar instead of a problem in qbe.
+<br />
+Are you using parallel build in this log? (it can make logs very confusing).
+<br />
+<br /><em class="quotelev1">&gt; make[4]: Entering directory
+</em><br><a href="0053.html#0054qlink3">&gt; '/home/blmayer/git/distro/buildroot/output/build/scc-13fabd7c1b99fc97c8fe9cfb58f4e898eb8599f9/src/cmd'
+</a><br>
+<em class="quotelev1">&gt; /home/blmayer/git/distro/buildroot/output/host/bin/aarch64-buildroot-linux-musl-gcc
+</em><br><em class="quotelev1">&gt;     -L../../lib/scc  nm.o -lmach -lscc      -o ../../bin/scc-nm
+</em><br><em class="quotelev1">&gt; /home/blmayer/git/distro/buildroot/output/host/bin/aarch64-buildroot-linux-musl-gcc
+</em><br><em class="quotelev1">&gt;     -L../../lib/scc  ar.o posix.o      -o ../../bin/scc-ar
+</em><br><em class="quotelev1">&gt; /home/blmayer/git/distro/buildroot/output/host/bin/aarch64-buildroot-linux-musl-gcc
+</em><br><em class="quotelev1">&gt;     -L../../lib/scc  strip.o -lmach -lscc      -o ../../bin/scc-strip
+</em><br><em class="quotelev1">&gt; /home/blmayer/git/distro/buildroot/output/host/bin/aarch64-buildroot-linux-musl-gcc
+</em><br><em class="quotelev1">&gt;     -L../../lib/scc  size.o -lmach -lscc      -o ../../bin/scc-size
+</em><br><em class="quotelev1">&gt; /home/blmayer/git/distro/buildroot/output/host/bin/aarch64-buildroot-linux-musl-gcc
+</em><br><em class="quotelev1">&gt;     -L../../lib/scc  ranlib.o posix.o -lmach -lscc      -o
+</em><br><em class="quotelev1">&gt; ../../bin/scc-ranlib
+</em><br><em class="quotelev1">&gt; /home/blmayer/git/distro/buildroot/output/host/bin/aarch64-buildroot-linux-musl-gcc
+</em><br><em class="quotelev1">&gt;     -L../../lib/scc  objdump.o -lmach      -o ../../bin/scc-objdump
+</em><br><em class="quotelev1">&gt; /home/blmayer/git/distro/buildroot/output/host/bin/aarch64-buildroot-linux-musl-gcc
+</em><br><em class="quotelev1">&gt;     -L../../lib/scc  objcopy.o -lmach      -o ../../bin/scc-objcopy
+</em><br><em class="quotelev1">&gt; /home/blmayer/git/distro/buildroot/output/host/lib/gcc/aarch64-buildroot-linux-musl/12.3.0/../../../../aarch64-buildroot-linux-musl/bin/ld:
+</em><br><em class="quotelev1">&gt; ar.o: relocation R_AARCH64_ADR_PREL_PG_HI21 against symbol `stderr'
+</em><br><em class="quotelev1">&gt; which may bind externally can not be used when making a shared object;
+</em><br><em class="quotelev1">&gt; recompile with -fPIC
+</em><br><br />This seems very strange. Are you sure you are using the same toolchain for all the objects?
+<br />
+Can you try to update to last master and try again with a clean source tree?
+<br />
+If the problem persist, I would need the full log of the build to try to see what
+<br />
+is going on. It can be a problem compiling ar.o whose compilation is not shown
+<br />
+in your original message.
+<br />
+<br /><br />Kind Regards,
+<br />
+<pre>
+--
+To unsubscribe send a mail to scc-dev+unsubscribe_at_simple-cc.org
+</pre>
+<span id="received"><dfn>Received on</dfn> Wed 27 Mar 2024 - 08:07:12 CET</span>
+</div>
+<!-- body="end" -->
+<div class="foot">
+<map id="navbarfoot" name="navbarfoot" title="Related messages">
+<ul class="links">
+<li><dfn>This message</dfn>: [ <a href="0054.html#start54">Message body</a> ]</li>
+<!-- lnext="start" -->
+<li><dfn>Next message</dfn>: <a href="../202404/0055.html" title="Next message in the list">Michael Forney: "[scc-dev] [PATCH] tests/cc: Fix 0225-func.c pointer type"</a></li>
+<li><dfn>In reply to</dfn> <a href="0053.html" title="Message to which this message replies">Brian Mayer: "[scc-dev] musl compilation on aarch64"</a></li>
+<!-- lnextthread="start" -->
+<!-- lreply="end" -->
+</ul>
+<ul class="links">
+<li><a name="options3" id="options3"></a><dfn>Contemporary messages sorted</dfn>: [ <a href="date.html#msg54" title="Contemporary messages by date">by date</a> ] [ <a href="index.html#msg54" title="Contemporary discussion threads">by thread</a> ] [ <a href="subject.html#msg54" title="Contemporary messages by subject">by subject</a> ] [ <a href="author.html#msg54" title="Contemporary messages by author">by author</a> ] [ <a href="attachment.html" title="Contemporary messages by attachment">by messages with attachments</a> ]</li>
+</ul>
+</map>
+</div>
+<!-- trailer="footer" -->
+<p><small><em>
+This archive was generated by <a href="http://www.hypermail-project.org/">hypermail 2.3.0</a>
+: Wed 27 Mar 2024 - 08:10:38 CET
+</em></small></p>
+</body>
+</html>
