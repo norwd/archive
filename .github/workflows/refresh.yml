@@ -1,0 +1,28 @@
+---
+
+name: "Refresh Archive"
+run-name: "Refresh Archive"
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 1 * *'
+
+env:
+  GH_TOKEN: ${{ secrets.AUTO_DOWNLOAD_ARCHIVE }}
+
+jobs:
+  refresh-archive:
+    strategy:
+      matrix: # this is hard coded for now, as not all websites are straightforward to archive, in the future this might be in file in the repo itself
+        link:
+          - "https://bellard.org/"
+
+    name: Refresh Archive
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Triger Archive Workflow"
+        run: gh workflow run --repo "${REPO}" archive.yml -f url="${LINK}"
+        env:
+          REPO: '${{ github.repository }}'
+          LINK: '${{ matrix.link }}'
