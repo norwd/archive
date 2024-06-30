@@ -1,0 +1,483 @@
+<html>
+<head>
+  <link rel="alternate" type="application/rss+xml"  title="RSS Feed for fabiensanglard.net" href="https://fabiensanglard.net/rss.xml" />
+  <style type="text/css">
+
+    @font-face {
+      font-family: 'fabfont';
+      src: url('../font/DejaVuSansMono.woff2');
+      font-display: block;
+    }
+
+    @font-face {
+      font-family: 'fabfont';
+      src: url('../font/DejaVuSansMono-Bold.woff2');
+      font-weight: bold;
+      font-display: block;
+    }
+
+    * {
+       font-size: 16px;
+    }
+
+    html {
+      font-family: fabfont,  monospace;
+      max-width: 900px;  /* For Desktop PC (see @media for Tablets/Phones) */
+      padding-left: 2%;
+      padding-right: 3%;
+      margin: 0 auto;
+      background: #F5F5F0;
+  	} 
+    
+
+
+  	a {
+      color: black;
+      font-weight: bold;
+    }
+
+    img {
+      border: none; 
+    }
+
+    p {
+      margin-top: 0px;
+      text-align: justify;
+    }
+    sup {
+      vertical-align: 0.3em;
+      font-size: 0.65em;
+    }   
+
+    pre {
+      font-family: fabfont, monospace;
+      background-color: white; 
+      border: 1px solid Black; 
+      padding-left: 2%;
+      padding-top: 1ch;
+      padding-bottom: 1ch;
+      /* Only take care of X overflow since this is the only part that can be too wide.
+         The Y axis will never overflow.
+      */
+      overflow: hidden;
+    }
+
+    div.heading {
+      font-weight: bold;      
+      text-transform: uppercase;
+      margin-top: 4ch;
+    }
+
+    /** {
+      font-size: 16px;
+    }*/
+    @media (max-width: 500px) { /* For small screen decices */
+      * {
+        font-size: 12px; 
+      }
+    }   
+    .title {
+      text-decoration: none;
+    }
+
+    img.pixel, canvas.pixel {
+      image-rendering: pixelated;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: crisp-edges;
+    }
+
+    blockquote { 
+    background-color: #f3f3f3;
+    border: dashed 1px grey; 
+    width: 97.5%; 
+    font-style: italic; 
+    text-align: justify;
+
+    padding: 1ch; 
+    padding-top: 2ch; 
+    padding-bottom: 2ch;     
+    
+    margin : 0ch; 
+    margin-bottom: 2ch; 
+    margin-top: 0ch;
+  }
+
+  blockquote div {
+    text-transform: none;
+    text-align: right;
+    width: 100%;
+  }
+
+  code {
+    /*font-size: 110%;*/
+    font-weight: bold;
+    background-color: #e1e1e1;
+    border-radius: 0.5ch;
+    padding-left: 0.3ch;
+    padding-right: 0.3ch;
+  }
+
+  .trivia {
+    border-left: 1px black solid;
+    padding-left: 1ch;
+  }
+
+  .trivia::before {
+  font-weight: bold;
+  text-decoration: underline;
+  padding-right: 1ch;
+  content: "Trivia:";
+
+  </style>
+  <title>How DOOM fire was done</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=12.0, minimum-scale=1.0, user-scalable=yes">
+</head>  
+  <body><br><center>
+    <div style="display: inline-block; vertical-align:middle;">
+<a href="https://fabiensanglard.net/" class="title"><b>FABIEN SANGLARD'S WEBSITE</b><br>
+</a><hr/><div style="text-align: justify;display: inline-block; width: 100%;">
+<!-- <a class="title" href="/about/index.html">ABOUT</a> &nbsp;<a class="title" href="/contact/index.html">EMAIL</a> &nbsp;<a class="title" href="../rss.xml">RSS</a> &nbsp;<a class="title" href="https://paypal.me/fabiensanglard">DONATE</a></div></div> -->
+<a class="title" href="https://fabiensanglard.net/about/index.html">ABOUT</a> &nbsp;<a class="title" href="https://fabiensanglard.net/contact/index.html">CONTACT</a> &nbsp;<a class="title" href="https://fabiensanglard.net/rss.xml">RSS</a> &nbsp;<a class="title" href="https://paypal.me/fabiensanglard">GIVE</a></div></div>
+
+</center><br><br>
+<div style="margin-bottom: 2ch;text-transform: none;">
+Dec 28, 2018</div>
+<div class='heading'>How DOOM fire was done</div><hr/><style type="text/css">
+    img {
+        border: 1px solid black;
+    }
+</style>
+<p>
+  <canvas class="pixel" id="shower" width="400" height="316" style="width:40%;height:auto; margin-left: 2%; margin-bottom: 5px; float:right; border: 1px solid black;"></canvas>
+
+ The <a href="https://fabiensanglard.net/gebbdoom">Game Engine Black Book: DOOM</a> features a whole chapter about DOOM console ports and the challenges they encountered. The utter failure of the 3DO, the difficulties of the Saturn due to its affine texture mapping, and the amazing "reverse-engineering-from- scratch" by Randy Linden on Super Nintendo all have rich stories to tell.<br/>
+ <br/>
+  Once heading towards disaster<a name="back_1" style="text-decoration: none;" href="index.html#footnote_1"><sup>[1]</sup></a>, the Playstation 1 (PSX) devteam managed to rectify course to produce a critically and commercially acclaimed conversion. <a href="https://www.youtube.com/watch?v=p85npx14HUI">Final DOOM</a> was the most faithful port when compared to the PC version. The alpha blended colored sectors not only improved visual quality, they also made gameplay better by indicating the required key color. Sound was also improved via reverberation effects taking advantage of the PSX's Audio Processing Unit.<br/>
+ <br/>
+ The devteam did such a good job that they found themselves with a few extra CPU cycles they decided to use to generate animated fire both during both the <a href="https://www.youtube.com/watch?v=YJB0gfP-GRY&feature=youtu.be&t=10">intro</a> and the <a href="psx_screen_sky.png">gameplay</a>. Mesmerized, I tried to find out how it was done. After an initial calling found no answer, I was about to dust off my MIPS book to rip open the PSX executable when Samuel Villarreal replied on Twitter to tell me he had already reverse-engineered the Nintendo 64 version<a name="back_2" style="text-decoration: none;" href="index.html#footnote_2"><sup>[2]</sup></a>. I only had to clean, simplify, and optimize it a little  bit.<br/>
+ <br/>
+ It was interesting to re-discover this classic demoscene effect; the underlying idea is similar to the first <a href="http://agilerepose.weebly.com/water-ripple.html">water ripple</a> many developers implemented as a programming kata in the 90's. The fire effect is a vibrant testimony to a time when judiciously picked palette colors combined with a simple trick were the only way to get things done.
+</p>
+
+
+<div class='heading'>Core idea</div><hr/><p style="margin-bottom: 2ch;">
+At its core, the fire effect relies on a simple array (a.k.a framebuffer) covering the whole screen. Each value in the framebuffer is within [0, 36]. These values are associated with a palette where colors range from white to black, using yellow, orange, and red along the way. The idea is to model the fire particle's temperature as it elevates and cools down.<br/>
+<br/>
+    <table width=100% border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr>
+            <td style="background-color: #070707">&nbsp;</td>
+            <td style="background-color: #1f0707">&nbsp;</td>
+            <td style="background-color: #2f0f07">&nbsp;</td>
+            <td style="background-color: #470f07">&nbsp;</td>
+            <td style="background-color: #571707">&nbsp;</td>
+            <td style="background-color: #671f07">&nbsp;</td>
+            <td style="background-color: #771f07">&nbsp;</td>
+            <td style="background-color: #8f2707">&nbsp;</td>
+            <td style="background-color: #9f2f07">&nbsp;</td>
+            <td style="background-color: #af3f07">&nbsp;</td>
+            <td style="background-color: #bf4707">&nbsp;</td>
+            <td style="background-color: #c74707">&nbsp;</td>
+
+            <td style="background-color: #DF4F07">&nbsp;</td>
+            <td style="background-color: #DF5707">&nbsp;</td>
+            <td style="background-color: #DF5707">&nbsp;</td>
+
+            <td style="background-color: #D75F07">&nbsp;</td>
+            <td style="background-color: #D7670F">&nbsp;</td>
+
+            <td style="background-color: #cf6f0f">&nbsp;</td>
+            <td style="background-color: #cf770f">&nbsp;</td>
+            <td style="background-color: #cf7f0f">&nbsp;</td>
+            <td style="background-color: #CF8717">&nbsp;</td>
+            <td style="background-color: #C78717">&nbsp;</td>
+            <td style="background-color: #C78F17">&nbsp;</td>
+            <td style="background-color: #C7971F">&nbsp;</td>
+            <td style="background-color: #BF9F1F">&nbsp;</td>
+            <td style="background-color: #BF9F1F">&nbsp;</td>
+            <td style="background-color: #BFA727">&nbsp;</td>
+            <td style="background-color: #BFA727">&nbsp;</td>
+            <td style="background-color: #BFAF2F">&nbsp;</td>
+            <td style="background-color: #B7AF2F">&nbsp;</td>
+            <td style="background-color: #B7B72F">&nbsp;</td>
+            <td style="background-color: #B7B737">&nbsp;</td>
+            <td style="background-color: #CFCF6F">&nbsp;</td>
+            <td style="background-color: #DFDF9F">&nbsp;</td>
+            <td style="background-color: #EFEFC7">&nbsp;</td>
+            <td style="background-color: #FFFFFF">&nbsp;</td>   
+        </tr>                         
+        </table>
+        <p style="margin-bottom: 1ch;">
+The framebuffer is initialized full black (with zeros) with a single line of white pixels at the bottom (36) which will be the "source" of the fire.<br/>
+<picture style="margin-bottom: 1ch;">
+    <source srcset="basis.webp" type="image/webp">
+  <img loading="lazy" src="basis.png" class="pixel" width="900" height="128" style="width: 100%; height: auto; margin-bottom: 2ch; margin-top: 2ch;"/>  </picture> <br/>
+ The array is draw on screen such that the top-left pixel is at array index zero and the bottom-right pixel is at index FIRE_HEIGHT * FIRE_WIDTH - 1. In other worlds, screen-space origin is at the top-left corner.
+<br/>
+<br/>
+For each pixel, the "heat" is propagated to the pixel directly above.
+<br/>
+
+
+<!-- // Done with tohtml.com -->
+
+<pre style="color:#000000;background:#ffffff;"><span style="color:#800000; font-weight:bold; ">function</span> doFire<span style="color:#808030; ">(</span><span style="color:#808030; ">)</span> <span style="color:#800080; ">{</span>
+    <span style="color:#800000; font-weight:bold; ">for</span><span style="color:#808030; ">(</span>x <span style="color:#808030; ">=</span> <span style="color:#008c00; ">0</span> <span style="color:#800080; ">;</span> x <span style="color:#808030; ">&lt;</span> FIRE_WIDTH<span style="color:#800080; ">;</span> x<span style="color:#808030; ">++</span><span style="color:#808030; ">)</span> <span style="color:#800080; ">{</span>
+        <span style="color:#800000; font-weight:bold; ">for</span> <span style="color:#808030; ">(</span>y <span style="color:#808030; ">=</span> <span style="color:#008c00; ">1</span><span style="color:#800080; ">;</span> y <span style="color:#808030; ">&lt;</span> FIRE_HEIGHT <span style="color:#800080; ">;</span> y<span style="color:#808030; ">++</span><span style="color:#808030; ">)</span> <span style="color:#800080; ">{</span>
+            spreadFire<span style="color:#808030; ">(</span>y <span style="color:#808030; ">*</span> FIRE_WIDTH <span style="color:#808030; ">+</span> x<span style="color:#808030; ">)</span><span style="color:#800080; ">;</span>
+        <span style="color:#800080; ">}</span>
+    <span style="color:#800080; ">}</span>
+ <span style="color:#800080; ">}</span>
+
+ <span style="color:#800000; font-weight:bold; ">function</span> spreadFire<span style="color:#808030; ">(</span>from<span style="color:#808030; ">)</span> <span style="color:#800080; ">{</span>
+    <span style="color:#800000; font-weight:bold; ">var</span> to <span style="color:#808030; ">=</span> from <span style="color:#808030; ">-</span> FIRE_WIDTH<span style="color:#800080; ">;</span>
+    firePixels<span style="color:#808030; ">[</span>to<span style="color:#808030; ">]</span> <span style="color:#808030; ">=</span> firePixels<span style="color:#808030; ">[</span>from<span style="color:#808030; ">]</span> <span style="color:#808030; ">-</span> <span style="color:#008c00; ">1</span><span style="color:#800080; ">;</span>
+ <span style="color:#800080; ">}</span>
+</pre>
+
+
+
+
+
+
+
+<p style="margin-bottom: 2ch;">
+Notice that the bottom screen line is never updated. This line, populated with zeros, is the constant "generator" of fire. This simple version with linear cooling (-=1) yields a boring uniform output.<br/>
+<picture>
+    <source srcset="propagate_boring.webp" type="image/webp">
+  <img loading="lazy" src="propagate_boring.png" class="pixel" width="900" height="140" style="width: 100%; height: auto; margin-bottom: 2ch; margin-top: 2ch;"/>  </picture> <br/>
+We can tweak the spreadFire() function a little bit and change how fast a heat points decays. Adding randomness works well.<br/>
+
+<!-- // Done with tohtml.com -->
+
+<pre style="color:#000000;background:#ffffff;"> <span style="color:#800000; font-weight:bold; ">function</span> spreadFire<span style="color:#808030; ">(</span>from<span style="color:#808030; ">)</span> <span style="color:#800080; ">{</span>
+    <span style="color:#800000; font-weight:bold; ">var</span> rand <span style="color:#808030; ">=</span> <span style="color:#797997; ">Math</span><span style="color:#808030; ">.</span><span style="color:#800000; font-weight:bold; ">round</span><span style="color:#808030; ">(</span><span style="color:#797997; ">Math</span><span style="color:#808030; ">.</span><span style="color:#800000; font-weight:bold; ">random</span><span style="color:#808030; ">(</span><span style="color:#808030; ">)</span> <span style="color:#808030; ">*</span> <span style="color:#008000; ">3.0</span><span style="color:#808030; ">)</span> <span style="color:#808030; ">&amp;</span> <span style="color:#008c00; ">3</span><span style="color:#800080; ">;</span>
+    <span style="color:#800000; font-weight:bold; ">var</span> to <span style="color:#808030; ">=</span> from <span style="color:#808030; ">-</span> FIRE_WIDTH<span style="color:#800080; ">;</span>
+    firePixels<span style="color:#808030; ">[</span>to<span style="color:#808030; ">]</span> <span style="color:#808030; ">=</span> firePixels<span style="color:#808030; ">[</span>from<span style="color:#808030; ">]</span> <span style="color:#808030; ">-</span> <span style="color:#808030; ">(</span>rand <span style="color:#808030; ">&amp;</span> <span style="color:#008c00; ">1</span><span style="color:#808030; ">)</span><span style="color:#800080; ">;</span>
+ <span style="color:#800080; ">}</span>
+</pre>
+
+
+
+
+
+
+<p style="margin-bottom: 2ch;">
+   
+  <img loading="lazy" src="variable_decay.png" class="pixel" width="900" height="128" style="width: 100%; height: auto; margin-bottom: 2ch; margin-top: 2ch;"/><br/>
+That's better. To improve the illusion further, the heat can be randomly propagated to go not only above but also left and right.<br/>
+
+
+<!-- // Done with tohtml.com -->
+
+<pre style="color:#000000;background:#ffffff;"> <span style="color:#800000; font-weight:bold; ">function</span> spreadFire<span style="color:#808030; ">(</span>from<span style="color:#808030; ">)</span> <span style="color:#800080; ">{</span>
+    <span style="color:#800000; font-weight:bold; ">var</span> rand <span style="color:#808030; ">=</span> <span style="color:#797997; ">Math</span><span style="color:#808030; ">.</span><span style="color:#800000; font-weight:bold; ">round</span><span style="color:#808030; ">(</span><span style="color:#797997; ">Math</span><span style="color:#808030; ">.</span><span style="color:#800000; font-weight:bold; ">random</span><span style="color:#808030; ">(</span><span style="color:#808030; ">)</span> <span style="color:#808030; ">*</span> <span style="color:#008000; ">3.0</span><span style="color:#808030; ">)</span> <span style="color:#808030; ">&amp;</span> <span style="color:#008c00; ">3</span><span style="color:#800080; ">;</span>
+    <span style="color:#800000; font-weight:bold; ">var</span> to <span style="color:#808030; ">=</span> from <span style="color:#808030; ">-</span> FIRE_WITH <span style="color:#808030; ">-</span> rand <span style="color:#808030; ">+</span> <span style="color:#008c00; ">1</span> <span style="color:#800080; ">;</span>
+    firePixels<span style="color:#808030; ">[</span>to<span style="color:#808030; ">]</span> <span style="color:#808030; ">=</span> firePixels<span style="color:#808030; ">[</span>from<span style="color:#808030; ">]</span> <span style="color:#808030; ">-</span> <span style="color:#808030; ">(</span>rand <span style="color:#808030; ">&amp;</span> <span style="color:#008c00; ">1</span><span style="color:#808030; ">)</span><span style="color:#800080; ">;</span>
+ <span style="color:#800080; ">}</span>
+</pre>
+
+
+
+<canvas class="pixel" id="frontbuffer" width="400" height="250" style="width:100%;border: 1px solid black; margin-left: auto; margin-right: auto;display: block"></canvas><br/>
+<p>
+Et voila! Notice that by adjusting how the fire propagates up, wind can also be simulated. I will leave that as an exercise for the readers who had the courage to read up to here.
+    
+
+
+
+<div class='heading'>Full Source Code</div><hr/>Samuel's <a href="https://codepen.io/svkaiser/pen/xXmOvY">version</a> (logically) looked a lot like assembly. If you want to take a look, here is a <a href="https://github.com/fabiensanglard/DoomFirePSX/blob/master/flames.html">cleaned up and simplified version</a>.
+<br/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<canvas class="pixel" id="mainCanvas" width="320" height="168" style="border: 1px solid black;" hidden=true></canvas>
+<img class="pixel" id='doom' src="doom.png" width="379" height="260" hidden=true/>
+<script src="easeljs-0.6.0.min.js"></script>
+<script type="text/javascript">
+    var CJS_TICKER_FPS =27;
+            var FIRE_WIDTH =  320;
+            var FIRE_HEIGHT = 168 
+    
+            var palette = [];
+            // Palette based framebuffer. Coordinate system origin upper-left.
+            var firePixels = [];
+            
+            var rgbs = [
+                0x07,0x07,0x07,
+                0x1F,0x07,0x07,
+                0x2F,0x0F,0x07,
+                0x47,0x0F,0x07,
+                0x57,0x17,0x07,
+                0x67,0x1F,0x07,
+                0x77,0x1F,0x07,
+                0x8F,0x27,0x07,
+                0x9F,0x2F,0x07,
+                0xAF,0x3F,0x07,
+                0xBF,0x47,0x07,
+                0xC7,0x47,0x07,
+                0xDF,0x4F,0x07,
+                0xDF,0x57,0x07,
+                0xDF,0x57,0x07,
+                0xD7,0x5F,0x07,
+                0xD7,0x5F,0x07,
+                0xD7,0x67,0x0F,
+                0xCF,0x6F,0x0F,
+                0xCF,0x77,0x0F,
+                0xCF,0x7F,0x0F,
+                0xCF,0x87,0x17,
+                0xC7,0x87,0x17,
+                0xC7,0x8F,0x17,
+                0xC7,0x97,0x1F,
+                0xBF,0x9F,0x1F,
+                0xBF,0x9F,0x1F,
+                0xBF,0xA7,0x27,
+                0xBF,0xA7,0x27,
+                0xBF,0xAF,0x2F,
+                0xB7,0xAF,0x2F,
+                0xB7,0xB7,0x2F,
+                0xB7,0xB7,0x37,
+                0xCF,0xCF,0x6F,
+                0xDF,0xDF,0x9F,
+                0xEF,0xEF,0xC7,
+                0xFF,0xFF,0xFF
+            ];
+
+            // Populate pallete.
+            for(var i = 0; i < rgbs.length/3; i++) {
+                palette[i] = {
+                    r : rgbs[i * 3 + 0], 
+                    g : rgbs[i * 3 + 1], 
+                    b : rgbs[i * 3 + 2] 
+                }
+            }
+
+            y_scrolling = 440;
+            function setup() {
+                // Set whole screen to 0 (color: 0x07,0x07,0x07)
+                for(var i = 0; i < FIRE_WIDTH*FIRE_HEIGHT; i++) {
+                    firePixels[i] = 0;
+                }
+                
+                // Set bottom line to 36 (color white: 0xFF,0xFF,0xFF)
+                for(var i = 0; i < FIRE_WIDTH; i++) {
+                    firePixels[(FIRE_HEIGHT-1)*FIRE_WIDTH + i] = 36;
+                }
+                y_scrolling = 440;
+            }
+
+            function start() {
+                stage = new createjs.Stage("mainCanvas");
+                createjs.Ticker.addEventListener("tick", hostFrame);
+                createjs.Ticker.setFPS(CJS_TICKER_FPS);
+                container = new createjs.Container();
+                stage.addChild(container);
+                setup();
+            }
+            
+            /***********************************************/
+            /**************** MEAT STARTS HERE *************/
+            function spreadFire(src) {
+                var pixel = firePixels[src];
+                if(pixel == 0) {
+                    firePixels[src - FIRE_WIDTH] = 0;
+                } else {
+                    var randIdx = Math.round(Math.random() * 3.0);// & 3;
+                    var dst = src - randIdx + 1;
+                    firePixels[dst - FIRE_WIDTH ] = pixel - (randIdx & 1);
+                }
+            }
+            
+            function doFire() {
+                for(x=0 ; x < FIRE_WIDTH; x++) {
+                    for (y = 1; y < FIRE_HEIGHT; y++) {
+                        spreadFire(y * FIRE_WIDTH + x);
+                    }
+                }
+            }
+            /***********************************************/
+            /*************** MEAT ENDS HERE ****************/
+            /***********************************************/
+            
+            function blit(bufferID, drawDOOMLogo) {
+                var shower = document.getElementById(bufferID);
+                ctx = shower.getContext("2d");
+                ctx.fillStyle = 'black';
+                ctx.fillRect(0, 0, shower.width, shower.height);
+                ctx.imageSmoothingEnabled = false;
+                if (drawDOOMLogo)
+                    ctx.drawImage(document.getElementById('doom'), 50, y_scrolling,  (shower.width - 100) , shower.height/2);
+                ctx.drawImage(canvas,0,0, shower.width, shower.height);
+            }
+
+            function hostFrame(event) {
+                // Update palette buffer
+                doFire();
+                
+                canvas = document.getElementById('mainCanvas');
+                canvas.getContext("2d").imageSmoothingEnabled = false;
+                color = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height);
+                
+                // Convert palette buffer to RGB and write it to ouput.
+                var foundColoredPixel = false;
+                for(var y = 0; y < canvas.height; y++) {
+                    for(var x = 0; x < canvas.width; x++) {
+                        var index = firePixels[y * canvas.width + x];
+                        var pixel = palette[index];
+                        color.data[((canvas.width * y) + x) * 4 + 0] = pixel.r;
+                        color.data[((canvas.width * y) + x) * 4 + 1] = pixel.g;
+                        color.data[((canvas.width * y) + x) * 4 + 2] = pixel.b;
+                        if (pixel.r == 0x07 && pixel.g == 0x07 && pixel.b == 0x07) {
+                            // Black pixels need to be transparent to show DOOM logo
+                            color.data[((canvas.width * y) + x) * 4 + 3] = 0;
+                        } else {
+                            foundColoredPixel = true;
+                            color.data[((canvas.width * y) + x) * 4 + 3] = 255;
+                        }
+                    }
+                }
+                
+                canvas.getContext("2d").putImageData(color, 0, 0);
+                
+                blit('shower', true);
+                blit('frontbuffer', false);
+
+                if (y_scrolling != 30)
+                    y_scrolling-=2;
+                else {
+                  // Stop fire
+                  for(var y = 167; y > 160; y--) {  
+                    for(var x = 0; x < canvas.width; x++) {
+                      if (firePixels[y * canvas.width + x] > 0)
+                        firePixels[y * canvas.width + x]-= Math.round(Math.random()) & 3;
+                      else {
+                        // Stop animation altogether
+                        //createjs.Ticker.setFPS(0);
+                      }
+                    }
+                  }  
+                }  
+
+                if (!foundColoredPixel) {
+                    setup();
+                }
+
+                // Swap buffer
+                stage.update();
+            }
+            
+        //document.getElementsByTagName("body")[0].onload = start;
+        start();
+</script>
+</p>
+<style type='text/css'>td.ref {  padding-bottom: 0ch; width:0;}</style><div class='heading'>References</div><hr/><p id='paperbox' style='text-align:left;'><table><tbody style='vertical-align: top;'><tr><td class='ref' style='width:1ch;'><a name="footnote_1"></a><a href="index.html#back_1">^</a></td><td  class='ref' style='width:4ch;'> [1]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://fabiensanglard.net/gebbdoom">The full story is detailed in Game Engine Black Book: DOOM</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_2"></a><a href="index.html#back_2">^</a></td><td  class='ref' style='width:4ch;'> [2]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://twitter.com/fabynou/status/936329655308632064">Twitter post, March 25th 2018</a></td></tr></tbody></table></p> <hr>
+ <center>*
