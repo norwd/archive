@@ -21,17 +21,12 @@ jobs:
   refresh-archive:
     name: "Refresh Archive"
     uses: ./.github/workflows/archive.yml
-    with:
-      url: '${{ matrix.link }}'
-
-    secrets:
-      AUTO_DOWNLOAD_ARCHIVE: '${{ secrets.AUTO_DOWNLOAD_ARCHIVE }}'
-      AUTO_COMMIT_GPG_PRIVATE_KEY_ARCHIVE: '${{ secrets.AUTO_COMMIT_GPG_PRIVATE_KEY_ARCHIVE }}'
-      AUTO_COMMIT_GPG_PASSPHRASE_ARCHIVE: '${{ secrets.AUTO_COMMIT_GPG_PASSPHRASE_ARCHIVE }}'
-
+    with: '${{ matrix }}'
+    secrets: inherit
     strategy:
+      fail-fast: false
       matrix: # this is hard coded for now, as not all websites are straightforward to archive, in the future this might be in file in the repo itself
-        link:
+        url:
 
           # sigbovik.org gets (roughly) yearly updates, so this just refreshes the current year
           - "sigbovik.org/2024/" # TODO: update this to be current year automatically?
