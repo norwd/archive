@@ -1,0 +1,437 @@
+<html>
+<head>
+  <link rel="alternate" type="application/rss+xml"  title="RSS Feed for fabiensanglard.net" href="../rss.xml" />
+  <style type="text/css">
+
+    @font-face {
+      font-family: 'fabfont';
+      src: url('../font/DejaVuSansMono.woff2');
+      font-display: block;
+    }
+
+    @font-face {
+      font-family: 'fabfont';
+      src: url('../font/DejaVuSansMono-Bold.woff2');
+      font-weight: bold;
+      font-display: block;
+    }
+
+    * {
+       font-size: 16px;
+    }
+
+    html {
+      font-family: fabfont,  monospace;
+      max-width: 900px;  /* For Desktop PC (see @media for Tablets/Phones) */
+      padding-left: 2%;
+      padding-right: 3%;
+      margin: 0 auto;
+      background: #F5F5F0;
+  	} 
+    
+
+
+  	a {
+      color: black;
+      font-weight: bold;
+    }
+
+    img {
+      border: none; 
+    }
+
+    p {
+      margin-top: 0px;
+      text-align: justify;
+    }
+    sup {
+      vertical-align: 0.3em;
+      font-size: 0.65em;
+    }   
+
+    pre {
+      font-family: fabfont, monospace;
+      background-color: white; 
+      border: 1px solid Black; 
+      padding-left: 2%;
+      padding-top: 1ch;
+      padding-bottom: 1ch;
+      /* Only take care of X overflow since this is the only part that can be too wide.
+         The Y axis will never overflow.
+      */
+      overflow: hidden;
+    }
+
+    div.heading {
+      font-weight: bold;      
+      text-transform: uppercase;
+      margin-top: 4ch;
+    }
+
+    /** {
+      font-size: 16px;
+    }*/
+    @media (max-width: 500px) { /* For small screen decices */
+      * {
+        font-size: 12px; 
+      }
+    }   
+    .title {
+      text-decoration: none;
+    }
+
+    img.pixel, canvas.pixel {
+      image-rendering: pixelated;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: crisp-edges;
+    }
+
+    blockquote { 
+    background-color: #f3f3f3;
+    border: dashed 1px grey; 
+    width: 97.5%; 
+    font-style: italic; 
+    text-align: justify;
+
+    padding: 1ch; 
+    padding-top: 2ch; 
+    padding-bottom: 2ch;     
+    
+    margin : 0ch; 
+    margin-bottom: 2ch; 
+    margin-top: 0ch;
+  }
+
+  blockquote div {
+    text-transform: none;
+    text-align: right;
+    width: 100%;
+  }
+
+  code {
+    /*font-size: 110%;*/
+    font-weight: bold;
+    background-color: #e1e1e1;
+    border-radius: 0.5ch;
+    padding-left: 0.3ch;
+    padding-right: 0.3ch;
+  }
+
+  .trivia {
+    border-left: 1px black solid;
+    padding-left: 1ch;
+  }
+
+  .trivia::before {
+  font-weight: bold;
+  text-decoration: underline;
+  padding-right: 1ch;
+  content: "Trivia:";
+
+  </style>
+  <title>mDNS Primer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=12.0, minimum-scale=1.0, user-scalable=yes">
+</head>  
+  <body><br><center>
+    <div style="display: inline-block; vertical-align:middle;">
+<a href="../index.html" class="title"><b>FABIEN SANGLARD'S WEBSITE</b><br>
+</a><hr/><div style="text-align: justify;display: inline-block; width: 100%;">
+<!-- <a class="title" href="/about/index.html">ABOUT</a> &nbsp;<a class="title" href="/contact/index.html">EMAIL</a> &nbsp;<a class="title" href="../rss.xml">RSS</a> &nbsp;<a class="title" href="https://paypal.me/fabiensanglard">DONATE</a></div></div> -->
+<a class="title" href="../about/index.html">ABOUT</a> &nbsp;<a class="title" href="../contact/index.html">CONTACT</a> &nbsp;<a class="title" href="../rss.xml">RSS</a> &nbsp;<a class="title" href="https://paypal.me/fabiensanglard">GIVE</a></div></div>
+
+</center><br><br>
+<div style="margin-bottom: 2ch;text-transform: none;">
+Aug 11, 2023</div>
+<div class='heading'>mDNS Primer</div><hr/>
+<style type="text/css">
+   blockquote { 
+    background-color: #f3f3f3;
+    border: dashed 1px grey; 
+    width: 97.5%; 
+    font-style: italic; 
+    text-align: justify;
+
+    padding: 1ch; 
+    padding-top: 2ch; 
+    padding-bottom: 2ch;     
+    
+    margin : 0ch; 
+    margin-bottom: 2ch; 
+    margin-top: 0ch;
+  }
+
+  blockquote div {
+    text-transform: none;
+    text-align: right;
+    width: 100%;
+  }
+
+</style>
+
+<p>I recently had to ramp up on the topic of mDNS, starting from knowing next to nothing about it. It was not hard to find the motivation to learn about a technology which makes my life easier. From discovering AppleTV, Chromecast, AirPlay, and wireless printers, mDNS it a <b>good</b> thing.</p>
+
+<p>However, I had trouble finding answers to some of my questions. There is definitely learning material out there but it is sprinkled all over the net. So I built myself a "mDNS starter pack".</p>
+
+
+<div class='heading'>Presentation</div><hr/><p>Stuart Cheshire, an mDNS pioneer, gave a talk named "Zero Configuration with Bonjour" (Apple's implementation of mDNS) in 2005. Even though it is twenty years old, it is still relevant...and preferably available on <a href="https://www.youtube.com/embed/pdbTyxYmF84">youtube</a>.</p>
+</p>
+
+<!-- <div style=" position: relative;width: 100%;height: 0;padding-bottom: 56.25%;">
+<iframe  src="https://www.youtube.com/embed/pdbTyxYmF84" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="position: absolute;top: 0;left: 0;width: 100%;height: 100%;"></iframe>
+</div> -->
+<video width="480" height="360" poster="poster.webp" style="width:100%;height: auto;" controls>
+  <source src="Zero&#32;Configuration&#32;networking&#32;with&#32;Bonjour.mp4" type="video/mp4">
+Your browser does not support the video tag.
+</video>
+
+
+<div class='heading'>Three pillars of mDNS</div><hr/><p>Zero Configuration Networking relies on three pillars which are described in RFCs.</p>
+<p>
+  <a href="rfc_3927.txt">RFC 3927</a> : Self-assigned IP<br/>
+  <a href="rfc_6762.txt">RFC 6762</a> : Multicast DNS protocol<br/>
+  <a href="rfc_6763.txt">RFC 6763</a> : DNS-Based Service Discovery<br/>
+</p>
+<p>They are well-written and as easy to read as an RFC gets. It may also be useful to read the following.</p>
+
+<p>
+  <a href="rfc_1035.txt">RFC 1035</a> : TXT records<br/>
+  <a href="rfc_2136.txt">RFC 2136</a> : DNS Update<br/>
+  <a href="rfc_2782.txt">RFC 2782</a> : SRV records<br/>
+  <a href="rfc_4033.txt">RFC 4033</a> : DNS Security Extensions<br/>
+</p>
+
+
+<div class='heading'>Book</div><hr/><p>In the talk, Stuart mentions a book about to be published. It has been made <a href="https://amzn.to/3KGEspx">available</a> since and it is a gem. It elaborates extensively upon mDNS specs and discusses design decisions (e.g.: why application protocol names start with a '_').</p>
+
+
+<img loading="lazy" src="zero.webp" width="1013" height="691" style="width: 100%; height: auto; border: 1px solid black;margin-bottom:2ch;"/>
+<p> Among many good pieces of advice, the volume recommends to play with <code>dns-dn</code> CLI<a name="back_1" style="text-decoration: none;" href="index.html#footnote_1"><sup>[1]</sup></a>.</p> 
+
+
+<h2>Enumerate domain</h2>
+<pre><b>$</b> dns-sd -E
+Looking for recommended registration domains:
+DATE: ---Mon 07 Aug 2023---
+...STARTING...
+Recommended Registration domain
+Added                          local
+</pre>
+
+
+<h2>Browse services<a name="back_2" style="text-decoration: none;" href="index.html#footnote_2"><sup>[2]</sup></a></h2>
+<pre><b>$</b> dns-sd  -B  _services._dns-sd._udp  local.
+Browsing for _services._dns-sd._udp.local.
+DATE: ---Sun 30 Jul 2023---
+...STARTING...
+A/R    Flags  if Domain    Service Type     Instance Name
+Add        3  15 .         _udp.local.      _gasetup
+Add        3  15 .         _tcp.local.      _hap
+Add        3  15 .         _tcp.local.      _airplay
+Add        3  15 .         _tcp.local.      _pdl-datastream
+Add        3  15 .         _tcp.local.      _printer
+Add        3  15 .         _tcp.local.      _ipp
+Add        3  15 .         _tcp.local.      _http
+Add        3  15 .         _tcp.local.      _googlecast
+Add        2  15 .         _tcp.local.      _googlezone
+</pre>
+
+
+<h2>Browse by Service Type</h2>
+<pre><b>$</b> dns-sd -B _http._tcp local.
+Browsing for _http._tcp.local.
+DATE: ---Sun 30 Jul 2023---
+...STARTING...
+A/R    Flags  if Domain    Service Type     Instance Name
+Add        2  15 local.    _http._tcp.      Brother HL-L3230CDW series</pre>
+
+
+
+<h2>Lookup a service</h2>
+<pre><b>$</b> dns-sd -L "Brother HL-L3230CDW series" _http._tcp. 
+Lookup Brother HL-L3230CDW series._http._tcp..local
+DATE: ---Sun 30 Jul 2023---
+...STARTING...
+Brother\032HL-L3230CDW\032series._http._tcp.local. --> BRW106FD95E9F90.local.:80</pre>
+
+
+<h2>hostname to ipv4/ipv6</h2>
+<pre><b>$</b> dns-sd -Gv4v6 BRW106FD95E9F90.local
+DATE: ---Sun 30 Jul 2023---
+...STARTING...
+A/R  Flags    IF  Hostname                 Address                      TTL
+Add  3        15  BRW106FD95E9F90.local.   192.168.86.37                120
+Add  2        15  BRW106FD95E9F90.local.   fe80::126f:d9ff:fe5e:9f90    120</pre>
+
+
+<h2>Register a Service</h2>
+<pre><b>$</b> dns-sd -R Example _http._tcp local 80</pre>
+
+
+<h2>Proxy-Register a Service</h2>
+<pre><b>$</b> dns-sd -P Google _http._tcp local 80 google.com google.com</pre>
+
+<p>Running <a href="https://www.wireshark.org/">wireshark</a> while experimenting to see mDNS/DNS packets helps bringing extra clarity.</p>
+
+<div class='heading'>Why mDNS is better with a daemon</div><hr/><p>Something that is not well explained is why the two dominant mDNS solutions use a daemon (Bonjour has <code>mdnsd</code> and Avahi has <code>avahi-daemon</code>) while some other frameworks, like <code>openscreen</code>, do not.
+</p>
+
+
+
+<pre>
+┌──────────────────────────┐   ┌──────────────────────┐    ┌──────────────────────────┐   
+│        Machine A         │   │       Printer        │    │        Machine B         │
+│                          │   │    ┌────────────┐    │    │                          │
+│  ┌──────┐    ┌────────┐  │   │    │    proc    │    │    │ ┌────────┐     ┌──────┐  │
+│  │      │    │        │  │   │    └─────┬──────┘    │    │ │        │     │      │  │
+│  │ proc ├────► mdnsd  ├──┼─┐ │          │           │  ┌─┼─┤  avahi ◄─────┤ proc │  │
+│  │      │    │        │  │ │ └──────────┼───────────┘  │ │ │        │     │      │  │
+│  └──────┘    └────────┘  │ │            │              │ │ └────────┘     └──────┘  │
+│                          │ │            │              │ │                          │
+│                ┌──────┐  │ │ ┌──────────▼───────────┐  │ │  ┌──────┐                │
+│                │      │  │ └─►                      ◄──┘ │  │      │                │
+│                │ proc │  │   │   224.0.0.251:5353   │    │  │ proc │                │
+│                │      ├──┼───►                      ◄────┼──┤      │                │
+│                └──────┘  │   │    ff02::fb]:5353    │    │  └──────┘                │
+│                          │   │                      │    │                          │
+└──────────────────────────┘   └──────────────────────┘    └──────────────────────────┘
+</pre>
+
+          
+<p>Embedded systems will tend to statically link a full mDNS stack (like <code>openscreen</code>) but going through a daemon has significant advantages.</p>
+
+<ul>
+  <li>It uses less resources since there is a single stack.</li>
+  <li>It remains up and running longer and hence was able to see past service broadcasts.</li>
+  <li><b>It reacts to a netlink change / shutdown to unpublish all services it published.</b></li>
+  <li><b>It detects when a process has terminated and unpublish its services.</b></li>
+</ul>
+
+
+
+
+
+
+<div class='heading'>Daemon connection</div><hr/><p>By far the most useful aspect of a daemon is automatic removal of a service when a process terminates. How does a daemon achieve such a feat?</p>
+  
+<h2>Bonjour</h2>  
+<p>Bonjour uses a Unix Domain Socket (UDS) (<code>/var/run/mDNSResponder</code><a name="back_3" style="text-decoration: none;" href="index.html#footnote_3"><sup>[3]</sup></a><a name="back_4" style="text-decoration: none;" href="index.html#footnote_4"><sup>[4]</sup></a>) when they are available. A process registering a service opens a connection to the UDS. When the process finishes, <code>mdnsd</code> sees the connection ending and unpublish the service automagically.</p>
+
+<pre>How Bonjour Works
+─────────────────
+                                                      ┌────────────────────┐
+                                                      │ Client Application │
+      ┌────────────────┐                              ├────────────────────┤
+      │  uds_daemon.c  │◄─────Unix Domain Socket ────►│      libmdns       │
+      ├────────────────┤                              └────────────────────┘
+      │    mDNSCore    │
+      ├────────────────┤
+      │  mDNSPosix.c   │
+      └────────────────┘
+</pre>
+
+
+<p>On Windows, there are no UDS so instead Bonjour creates a TCP server socket on 127.0.0.1:5354<a name="back_5" style="text-decoration: none;" href="index.html#footnote_5"><sup>[5]</sup></a>. If you are interested in learning about Bonjour further, the generous ReadMe.txt<a name="back_6" style="text-decoration: none;" href="index.html#footnote_6"><sup>[6]</sup></a><a name="back_7" style="text-decoration: none;" href="index.html#footnote_7"><sup>[7]</sup></a> in mdnsResponder source code are goldmines. Apple's Bonjour <a href="https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/NetServices/Introduction.html#//apple_ref/doc/uid/TP40002445-SW1">documentation</a> is also pretty good.</p>
+
+
+
+<h2>Avahi</h2>  
+<p>Avahi uses a different technique to keep track of processes' life cycle. Instead of UDS, it relies on Linux's dBus.</p>
+
+
+<pre>How Avahi Works
+───────────────
+                        
+┌────────────────────────────────────────────────────────────────────────────┐
+│                                 Linux dBUS                                 │
+└───────────┬────────────────────────────▲─────────────────────────▲─────────┘
+            │                            │                         │
+            │                            │                         │
+┌───────────▼───────────┐     ┌──────────┴─────────┐    ┌──────────┴─────────┐
+│     daemon/main.c     │     │   Avahi dBUS API   │    │   Avahi dBUS API   │
+├───────────────────────┤     ├────────────────────┤    ├────────────────────┤
+│         Avahi         │     │ Client Application │    │ Client Application │
+└───────────────────────┘     └────────────────────┘    └────────────────────┘
+
+
+</pre>
+
+<p>When a process connects to a dBUS, the bus assigns to the connection a unique connection name. When the process dies, the same dBUS is notified<a name="back_8" style="text-decoration: none;" href="index.html#footnote_8"><sup>[8]</sup></a>. This process life-cycle monitoring allows Avahi to unpublish a mDNS service if the process dies without doing it due diligence.</p>
+
+
+<p>If you are as OCD as I am, you will want to inspect the message transiting on dBUS. It is possible and the instructions are <a href="https://blog.nutsfactory.net/2011/03/08/test-and-debug-dbus">here</a> and <a href="https://lists.freedesktop.org/archives/avahi/2016-November/002441.html">here</a>.</p>
+
+
+<div class='heading'>UDP</div><hr/><p>Most developers are familiar with the TCP model involving <code>socket</code>/<code>bind</code>/<code>listen</code>/<code>accept</code> on the server side, <code>socket</code>/<code>connect</code> on the client side, and <code>write</code>/<code>read</code> in between.</p>
+
+
+<p>mDNS uses UDP. Even though it is simpler, the protocol cannot be simplified to sending/receiving datagrams. There are unconnected UDP sockets using <code>sendto</code>/<code>revcfrom</code>, connected sockets using <code>recv</code>/<code>send</code> (or even <code>read</code>/<code>write</code>), and in the case of multicast, groups to join.</p>
+
+<p> The bible to get up to speed is <a href="https://amzn.to/4508MTS">Unix Network Programming</a> by  W. Richard Stevens.</p>
+
+
+<img loading="lazy" src="unix.webp" width="1024" height="771" style="width: 100%; height: auto; border: 1px solid black;margin-bottonm2ch;"/>
+
+<div class='heading'>SO_REUSEPORT / SO_REUSEADDR</div><hr/><p>Knowing that a daemon may be running should influence how you design your mDNS program. The daemon may already be bound to port 5353 and prevent your program from using it. Or your program may have to be friendly with an up and running deamon. When using UDP multicast, there are ways to share a port via <code>SO_REUSEPORT</code>/<code>SO_REUSEADDR</code> socket option. When properly setup, all processes see all received/emitted packets for a shared multicast UDP port.</p>
+
+
+<p>The subtle peculiarities of <code>SO_REUSE*</code> options are well explained on stackoverflow by Mecki<a name="back_9" style="text-decoration: none;" href="index.html#footnote_9"><sup>[9]</sup></a>. The <code>SO_REUSEPORT</code> option is further explained on lwn.net<a name="back_10" style="text-decoration: none;" href="index.html#footnote_10"><sup>[10]</sup></a>. The full picture and reference (p. 731 of TCPv2) comes, once again, from the bible <a href="https://amzn.to/4508MTS">Unix Network Programming</a>.
+
+
+
+<div class='heading'>5353 port hogging</div><hr/><p>Theory is nice but the only way to be sure is to verify. Here is a cross-platform mDNS workbench <a href="wb.c">wb.c</a> to test ways to share the mDNS port depending if <code>SO_REUSEADDR</code> and/or <code>SO_REUSEPORT</code> options are set.
+</p>
+
+<style type="text/css">
+table.lines , table.lines th, table.lines td {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+table.lines  td {
+  padding-right: 2ch;
+  padding-left: 2ch;
+  padding-top: 0.8ch;
+  padding-bottom: 0.8ch;
+  text-align: left;
+}
+
+table.lines th {
+  font-weight: bold;
+  background-color: #BBB;
+}
+</style>
+
+<table style="width:100%;margin-bottom: 2ch;" class="lines">
+  <tr>
+    <th>System</th>
+    <th>mDNS Daemon</th>
+    <th>SO_REUSEADDR / SO_REUSEPORT</th>
+  </tr>
+
+  <tr>
+      <td>MacOS X</td>
+      <td><a href="https://developer.apple.com/bonjour/">Bonjour</a></td>
+    <td style="text-align: center;">SO_REUSEPORT</td>
+  </tr>
+
+  <tr>
+      <td>Linux</td>
+      <td><a href="https://avahi.org/">Avahi<a name="back_11" style="text-decoration: none;" href="index.html#footnote_11"><sup>[11]</sup></a></a></td>
+     <td style="text-align: center;">SO_REUSEADDR and/or SO_REUSEPORT</td>
+  </tr>
+
+  <tr>
+      <td>Windows<a name="back_12" style="text-decoration: none;" href="index.html#footnote_12"><sup>[12]</sup></a></td>
+      <td><a href="https://learn.microsoft.com/en-us/uwp/api/windows.networking.servicediscovery.dnssd?view=winrt-22621&redirectedfrom=MSDN">UWP</a></td>
+     <td style="text-align: center;">SO_REUSEADDR</td>
+    
+  </tr>
+
+  <tr>
+      <td>Windows with Bonjour<a name="back_13" style="text-decoration: none;" href="index.html#footnote_13"><sup>[13]</sup></a></td>
+      <td><a href="hhttps://support.apple.com/kb/DL999?viewlocale=en_US&locale=en_US">Bonjour</a><a name="back_14" style="text-decoration: none;" href="index.html#footnote_14"><sup>[14]</sup></a></td>
+     <td style="text-align: center;">SO_REUSEADDR</td>
+    
+  </tr>
+</table>
+<style type='text/css'>td.ref {  padding-bottom: 0ch; width:0;}</style><div class='heading'>References</div><hr/><p id='paperbox' style='text-align:left;'><table><tbody style='vertical-align: top;'><tr><td class='ref' style='width:1ch;'><a name="footnote_1"></a><a href="index.html#back_1">^</a></td><td  class='ref' style='width:4ch;'> [ 1]</td><td style='width:100%;text-align:left;' class='ref'>On Linux, <code>avahi</code> CLI gets you the same result.</td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_2"></a><a href="index.html#back_2">^</a></td><td  class='ref' style='width:4ch;'> [ 2]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://jonathanmumm.com/tech-it/mdns-bonjour-bible-common-service-strings-for-various-vendors">List of service types</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_3"></a><a href="index.html#back_3">^</a></td><td  class='ref' style='width:4ch;'> [ 3]</td><td style='width:100%;text-align:left;' class='ref'>mdnsd uses <code>/dev/socket/mdnsd</code> on Android.</td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_4"></a><a href="index.html#back_4">^</a></td><td  class='ref' style='width:4ch;'> [ 4]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://andrewtj.com/log/mdnsresponder-ipc-protocol/">mDNSResponder IPC Protocol</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_5"></a><a href="index.html#back_5">^</a></td><td  class='ref' style='width:4ch;'> [ 5]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://github.com/IETF-Hackathon/mDNSResponder/blob/d6166226292c1ea9b8d516786bec876dee5f9ae6/mDNSResponder/mDNSShared/dnssd_ipc.h#L76-L78">mDNSResponder USE_TCP_LOOPBACK</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_6"></a><a href="index.html#back_6">^</a></td><td  class='ref' style='width:4ch;'> [ 6]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://github.com/apple-oss-distributions/mDNSResponder/tree/main/mDNSPosix">ReadMe About mDNSPosix</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_7"></a><a href="index.html#back_7">^</a></td><td  class='ref' style='width:4ch;'> [ 7]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://github.com/apple-oss-distributions/mDNSResponder/blob/d31f3447dfb1997e6457abf83502390b1f42f2ce/mDNSWindows/README.txt#L4">ReadMe About mDNSWindows</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_8"></a><a href="index.html#back_8">^</a></td><td  class='ref' style='width:4ch;'> [ 8]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://dbus.freedesktop.org/doc/dbus-tutorial.html#:~:text=They%20are%20used%20to%20track%20lifecycle">D-Bus Tutorial</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_9"></a><a href="index.html#back_9">^</a></td><td  class='ref' style='width:4ch;'> [ 9]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://stackoverflow.com/questions/14388706/how-do-so-reuseaddr-and-so-reuseport-differ">How do SO_REUSEADDR and SO_REUSEPORT differ?</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_10"></a><a href="index.html#back_10">^</a></td><td  class='ref' style='width:4ch;'> [10]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://lwn.net/Articles/542629/">The SO_REUSEPORT socket option</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_11"></a><a href="index.html#back_11">^</a></td><td  class='ref' style='width:4ch;'> [11]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://avahi.freedesktop.narkive.com/r0mICasQ/re-commits-r646-in-trunk-core-core-h-core-server-c-core-socket-c-core-socket-h-daemon-daemon-conf">Avahi has been commited to SO_REUSEPORT for at least 18 years!</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_12"></a><a href="index.html#back_12">^</a></td><td  class='ref' style='width:4ch;'> [12]</td><td style='width:100%;text-align:left;' class='ref'>On Windows SO_REUSEPORT is not supported (compilation error).</td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_13"></a><a href="index.html#back_13">^</a></td><td  class='ref' style='width:4ch;'> [13]</td><td style='width:100%;text-align:left;' class='ref'>On Windows SO_REUSEPORT is not supported (compilation error).</td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_14"></a><a href="index.html#back_14">^</a></td><td  class='ref' style='width:4ch;'> [14]</td><td style='width:100%;text-align:left;' class='ref'>Packaged with iTunes, Bonjour is often found on Windows.</td></tr></tbody></table></p> <hr>
+ <center>*

@@ -1,0 +1,157 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html><head>
+<title></title>
+  <style type="text/css">
+    <!--code { font-family: Courier New, Courier; font-size: 10pt; margin: 0px; }-->
+  </style>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+</head><body>
+
+
+<!-- ======================================================== -->
+<!-- = Java Sourcecode to HTML automatically converted code = -->
+<!-- =   Java2Html Converter 5.0 [2006-02-26] by Markus Gebhard  markus@jave.de   = -->
+<!-- =     Further information: http://www.java2html.de     = -->
+<div align="left" class="java">
+<table border="0" cellpadding="3" cellspacing="0" bgcolor="#ffffff">
+  <!-- start headline -->
+   <tr>
+    <td colspan="2">
+     <center><font size="+2">
+      <code><b>
+Tunnel.java
+      </b></code>
+     </font></center>
+    </td>
+   </tr>
+  <!-- end headline -->
+   <tr>
+  <!-- start source code -->
+   <td nowrap="nowrap" valign="top" align="left">
+    <code>
+<font color="#808080">001</font>&nbsp;<font color="#3f7f5f">/*</font><br />
+<font color="#808080">002</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*</font><br />
+<font color="#808080">003</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;Created:&nbsp;Jun&nbsp;&nbsp;7&nbsp;2006</font><br />
+<font color="#808080">004</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*</font><br />
+<font color="#808080">005</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;Copyright&nbsp;(C)&nbsp;1999-2000&nbsp;Fabien&nbsp;Sanglard</font><br />
+<font color="#808080">006</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;</font><br />
+<font color="#808080">007</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;This&nbsp;program&nbsp;is&nbsp;free&nbsp;software;&nbsp;you&nbsp;can&nbsp;redistribute&nbsp;it&nbsp;and/or</font><br />
+<font color="#808080">008</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;modify&nbsp;it&nbsp;under&nbsp;the&nbsp;terms&nbsp;of&nbsp;the&nbsp;GNU&nbsp;General&nbsp;Public&nbsp;License</font><br />
+<font color="#808080">009</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;as&nbsp;published&nbsp;by&nbsp;the&nbsp;Free&nbsp;Software&nbsp;Foundation;&nbsp;either&nbsp;version&nbsp;2</font><br />
+<font color="#808080">010</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;of&nbsp;the&nbsp;License,&nbsp;or&nbsp;(at&nbsp;your&nbsp;option)&nbsp;any&nbsp;later&nbsp;version.</font><br />
+<font color="#808080">011</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;</font><br />
+<font color="#808080">012</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;This&nbsp;program&nbsp;is&nbsp;distributed&nbsp;in&nbsp;the&nbsp;hope&nbsp;that&nbsp;it&nbsp;will&nbsp;be&nbsp;useful,</font><br />
+<font color="#808080">013</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;but&nbsp;WITHOUT&nbsp;ANY&nbsp;WARRANTY;&nbsp;without&nbsp;even&nbsp;the&nbsp;implied&nbsp;warranty&nbsp;of</font><br />
+<font color="#808080">014</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;MERCHANTABILITY&nbsp;or&nbsp;FITNESS&nbsp;FOR&nbsp;A&nbsp;PARTICULAR&nbsp;PURPOSE.&nbsp;&nbsp;See&nbsp;the</font><br />
+<font color="#808080">015</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;GNU&nbsp;General&nbsp;Public&nbsp;License&nbsp;for&nbsp;more&nbsp;details.</font><br />
+<font color="#808080">016</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;</font><br />
+<font color="#808080">017</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;You&nbsp;should&nbsp;have&nbsp;received&nbsp;a&nbsp;copy&nbsp;of&nbsp;the&nbsp;GNU&nbsp;General&nbsp;Public&nbsp;License</font><br />
+<font color="#808080">018</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;along&nbsp;with&nbsp;this&nbsp;program;&nbsp;if&nbsp;not,&nbsp;write&nbsp;to&nbsp;the&nbsp;Free&nbsp;Software</font><br />
+<font color="#808080">019</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;Foundation,&nbsp;Inc.,&nbsp;59&nbsp;Temple&nbsp;Place&nbsp;-&nbsp;Suite&nbsp;330,&nbsp;Boston,&nbsp;MA&nbsp;&nbsp;02111-1307,&nbsp;USA.</font><br />
+<font color="#808080">020</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*/</font><br />
+<font color="#808080">021</font>&nbsp;<font color="#ffffff"></font><br />
+<font color="#808080">022</font>&nbsp;<font color="#7f0055"><b>package&nbsp;</b></font><font color="#000000">renderer.modelers;</font><br />
+<font color="#808080">023</font>&nbsp;<font color="#ffffff"></font><br />
+<font color="#808080">024</font>&nbsp;<font color="#7f0055"><b>import&nbsp;</b></font><font color="#000000">java.awt.Image;</font><br />
+<font color="#808080">025</font>&nbsp;<font color="#7f0055"><b>import&nbsp;</b></font><font color="#000000">java.awt.Toolkit;</font><br />
+<font color="#808080">026</font>&nbsp;<font color="#7f0055"><b>import&nbsp;</b></font><font color="#000000">java.awt.image.PixelGrabber;</font><br />
+<font color="#808080">027</font>&nbsp;<font color="#7f0055"><b>import&nbsp;</b></font><font color="#000000">renderer.Modeler;</font><br />
+<font color="#808080">028</font>&nbsp;<font color="#7f0055"><b>import&nbsp;</b></font><font color="#000000">renderer.Renderer;</font><br />
+<font color="#808080">029</font>&nbsp;<font color="#ffffff"></font><br />
+<font color="#808080">030</font>&nbsp;<font color="#7f0055"><b>public&nbsp;class&nbsp;</b></font><font color="#000000">Tunnel&nbsp;</font><font color="#7f0055"><b>implements&nbsp;</b></font><font color="#000000">Modeler</font><br />
+<font color="#808080">031</font>&nbsp;<font color="#000000">{</font><br />
+<font color="#808080">032</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>private&nbsp;&nbsp;</b></font><font color="#7f0055"><b>int&nbsp;</b></font><font color="#000000">scrWidth&nbsp;;</font><br />
+<font color="#808080">033</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>private&nbsp;&nbsp;</b></font><font color="#7f0055"><b>int&nbsp;</b></font><font color="#000000">scrHeight;</font><br />
+<font color="#808080">034</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><br />
+<font color="#808080">035</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>private&nbsp;static&nbsp;&nbsp;final&nbsp;</b></font><font color="#7f0055"><b>int&nbsp;</b></font><font color="#000000">TEXTUREWIDTH&nbsp;=&nbsp;</font><font color="#990000">256</font><font color="#000000">;</font><br />
+<font color="#808080">036</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>private&nbsp;static&nbsp;&nbsp;final&nbsp;</b></font><font color="#7f0055"><b>int&nbsp;</b></font><font color="#000000">TEXTUREHEIGHT&nbsp;=&nbsp;</font><font color="#990000">256</font><font color="#000000">;</font><br />
+<font color="#808080">037</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">038</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>private&nbsp;static&nbsp;</b></font><font color="#7f0055"><b>int&nbsp;</b></font><font color="#000000">texture</font><font color="#000000">[]&nbsp;</font><font color="#000000">;</font><br />
+<font color="#808080">039</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>private&nbsp;static&nbsp;</b></font><font color="#7f0055"><b>int&nbsp;</b></font><font color="#000000">distances</font><font color="#000000">[][]&nbsp;</font><font color="#000000">;</font><br />
+<font color="#808080">040</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>private&nbsp;static&nbsp;</b></font><font color="#7f0055"><b>int&nbsp;</b></font><font color="#000000">angles</font><font color="#000000">[][]&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">;</font><br />
+<font color="#808080">041</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><br />
+<font color="#808080">042</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>private&nbsp;</b></font><font color="#000000">Renderer&nbsp;renderer;</font><br />
+<font color="#808080">043</font>&nbsp;<font color="#ffffff"></font><br />
+<font color="#808080">044</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>public&nbsp;</b></font><font color="#000000">Tunnel</font><font color="#000000">(</font><font color="#000000">Renderer&nbsp;r</font><font color="#000000">)</font><br />
+<font color="#808080">045</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#000000">{</font><br />
+<font color="#808080">046</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>this</b></font><font color="#000000">.renderer&nbsp;=&nbsp;r&nbsp;;</font><br />
+<font color="#808080">047</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">texture&nbsp;=&nbsp;</font><font color="#7f0055"><b>new&nbsp;</b></font><font color="#7f0055"><b>int</b></font><font color="#000000">[</font><font color="#000000">TEXTUREHEIGHT&nbsp;*&nbsp;TEXTUREHEIGHT</font><font color="#000000">]</font><font color="#000000">;</font><br />
+<font color="#808080">048</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>this</b></font><font color="#000000">.scrWidth&nbsp;=&nbsp;renderer.getRenderedWidth</font><font color="#000000">()</font><font color="#000000">;</font><br />
+<font color="#808080">049</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>this</b></font><font color="#000000">.scrHeight&nbsp;=&nbsp;renderer.getRenderedHeight</font><font color="#000000">()</font><font color="#000000">;</font><br />
+<font color="#808080">050</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">051</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#3f7f5f">//Image&nbsp;textureImage&nbsp;=&nbsp;renderer.getToolkit().getImage(this.getClass().getResource(&#34;/tex99.jpg&#34;));&nbsp;&nbsp;</font><br />
+<font color="#808080">052</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">java.awt.Image&nbsp;textureImage&nbsp;=&nbsp;renderer.getImage</font><font color="#000000">(</font><font color="#000000">renderer.getCodeBase</font><font color="#000000">()</font><font color="#000000">,&nbsp;</font><font color="#2a00ff">&#34;tex99.jpg&#34;</font><font color="#000000">)</font><font color="#000000">;</font><br />
+<font color="#808080">053</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">054</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">PixelGrabber&nbsp;pixelgrabber&nbsp;=&nbsp;</font><font color="#7f0055"><b>new&nbsp;</b></font><font color="#000000">PixelGrabber</font><font color="#000000">(</font><font color="#000000">textureImage,&nbsp;</font><font color="#990000">0</font><font color="#000000">,&nbsp;</font><font color="#990000">0</font><font color="#000000">,&nbsp;TEXTUREWIDTH,&nbsp;TEXTUREHEIGHT,&nbsp;texture,&nbsp;</font><font color="#990000">0</font><font color="#000000">,&nbsp;TEXTUREWIDTH</font><font color="#000000">)</font><font color="#000000">;</font><br />
+<font color="#808080">055</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>try</b></font><br />
+<font color="#808080">056</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">{</font><br />
+<font color="#808080">057</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">pixelgrabber.grabPixels</font><font color="#000000">()</font><font color="#000000">;</font><br />
+<font color="#808080">058</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">}</font><br />
+<font color="#808080">059</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>catch</b></font><font color="#000000">(</font><font color="#000000">InterruptedException&nbsp;interruptedexception</font><font color="#000000">)&nbsp;{&nbsp;</font><br />
+<font color="#808080">060</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">interruptedexception.printStackTrace</font><font color="#000000">(</font><font color="#000000">System.out</font><font color="#000000">)</font><font color="#000000">;</font><br />
+<font color="#808080">061</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">062</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">}</font><br />
+<font color="#808080">063</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">064</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">distances&nbsp;=&nbsp;</font><font color="#7f0055"><b>new&nbsp;</b></font><font color="#7f0055"><b>int</b></font><font color="#000000">[</font><font color="#000000">scrWidth</font><font color="#000000">][</font><font color="#000000">scrHeight</font><font color="#000000">]</font><font color="#000000">;</font><br />
+<font color="#808080">065</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">angles&nbsp;&nbsp;&nbsp;=&nbsp;</font><font color="#7f0055"><b>new&nbsp;</b></font><font color="#7f0055"><b>int</b></font><font color="#000000">[</font><font color="#000000">scrWidth</font><font color="#000000">][</font><font color="#000000">scrHeight</font><font color="#000000">]</font><font color="#000000">;</font><br />
+<font color="#808080">066</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><br />
+<font color="#808080">067</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">068</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#3f7f5f">//&nbsp;Pregenerating&nbsp;the&nbsp;mapping&nbsp;pixel/coordinate.</font><br />
+<font color="#808080">069</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>for</b></font><font color="#000000">(</font><font color="#7f0055"><b>int&nbsp;</b></font><font color="#000000">x&nbsp;=&nbsp;</font><font color="#990000">0</font><font color="#000000">;&nbsp;x&nbsp;&lt;&nbsp;scrWidth;&nbsp;x++</font><font color="#000000">)</font><br />
+<font color="#808080">070</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>for</b></font><font color="#000000">(</font><font color="#7f0055"><b>int&nbsp;</b></font><font color="#000000">y&nbsp;=&nbsp;</font><font color="#990000">0</font><font color="#000000">;&nbsp;y&nbsp;&lt;&nbsp;scrHeight;&nbsp;y++</font><font color="#000000">)</font><br />
+<font color="#808080">071</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">{</font><br />
+<font color="#808080">072</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">distances</font><font color="#000000">[</font><font color="#000000">x</font><font color="#000000">][</font><font color="#000000">y</font><font color="#000000">]&nbsp;</font><font color="#000000">=&nbsp;</font><font color="#000000">(</font><font color="#7f0055"><b>int</b></font><font color="#000000">)(&nbsp;&nbsp;(</font><font color="#990000">30.0&nbsp;</font><font color="#000000">*&nbsp;TEXTUREHEIGHT&nbsp;/&nbsp;Math.sqrt</font><font color="#000000">(&nbsp;</font><br />
+<font color="#808080">073</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">(</font><font color="#000000">x&nbsp;-&nbsp;scrWidth&nbsp;/</font><font color="#990000">2.0</font><font color="#000000">)&nbsp;</font><font color="#000000">*&nbsp;</font><font color="#000000">(</font><font color="#000000">x&nbsp;-&nbsp;scrWidth&nbsp;/</font><font color="#990000">2.0</font><font color="#000000">)&nbsp;</font><font color="#000000">+&nbsp;</font><font color="#000000">(</font><font color="#000000">y&nbsp;-&nbsp;scrHeight&nbsp;/</font><font color="#990000">2.0</font><font color="#000000">)&nbsp;</font><font color="#000000">*&nbsp;</font><font color="#000000">(</font><font color="#000000">y&nbsp;-&nbsp;scrHeight&nbsp;/</font><font color="#990000">2.0</font><font color="#000000">)</font><br />
+<font color="#808080">074</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">)</font><br />
+<font color="#808080">075</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">)&nbsp;</font><font color="#000000">%&nbsp;TEXTUREHEIGHT</font><font color="#000000">)</font><font color="#000000">;</font><br />
+<font color="#808080">076</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">077</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">angles</font><font color="#000000">[</font><font color="#000000">x</font><font color="#000000">][</font><font color="#000000">y</font><font color="#000000">]&nbsp;</font><font color="#000000">=&nbsp;</font><font color="#000000">(</font><font color="#7f0055"><b>int</b></font><font color="#000000">)(</font><font color="#990000">0.5</font><font color="#000000">*&nbsp;TEXTUREWIDTH&nbsp;*&nbsp;Math.atan2</font><font color="#000000">(</font><font color="#000000">y&nbsp;-&nbsp;scrHeight&nbsp;/</font><font color="#990000">2.0</font><font color="#000000">,&nbsp;x&nbsp;-&nbsp;scrWidth&nbsp;/</font><font color="#990000">2.0</font><font color="#000000">)&nbsp;</font><font color="#000000">/&nbsp;Math.PI</font><font color="#000000">)</font><font color="#000000">;</font><br />
+<font color="#808080">078</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">}</font><br />
+<font color="#808080">079</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#000000">}</font><br />
+<font color="#808080">080</font>&nbsp;<font color="#ffffff"></font><br />
+<font color="#808080">081</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><br />
+<font color="#808080">082</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>static&nbsp;</b></font><font color="#7f0055"><b>int&nbsp;</b></font><font color="#000000">shiftX=</font><font color="#990000">0</font><font color="#000000">;</font><br />
+<font color="#808080">083</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>static&nbsp;</b></font><font color="#7f0055"><b>int&nbsp;</b></font><font color="#000000">shiftY=</font><font color="#990000">0</font><font color="#000000">;</font><br />
+<font color="#808080">084</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><br />
+<font color="#808080">085</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>static&nbsp;</b></font><font color="#7f0055"><b>double&nbsp;</b></font><font color="#000000">movement&nbsp;=&nbsp;&nbsp;</font><font color="#990000">0.1</font><font color="#000000">;</font><br />
+<font color="#808080">086</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>static&nbsp;</b></font><font color="#7f0055"><b>double&nbsp;</b></font><font color="#000000">animation&nbsp;=&nbsp;</font><font color="#990000">0</font><font color="#000000">;</font><br />
+<font color="#808080">087</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><br />
+<font color="#808080">088</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>public&nbsp;</b></font><font color="#7f0055"><b>void&nbsp;</b></font><font color="#000000">drawOffScreen</font><font color="#000000">(){</font><br />
+<font color="#808080">089</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#3f7f5f">//&nbsp;Java&nbsp;timer&nbsp;sucks&nbsp;!&nbsp;Don't&nbsp;try&nbsp;to&nbsp;make&nbsp;the&nbsp;animation&nbsp;platform&nbsp;independant&nbsp;(Renderer.tick)&nbsp;:(&nbsp;!</font><br />
+<font color="#808080">090</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">animation&nbsp;+=&nbsp;</font><font color="#990000">3</font><font color="#000000">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">091</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">movement&nbsp;+=&nbsp;</font><font color="#990000">1</font><font color="#000000">;</font><font color="#3f7f5f">//movement&nbsp;+&nbsp;(int)Renderer.tick&nbsp;*&nbsp;100&nbsp;&nbsp;/&nbsp;10000.0;</font><br />
+<font color="#808080">092</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">093</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#3f7f5f">//calculate&nbsp;the&nbsp;shift&nbsp;values&nbsp;out&nbsp;of&nbsp;the&nbsp;animation&nbsp;value</font><br />
+<font color="#808080">094</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">shiftX&nbsp;=&nbsp;&nbsp;</font><font color="#000000">(</font><font color="#7f0055"><b>int</b></font><font color="#000000">)(</font><font color="#000000">TEXTUREWIDTH&nbsp;&nbsp;+&nbsp;animation</font><font color="#000000">)</font><font color="#000000">;</font><br />
+<font color="#808080">095</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">shiftY&nbsp;=&nbsp;&nbsp;</font><font color="#000000">(</font><font color="#7f0055"><b>int</b></font><font color="#000000">)(</font><font color="#000000">TEXTUREHEIGHT&nbsp;+movement</font><font color="#000000">)</font><font color="#000000">;</font><font color="#3f7f5f">//&nbsp;/&nbsp;rotation);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">096</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">097</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>for</b></font><font color="#000000">(</font><font color="#7f0055"><b>int&nbsp;</b></font><font color="#000000">y&nbsp;=&nbsp;</font><font color="#990000">0</font><font color="#000000">,cursor=</font><font color="#990000">0</font><font color="#000000">;&nbsp;y&nbsp;&lt;&nbsp;scrHeight;&nbsp;y++</font><font color="#000000">)</font><br />
+<font color="#808080">098</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>for</b></font><font color="#000000">(</font><font color="#7f0055"><b>int&nbsp;</b></font><font color="#000000">x&nbsp;=&nbsp;</font><font color="#990000">0</font><font color="#000000">;&nbsp;x&nbsp;&lt;&nbsp;scrWidth;&nbsp;x++,cursor++</font><font color="#000000">)</font><br />
+<font color="#808080">099</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">{&nbsp;</font><br />
+<font color="#808080">100</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">renderer.offScreenRaster</font><font color="#000000">[</font><font color="#000000">cursor</font><font color="#000000">]&nbsp;</font><font color="#000000">=</font><font color="#3f7f5f">//&nbsp;texture[23543];</font><br />
+<font color="#808080">101</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">102</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">texture</font><font color="#000000">[(</font><font color="#000000">distances</font><font color="#000000">[</font><font color="#000000">x</font><font color="#000000">][</font><font color="#000000">y</font><font color="#000000">]&nbsp;</font><font color="#000000">+&nbsp;shiftX</font><font color="#000000">)&nbsp;&nbsp;</font><font color="#000000">%&nbsp;TEXTUREWIDTH&nbsp;+&nbsp;</font><br />
+<font color="#808080">103</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">(((</font><font color="#000000">angles</font><font color="#000000">[</font><font color="#000000">x</font><font color="#000000">][</font><font color="#000000">y</font><font color="#000000">]&nbsp;</font><font color="#000000">+&nbsp;shiftY</font><font color="#000000">)&nbsp;</font><font color="#000000">%&nbsp;TEXTUREHEIGHT</font><font color="#000000">)&nbsp;</font><font color="#000000">*&nbsp;TEXTUREWIDTH</font><font color="#000000">)]</font><font color="#000000">;</font><br />
+<font color="#808080">104</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">}</font><br />
+<font color="#808080">105</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#000000">}</font><br />
+<font color="#808080">106</font>&nbsp;<font color="#ffffff"></font><br />
+<font color="#808080">107</font>&nbsp;<font color="#000000">}</font></code>
+    
+   </td>
+  <!-- end source code -->
+   </tr>
+</table>
+</div>
+<!-- =       END of automatically generated HTML code       = -->
+<!-- ======================================================== -->
+
+
+</body></html><script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write("\<script src='&quot;&#32;+&#32;gaJsHost&#32;+&#32;&quot;google-analytics.com/ga.js' type='text/javascript'>\<\/script>" );
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-3217394-1");
+pageTracker._initData();
+pageTracker._trackPageview();
+</script>

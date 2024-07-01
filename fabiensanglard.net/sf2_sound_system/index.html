@@ -1,0 +1,392 @@
+<html>
+<head>
+  <link rel="alternate" type="application/rss+xml"  title="RSS Feed for fabiensanglard.net" href="../rss.xml" />
+  <style type="text/css">
+
+    @font-face {
+      font-family: 'fabfont';
+      src: url('../font/DejaVuSansMono.woff2');
+      font-display: block;
+    }
+
+    @font-face {
+      font-family: 'fabfont';
+      src: url('../font/DejaVuSansMono-Bold.woff2');
+      font-weight: bold;
+      font-display: block;
+    }
+
+    * {
+       font-size: 16px;
+    }
+
+    html {
+      font-family: fabfont,  monospace;
+      max-width: 900px;  /* For Desktop PC (see @media for Tablets/Phones) */
+      padding-left: 2%;
+      padding-right: 3%;
+      margin: 0 auto;
+      background: #F5F5F0;
+  	} 
+    
+
+
+  	a {
+      color: black;
+      font-weight: bold;
+    }
+
+    img {
+      border: none; 
+    }
+
+    p {
+      margin-top: 0px;
+      text-align: justify;
+    }
+    sup {
+      vertical-align: 0.3em;
+      font-size: 0.65em;
+    }   
+
+    pre {
+      font-family: fabfont, monospace;
+      background-color: white; 
+      border: 1px solid Black; 
+      padding-left: 2%;
+      padding-top: 1ch;
+      padding-bottom: 1ch;
+      /* Only take care of X overflow since this is the only part that can be too wide.
+         The Y axis will never overflow.
+      */
+      overflow: hidden;
+    }
+
+    div.heading {
+      font-weight: bold;      
+      text-transform: uppercase;
+      margin-top: 4ch;
+    }
+
+    /** {
+      font-size: 16px;
+    }*/
+    @media (max-width: 500px) { /* For small screen decices */
+      * {
+        font-size: 12px; 
+      }
+    }   
+    .title {
+      text-decoration: none;
+    }
+
+    img.pixel, canvas.pixel {
+      image-rendering: pixelated;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: crisp-edges;
+    }
+
+    blockquote { 
+    background-color: #f3f3f3;
+    border: dashed 1px grey; 
+    width: 97.5%; 
+    font-style: italic; 
+    text-align: justify;
+
+    padding: 1ch; 
+    padding-top: 2ch; 
+    padding-bottom: 2ch;     
+    
+    margin : 0ch; 
+    margin-bottom: 2ch; 
+    margin-top: 0ch;
+  }
+
+  blockquote div {
+    text-transform: none;
+    text-align: right;
+    width: 100%;
+  }
+
+  code {
+    /*font-size: 110%;*/
+    font-weight: bold;
+    background-color: #e1e1e1;
+    border-radius: 0.5ch;
+    padding-left: 0.3ch;
+    padding-right: 0.3ch;
+  }
+
+  .trivia {
+    border-left: 1px black solid;
+    padding-left: 1ch;
+  }
+
+  .trivia::before {
+  font-weight: bold;
+  text-decoration: underline;
+  padding-right: 1ch;
+  content: "Trivia:";
+
+  </style>
+  <title>Street Fighter II, Sound System internals</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=12.0, minimum-scale=1.0, user-scalable=yes">
+</head>  
+  <body><br><center>
+    <div style="display: inline-block; vertical-align:middle;">
+<a href="../index.html" class="title"><b>FABIEN SANGLARD'S WEBSITE</b><br>
+</a><hr/><div style="text-align: justify;display: inline-block; width: 100%;">
+<!-- <a class="title" href="/about/index.html">ABOUT</a> &nbsp;<a class="title" href="/contact/index.html">EMAIL</a> &nbsp;<a class="title" href="../rss.xml">RSS</a> &nbsp;<a class="title" href="https://paypal.me/fabiensanglard">DONATE</a></div></div> -->
+<a class="title" href="../about/index.html">ABOUT</a> &nbsp;<a class="title" href="../contact/index.html">CONTACT</a> &nbsp;<a class="title" href="../rss.xml">RSS</a> &nbsp;<a class="title" href="https://paypal.me/fabiensanglard">GIVE</a></div></div>
+
+</center><br><br>
+<div style="margin-bottom: 2ch;text-transform: none;">
+Jan 15, 2022</div>
+<div class='heading'>Street Fighter II, Sound System internals</div><hr/><style type="text/css">
+
+img {
+    border: 1px black solid;
+}
+
+code {
+    /*font-size: 110%;*/
+    font-weight: bold;
+    background-color: #e1e1e1;
+    border-radius: 0.5ch;
+    padding-left: 0.3ch;
+    padding-right: 0.3ch;
+}
+
+.center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+</style>
+
+<p>
+    <i>This article is part of a <a href="../sf2_sheets/index.html">series</a> about Street Fighter II and the CPS-1. It is recommended to read the previous entries before reading this one.</i>
+</p>
+  
+<div class='heading'>The arcade golden era</div><hr/>  
+<p> 
+  If you are interested in video-games hardware, the arcades of the 80's are the source of endless entertainment. During that decade each game was designed from scratch with a new motherboard featuring various combinations of processors.
+</p>
+
+
+
+<p>
+  Game developers re-invented the wheel until two of them decided to standardize their hardware, propelling themselves ahead of the competition in the process.
+</p>
+<p>
+   SNK came up with the legendary Neo-Geo and Capcom had the CP-System (later known as CPS-1). While I hope someone will write a much deserved technical book about the Neo-Geo, I am focusing on the CPS-1. Today I wanted to talk about its sound system.
+</p> 
+
+<div class='heading'>Studying the CPS-1</div><hr/>  
+<p> 
+  As long as you are good with reading C++ and large codebase, the CPS-1 is partially documented in Mame thanks to the thousands of hours unsung heroes dedicated to following bus lines. 
+</p>
+<p> 
+   Looking at Mame's CPS-1 driver <code>drivers/cps1.cpp</code> on lines <a href="https://github.com/mamedev/mame/blob/ce944be92fe89915ae0842a9590d614e3f7e97eb/src/mame/drivers/cps1.cpp#L3614"><code>3614</code></a> and <a href="https://github.com/mamedev/mame/blob/ce944be92fe89915ae0842a9590d614e3f7e97eb/src/mame/drivers/cps1.cpp#L6678"><code>6678</code></a> gives a good overview of how the machine works.
+
+     
+</p>
+<img loading="lazy" src="cps1_arch.svg" class="pixel" width="301.12057mm" height="103.6603mm" style="width: 80%; height: auto; border:none;margin-top:4ch;margin-bottom:4ch;margin-left: auto; margin-right: auto;display: block;"/><p>
+  At the heart we find a Motorola 68000 running at 10Mhz acting as the control system. It is in charge of running the game logic, retrieving inputs and issuing commands to the GFX and audio system. 
+</p>
+<p>
+  The control system configures the GFX system via a shared GFX RAM where each frame layout is described. Because they are on the same bus, accesses to the GFX RAM are arbitrated by the bus controller. Since the graphic ASICs (CPS-A and CPS-B) are emulated by Mame, their command format and registers purpose are well documented (<a href="https://github.com/mamedev/mame/blob/master/src/mame/video/cps1.cpp"><code>video/cps1.cpp</code></a>) although I cannot imagine the amount of work it took Paul Leaman<a name="back_1" style="text-decoration: none;" href="index.html#footnote_1"><sup>[1]</sup></a> back in 1998 to figure it all out.
+  </p>
+<p> 
+  What is much less clear is how the sound system operates. It obviously involves a Z-80 running at 3.579 Mhz with a Yamaha 2151 for the musics and an OKI MSM6295 for the sound effects but beyond that it is a black box. By design, Mame has no knowledge of a game internals. It works by emulating components, executing instructions and making sure data flows on virtual buses as intended.
+</p>
+<p>
+  It is all good for a player but it is a problem from someone stubbornly attempting to understand the CPS-1 to the deep down. Luckily there are tools to solve this problem. Where the world of Mame ends is where the world of Ghidra begins.
+</p>
+
+
+
+<div class='heading'>Control / Sound, Latches interface</div><hr/>  
+<p> 
+  It is a non-trivial challenge to make sure all commands issued are received without drops or duplicates.
+</p>
+<p>
+  Try to think of a design yourself. You have two 1 byte latches, a 68000 running at 10Mhz which can write in them but not read. On the other end is a Z-80, working at 3.579 Mhz which can read the latches but not write them. How do you make these two CPUs talk to each other with 100% reliability?
+</p>
+
+<p>The first issue is that the reader runs slower than the writer which makes it possible to "miss" a command. Inverting the ratio is done via CPU interrupts. The 68000's IPL1 line is directly connected to the VSYNC line of the video system. Likewise, the Z-80 INT line is connected to the timer (CT1) line<a name="back_2" style="text-decoration: none;" href="index.html#footnote_2"><sup>[2]</sup></a> of the YM2151.
+</p>
+<img loading="lazy" src="Z80_ctc.svg" width="1719.3282" height="516.42798" style="width: 100%; height: auto; margin-bottom:2ch;border:0;"/><br/>
+<p>
+This way the writer ticks every 16ms while the reader ticks every 4ms. This ensures no commands can be dropped but introduces the problem of duplicates. To avoid these, the Z-80 disregards an input if it is the same as the last one.
+</p>
+<p>
+This introduces an ultimate problem if the 68000 needs to send the same command twice in a row. To work around this, the writer commits on never writing the same byte twice which is done via a no-op byte (<code>0xFF</code>) written after every command.
+</p> 
+<img loading="lazy" src="pipeline.svg" width="277.15897mm" height="50.494907mm" style="width: 80%; height: auto; margin-bottom:3ch;margin-top:3ch;border:0;display: block;margin-left: auto; margin-right: auto;"/>
+<p>What about the second latch you may ask? It is not used (at least not in Street Fighter II). Sorry.
+</p> 
+ <div class='heading'>Z-80 program architecture</div><hr/>  
+<p> 
+  The Z-80 runs no operating system but thanks to its interrupt system it hosts two threads. One thread is in charge of reading the latches while the other runs all the business logic.
+</p> 
+
+<p>
+The two threads run in lock-step thanks to their counter. The main thread runs a busy loop that only unlocks when the local counter is equal to the interrupt system counter.
+</p>
+<img loading="lazy" src="uml.svg" width="505.84018mm" height="150.13882mm" style="width: 100%; height: auto; margin-bottom:2ch;border:0;display: block;margin-left: auto; margin-right: auto;"/><br/>
+<p>
+ The interrupt thread stores values incoming from the latch into an array and increments a write cursor. The main thread reads the same array with a read cursor. The overall works as a circular buffer.
+</p> 
+<p>
+  The main thread dispatch commands by reading byte one by one. A value of <code>0xF7</code> indicates that the next byte is the ID of a music to play. Otherwise the current byte is the ID of a sound effect to play.
+
+
+
+
+
+
+
+<div class='heading'>Sound effect playback</div><hr/>  
+<p> 
+  Upon determining an ID is a sound effect, the Z-80 does not directly forwards it to the OKI. Instead, a translation table is used where are stored not only the actual ID to be used but also the volume and channel. Note that out of four channels the table always instructs to use 3 or 4 for reasons detailed later.
+</p>
+<p>
+   This translation table was likely implemented so the control programming team would have IDs to work with while allowing flexibility to the sound team. 
+</p>
+
+<p>
+  <u>Trivia:</u> The translation table stores data in big-endian (volume-channel then sample_ID) and the Z-80 reverses the byte order when it reads them. It may be an artifact from a tool running on a workstation using a big-endian CPU like the Sharp X68000.
+</p>
+
+<p>After the lookup, we are back in the land of documented behavior thanks to the MSM6295 datasheet<a name="back_3" style="text-decoration: none;" href="index.html#footnote_3"><sup>[3]</sup></a>. The OKI is directly connected to its own sample ROM via a local bus. The structure of the ROM is fairly simple with an index of 127 entries giving the start and end offset to an ADPCM stream. The format of the stream is also well known although it exists in a surprisingly high number of flavors<a name="back_4" style="text-decoration: none;" href="index.html#footnote_4"><sup>[4]</sup></a>.
+</p>
+
+<div class='heading'>Life of a punch</div><hr/>  
+
+<p>
+  The very first sound effect in the game is the punch delivered from Scott to Max. The 68000 writes the value <code>0x2A</code> to the latch which is read and translated to "phrase" <code>0x16</code> on channel <code>0x4</code> at volume <code>0x1</code>. The OKI table gives ADPCM payload offset <code>43,344</code>, length <code>2095</code> bytes and &lt;OUCH!!!&gt;.
+</p>
+<p>
+<audio style="width: 100%;" controls><source src="s22.oki.raw.mp3" type="audio/mpeg">Your browser does not support the audio element.</audio>
+</p>
+<p> 
+	<img loading="lazy" src="intro-00000550.webp" class="pixel center" style="width: 100%;width:100%; aspect-ratio: 4 / 3; margin-bottom:1ch;"/>	<span style="text-align: center; display: block; margin-bottom: 2ch;"><i><small>The first sound requested by the 68000 is when Scott punches Max.</small></i></span>
+
+<p>Since the OKI's ROM structure is documented, it is an easy task to poke around it. The maximum ROM size of 256KiB is almost entirely used since we find 95 entries in the index totaling 245,829 bytes. Thanks to the ADPCM codec which uses 4-bit per sample the total duration of Street Fighter 2 sound effects accounts to 65 seconds. The longest sample is Zanghief's laugh (<code>0x2A</code>) which uses 2,000ms of voice.
+</p>
+<p>
+  <audio style="width: 100%;" controls><source src="s42.oki.raw.mp3" type="audio/mpeg">Your browser does not support the audio element.</audio>
+  </p>
+  <p>
+     The sampling rate of 7575 Hz is pretty low by today's standard but pretty high by 1989 standards!
+   </p>
+
+
+
+
+
+
+
+
+<div class='heading'>Music playback</div><hr/>  
+<p>
+Playing music is a much more involved process. If the OKI has its own CLK and ROM on a local bus which requires only an ID to trigger sample playback, the YM2151 needs to constantly be fed notes for each instrument at a regular interval.
+</p>
+
+<p>The details of how the YM2151 performs synthesis<a name="back_5" style="text-decoration: none;" href="index.html#footnote_5"><sup>[5]</sup></a> and its register structure <a name="back_6" style="text-decoration: none;" href="index.html#footnote_6"><sup>[6]</sup></a> are well known. The goal is to pilot eight channels (a.k.a "voices") each made of four slots for a total of 32 slots.
+</p>
+<p>
+  In order to do this, the CPS-1 uses a music format close in concept to Midi. Upon receiving a music ID to play, the Z-80 creates and maintains a time cursor thanks to its 240Hz interrupt thread. Each tick, the YM2151 registers are fed via an instrument table (better known as "sound font").
+</p>
+<p>
+A music is a stream of instructions translating into a double offset [instrument][note] in the sound font table. The instruction format is explained via code by Ben Torkington<a name="back_7" style="text-decoration: none;" href="index.html#footnote_7"><sup>[7]</sup></a>. But that is not the end of the music. Listening to the YM2151 output does not give us the "intro" song we all know.
+</p>
+
+<div id="waveform_without_sfx" style="border: 1px black solid; background-color: white;"></div>
+<div style="text-align:center; margin-top: 1ch; margin-bottom: 2ch;">
+   
+  <button onclick="update(this,intro_without_sfx);">Play</button>
+</div>
+
+<p>The guitar is here but something is amiss, can you tell what?</p>
+
+
+
+
+<div class='heading'>Music embellishment</div><hr/>  
+
+<p>If you cannot tell what is missing, here is the "real" song to compare.
+</p>
+<div id="waveform_with_sdx" style="border: 1px black solid; background-color: white;"></div>
+<div style="text-align:center; margin-top: 1ch; margin-bottom: 2ch;">
+  <button onclick="update(this,intro_with_sfx);">Play</button>
+</div>
+
+<p>What was missing were the percussions, namely the drums. These are much more difficult to produce with FM synthesis so they are played via the OKI. These sample playback are not requested by the 68000 therefore nothing is written to the latches. These are triggered by the music instruction stream read by the Z-80.
+</p>
+<p>
+  To avoid conflicts between gameplay and music, the OKI channel space is divided evenly. This explains why the gameplay only uses channels 3 and 4 while channels 1 and 2 are reserved for the music team.
+</p>
+
+  <audio style="width: 100%;margin-bottom: 1ch;"controls><source src="s11.oki.raw.mp3" type="audio/mpeg">Your browser does not support the audio element.</audio>
+
+
+  <audio style="width: 100%;margin-bottom: 2ch;"controls><source src="s18.oki.raw.mp3" type="audio/mpeg">Your browser does not support the audio element.</audio>
+
+
+
+
+<p>
+<u>Trivia:</u> How does Street Fighter accelerates playback speed when a round situation becomes critical (contestant low health). It doesn't. These are hard-coded separate music tracks<a name="back_8" style="text-decoration: none;" href="index.html#footnote_8"><sup>[8]</sup></a>.
+</p>
+
+
+
+<div class='heading'>Music or Sound effect?</div><hr/>  
+<p>
+  Some audio effects seem like they should have been a sample but are actually done with FM synthesis.
+</p>
+  <img loading="lazy" src="opt_select.gif" class="pixel center" style="width: 100%;width:100%; aspect-ratio: 4 / 3; margin-bottom:1ch;"/><p>
+The sound effect we hear in the contestant selection screen when moving the cursor is not a sample coming from the OKI but an instrument rendered by the YM2151!</small></i></span>
+</p>
+  <audio style="width: 100%;margin-bottom: 1ch;margin-top: 1ch;"controls><source src="select.mp3" type="audio/mpeg">Your browser does not support the audio element.</audio>
+
+<p>Was this done because the OKI ROM was full or for some other reason? The answer my friend is blowin in the wind,  the answer is blowin in the wind.</p>
+
+<script src="wavesurfer.js"></script>
+<script type="text/javascript">
+  var intro_without_sfx = WaveSurfer.create({
+    container: '#waveform_without_sfx',
+    waveColor: '#aaaaaa',
+    progressColor: '#000000',
+    cursorColor: '#DD0000',
+    barHeight: 2,
+
+});
+  intro_without_sfx.load('nosfx.mp3');
+
+    var intro_with_sfx = WaveSurfer.create({
+    container: '#waveform_with_sdx',
+    waveColor: '#aaaaaa',
+    progressColor: '#000000',
+    cursorColor: '#DD0000',
+    barHeight: 2,
+
+});
+  intro_with_sfx.load('oksfx.mp3');
+function update(e, wf) {
+  if (wf.isPlaying()) {
+    wf.pause();
+    e.innerText = "Play";
+  } else {
+    wf.play();
+    e.innerText = "Stop";
+  }
+}
+</script>
+
+
+<style type='text/css'>td.ref {  padding-bottom: 0ch; width:0;}</style><div class='heading'>References</div><hr/><p id='paperbox' style='text-align:left;'><table><tbody style='vertical-align: top;'><tr><td class='ref' style='width:1ch;'><a name="footnote_1"></a><a href="index.html#back_1">^</a></td><td  class='ref' style='width:4ch;'> [1]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://github.com/mamedev/historic-mame/blame/master/src/mame/drivers/cps1.c">Mame history 1994</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_2"></a><a href="index.html#back_2">^</a></td><td  class='ref' style='width:4ch;'> [2]</td><td style='width:100%;text-align:left;' class='ref'>You can see the bus lines on the excellent 'Forgotten World CPS-1 schematics'.</td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_3"></a><a href="index.html#back_3">^</a></td><td  class='ref' style='width:4ch;'> [3]</td><td style='width:100%;text-align:left;' class='ref'><a href="MSM6295.pdf">MSM6295 datasheet</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_4"></a><a href="index.html#back_4">^</a></td><td  class='ref' style='width:4ch;'> [4]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://github.com/fabiensanglard/adpcm">Ian Karlsson's ADPCM tools</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_5"></a><a href="index.html#back_5">^</a></td><td  class='ref' style='width:4ch;'> [5]</td><td style='width:100%;text-align:left;' class='ref'><a href="ym2151_synthesis.pdf">YM2151 Synthesis</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_6"></a><a href="index.html#back_6">^</a></td><td  class='ref' style='width:4ch;'> [6]</td><td style='width:100%;text-align:left;' class='ref'><a href="ym2151_datasheet.pdf">YM2151 Datasheet</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_7"></a><a href="index.html#back_7">^</a></td><td  class='ref' style='width:4ch;'> [7]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://github.com/bentorkington/cps1-sound-extract">Ben Torkington CPS-1 music tool</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_8"></a><a href="index.html#back_8">^</a></td><td  class='ref' style='width:4ch;'> [8]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://open.spotify.com/album/4jkBDRFtxJ0lKWYcqRSrGZ">Street Fighter 2 Soundtrack</a></td></tr></tbody></table></p> <hr>
+ <center>*

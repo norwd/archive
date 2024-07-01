@@ -1,0 +1,72 @@
+#include <stdio.h>
+#include <string.h>
+
+// alphabet[] could have need converted to a MACRO "+ 49" but the code is hard to read enough
+// so lets us a lookup array.
+extern char alphabet[] ;
+
+void vigenere(int chapterId,char* key, char* text)
+{
+	int    keyLength ;
+	int    textLength;
+	char   tmp[1024];
+	char   currentChar ;
+	int    keyCursor ;
+	int    i;
+	int delta;
+
+	keyCursor = 0;
+	keyLength = strlen(key);
+	textLength = strlen(text);
+
+	printf("Chapter %2d: %s\n",chapterId,text);
+
+	for(i = 0 ; i < textLength ; i++)
+	{
+		currentChar = text[i];
+
+		//Convetr to lower case
+		if (currentChar >= 'A' && currentChar <= 'Z')
+			currentChar = currentChar+32;
+
+		if (currentChar >= 'a' && currentChar <= 'z')
+		{
+			//Need to decode here
+			currentChar = currentChar - 'a';
+			delta = key[keyCursor] - 'a' ;
+			//+26 because we need to substract the key delta not add.
+			currentChar = alphabet[(currentChar + 26 -delta) % 26 ] ;
+			tmp[i] = currentChar;
+			keyCursor = ++keyCursor % keyLength;
+		}
+		else
+			tmp[i] = text[i];
+	}
+	tmp[i] = '\0';
+
+	//printf("Chapter %d: %s\n",chapterId,tmp);
+	printf("            %s\n",tmp);
+
+}
+
+int main(int argc, char** argv)
+{
+	vigenere(2,"autopatch","wbth lal voe htat oy voe wxbirtn vfzbqt wagye C poh aeovsn vojgav ?");
+	vigenere(4,"jelly","Flle ujw esc wexp mo xsp kjr hsm hiwwcm, \"Wplpll stq lec qma e wzerg mzkk!\" ?");
+	vigenere(6,"oroville","Kyoo olxi rzr Niyovo Cohjpcx ojy dn T apopsy ?");
+	vigenere(8,"billcook","Iwh xwqv wpvpj fwr Vfvyj qks wf nzc ncgsoo esg psd gwc ntoqujvr ejs rypz nzfs ?");
+	vigenere(10,"firmware","Bprf cup esanqneu xmm gtknv amme U biiwy krxheu Iwqt Taied ?");
+	vigenere(12,"calabasas","Yhlt xak tzg iytfrfad RanBfld squtpm uhst uquwd ce mswf tz wjrwtsr a wioe lhsv Ecid mwnlkoyee bmt oquwdo't ledn mp acomt ?");
+	vigenere(14,"teltec","Plpki ytw eai rtc aaspx M llogw qj wef ms rh xq ?");
+	vigenere(16,"optoelectronics","Kwth qzrva rbq lcq rxw Svtg vxcz zm vzs lbfieerl nsem rmh dg ac oef'l cwamu ?");
+	vigenere(18,"oakwood","Khkp wg wve kyfcqmm yb hvh TBS oeidr trwh Yhb MmCiwus Wko ogvwgxar hr ?");
+	vigenere(18,"alphadent","Wspa wdw gae ypte rj gae dilan lbnsp loeui V tndllrhh gae awvnh \"HZO, hzl jaq M uxla nvu\"");
+	vigenere(22,"klingon","Gsig cof dsm fkqeoe vnss jo farj tbb epr Csyvd Nnxub mzlr ut grp lne ?");
+	vigenere(24,"boombox","Xvof jq qis bmns lg hvq thlss ktffb J cifsok EAJ uojbthwsbhlsg ?");
+	vigenere(26,"ensburgell","Aslx jst rlxi bx ns wgzzcmgw UP jnsh hlrjf nyk TT seq s cojorpdw pssx gxmyeie ao bzy glc ?");
+	vigenere(28,"tatteredcover","Phtm zvvvkci sw mhx Fmtvr VOX Ycmrt Emki vqimgv vowx hzh L cgf Ecbst ysi ?");
+	vigenere(30,"snowbird","Ouop lqeg gs zkds ulv V deds zq lus DS urqstsn't wwiaps ?");
+	vigenere(32,"gtetelenet","Caem alw Ymek Xptq'd tnwlchvw xz lrv lkkzxv ?");
+	vigenere(34,"robertmorris","Nvbx nte hyv bqgs pj gaabv jmjmwdi whd hyv UVT'g Giuxdoc Gctcwd Hvyqbuvz hycoij ?");
+	vigenere(36,"playersclub","Lsar JSA cryoi ergiu lq wipz tnrs dq dccfunaqi zf oj wqpctkiel dpzpgp I jstcgo cu dy hgq ?");
+}

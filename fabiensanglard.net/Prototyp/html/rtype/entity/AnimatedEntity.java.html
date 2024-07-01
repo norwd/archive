@@ -1,0 +1,116 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html><head>
+<title></title>
+  <style type="text/css">
+    <!--code { font-family: Courier New, Courier; font-size: 10pt; margin: 0px; }-->
+  </style>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+</head><body>
+
+
+<!-- ======================================================== -->
+<!-- = Java Sourcecode to HTML automatically converted code = -->
+<!-- =   Java2Html Converter 5.0 [2006-02-26] by Markus Gebhard  markus@jave.de   = -->
+<!-- =     Further information: http://www.java2html.de     = -->
+<div align="left" class="java">
+<table border="0" cellpadding="3" cellspacing="0" bgcolor="#ffffff">
+  <!-- start headline -->
+   <tr>
+    <td colspan="2">
+     <center><font size="+2">
+      <code><b>
+AnimatedEntity.java
+      </b></code>
+     </font></center>
+    </td>
+   </tr>
+  <!-- end headline -->
+   <tr>
+  <!-- start source code -->
+   <td nowrap="nowrap" valign="top" align="left">
+    <code>
+<font color="#808080">01</font>&nbsp;<font color="#3f7f5f">/*</font><br />
+<font color="#808080">02</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*</font><br />
+<font color="#808080">03</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;Created:&nbsp;Jun&nbsp;&nbsp;7&nbsp;2006</font><br />
+<font color="#808080">04</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*</font><br />
+<font color="#808080">05</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;Copyright&nbsp;(C)&nbsp;1999-2000&nbsp;Fabien&nbsp;Sanglard</font><br />
+<font color="#808080">06</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;</font><br />
+<font color="#808080">07</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;This&nbsp;program&nbsp;is&nbsp;free&nbsp;software;&nbsp;you&nbsp;can&nbsp;redistribute&nbsp;it&nbsp;and/or</font><br />
+<font color="#808080">08</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;modify&nbsp;it&nbsp;under&nbsp;the&nbsp;terms&nbsp;of&nbsp;the&nbsp;GNU&nbsp;General&nbsp;Public&nbsp;License</font><br />
+<font color="#808080">09</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;as&nbsp;published&nbsp;by&nbsp;the&nbsp;Free&nbsp;Software&nbsp;Foundation;&nbsp;either&nbsp;version&nbsp;2</font><br />
+<font color="#808080">10</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;of&nbsp;the&nbsp;License,&nbsp;or&nbsp;(at&nbsp;your&nbsp;option)&nbsp;any&nbsp;later&nbsp;version.</font><br />
+<font color="#808080">11</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;</font><br />
+<font color="#808080">12</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;This&nbsp;program&nbsp;is&nbsp;distributed&nbsp;in&nbsp;the&nbsp;hope&nbsp;that&nbsp;it&nbsp;will&nbsp;be&nbsp;useful,</font><br />
+<font color="#808080">13</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;but&nbsp;WITHOUT&nbsp;ANY&nbsp;WARRANTY;&nbsp;without&nbsp;even&nbsp;the&nbsp;implied&nbsp;warranty&nbsp;of</font><br />
+<font color="#808080">14</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;MERCHANTABILITY&nbsp;or&nbsp;FITNESS&nbsp;FOR&nbsp;A&nbsp;PARTICULAR&nbsp;PURPOSE.&nbsp;&nbsp;See&nbsp;the</font><br />
+<font color="#808080">15</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;GNU&nbsp;General&nbsp;Public&nbsp;License&nbsp;for&nbsp;more&nbsp;details.</font><br />
+<font color="#808080">16</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;</font><br />
+<font color="#808080">17</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;You&nbsp;should&nbsp;have&nbsp;received&nbsp;a&nbsp;copy&nbsp;of&nbsp;the&nbsp;GNU&nbsp;General&nbsp;Public&nbsp;License</font><br />
+<font color="#808080">18</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;along&nbsp;with&nbsp;this&nbsp;program;&nbsp;if&nbsp;not,&nbsp;write&nbsp;to&nbsp;the&nbsp;Free&nbsp;Software</font><br />
+<font color="#808080">19</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;Foundation,&nbsp;Inc.,&nbsp;59&nbsp;Temple&nbsp;Place&nbsp;-&nbsp;Suite&nbsp;330,&nbsp;Boston,&nbsp;MA&nbsp;&nbsp;02111-1307,&nbsp;USA.</font><br />
+<font color="#808080">20</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*/</font><br />
+<font color="#808080">21</font>&nbsp;<font color="#ffffff"></font><br />
+<font color="#808080">22</font>&nbsp;<font color="#7f0055"><b>package&nbsp;</b></font><font color="#000000">rtype.entity;</font><br />
+<font color="#808080">23</font>&nbsp;<font color="#ffffff"></font><br />
+<font color="#808080">24</font>&nbsp;<font color="#7f0055"><b>import&nbsp;</b></font><font color="#000000">org.lwjgl.opengl.GL11;</font><br />
+<font color="#808080">25</font>&nbsp;<font color="#ffffff"></font><br />
+<font color="#808080">26</font>&nbsp;<font color="#7f0055"><b>import&nbsp;</b></font><font color="#000000">rtype.Prototyp;</font><br />
+<font color="#808080">27</font>&nbsp;<font color="#7f0055"><b>import&nbsp;</b></font><font color="#000000">rtype.Texture;</font><br />
+<font color="#808080">28</font>&nbsp;<font color="#ffffff"></font><br />
+<font color="#808080">29</font>&nbsp;<font color="#7f0055"><b>public&nbsp;abstract&nbsp;class&nbsp;</b></font><font color="#000000">AnimatedEntity&nbsp;</font><font color="#7f0055"><b>extends&nbsp;</b></font><font color="#000000">Entity</font><br />
+<font color="#808080">30</font>&nbsp;<font color="#000000">{</font><br />
+<font color="#808080">31</font>&nbsp;<font color="#ffffff"></font><br />
+<font color="#808080">32</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>protected&nbsp;</b></font><font color="#000000">Texture</font><font color="#000000">[]&nbsp;</font><font color="#000000">animationTextures;</font><br />
+<font color="#808080">33</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><br />
+<font color="#808080">34</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>public&nbsp;</b></font><font color="#7f0055"><b>void&nbsp;</b></font><font color="#000000">init</font><font color="#000000">()</font><br />
+<font color="#808080">35</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#000000">{</font><br />
+<font color="#808080">36</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>this</b></font><font color="#000000">.animationTextures&nbsp;=&nbsp;Prototyp.textureLoader.getAnimation</font><font color="#000000">(</font><font color="#7f0055"><b>this</b></font><font color="#000000">.type</font><font color="#000000">)</font><font color="#000000">;</font><br />
+<font color="#808080">37</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>this</b></font><font color="#000000">.original_width&nbsp;=&nbsp;animationTextures</font><font color="#000000">[</font><font color="#990000">0</font><font color="#000000">]</font><font color="#000000">.getTextureWidth</font><font color="#000000">()</font><font color="#000000">;</font><br />
+<font color="#808080">38</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>this</b></font><font color="#000000">.original_height&nbsp;=&nbsp;animationTextures</font><font color="#000000">[</font><font color="#990000">0</font><font color="#000000">]</font><font color="#000000">.getTextureHeight</font><font color="#000000">()</font><font color="#000000">;</font><br />
+<font color="#808080">39</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><br />
+<font color="#808080">40</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#000000">}</font><br />
+<font color="#808080">41</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><br />
+<font color="#808080">42</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>public&nbsp;abstract&nbsp;</b></font><font color="#7f0055"><b>void&nbsp;</b></font><font color="#000000">draw</font><font color="#000000">()</font><font color="#000000">;</font><br />
+<font color="#808080">43</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><br />
+<font color="#808080">44</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#3f7f5f">//&nbsp;This&nbsp;field&nbsp;set&nbsp;if&nbsp;player&nbsp;is&nbsp;charging&nbsp;a&nbsp;blast</font><br />
+<font color="#808080">45</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>public&nbsp;</b></font><font color="#7f0055"><b>boolean&nbsp;</b></font><font color="#000000">displayAnimation;</font><br />
+<font color="#808080">46</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><br />
+<font color="#808080">47</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#3f7f5f">//&nbsp;This&nbsp;field&nbsp;hold&nbsp;the&nbsp;blast&nbsp;charge..</font><br />
+<font color="#808080">48</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>protected&nbsp;</b></font><font color="#7f0055"><b>float&nbsp;</b></font><font color="#000000">animationCursor;</font><br />
+<font color="#808080">49</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><br />
+<font color="#808080">50</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>protected&nbsp;</b></font><font color="#7f0055"><b>float&nbsp;</b></font><font color="#000000">animationSpeed&nbsp;=&nbsp;</font><font color="#990000">4.4f</font><font color="#000000">;</font><br />
+<font color="#808080">51</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><br />
+<font color="#808080">52</font>&nbsp;<font color="#ffffff"></font><br />
+<font color="#808080">53</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>public&nbsp;</b></font><font color="#7f0055"><b>void&nbsp;</b></font><font color="#000000">startAnimation</font><font color="#000000">()</font><br />
+<font color="#808080">54</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#000000">{</font><br />
+<font color="#808080">55</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>this</b></font><font color="#000000">.displayAnimation&nbsp;=&nbsp;</font><font color="#7f0055"><b>true</b></font><font color="#000000">;</font><br />
+<font color="#808080">56</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">57</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#000000">}</font><br />
+<font color="#808080">58</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>public&nbsp;</b></font><font color="#7f0055"><b>void&nbsp;</b></font><font color="#000000">stopAnimation</font><font color="#000000">()</font><br />
+<font color="#808080">59</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#000000">{</font><br />
+<font color="#808080">60</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>this</b></font><font color="#000000">.displayAnimation&nbsp;=&nbsp;</font><font color="#7f0055"><b>false</b></font><font color="#000000">;</font><br />
+<font color="#808080">61</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>this</b></font><font color="#000000">.animationCursor&nbsp;=&nbsp;</font><font color="#990000">0</font><font color="#000000">;</font><br />
+<font color="#808080">62</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">63</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#000000">}</font><br />
+<font color="#808080">64</font>&nbsp;<font color="#000000">}</font><br />
+<font color="#ffffff"></font><font color="#ffffff">
+</font></code>
+    
+   </td>
+  <!-- end source code -->
+   </tr>
+</table>
+</div>
+<!-- =       END of automatically generated HTML code       = -->
+<!-- ======================================================== -->
+
+
+</body></html><script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write("\<script src='&quot;&#32;+&#32;gaJsHost&#32;+&#32;&quot;google-analytics.com/ga.js' type='text/javascript'>\<\/script>" );
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-3217394-1");
+pageTracker._initData();
+pageTracker._trackPageview();
+</script>

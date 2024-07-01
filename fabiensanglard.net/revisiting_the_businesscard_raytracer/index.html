@@ -1,0 +1,631 @@
+<html>
+<head>
+  <link rel="alternate" type="application/rss+xml"  title="RSS Feed for fabiensanglard.net" href="../rss.xml" />
+  <style type="text/css">
+
+    @font-face {
+      font-family: 'fabfont';
+      src: url('../font/DejaVuSansMono.woff2');
+      font-display: block;
+    }
+
+    @font-face {
+      font-family: 'fabfont';
+      src: url('../font/DejaVuSansMono-Bold.woff2');
+      font-weight: bold;
+      font-display: block;
+    }
+
+    * {
+       font-size: 16px;
+    }
+
+    html {
+      font-family: fabfont,  monospace;
+      max-width: 900px;  /* For Desktop PC (see @media for Tablets/Phones) */
+      padding-left: 2%;
+      padding-right: 3%;
+      margin: 0 auto;
+      background: #F5F5F0;
+  	} 
+    
+
+
+  	a {
+      color: black;
+      font-weight: bold;
+    }
+
+    img {
+      border: none; 
+    }
+
+    p {
+      margin-top: 0px;
+      text-align: justify;
+    }
+    sup {
+      vertical-align: 0.3em;
+      font-size: 0.65em;
+    }   
+
+    pre {
+      font-family: fabfont, monospace;
+      background-color: white; 
+      border: 1px solid Black; 
+      padding-left: 2%;
+      padding-top: 1ch;
+      padding-bottom: 1ch;
+      /* Only take care of X overflow since this is the only part that can be too wide.
+         The Y axis will never overflow.
+      */
+      overflow: hidden;
+    }
+
+    div.heading {
+      font-weight: bold;      
+      text-transform: uppercase;
+      margin-top: 4ch;
+    }
+
+    /** {
+      font-size: 16px;
+    }*/
+    @media (max-width: 500px) { /* For small screen decices */
+      * {
+        font-size: 12px; 
+      }
+    }   
+    .title {
+      text-decoration: none;
+    }
+
+    img.pixel, canvas.pixel {
+      image-rendering: pixelated;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: crisp-edges;
+    }
+
+    blockquote { 
+    background-color: #f3f3f3;
+    border: dashed 1px grey; 
+    width: 97.5%; 
+    font-style: italic; 
+    text-align: justify;
+
+    padding: 1ch; 
+    padding-top: 2ch; 
+    padding-bottom: 2ch;     
+    
+    margin : 0ch; 
+    margin-bottom: 2ch; 
+    margin-top: 0ch;
+  }
+
+  blockquote div {
+    text-transform: none;
+    text-align: right;
+    width: 100%;
+  }
+
+  code {
+    /*font-size: 110%;*/
+    font-weight: bold;
+    background-color: #e1e1e1;
+    border-radius: 0.5ch;
+    padding-left: 0.3ch;
+    padding-right: 0.3ch;
+  }
+
+  .trivia {
+    border-left: 1px black solid;
+    padding-left: 1ch;
+  }
+
+  .trivia::before {
+  font-weight: bold;
+  text-decoration: underline;
+  padding-right: 1ch;
+  content: "Trivia:";
+
+  </style>
+  <title>Revisiting the Business Card raytracer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=12.0, minimum-scale=1.0, user-scalable=yes">
+</head>  
+  <body><br><center>
+    <div style="display: inline-block; vertical-align:middle;">
+<a href="../index.html" class="title"><b>FABIEN SANGLARD'S WEBSITE</b><br>
+</a><hr/><div style="text-align: justify;display: inline-block; width: 100%;">
+<!-- <a class="title" href="/about/index.html">ABOUT</a> &nbsp;<a class="title" href="/contact/index.html">EMAIL</a> &nbsp;<a class="title" href="../rss.xml">RSS</a> &nbsp;<a class="title" href="https://paypal.me/fabiensanglard">DONATE</a></div></div> -->
+<a class="title" href="../about/index.html">ABOUT</a> &nbsp;<a class="title" href="../contact/index.html">CONTACT</a> &nbsp;<a class="title" href="../rss.xml">RSS</a> &nbsp;<a class="title" href="https://paypal.me/fabiensanglard">GIVE</a></div></div>
+
+</center><br><br>
+<div style="margin-bottom: 2ch;text-transform: none;">
+May 2, 2020</div>
+<div class='heading'>Revisiting the Business Card raytracer</div><hr/>
+<p>
+  <picture>
+  <source srcset="minray.webp" type="image/webp"> 
+  <img loading="lazy" src="minray.png" width="512" height="512" style="width: 38%; height: auto; float:right;margin-bottom: 2ch; margin-left: 2ch;border: 1px black solid;"/></picture>
+	What is the most beautiful piece of code you have ever seen?
+  <br/>
+  <br/>
+  Not only it is subjective, "beauty" is also a word that can mean a lot of things. If we were to be discussing of raw speed, I would bring up the Fast Inverse Square Root<a name="back_1" style="text-decoration: none;" href="index.html#footnote_1"><sup>[1]</sup></a>. If we were to judge by aesthetic, my answer would be Andrew Kensler's, 1337 bytes, Business Card Raytracer.<br/><br/>
+
+	Back in 2013 I spent a long time starring at Andrew's code in order to make sense of it<a name="back_2" style="text-decoration: none;" href="index.html#footnote_2"><sup>[2]</sup></a>. I discussed at length how he managed to do so much with so little. Because of its real-estate constraint his program took a while to run and I remember wondering how fast it could have performed with some optimizations.  
+	<br/>
+	<br/>
+	Since I have been staying at home a lot lately, I decided to spent some of my spare time on it. I started with SIMD, followed with compiler flags, then multi-core, and ended up involving the GPU with CUDA. It was a prolific week-end which saw the runtime drop from <font color=red>101,000ms</font> to <font color=red>150ms</font>!
+  <br/>
+</p>
+	<div style="clear:both"></div>
+
+<div class='heading'>Establishing a baseline</div><hr/>	<pre style="float:right; width: 43ch;margin-left: 2ch;margin-top: 0;">#include &lt;stdlib.h>   // card > aek.ppm
+#include &lt;stdio.h>
+#include &lt;math.h>
+typedef int i;typedef float f;struct v{
+f x,y,z;v operator+(v r){return v(x+r.x
+,y+r.y,z+r.z);}v operator*(f r){return
+v(x*r,y*r,z*r);}f operator%(v r){return
+x*r.x+y*r.y+z*r.z;}v(){}v operator^(v r
+){return v(y*r.z-z*r.y,z*r.x-x*r.z,x*r.
+y-y*r.x);}v(f a,f b,f c){x=a;y=b;z=c;}v
+operator!(){return*this*(1/sqrt(*this%*
+this));}};i G[]={247570,280596,280600,
+249748,18578,18577,231184,16,16};f R(){
+return(f)rand()/RAND_MAX;}i T(v o,v d,f
+&t,v&n){t=1e9;i m=0;f p=-o.z/d.z;if(.01
+&lt;p)t=p,n=v(0,0,1),m=1;for(i k=19;k--;)
+for(i j=9;j--;)if(G[j]&1&lt;&lt;k){v p=o+v(-k
+,0,-j-4);f b=p%d,c=p%p-1,q=b*b-c;if(q>0
+){f s=-b-sqrt(q);if(s&lt;t&&s>.01)t=s,n=!(
+p+d*t),m=2;}}return m;}v S(v o,v d){f t
+;v n;i m=T(o,d,t,n);if(!m)return v(.7,
+.6,1)*pow(1-d.z,4);v h=o+d*t,l=!(v(9+R(
+),9+R(),16)+h*-1),r=d+n*(n%d*-2);f b=l%
+n;if(b<0||T(h,l,t,n))b=0;f p=pow(l%r*(b
+>0),99);if(m&1){h=h*.2;return((i)(ceil(
+h.x)+ceil(h.y))&1?v(3,1,1):v(3,3,3))*(b
+*.2+.1);}return v(p,p,p)+S(h,r)*.5;}i
+main(){printf("P6 512 512 255 ");v g=!v
+(-6,-16,0),a=!(v(0,0,1)^g)*.002,b=!(g^a
+)*.002,c=(a+b)*-256+g;for(i y=512;y--;)
+for(i x=512;x--;){v p(13,13,13);for(i r
+=64;r--;){v t=a*(R()-.5)*99+b*(R()-.5)*
+99;p=S(v(17,16,8)+t,!(t*-1+(a*(R()+x)+b
+*(y+R())+c)*16))*3.5+p;}printf("%c%c%c"
+,(i)p.x,(i)p.y,(i)p.z);}}</pre>
+<p>
+If you are not familiar with the business card raytracer and you don't want to read the breakdown, it is the blob you can see on the right. It may look hairy but once cleaned up, <a href="card_base.html">card_base.cpp</a> is pretty simple with three functions named main, Trace, and Sample.
+
+<br/>
+<br/>
+There is a comment at the top of the listing instructing how to run the program but not how to compile it. The baseline was established with a borderline pathologic compilation command.
+	<pre>
+$> clang -o card -lm card.cpp
+$> time ./card > card.ppm
+
+<font color=red>real    1m41.829s</font>
+user    1m41.703s
+sys     0m0.031s </pre>
+	<p style="margin-bottom: 1ch;">
+I ran it on The Beautiful Machine<a name="back_3" style="text-decoration: none;" href="index.html#footnote_3"><sup>[3]</sup></a> which features a Ryzen 5 2600 with 6 cores capable of 12 threads at 3.5Ghz. It took 101 seconds to render the ppm image.
+<br/>
+<br/>
+ This was already an improvement compared to 2013 when a MacBook Air with a Core i5 running at 1.7Ghz resulted in 131s runtime.
+<br/>
+<br/>
+A quick benchmark showed that the total cost of I/O (the printf() to generate the ppm) accounted for one millisecond total and therefore was negligible.
+<br/>
+<br/>
+The first optimization on my list was to use SIMD instructions to speed up vector manipulation. Opening the binary with Binary Ninja revealed that clang had already managed to leverage the SSE registers.
+<br/>
+<br/>
+ In fact, attempting to disable SEE proved downright impossible since the -mno-see flag crashed Clang.<br/>
+	<div style="clear:both;"></div>
+	<pre style="margin-top: 0;">
+$> clang -o card -lm -mno-sse card.cpp
+[...]
+card.cpp:32:5: error: SSE register return with SSE disabled
+fatal error: error in backend: Cannot pop empty stack!
+clang: error: clang frontend command failed with exit code 70
+int TraceRay(v origin, v destination, float &t, v &normal) {
+    ^ </pre>
+<p></p>
+
+
+
+<div class='heading'>Optimization level 1</div><hr/><p style="margin-bottom: 0;">
+	With SIMD already taken care of, the next step was to play with compiler flags. Instead of going directely with the most agressive form of optimization (-O3), I took a detour to peek at other levels. gcc documentation<a name="back_4" style="text-decoration: none;" href="index.html#footnote_4"><sup>[4]</sup></a> explained -O1 well.
+	<br/><br/>
+<blockquote>
+	With -O1, the compiler tries to reduce code size and execution time, without performing any optimizations that take a great deal of compilation time.<br/>
+    <br/>
+</blockquote>
+This improved performances by almost 50% and brought runtime down to 52s.	 
+</p>
+	<pre>
+$> clang -o card -lm -O1 card.cpp 
+$> time ./card > /dev/null
+
+<font color=red>real    0m52.874s</font>
+user    0m52.750s
+sys     0m0.016s </pre>
+	<p style="margin-bottom: 0;">Comparing the instructions generated between O0 and O1 reveal that the Vector class method are still functions but some of them don't require a stack frame anymore like the vector::* operator.<br/>
+	</p>
+	<pre style="width:48%; height: 65ch; display: inline-block;box-sizing: border-box;">
+v::operator*(float):
+push    rbp
+mov     rbp, rsp
+sub     rsp, 48
+mov     qword ptr [rbp - 24], rdi
+movss   dword ptr [rbp - 28], xmm0
+mov     rax, qword ptr [rbp - 24]
+movss   xmm0, dword ptr [rbp - 28] # xmm0
+movss   xmm1, dword ptr [rax]   # xmm1
+movss   xmm2, dword ptr [rax + 4] # xmm2
+mulss   xmm1, xmm0
+mulss   xmm2, xmm0
+movss   xmm3, dword ptr [rax + 8] # xmm3
+mulss   xmm3, xmm0
+lea     rdi, [rbp - 16]
+movaps  xmm0, xmm1
+movaps  xmm1, xmm2
+movaps  xmm2, xmm3
+call    v::v(float, float, float)
+mov     ecx, dword ptr [rbp - 8]
+mov     dword ptr [rbp - 40], ecx
+mov     rax, qword ptr [rbp - 16]
+mov     qword ptr [rbp - 48], rax
+movsd   xmm0, qword ptr [rbp - 48] # xmm0
+movss   xmm1, dword ptr [rbp - 40] # xmm1
+add     rsp, 48
+pop     rbp
+ret </pre>
+
+	<pre style="width:48%; height: 65ch; display: inline-block; box-sizing: border-box;">
+v::operator*(float):
+sub     rsp, 24
+movaps  xmm2, xmm0
+movss   xmm0, dword ptr [rdi]   # xmm0
+mulss   xmm0, xmm2
+movss   xmm1, dword ptr [rdi + 4] # xmm1
+mulss   xmm1, xmm2
+mulss   xmm2, dword ptr [rdi + 8]
+lea     rdi, [rsp + 8]
+call    v::v(float, float, float)
+movsd   xmm0, qword ptr [rsp + 8] # xmm0
+movss   xmm1, dword ptr [rsp + 16] # xmm1
+add     rsp, 24
+ret </pre>
+<span style="text-align: center; display: block; margin-bottom: 2ch;"><i><small>Left: No optimization. Right: -O1 optimization.</small></i></span>
+	<p>
+BinaryNinja was a good tool to look at individual binaries. However, when the purpose is comparison, I found Compiler Explorer to perform better. It is a free tool which output for this code can be seen <a href="https://godbolt.org/z/X7Z-A0">here</a>.
+</p>
+
+
+<div class='heading'>Optimization level 3</div><hr/><p style="margin-bottom: 0;">
+	I skipped level 2 and went directly to level 3. At this level all optimizations are applied, regardless of compilation time and binary size. The documentation warn that increasing the volume of instruction may be detrimental to performance. Our instance does not fall under this condition and runtime dropped again to 11s.<br/> 
+<pre>
+$> clang -o card -lm -O3 card.cpp
+$> time ./card > /dev/null
+
+<font color=red>real    0m11.550s</font>
+user    0m11.531s
+sys     0m0.000s </pre>
+	<p>
+At this level, the Vector class is completely melted by the compiler, all v:: operators are gone from the symbol table. A particularly rich example is the normal assignment line found in TraceRay function.<br/>
+<pre>
+int TraceRay(v origin, v destination, float &t, v &normal) {
+  .
+  normal = v(0, 0, 1);
+  .
+}
+</pre>
+This line is compiled to 11 instructions with -O1 but only two with -O3.
+<br/>
+
+<pre style="width:48%; height: 28ch; display: inline-block; box-sizing: border-box;">
+movss   dword [rbx], xmm1
+lea     rdi, [rsp+0x8 {var_a0}]
+movss   xmm2, dword [rel data_401298]
+xorps   xmm0, xmm0  {0x0}
+xorps   xmm1, xmm1  {0x0}
+call    v::v
+mov     eax, dword [rsp+0x10 {var_98}]
+mov     rcx, qword [rsp+0x28 {var_80}]
+mov     dword [rcx+0x8], eax
+mov     rax, qword [rsp+0x8 {var_a0}]
+mov     qword [rcx], rax
+</pre>
+
+<pre style="width:48%; height: 28ch; display: inline-block; box-sizing: border-box;">
+mov     qword [r14], 0x0
+mov     dword [r14+0x8], 0x3f800000
+</pre>
+<span style="text-align: center; display: block; margin-bottom: 2ch;"><i><small>Left: -O1. Right: -O3.</small></i></span>
+<p>
+On top of all the inlining (v::v constructor is gone, and the target is directly written into), clang moved some compile-time vector values from .text segment directly into the instruction stream in order to avoid reading operand from memory. This is the case for value 1.0f (0x3f800000).
+<br/><br/>
+ Clang also detected two 4 bytes values set to zero next to each other and decided to set them with one 8-byte assignment (qword vs dword).<br/><br/>
+</p>
+
+
+<div class='heading'>Using all cores</div><hr/><p>
+	So far the raytracer was mono-threaded. For the next step, I threw all of the Ryzen 5 cores (12) at the problem. Minor refactoring resulted into <a href="card_cores.html">card_cores.cpp</a> which spawns 512 pthread to render segments of 512 continuous pixels.
+  <br/> 
+
+
+<pre>
+$> clang -O3 -o card_cores -lm -lpthread card_cores.cpp
+$> time ./card_cores > /dev/null
+
+<font color=red>real    0m26.758s</font>
+user    0m34.531s
+sys     4m35.453s
+</pre>
+<p>
+Oops. Throwing 12 cores at the task now takes twice as long to complete. I was surprised by the result since I was careful to avoid false sharing, an issue well described by Scott Meyers<a name="back_5" style="text-decoration: none;" href="index.html#footnote_5"><sup>[5]</sup></a> that arise when cache coherency dominates runtime. I had obviously failed to cuddle the cachelines. If you go back to <a href="card_cores.html">card_cores.cpp</a>, can you spot the mistake?
+<br/>
+<br/>
+If you guessed libc's rand(), you were right. This version of the random generator maintains an internal state between calls which mean every core calling rand() made all other core cacheline containing that state dirty. The solution was to re-implement the random function generator with a thread local.<br/>
+<pre>thread_local int seed = 1;
+float R() {
+  seed = ( 214013 * seed + 2531011);
+  return ((seed >> 16) & 0xFFFF) / 66635.0f;
+}	
+</pre>
+<p><a href="multi_thard.html">multi_thard.cpp</a> showed tremendous improvement, achieving a 10x speedup compared to the mono-threaded version.</p>
+<pre>
+$> clang -O3 -o multi_thard -lm -lpthread multi_thard.cpp
+$> time ./multi_thard > /dev/null 
+
+<font color=red>real    0m1.291s</font>
+user    0m14.734s
+sys     0m0.109s	
+</pre>
+<p>
+	At this point, the Business Card Raytracer runtime was down from 101 seconds to 1.3 seconds. I assessed it was close to the best I could do while relying only on a CPU. It was time to move onto something beefier.<br/>
+
+</p>
+
+
+<div class='heading'>Cuda</div><hr/><p>
+  <img loading="lazy" src="nvidia.svg" width="1770.4646" height="1171.5273" style="width: 28%; height: auto; float:right;margin-left: 2ch; margin-bottom: 2ch;"/>  After playing with compiler optimizations and multi-threading, the next step was to involve the GPU. It was a good timing since I had just finished building myself a new PC<a name="back_6" style="text-decoration: none;" href="index.html#footnote_6"><sup>[6]</sup></a>. For the first time in 15 years my GPU (Pascal GeForce GTX 1050 Ti) was only one generation behind the latest Turing.
+  <br/>
+  <br/>
+  To do GPGPU programming there are two choices named OpenCL and CUDA. My years studying at University of id Software and the adage "open standards are Good and Portable" triggered so I contemplated using OpenCL. After a little bit of investigation it looked a lot like GLSL where you need to create buffers, bind variables, and createProgram by giving the source code of the kernel. I had painful memories of dealing with compiler implementation details with this method. There was some hope to use Spir-V and clCreateProgramWithBinary but reports of it not being supported on certain platforms buried it quick. In the end, I went with CUDA.
+  <br/>
+  <br/>
+  It turned out to be a delightful experience where a programmer only need to tag code/data location via special qualifiers such as __global__ and __device_ with nvcc compiler taking care of almost everything.
+</p>
+
+<div class='heading'>Learning CUDA and SIMT</div><hr/><p>
+  There are a lot of books about CUDA. They all seem to have a Borg cube on their cover.
+  <br/>
+  <br/>
+  <table><tr>
+    <td width="20%">
+  <picture>
+  <source srcset="cuda_by_example.webp" type="image/webp"> 
+  <img loading="lazy" src="cuda_by_example.jpg" width="402" height="500" style="width: 100%; height: auto; border: solid black 1px; box-sizing: border-box;"/></picture>
+
+    <td width="20%">
+  <picture>
+  <source srcset="cuda_for_engineers.webp" type="image/webp"> 
+  <img loading="lazy" src="cuda_for_engineers.jpg" width="402" height="500" style="width: 100%; height: auto; border: solid black 1px; box-sizing: border-box;"/></picture>
+</td>
+
+    <td width="20%">
+  <picture>
+  <source srcset="programming_massive.webp" type="image/webp"> 
+  <img loading="lazy" src="programming_massive.jpg" width="402" height="500" style="width: 100%; height: auto; border: solid black 1px; box-sizing: border-box;"/></picture>
+</td>
+
+    <td width="20%">
+  <picture>
+  <source srcset="the_cuda_handbook.webp" type="image/webp"> 
+  <img loading="lazy" src="the_cuda_handbook.jpg" width="402" height="500" style="width: 100%; height: auto; border: solid black 1px; box-sizing: border-box;"/></picture>
+</td>
+
+    <td width="20%">
+  <picture>
+  <source srcset="professional_cuda.webp" type="image/webp"> 
+  <img loading="lazy" src="professional_cuda.jpg" width="398" height="499" style="width: 100%; height: auto; border: solid black 1px; box-sizing: border-box;"/>  </picture>
+</td>
+</tr>
+</table>
+
+<span style="text-align: center; display: block; margin-bottom: 2ch;margin-top: 1ch;"><i><small>- "I bet nobody else will think of using a cube on the cover!"</small></i></span>
+  "Cuda by Example" was a good starter which took me from "HelloWorld" to something that compiled and ran without crashing. With minimal refactoring and relying mostly on qualifier keyword, I came up with a naive <a href="card_cuda.html">card_cuda.cu</a>.<br/>
+<br/>
+  I was expecting a total performance carnage but things went better than expected.<br/> 
+<pre>C:\Users\fab>nvcc -o card_cuda -O3 card_cuda.cu
+warning : Stack size for entry function '_Z8GetColorPh' cannot be statically determined  
+C:\Users\fab>card_cuda > NUL
+<font color=red>Time: 984ms</font>
+</pre>
+
+<p>
+The warning is probably not a good thing (I'll get back to this later) but the program ran successfully. With zero optimization the GPU outperformed a 12-core CPU by 30%.<br/>
+</p>
+
+
+<div class='heading'>Taking it to the next level</div><hr/><p>
+To improve runtime further, I found "Professional CUDA C Programming" to be a gold mine. The book explains in great details how the CUDA core/stream multiprocessor work and how to profile/optimize a kernel. The rest of this article is rooted in this book, I highly recommend it.
+<br/>
+</p>
+
+
+
+<div class='heading'>Cuddling the Stream Multiprocessor</div><hr/><p>
+Over the past two decades, NVidia GPU architecture has evolved drastically<a name="back_7" style="text-decoration: none;" href="index.html#footnote_7"><sup>[7]</sup></a>. Fortunately, the programming model has remained unchanged. A GPU is fed thousands of threads. Those are grouped in packs of 32 (called warps) where all of them have the same Instruction Pointer (hence the name SIMT) and execute the same instruction in lockstep. Performance-wise, the most important thing is to keep the SM well fed with instructions, data, and warps.
+<br/>
+<br/>
+Nvidia provides a profiling tool named nvprof which allows to measure metrics such as occupancy and thread divergence in a warp.<br/>
+<pre>
+C:\Users\fab>nvprof --metrics achieved_occupancy,branch_efficiency card_cuda > NUL
+Branch Efficiency             99.90%
+Average Achieved Occupancy    0.123891  
+</pre>
+<p>
+ "Branch Efficiency" measures how much threads in a warp diverge. The figure for our raytracer is good. I was expecting it to perform badly since rays bounce everywhere but it seems spacial locality helped thread to be coherent.<br/>
+ <br/>
+ "Achieved Occupancy" on the other side was abysmal (best is 1.0). It seems the GPU SMs were not able to keep enough warp in-flight which resulted in starvation. This is correlated with the warning nvcc issued. Because the raytracer uses recursion, it uses a lot of stacks. So much actually that the SM cannot keep more than a few alive. 
+<br/>
+<br/>
+The problem is the recursive nature of the code. That is why the compiler was unable to guess the stack size earlier.
+Revising the raytracer to use a loop instead of recursion (<a href="card_cudb.html">card_cudb.cu</a>) reduced the amount of stack consumed. This translated in an occupancy twice as good and halved runtime!
+<br/>
+<pre>
+C:\Users\fab>nvcc -o card_cudb -O3 card_cudb.cu
+C:\Users\fab>nvprof --metrics achieved_occupancy card_cudb > NUL
+Average Achieved Occupancy    0.282478
+C:\Users\fab>card_cudb > NUL
+<font color=red>Time: 546ms</font></pre>
+</pre>
+<p></p>
+
+
+
+<div class='heading'>Avoiding double precision floating point (FP64)</div><hr/><p>Another recommendation from the book was to avoid double precision if possible. nvprof showed that no FP64 instructions were used in the kernel.
+  <br/>
+  <pre>C:\Users\fab>nvprof --metrics flop_count_dp,flop_count_sp card_cudb > NUL
+Average Floating Point Operations(Double Precision)           0     
+Average Floating Point Operations(Single Precision)  2.3327e+10</pre>
+<p>
+</p>
+
+<div class='heading'>Using half-precision float (FP16)</div><hr/><p>
+  Support for half-float was added by CUDA 7.5 in 2015. Initially this only helped to improve storage but cards based on Volta<a name="back_8" style="text-decoration: none;" href="index.html#footnote_8"><sup>[8]</sup></a> and Turing<a name="back_9" style="text-decoration: none;" href="index.html#footnote_9"><sup>[9]</sup></a> architecture provide a 2x performance boost when crunching FP16s. Sadly, previous generations such as my Pascal GTX 1050 Ti crunch FP16...64 times slower than FP32<a name="back_10" style="text-decoration: none;" href="index.html#footnote_10"><sup>[10]</sup></a>. Nothing to see here.<br/>
+</p>
+
+<div class='heading'>Using intrinsics</div><hr/><p>
+  Next on the list was to use CUDA intrinsics. These functions cover every math operations from math.h and more. There are also variant offering to trade accuracy for speed.
+  <br/>
+  <pre>#define POW         __powf
+#define CEIL        ceilf
+#define RSQRT(x)    rsqrtf(x)
+#define SQRT(x)     sqrtf(x)
+#define DIVIDE(x,y) __fdividef((x),(y))</pre>
+<p>The resulting intrinsic based <a href="card_cudc.html">card_cudc.cu</a> proved twice as fast as the previous iteration. <br/>
+<pre>
+C:\Users\fab>card_cudc > NUL 
+<font color=red>Time: 218ms</font>
+</pre>
+<p></p>
+
+
+
+<div class='heading'>Use Fast-math flag</div><hr/><p>
+  Besides -O3, nvcc compiler driver also accept flag to control speed/accuracy tradeoff (ftz, prec-div, prec-sqrt, and fmad). They are all enabled with -use_fast_math and shaved another 15ms.<br/>
+<pre>C:\Users\fab>nvcc -O3 -o card_cudc -use_fast_math card_cudc.cu
+C:\Users\fab>card_cudc > NUL 
+<font color=red>Time: 203ms</font>  
+</pre>
+</p>
+
+
+<div class='heading'>Skip second-stage (PTX) compilation</div><hr/><p>
+When nvcc runs, it does not generate GPU machine code but rather a portable bytecode called PTX. When the program runs the PTX is transformed into something specific to the GPU available. nvcc offers the ability to build fat binaries to skip PTX. Arnon Shimoni has a page summarizing the architectures and what parameters to use with them<a name="back_11" style="text-decoration: none;" href="index.html#footnote_11"><sup>[11]</sup></a>.<br/>
+<pre>
+Fermi   Kepler   Maxwell   Pascal    Volta     Turing    Ampere
+sm_20    sm_30     sm_50    sm_60    sm_70       sm75     sm_80
+         sm_35     sm_52    sm_61    sm_72
+         sm_37     sm_53    sm_62 </pre>
+<p>
+Unfortunately, generating a fat binary and skipping PTX generation did not result in better performance.<br/> 
+  <pre>C:\Users\fab>nvcc -O3 -o card_cudc -gencode=arch=compute_60,code=sm_60 card_cudc.cu
+C:\Users\fab>cuobjdump card_cudc.exe
+
+Fatbin elf code:
+================
+arch = sm_60
+code version = [1,7]
+producer = <unknown>
+host = windows
+compile_size = 64bit
+
+Fatbin elf code:
+================
+arch = sm_60
+code version = [1,7]
+producer = <unknown>
+host = windows
+compile_size = 64bit
+
+Fatbin ptx code:
+================
+arch = sm_60
+code version = [6,5]
+producer = <unknown>
+host = windows
+compile_size = 64bit
+compressed
+
+C:\Users\fab>card_cudc > NUL 
+<font color=red>Time: 203ms</font>  
+</pre>
+</p>
+
+<div class='heading'>Malloc wall?</div><hr/><p style="margin-bottom: 0;">    
+nvprof does not have a way to generate an unified timeline trace. Even with "--print-gpu-trace", the best you can get is two sections with GPU activity on one side and API calls on the other.<br/>
+<pre style="margin-top: 1ch;">
+C:\Users\fab>nvprof card_cudc > cudc.ppm
+==3448== NVPROF is profiling process 3448, command: card_cudc
+Time: 407ms
+==3448== Profiling application: card_cudc
+==3448== Profiling result: 
+            Type  Time(%)      Time       Avg  Name
+ GPU activities:   99.93%  88.634ms  88.634ms  GetColor(unsigned char*)
+                    0.07%  60.703us  60.703us  [CUDA memcpy DtoH]
+      API calls:   53.40%  147.01ms  147.01ms  cudaMalloc
+                   32.22%  88.706ms  88.706ms  cudaDeviceSynchronize
+                   14.03%  38.637ms  38.637ms  cuDevicePrimaryCtxRelease
+</pre>
+<p> It is not intuitive to read it but it looked like allocating a buffer on the GPU (cudaMalloc) was slow to the point it accounted for 53% of the runtime. NVidia Visual Profiler came handy to confirm the diagnostic.<br/> 
+<pre>
+C:\Users\fab>nvvp -vm "c:\Program Files (x86)\jdk-8\bin\java"
+</pre>
+<p>
+   <picture>
+  <source srcset="nvvp_profiling.webp" type="image/webp">  
+  <img loading="lazy" src="nvvp_profiling.png" width="1281" height="493" style="width: 100%; height: auto; margin-bottom: 2ch; margin-top: 2ch; border: 1px black solid;"/></picture>
+
+I wasn't really sure why malloc was so slow. After some googling, it turned out that it is not cudaMalloc that is slow but rather that a context is created on the first CUDA function call. Properly initializing the context with cudaSetDevice(0) shaved an extra 50ms.<br/>
+<pre>
+C:\Users\fab>card_cudd > NUL
+Time: <font color=red>150ms</font>
+</pre>
+<p>That is the last optimization I was able to come up with. I feel like I have barely scratched the surface of GPGPU optimization but it was a lot of fun. I will make sure to revisit the topic soon.</p>
+
+<div class='heading'>CUDA pain points</div><hr/><p style="margin-bottom: 0ch;">
+The world of CUDA was a lot of fun to explore but not devoid of pain points. Even on Windows, the development framework doesn't "just work". nvcc exploded on first run and I had to use some cryptic script provided by Visual Studio.<br/>
+<pre>
+"c:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
+</pre>
+<p style="margin-bottom: 0ch;">
+The profiler nvprof also resulted in a weird error "missing dll, cupta64-102.dll not found". PATH had to be manually modified.<br/>	
+<pre>
+PATH = %PATH%;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.2\extras\CUPTI\lib64</pre>
+<p>
+By far the most capricious tool was the Visual profiler, nvvp, which refused to work with anything but OpenJDK 8.<br/>
+<pre>
+nvvp -vm "c:\Program Files (x86)\jdk-8\bin\java"</pre>
+<p style="margin-bottom: 0ch;">
+Besides the tools, the worse problems are those related to CUDA execution. Occasionally you can be faced with enigmatic error messages.<br/>
+<pre>
+Too Many Resources Requested for Launch
+</pre>
+<p style="margin-bottom: 0ch;">What are we supposed to do with that? According to cuda-programming.blogspot.com<a name="back_12" style="text-decoration: none;" href="index.html#footnote_12"><sup>[12]</sup></a> this means that the number of registers available on the multiprocessor is being exceeded. You either need to reduce the number of thread per block or reduce the stack frame sizes.
+	<br/>
+<br/>
+Last but not least, with limited memory per thread, it is super easy to trigger a stack overflow. The recursive nature of the initial implementation crashed the kernel.<br/>
+<pre>
+GPUassert: an illegal memory access was encountered card.cu 155
+(Stack overflow)
+</pre>
+<p>
+</p>	
+<style type='text/css'>td.ref {  padding-bottom: 0ch; width:0;}</style><div class='heading'>References</div><hr/><p id='paperbox' style='text-align:left;'><table><tbody style='vertical-align: top;'><tr><td class='ref' style='width:1ch;'><a name="footnote_1"></a><a href="index.html#back_1">^</a></td><td  class='ref' style='width:4ch;'> [ 1]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://en.wikipedia.org/wiki/Fast_inverse_square_root">Fast inverse square root</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_2"></a><a href="index.html#back_2">^</a></td><td  class='ref' style='width:4ch;'> [ 2]</td><td style='width:100%;text-align:left;' class='ref'><a href="../rayTracing_back_of_business_card/index.html">Decyphering the Business Card Raytracer</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_3"></a><a href="index.html#back_3">^</a></td><td  class='ref' style='width:4ch;'> [ 3]</td><td style='width:100%;text-align:left;' class='ref'><a href="../the_beautiful_machine/index.html">The Beautiful Machine</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_4"></a><a href="index.html#back_4">^</a></td><td  class='ref' style='width:4ch;'> [ 4]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html">3.11 Options That Control Optimization</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_5"></a><a href="index.html#back_5">^</a></td><td  class='ref' style='width:4ch;'> [ 5]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://www.youtube.com/watch?v=WDIkqP4JbkE&t=404s">Scott Meyers: Cpu Caches and Why You Care</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_6"></a><a href="index.html#back_6">^</a></td><td  class='ref' style='width:4ch;'> [ 6]</td><td style='width:100%;text-align:left;' class='ref'><a href="../the_beautiful_machine/index.html">The Beautiful Machine</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_7"></a><a href="index.html#back_7">^</a></td><td  class='ref' style='width:4ch;'> [ 7]</td><td style='width:100%;text-align:left;' class='ref'><a href="../cuda/index.html">An history of Nvidia Stream Multiprocessor</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_8"></a><a href="index.html#back_8">^</a></td><td  class='ref' style='width:4ch;'> [ 8]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://www.techpowerup.com/gpu-specs/tesla-v100-pcie-16-gb.c2957">NVIDIA Tesla V100</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_9"></a><a href="index.html#back_9">^</a></td><td  class='ref' style='width:4ch;'> [ 9]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://www.techpowerup.com/gpu-specs/titan-rtx.c3311">NVIDIA TITAN RTX</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_10"></a><a href="index.html#back_10">^</a></td><td  class='ref' style='width:4ch;'> [10]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://www.techpowerup.com/gpu-specs/geforce-gtx-1050-ti.c2885">NVIDIA GeForce GTX 1050 Ti</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_11"></a><a href="index.html#back_11">^</a></td><td  class='ref' style='width:4ch;'> [11]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/">Matching SM architectures for various NVIDIA cards</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_12"></a><a href="index.html#back_12">^</a></td><td  class='ref' style='width:4ch;'> [12]</td><td style='width:100%;text-align:left;' class='ref'><a href="http://cuda-programming.blogspot.com/2013/01/handling-cuda-error-messages.html">Handling cuda error messages</a></td></tr></tbody></table></p> <hr>
+ <center>*
