@@ -1,0 +1,625 @@
+<html>
+<head>
+  <link rel="alternate" type="application/rss+xml"  title="RSS Feed for fabiensanglard.net" href="https://fabiensanglard.net/rss.xml" />
+  <style type="text/css">
+
+    @font-face {
+      font-family: 'fabfont';
+      src: url('../font/DejaVuSansMono.woff2');
+      font-display: block;
+    }
+
+    @font-face {
+      font-family: 'fabfont';
+      src: url('../font/DejaVuSansMono-Bold.woff2');
+      font-weight: bold;
+      font-display: block;
+    }
+
+    * {
+       font-size: 16px;
+    }
+
+    html {
+      font-family: fabfont,  monospace;
+      max-width: 900px;  /* For Desktop PC (see @media for Tablets/Phones) */
+      padding-left: 2%;
+      padding-right: 3%;
+      margin: 0 auto;
+      background: #F5F5F0;
+  	} 
+    
+
+
+  	a {
+      color: black;
+      font-weight: bold;
+    }
+
+    img {
+      border: none; 
+    }
+
+    p {
+      margin-top: 0px;
+      text-align: justify;
+    }
+    sup {
+      vertical-align: 0.3em;
+      font-size: 0.65em;
+    }   
+
+    pre {
+      font-family: fabfont, monospace;
+      background-color: white; 
+      border: 1px solid Black; 
+      padding-left: 2%;
+      padding-top: 1ch;
+      padding-bottom: 1ch;
+      /* Only take care of X overflow since this is the only part that can be too wide.
+         The Y axis will never overflow.
+      */
+      overflow: hidden;
+    }
+
+    div.heading {
+      font-weight: bold;      
+      text-transform: uppercase;
+      margin-top: 4ch;
+    }
+
+    /** {
+      font-size: 16px;
+    }*/
+    @media (max-width: 500px) { /* For small screen decices */
+      * {
+        font-size: 12px; 
+      }
+    }   
+    .title {
+      text-decoration: none;
+    }
+
+    img.pixel, canvas.pixel {
+      image-rendering: pixelated;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: crisp-edges;
+    }
+
+    blockquote { 
+    background-color: #f3f3f3;
+    border: dashed 1px grey; 
+    width: 97.5%; 
+    font-style: italic; 
+    text-align: justify;
+
+    padding: 1ch; 
+    padding-top: 2ch; 
+    padding-bottom: 2ch;     
+    
+    margin : 0ch; 
+    margin-bottom: 2ch; 
+    margin-top: 0ch;
+  }
+
+  blockquote div {
+    text-transform: none;
+    text-align: right;
+    width: 100%;
+  }
+
+  code {
+    /*font-size: 110%;*/
+    font-weight: bold;
+    background-color: #e1e1e1;
+    border-radius: 0.5ch;
+    padding-left: 0.3ch;
+    padding-right: 0.3ch;
+  }
+
+  .trivia {
+    border-left: 1px black solid;
+    padding-left: 1ch;
+  }
+
+  .trivia::before {
+  font-weight: bold;
+  text-decoration: underline;
+  padding-right: 1ch;
+  content: "Trivia:";
+
+  </style>
+  <title>The polygons of Another World</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=12.0, minimum-scale=1.0, user-scalable=yes">
+</head>  
+  <body><br><center>
+    <div style="display: inline-block; vertical-align:middle;">
+<a href="https://fabiensanglard.net/" class="title"><b>FABIEN SANGLARD'S WEBSITE</b><br>
+</a><hr/><div style="text-align: justify;display: inline-block; width: 100%;">
+<!-- <a class="title" href="/about/index.html">ABOUT</a> &nbsp;<a class="title" href="/contact/index.html">EMAIL</a> &nbsp;<a class="title" href="../rss.xml">RSS</a> &nbsp;<a class="title" href="https://paypal.me/fabiensanglard">DONATE</a></div></div> -->
+<a class="title" href="https://fabiensanglard.net/about/index.html">ABOUT</a> &nbsp;<a class="title" href="https://fabiensanglard.net/contact/index.html">CONTACT</a> &nbsp;<a class="title" href="https://fabiensanglard.net/rss.xml">RSS</a> &nbsp;<a class="title" href="https://paypal.me/fabiensanglard">GIVE</a></div></div>
+
+</center><br><br>
+<div style="margin-bottom: 2ch;text-transform: none;">
+January 1, 2020</div>
+<div class='heading'>The polygons of Another World</div><hr/>
+<p>
+<picture>
+    <source srcset="Another_World_no20.webp" type="image/webp">
+    <img loading="lazy" src="Another_World_no20.png" width="1000" height="314" style="width: 41%; height: auto; float:right;margin-bottom: 1ch; margin-left: 2ch;"/></picture> 
+There is a playful way to study the architecture of computers of the past. Find a piece of software you know well and try to find out how it was ported to these machine you don't.
+
+<br/><br/>
+ A good choice would be DOOM. id Software's 1994 mega-hit has been ported to everything. It is designed around a core with no layering violations. It is usually easy to find and read the implementation of its six I/O sub-systems.<br/>
+<br/>
+An other choice would be Eric Chahi's 1991 critically acclaimed<a name="back_1" style="text-decoration: none;" href="index.html#footnote_1"><sup>[1]</sup></a>" title "Another World", better known in North America as "Out Of This World" which also happens to be ubiquitous. I would argue it is in fact more interesting to study than DOOM because of its polygon based graphics which are suitable to wild optimizations. In some cases, clever tricks allowed Another World to run on hardware built up to five years prior to the game release.<br/>
+<br/>
+This series is a journey through the video-games hardware of the early 90s. From the Amiga 500, Atari ST, IBM PC, Super Nintendo, up to the Sega Genesis. For each machine, I attempted to discover how Another World was implemented. I found an environment made rich by its diversity where the now ubiquitous CPU/GPU did not exist yet. In the process, I discovered the untold stories of seemingly impossible problems heroically solved by lone programmers.
+<br/> <br/>
+In the best case I was able to get in touch with the original developer. In the worse cases, I found myself staring at disassembly. It was a fun trip. Here are my notes.<br/>
+</p>
+
+<div class='heading'>Another World 101</div><hr/><p>
+    There is very little code in Another World. The original Amiga version was reportedly 6,000 lines of assembly<a name="back_2" style="text-decoration: none;" href="index.html#footnote_2"><sup>[2]</sup></a>. The PC DOS executable is only 20 KiB. Surprising for such a vast game which shipped on a single 1.44 MiB floppy. That is because most of the business logic is implemented via bytecode. The Another World executable is in fact a virtual machine host which reads and executes uint8_t opcodes.<br/><br/>
+
+    <img loading="lazy" src="aw_chart.svg" width="1001.5228" height="313.56033" style="width: 100%; height: auto; margin-top: 1ch; margin-bottom: 1ch;"/>
+    <br/><br/>
+    Another World VM defines 256 variables, 64 threads, 29 opcodes, and four framebuffers<a name="back_3" style="text-decoration: none;" href="index.html#footnote_3"><sup>[3]</sup></a>. That's it. If you build a VM host capable of handling these, you can run the game. If you are able to make the VM fast enough to run at 20 frames per seconds, you can actually play the game.
+
+    <br/><br/>
+    The virtual machine's graphic system uses a coordinate system of 320x200 with 16 palette-based colors. The color limitation may be surprising given that the development platform, the Amiga 500, supported up to 32 colors. This choice was a sweet spot allowing the graphics to be compatible with the other big platform of the era, the Atari ST which supports only 16 colors.
+    <br/><br/>
+    The limitation turned out to be a blessing in disguise. It resulted in an unique style which has aged well.<br/>
+<style type="text/css">
+    td {
+    width: 6.25%; 
+    padding-bottom: 4.1%;
+    height: 0;
+    border-color: black;
+}
+
+    td.t {
+    padding-bottom: 7.1%;
+}
+</style>
+
+<img loading="lazy" src="arrival.gif" class="pixel" width="320" height="200" style="width: 100%; height: auto; margin-top: 2ch; margin-bottom: 1ch;border: 1px black solid;"/>
+
+<table  width=100% border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr><td style="background-color: #28283C">&nbsp;</td>
+<td style="background-color: #3C3C55">&nbsp;</td>
+<td style="background-color: #3C557D">&nbsp;</td>
+<td style="background-color: #55AAFF">&nbsp;</td>
+<td style="background-color: #7D7D7D">&nbsp;</td>
+<td style="background-color: #FFBEAA">&nbsp;</td>
+<td style="background-color: #BE7D7D">&nbsp;</td>
+<td style="background-color: #FFBEAA">&nbsp;</td>
+<td style="background-color: #AA3C00">&nbsp;</td>
+<td style="background-color: #BEFFFF">&nbsp;</td>
+<td style="background-color: #555555">&nbsp;</td>
+<td style="background-color: #55557D">&nbsp;</td>
+<td style="background-color: #557DBE">&nbsp;</td>
+<td style="background-color: #557DFF">&nbsp;</td>
+<td style="background-color: #00BEFF">&nbsp;</td>
+<td style="background-color: #BE5500">&nbsp;</td>
+</tr></table>
+
+
+
+
+
+<img loading="lazy" src="lester.gif" class="pixel" width="320" height="200" style="width: 100%; height: auto; margin-top: 2ch; margin-bottom: 1ch;border: 1px black solid;"/>
+
+<table  width=100% border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr>
+<td style="background-color: #141428">&nbsp;</td>
+<td style="background-color: #282855">&nbsp;</td>
+<td style="background-color: #283C7D">&nbsp;</td>
+<td style="background-color: #AA0000">&nbsp;</td>
+<td style="background-color: #AA7DAA">&nbsp;</td>
+<td style="background-color: #FFBEAA">&nbsp;</td>
+<td style="background-color: #AA7D7D">&nbsp;</td>
+<td style="background-color: #FFAA7D">&nbsp;</td>
+<td style="background-color: #7D2800">&nbsp;</td>
+<td style="background-color: #AA7DAA">&nbsp;</td>
+<td style="background-color: #3C3C55">&nbsp;</td>
+<td style="background-color: #3C557D">&nbsp;</td>
+<td style="background-color: #5555AA">&nbsp;</td>
+<td style="background-color: #557DFF">&nbsp;</td>
+<td style="background-color: #00AAFF">&nbsp;</td>
+<td style="background-color: #AA5500">&nbsp;</td>
+</tr></table>
+
+
+
+
+
+ 
+
+<img loading="lazy" src="office.gif" class="pixel" width="320" height="200" style="width: 100%; height: auto; margin-top: 2ch; margin-bottom: 1ch;border: 1px black solid;"/><table  width=100% border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse; margin-bottom: 2ch;"><tr>
+    <td style="background-color: #000000">&nbsp;</td>
+<td style="background-color: #BE0000">&nbsp;</td>
+<td style="background-color: #002855">&nbsp;</td>
+<td style="background-color: #003C55">&nbsp;</td>
+<td style="background-color: #28557D">&nbsp;</td>
+<td style="background-color: #3C7D7D">&nbsp;</td>
+<td style="background-color: #3CBEBE">&nbsp;</td>
+<td style="background-color: #AA7D7D">&nbsp;</td>
+<td style="background-color: #FFFF55">&nbsp;</td>
+<td style="background-color: #7D0000">&nbsp;</td>
+<td style="background-color: #005500">&nbsp;</td>
+<td style="background-color: #005500">&nbsp;</td>
+<td style="background-color: #007D00">&nbsp;</td>
+<td style="background-color: #7DBE00">&nbsp;</td>
+<td style="background-color: #00FFBE">&nbsp;</td>
+<td style="background-color: #FFBEAA">&nbsp;</td>
+</tr></table>
+    
+    Even when it would have been possible to use a specific palette for certain scene, Eric Chahi elected not to do so. During the close encounter with "The Beast", only three colors are used for the creature with black for the body, red for the eyes, and beige for the teeth. Imagination did the rest.<br/>
+
+<img loading="lazy" src="beast.gif" class="pixel" width="320" height="200" style="width: 100%; height: auto; margin-top: 2ch; margin-bottom: 1ch;border: 1px black solid;"/><table  width=100% border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse; margin-bottom: 2ch;"><tr>
+    <td style="background-color: #000000">&nbsp;</td>
+<td style="background-color: #3C3C55">&nbsp;</td>
+<td style="background-color: #283C7D">&nbsp;</td>
+<td style="background-color: #55BEFF">&nbsp;</td>
+<td style="background-color: #7D5555">&nbsp;</td>
+<td style="background-color: #BEBEAA">&nbsp;</td>
+<td style="background-color: #AA7D7D">&nbsp;</td>
+<td style="background-color: #FFAA7D">&nbsp;</td>
+<td style="background-color: #7D2800">&nbsp;</td>
+<td style="background-color: #BE557D">&nbsp;</td>
+<td style="background-color: #555555">&nbsp;</td>
+<td style="background-color: #55557D">&nbsp;</td>
+<td style="background-color: #557DBE">&nbsp;</td>
+<td style="background-color: #557DFF">&nbsp;</td>
+<td style="background-color: #00BEFF">&nbsp;</td>
+<td style="background-color: #AA5500">&nbsp;</td>
+</tr></table>
+
+The palette system turned out to be a strength to illustrate the accident at the origin of Another World. A non-expensive palette swap is enough to evoke a lightning strike.<br/>
+
+<img loading="lazy" src="before.gif" class="pixel" width="320" height="200" style="width: 100%; height: auto; margin-top: 2ch; margin-bottom: 1ch;border: 1px black solid;"/><table  width=100% border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr><td style="background-color: #000000">&nbsp;</td>
+<td style="background-color: #AA0000">&nbsp;</td>
+<td style="background-color: #142855">&nbsp;</td>
+<td style="background-color: #143C55">&nbsp;</td>
+<td style="background-color: #28557D">&nbsp;</td>
+<td style="background-color: #3C557D">&nbsp;</td>
+<td style="background-color: #557DBE">&nbsp;</td>
+<td style="background-color: #7DAABE">&nbsp;</td>
+<td style="background-color: #000055">&nbsp;</td>
+<td style="background-color: #FFFFFF">&nbsp;</td>
+<td style="background-color: #00007D">&nbsp;</td>
+<td style="background-color: #0000BE">&nbsp;</td>
+<td style="background-color: #0000BE">&nbsp;</td>
+<td style="background-color: #0055FF">&nbsp;</td>
+<td style="background-color: #00BEFF">&nbsp;</td>
+<td style="background-color: #00FFFF">&nbsp;</td>
+</tr></table>
+<br/>
+
+<table  width=100% border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr><td style="background-color: #000000">&nbsp;</td>
+<td style="background-color: #000000">&nbsp;</td>
+<td style="background-color: #FFFFFF">&nbsp;</td>
+<td style="background-color: #000000">&nbsp;</td>
+<td style="background-color: #000000">&nbsp;</td>
+<td style="background-color: #000000">&nbsp;</td>
+<td style="background-color: #FFFFFF">&nbsp;</td>
+<td style="background-color: #FFFFFF">&nbsp;</td>
+<td style="background-color: #000000">&nbsp;</td>
+<td style="background-color: #FFFFFF">&nbsp;</td>
+<td style="background-color: #000000">&nbsp;</td>
+<td style="background-color: #000000">&nbsp;</td>
+<td style="background-color: #000000">&nbsp;</td>
+<td style="background-color: #000000">&nbsp;</td>
+<td style="background-color: #000000">&nbsp;</td>
+<td style="background-color: #FFFFFF">&nbsp;</td>
+</tr></table>
+
+
+<img loading="lazy" src="after.gif" class="pixel" width="320" height="200" style="width: 100%; height: auto; margin-top: 2ch; margin-bottom: 1ch;border: 1px black solid;"/>
+
+<Br/><br/>
+
+
+
+
+<table  width=50% border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse; float:right; margin-left: 2ch;"><tr>
+    <td style="background-color: #101010">&nbsp;</td>
+<td class="t" style="background-color: #8a0000">&nbsp;</td>
+<td class="t" style="background-color: #102045">&nbsp;</td>
+<td class="t" style="background-color: #103055">&nbsp;</td>
+<td class="t" style="background-color: #204565">&nbsp;</td>
+<td class="t" style="background-color: #305575">&nbsp;</td>
+<td class="t" style="background-color: #55759a">&nbsp;</td>
+<td class="t" style="background-color: #75aaba">&nbsp;</td>
+</tr>
+<tr>
+<td class="t" style="background-color: #ba8a00">&nbsp;</td>
+<td class="t" style="background-color: #FF0000">&nbsp;</td>
+<td class="t" style="background-color: #cf9a00">&nbsp;</td>
+<td class="t" style="background-color: #dfaa00">&nbsp;</td>
+<td class="t" style="background-color: #efcf00">&nbsp;</td>
+<td class="t" style="background-color: #ffef00">&nbsp;</td>
+<td class="t" style="background-color: #ffff75">&nbsp;</td>
+<td class="t" style="background-color: #FFFFAA">&nbsp;</td>
+</tr></table>
+The engine is also capable of translucency effects if the scene features only eight colors.
+<br/><br/>
+ Here the colors are stored within [0x0,0x7] while the lit shades are within [0x8,0xF].<br/>
+<br/>
+  <picture>
+
+ 
+<img loading="lazy" src="transparency.gif" class="pixel" width="320" height="200" style="width: 100%; height: auto; margin-top: 2ch; margin-bottom: 1ch;border: 1px black solid;"/>
+The Ferrari light beams are translucent. They are drawn with a special color 0x10 which does not exist since only 16 colors are available. The special value is interpreted as "read framebuffer index, add 0x8 and write back". The last part of the  trick is to cleverly chose the 8 next colors in the palette.<br/><br/>
+
+<table  width=50% border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse; float:right; margin-left: 2ch;"><tr>
+<td class="t" style="background-color: #000000">&nbsp;</td>
+<td class="t" style="background-color: #28003C">&nbsp;</td>
+<td class="t" style="background-color: #281455">&nbsp;</td>
+<td class="t" style="background-color: #3C3C55">&nbsp;</td>
+<td class="t" style="background-color: #3C557D">&nbsp;</td>
+<td class="t" style="background-color: #3C557D">&nbsp;</td>
+<td class="t" style="background-color: #55AA7D">&nbsp;</td>
+<td class="t" style="background-color: #BEFFBE">&nbsp;</td>
+</tr>
+<tr>
+<td class="t" style="background-color: #FF7D7D">&nbsp;</td>
+<td class="t" style="background-color: #550000">&nbsp;</td>
+<td class="t" style="background-color: #7D0014">&nbsp;</td>
+<td class="t" style="background-color: #BE003C">&nbsp;</td>
+<td class="t" style="background-color: #BE0055">&nbsp;</td>
+<td class="t" style="background-color: #FF3C55">&nbsp;</td>
+<td class="t" style="background-color: #FF557D">&nbsp;</td>
+<td class="t" style="background-color: #FFFFBE">&nbsp;</td>
+</tr></table>
+Translucency was not used very much in the game but it can be seen one more time during the experiment turning wrong cinematic when the lightning is about to teleport Lester to AnotheR WorlD.<br/>
+
+  
+<img loading="lazy" src="transparency2.gif" class="pixel" width="320" height="200" style="width: 100%; height: auto; margin-top: 2ch; margin-bottom: 1ch;border: 1px black solid;"/>
+    <style type="text/css">
+        .opcode {
+            background-color: white
+        }
+        td.opcode {
+           width: 5.8%; 
+           padding-top: 1.7%;
+           padding-bottom: 1.7%;
+           text-align: center;
+           vertical-align: middle;
+           overflow: hidden;
+           white-space: nowrap
+        }
+    </style>
+</p>
+
+<div class='heading'>The four framebuffers</div><hr/><p>    
+
+
+Of the four framebuffers<a name="back_4" style="text-decoration: none;" href="index.html#footnote_4"><sup>[4]</sup></a>, two are used for double buffering while two are used to save background (BKGD1 and BKGD2) composition. This is an optimization to avoid redrawing all the static background polygons in favor of a simple copy operation.
+
+<br/><br/>
+ In the next video, see how a new scene is drawn first in the BKGD1 buffer. Each new frame, the BKGD1 is fully copied to the double buffer not being scanned by the display. There, moving elements such as Lester are drawn. Notice how once the car is "parked" it is also drawn in the BKGD1 buffer to minimize the number of polygons to render in subsequent frames.<br/>
+<br/>
+<video width="100%" preload="none" poster="car-poster800.gif" controls="">
+  <source src="../fd_proxy/anotherWorld_code_review/car-desktop.m4v" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+<p>
+  Notice in the video how composition uses a plain painter algorithm which is simple but result in significant overdraw. This is not a problem since it is largely amortized by the BKGD copy.
+  <Br/><Br/>
+  The second BKGD2 is used to cache the last background. It is useful during cinematics when the background goes back and forth between scenes like in the intro when the view shows alternatively Lester desk and the inside of the particular accelerator. During gameplay it allows a significant speed-up when the player goes back to the previous screen. 
+</p>
+
+<style type="text/css">
+       blockquote { 
+    background-color: #f3f3f3;
+    border: dashed 1px grey; 
+    width: 97.5%; 
+    font-style: italic; 
+    text-align: justify;
+
+    padding: 1ch; 
+    padding-top: 2ch; 
+    padding-bottom: 2ch;     
+    
+    margin : 0ch; 
+    margin-bottom: 2ch; 
+    margin-top: 0ch;
+  }
+
+  blockquote div {
+    text-transform: none;
+    text-align: right;
+    width: 100%;
+  }
+</style>
+
+<p>The background buffer are not set in stone one rendered. They are often modified with new elements. It happens for the Ferrari 288 in the previous video but also for other subtle details.</p>
+
+ <blockquote>
+In the early screens after emerging from the pool where the game begins, the game draws footprints and skid marks under Lester's feet as he walks on the sand. If the player walks one screen right and then back to the left again, the modified framebuffer is restored to preserve the footprints. It gives the environment a subtle additional sense of permanence.<br/>
+<br/>
+It is so subtle as to go unnoticed in normal gameplay but I thought this was another example of Eric Chahi's great attention to detail in building this game.<br/>
+        <br/>
+        <div>- Martin Atkins</div>
+    </blockquote> 
+
+
+
+<div class='heading'>Virtual Machine Opcodes</div><hr/><p>      
+    The next array illustrates the 29 opcodes. We can find here thread (THRD) management, framebuffer (FB) management, and all the register management operations. Most opcodes are "easy" to implement except for "COPY FB", FILL, and "DRAW_POLY*" which are difficult for performances reasons.<br/>
+    <br/> 
+    <table width=100% border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;table-layout:fixed">
+        <tr > 
+            <td class="opcode">&nbsp;</td>
+            <td class="opcode">0x00</td>
+            <td class="opcode">0x01</td>
+            <td class="opcode">0x02</td>
+            <td class="opcode">0x03</td>  
+            <td class="opcode">0x04</td>  
+            <td class="opcode">0x05</td>  
+            <td class="opcode">0x06</td>  
+            <td class="opcode">0x07</td>  
+            <td class="opcode">0x08</td>  
+            <td class="opcode">0x09</td>  
+            <td class="opcode">0x0A</td>  
+            <td class="opcode">0x0B</td>  
+            <td class="opcode">0x0C</td>  
+            <td class="opcode">0x0D</td>  
+            <td class="opcode">0x0E</td>  
+            <td class="opcode">0x0F</td>  
+        </tr> 
+        <tr>                      
+            <td class="opcode">0x00</td>
+            <td class="opcode">CMOV</td>
+            <td class="opcode">MOV</td>
+            <td class="opcode">ADD</td>
+            <td class="opcode">CADD</td>
+            <td class="opcode">CALL</td>
+            <td class="opcode">RET</td>
+            <td class="opcode"style=" padding-top: 0%;
+           padding-bottom: 0%;">PAUSE<br>THRD</td>
+            <td class="opcode" style=" padding-top: 0%;
+           padding-bottom: 0%;">COND<BR/>JMP</td>
+            <td class="opcode"style=" padding-top: 0%;
+           padding-bottom: 0%;">SET<br/>VECT</td>
+            <td class="opcode">JNZ</td>
+            <td class="opcode">CJMP</td>
+            <td class="opcode" style=" padding-top: 0%;
+           padding-bottom: 0%;">SET<BR/>PAL</td>
+            <td class="opcode" style=" padding-top: 0%;
+           padding-bottom: 0%;">RESET<br>THRD</td>
+            <td class="opcode" style=" padding-top: 0%;
+           padding-bottom: 0%;">SLCT<Br>FB</td>
+            <td class="opcode" style=" padding-top: 0%;
+           padding-bottom: 0%;">FILL<br/>FB</td>
+            <td class="opcode" style=" padding-top: 0%;
+           padding-bottom: 0%;">COPY<br/>FB</td>
+        </tr>        
+        <tr>                      
+            <td class="opcode">0x10</td>
+
+
+            <td class="opcode" style=" padding-top: 0%;
+           padding-bottom: 0%;">BLIT<br/>FB</td>
+            <td class="opcode"style=" padding-top: 0%;
+           padding-bottom: 0%;" >KILL<br/>THRD</td>
+            <td class="opcode"style=" padding-top: 0%;
+           padding-bottom: 0%;">DRAW<br/>TEXT</td>
+            <td class="opcode">SUB</td>
+
+        
+            <td class="opcode">AND</td>
+            <td class="opcode">OR</td>
+            <td class="opcode">SHL</td>
+            <td class="opcode">SHR</td>
+
+            <td class="opcode"style=" padding-top: 0%;
+           padding-bottom: 0%;">PLAY<br/>SOUND</td>
+            <td class="opcode"  style=" padding-top: 0%;
+           padding-bottom: 0%;">LOAD<br/>RESC</td>
+            <td class="opcode" style=" padding-top: 0%;
+           padding-bottom: 0%;">PLAY</br>MUSIC</td>
+            <td class="opcode">&nbsp;</td>
+            <td class="opcode">&nbsp;</td>
+            <td class="opcode">&nbsp;</td>
+            <td class="opcode">&nbsp;</td>
+            <td class="opcode">&nbsp;</td>
+        </tr>
+        <tr>                      
+            <td class="opcode">0x20</td>
+            <td class="opcode"></td>
+            <td class="opcode">&nbsp;</td>
+            <td class="opcode">&nbsp;</td>
+            <td class="opcode">&nbsp;</td>
+            <td class="opcode">&nbsp;</td>
+            <td class="opcode">&nbsp;</td>
+            <td class="opcode">&nbsp;</td>
+            <td class="opcode">&nbsp;</td>
+            <td class="opcode">&nbsp;</td>
+            <td class="opcode">&nbsp;</td>
+            <td class="opcode">&nbsp;</td>
+            <td class="opcode">&nbsp;</td>
+            <td class="opcode">&nbsp;</td>
+            <td class="opcode">&nbsp;</td>
+            <td class="opcode">&nbsp;</td>
+            <td class="opcode">&nbsp;</td>
+        </tr>
+         <tr>                      
+            <td class="opcode">0x30</td>
+            <td class="opcode"></td>
+            <td class="opcode">&nbsp;</td>
+            <td class="opcode">&nbsp;</td>
+            <td class="opcode">&nbsp;</td>
+            <td class="opcode">&nbsp;</td>
+            <td class="opcode">&nbsp;</td>
+            <td class="opcode">&nbsp;</td>
+            <td class="opcode">&nbsp;</td>
+            <td class="opcode">&nbsp;</td>
+            <td class="opcode">&nbsp;</td>
+            <td class="opcode">&nbsp;</td>
+            <td class="opcode">&nbsp;</td>
+            <td class="opcode">&nbsp;</td>
+            <td class="opcode">&nbsp;</td>
+            <td class="opcode">&nbsp;</td>
+            <td class="opcode">&nbsp;</td>
+        </tr>
+         <tr>                      
+            <td class="opcode" >0x40</td>
+             <td class="opcode" rowspan="4" colspan="16">DRAW_POLY_SPRITE</td>
+        </tr>
+         <tr>                      
+            <td class="opcode">0x50</td>
+
+        </tr>
+         <tr>                      
+            <td class="opcode">0x60</td>
+        </tr>
+         <tr>                      
+            <td class="opcode">0x70</td>
+        </tr>
+         <tr>                      
+            <td class="opcode">0x80</td>
+            <td class="opcode" rowspan="8" colspan="16">DRAW_POLY_BACKGROUND</td>
+        </tr>
+         <tr>                      
+            <td class="opcode">0x90</td>
+            
+        </tr>
+         <tr>                      
+            <td class="opcode">0xA0</td>
+            
+        </tr>
+         <tr>                      
+            <td class="opcode">0xB0</td>
+           
+        </tr>
+         <tr>                      
+            <td class="opcode">0xC0</td>
+           
+        </tr>
+         <tr>                      
+            <td class="opcode">0xD0</td>
+           
+        </tr>
+         <tr>                      
+            <td class="opcode">0xE0</td>
+           
+        </tr>
+         <tr>                      
+            <td class="opcode">0xF0</td>
+           
+        </tr>
+        </table>
+        <br/>
+         Both DRAW_POLY_* opcodes span over more than one entry. In the case of DRAW_POLY_BACKGROUND, it takes half the opcode-space from 0x80 to 0xFF. It looks wasteful but it is a space saving trick. Using all opcodes starting with bit "1" allow the 7 other bits to piggy-bag in opcode space as drawing parameters. Since this opcode is used for backgrounds and cinematics, space saving is very significant.
+         <br/><br/>
+         The SPRITE version uses all opcodes starting with bits "01"  while the other remaining 6 bits are here to encode x, y and zoom in order to draw "sprites" such as lester, friend, and enemies.        
+</p> 
+
+<div class='heading'>Next</div><hr/><p> 
+   As mentioned in the previous section, 26 out of the 29 opcodes are easy to implement. The real challenge in porting this game was in manipulating pixels within the machine BUS and CPU bandwidth limitations. What will be done in this series is study how each port manipulated the framebuffers and how they solved the DRAW, FILL and COPY problems.
+   <br/><br/>
+   Ready? Let's dive into Another World on <a href="https://fabiensanglard.net/another_world_polygons_amiga500/index.html">Amiga 500</a>.
+</p>
+<style type='text/css'>td.ref {  padding-bottom: 0ch; width:0;}</style><div class='heading'>References</div><hr/><p id='paperbox' style='text-align:left;'><table><tbody style='vertical-align: top;'><tr><td class='ref' style='width:1ch;'><a name="footnote_1"></a><a href="index.html#back_1">^</a></td><td  class='ref' style='width:4ch;'> [1]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://fr.wikipedia.org/wiki/Tilt_d%27or#1991">Tilt d'or award year 1991</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_2"></a><a href="index.html#back_2">^</a></td><td  class='ref' style='width:4ch;'> [2]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://www.youtube.com/watch?v=tiq0OL8rzso">Burgertime 8/9/2015: Out of This World</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_3"></a><a href="index.html#back_3">^</a></td><td  class='ref' style='width:4ch;'> [3]</td><td style='width:100%;text-align:left;' class='ref'><a href="http://fabiensanglard.net/anotherWorld_code_review/index.php">Another World Source Code Review</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_4"></a><a href="index.html#back_4">^</a></td><td  class='ref' style='width:4ch;'> [4]</td><td style='width:100%;text-align:left;' class='ref'>Thanks to Dimitri Sokolyuk for figuring out the second backbuffer. You can see a capture of all buffers during gameplay <a href='https://www.youtube.com/watch?time_continue=1&v=ePrnwX26msw'>here</a>.</td></tr></tbody></table></p> <hr>
+ <center>*
