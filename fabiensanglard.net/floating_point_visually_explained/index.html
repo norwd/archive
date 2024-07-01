@@ -1,0 +1,287 @@
+<html>
+<head>
+  <link rel="alternate" type="application/rss+xml"  title="RSS Feed for fabiensanglard.net" href="../rss.xml" />
+  <style type="text/css">
+
+    @font-face {
+      font-family: 'fabfont';
+      src: url('../font/DejaVuSansMono.woff2');
+      font-display: block;
+    }
+
+    @font-face {
+      font-family: 'fabfont';
+      src: url('../font/DejaVuSansMono-Bold.woff2');
+      font-weight: bold;
+      font-display: block;
+    }
+
+    * {
+       font-size: 16px;
+    }
+
+    html {
+      font-family: fabfont,  monospace;
+      max-width: 900px;  /* For Desktop PC (see @media for Tablets/Phones) */
+      padding-left: 2%;
+      padding-right: 3%;
+      margin: 0 auto;
+      background: #F5F5F0;
+  	} 
+    
+
+
+  	a {
+      color: black;
+      font-weight: bold;
+    }
+
+    img {
+      border: none; 
+    }
+
+    p {
+      margin-top: 0px;
+      text-align: justify;
+    }
+    sup {
+      vertical-align: 0.3em;
+      font-size: 0.65em;
+    }   
+
+    pre {
+      font-family: fabfont, monospace;
+      background-color: white; 
+      border: 1px solid Black; 
+      padding-left: 2%;
+      padding-top: 1ch;
+      padding-bottom: 1ch;
+      /* Only take care of X overflow since this is the only part that can be too wide.
+         The Y axis will never overflow.
+      */
+      overflow: hidden;
+    }
+
+    div.heading {
+      font-weight: bold;      
+      text-transform: uppercase;
+      margin-top: 4ch;
+    }
+
+    /** {
+      font-size: 16px;
+    }*/
+    @media (max-width: 500px) { /* For small screen decices */
+      * {
+        font-size: 12px; 
+      }
+    }   
+    .title {
+      text-decoration: none;
+    }
+
+    img.pixel, canvas.pixel {
+      image-rendering: pixelated;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: crisp-edges;
+    }
+
+    blockquote { 
+    background-color: #f3f3f3;
+    border: dashed 1px grey; 
+    width: 97.5%; 
+    font-style: italic; 
+    text-align: justify;
+
+    padding: 1ch; 
+    padding-top: 2ch; 
+    padding-bottom: 2ch;     
+    
+    margin : 0ch; 
+    margin-bottom: 2ch; 
+    margin-top: 0ch;
+  }
+
+  blockquote div {
+    text-transform: none;
+    text-align: right;
+    width: 100%;
+  }
+
+  code {
+    /*font-size: 110%;*/
+    font-weight: bold;
+    background-color: #e1e1e1;
+    border-radius: 0.5ch;
+    padding-left: 0.3ch;
+    padding-right: 0.3ch;
+  }
+
+  .trivia {
+    border-left: 1px black solid;
+    padding-left: 1ch;
+  }
+
+  .trivia::before {
+  font-weight: bold;
+  text-decoration: underline;
+  padding-right: 1ch;
+  content: "Trivia:";
+
+  </style>
+  <title>Floating Point Visually Explained</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=12.0, minimum-scale=1.0, user-scalable=yes">
+</head>  
+  <body><br><center>
+    <div style="display: inline-block; vertical-align:middle;">
+<a href="../index.html" class="title"><b>FABIEN SANGLARD'S WEBSITE</b><br>
+</a><hr/><div style="text-align: justify;display: inline-block; width: 100%;">
+<!-- <a class="title" href="/about/index.html">ABOUT</a> &nbsp;<a class="title" href="/contact/index.html">EMAIL</a> &nbsp;<a class="title" href="../rss.xml">RSS</a> &nbsp;<a class="title" href="https://paypal.me/fabiensanglard">DONATE</a></div></div> -->
+<a class="title" href="../about/index.html">ABOUT</a> &nbsp;<a class="title" href="../contact/index.html">CONTACT</a> &nbsp;<a class="title" href="../rss.xml">RSS</a> &nbsp;<a class="title" href="https://paypal.me/fabiensanglard">GIVE</a></div></div>
+
+</center><br><br>
+<div style="margin-bottom: 2ch;text-transform: none;">
+August 29, 2017</div>
+<div class='heading'>Floating Point Visually Explained</div><hr/>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {inlineMath: [["$","$"],["\\(","\\)"]]}
+  });
+</script>
+<script type="text/javascript" src="MathJax-2.7.1/MathJax.js?config=TeX-AMS_HTML-full"></script>
+
+ <p>
+  While I was writing the Wolfenstein 3D book<a name="back_1" style="text-decoration: none;" href="index.html#footnote_1"><sup>[1]</sup></a>, I wanted to demonstrate how much of a handicap it was to work without floating points. My attempts at 
+    understanding floating points using canonical<a name="back_2" style="text-decoration: none;" href="index.html#footnote_2"><sup>[2]</sup></a> articles<a name="back_3" style="text-decoration: none;" href="index.html#footnote_3"><sup>[3]</sup></a> were met with  resistance from my brain.
+<br/><br/>
+     I tried to find a different way. Something
+  far from $(-1)^S * 1.M * 2^{(E-127)}$ and <!-- (-1)<sup>S</sup> * 1.M * 2<sup>(E-127)</sup> --> its mysterious exponent/mantissa. Possibly a drawing since they seem to flow through my brain better.<br/> 
+<br/> 
+I ended up with what follows and I decided to include it in the book. I am not claiming this is my invention but I have never seen floating points explained this way so far.
+I hope it will helps a few people like me who are a bit allergic to mathematic notations.
+  </p>
+
+
+
+
+  <div class='heading'>How Floating Point are usually explained</div><hr/>
+<p>
+In the C language, floats
+are 32-bit container following the IEEE 754 standard. Their purpose is to store and allow
+operations on approximation of real numbers. The way I have seen them explained so far is as follow. The 32 bits are divided in three sections:
+<ul>
+  <li>1 bit S for the sign 
+  <li>8 bits E for the exponent
+  <li>23 bits for the mantissa
+</ul>
+<p>
+<img loading="lazy" src="floating_point_layout.svg" width="1135.6868" height="63.758217" style="width: 100%; height: auto; margin-top: 2ch; margin-bottom: 1ch;"/><span style="text-align: center; display: block; margin-bottom: 3ch;"><i><small>Floating Point internals.</small></i></span>
+
+<img loading="lazy" src="floating_point_math.svg" width="1136.25" height="38.75" style="width: 100%; height: auto; margin-bottom: 1ch;"/><span style="text-align: center; display: block; margin-bottom: 2ch;"><i><small>The three sections of a floating point number.</small></i></span>
+
+So far, so good. Now, how numbers are interpreted is usually explained with the formula:<br/>
+<br/>
+<div style="font-size: 200%; margin-bottom: 1ch;">
+$$ (-1)^S * 1.M * 2^{(E-127)} $$
+</div>
+<span style="text-align: center; display: block; margin-bottom: 2ch;"><i><small>How everybody hates floating point to be explained to them.</small></i></span>
+<p>
+This is usually where I flip the table. Maybe I am allergic to mathematic notation but something just doesn't click when I read it. It feels like learning
+to <a href="01.jpg">draw a owl</a>.<br/>
+<blockquote>
+    Floating-point arithmetic is considered an esoteric subject by many people.
+    <br/><br/>
+    <div>- David Goldberg</div>
+</blockquote> 
+
+</p>
+
+
+  <div class='heading'>A different way to explain...</div><hr/> <p>
+Although correct, this way of explaining floating point will leaves some of us completely
+clueless. Fortunately, there is a different way to explain it. Instead of Exponent, think
+of a Window between two consecutive power of two integers. Instead of a Mantissa, think
+of an Offset within that window.<br/>
+<br/>
+<img src="floating_point_intuitive.svg" style="width: 100%;  margin-bottom: 1ch;"><br/>
+<span style="text-align: center; display: block; margin-bottom: 2ch;"><i><small>The three sections of a floating Point number.</small></i></span>
+
+The window tells within which two consecutive power-of-two the number will be: [0.5,1], [1,2], [2,4], [4,8] and so on (up to [$2^{127}$,$2^{128}$]). The offset divides the window in $ 2^{23} = 8388608 $  buckets. With the window and the offset you can approximate a number. The window is an excellent mechanism to protect from overflowing. Once you have reached the maximum in a window (e.g [2,4]), you can "float" it right and represent the number within the next window (e.g [4,8]). It only costs a little bit of precision since the window becomes twice as large.<br/>
+<br/>
+The next figure illustrates how the number 6.1 would be encoded. The window must start at 4 and span to next power of two, 8. The offset is about half way down the window.<br/>
+
+
+<br/>
+<img class="center" src="floating_point_window.svg" style="width: 70%;  display: block;margin-left: auto;
+    margin-right: auto;"><br/>
+<br/>
+<span style="text-align: center; display: block; margin-bottom: 2ch;"><i><small>Value 6.1 approximated with floating point.</small></i></span>
+
+</p>
+
+<div class='heading'>Precision</div><hr/>  <p>
+How much precision is lost when the window covers a wider range? Let's take an example with window [1,2] where the 8388608 offsets cover a range of 1 which gives a precision of $\frac{(2-1)}{8388608}=0.00000011920929$. In the window [2048,4096] the 8388608 offsets cover a range of $4096 - 2048 = 2048$ which gives a precision of $ \frac{4096-2048}{8388608}=0.0002 $.<br/>
+</p>
+
+
+
+
+<div class='heading'>An other example</div><hr/>  <p>
+  
+Let's take an other example with the detailed calculations of the floating point representation of a number we all know well: 3.14.<br/>
+<ul>
+ <li>The number 3.14 is positive  $\rightarrow S=0$.
+ <li>The number 3.14 is between the power of two 2 and 4 so the floating window must start at $2^1$  $\rightarrow E=128$ (see formula where window is $2^{(E-127)}$).
+ <li>Finally there are $2^{23}$ offsets available to express where 3.14 falls within the interval [2-4]. It is at $\frac{3.14 -2 }{4 - 2} = 0.57$ within the interval which makes the offset $ M = 2^{23}*0.57 = 4781507$
+</ul>
+<p>
+Which in binary translates to:
+
+<ul>
+<li> S = 0 = 0b
+<li> E = 128 = 10000000b
+<li> M = 4781507 = 10010001111010111000011b
+</ul>
+<p>
+
+<img src="floating_point_layout_pi.svg" style="width: 100%;  margin-bottom: 1ch;"><br/>
+<span style="text-align: center; display: block; margin-bottom: 2ch;"><i><small>3.14 floating point binary representation.</small></i></span>
+
+The value 3.14 is therefore approximated to 3.1400001049041748046875. The corresponding value with the ugly formula:<br/>
+
+<div style="font-size: 150%">
+$$ 3.14 = (-1)^0 * 1.57 * 2^{(128-127)} $$
+</div>
+
+<br/>
+<p>
+And finally the graphic representation with window and offset:<br/>
+<br/>
+<img src="floating_point_window_pi.svg" style="width: 70%;  display: block;margin-left: auto;
+    margin-right: auto;"><br/>
+    <span style="text-align: center; display: block; margin-bottom: 2ch;"><i><small>3.14 window and offset.</small></i></span>
+
+<p>
+<br/>
+I hope that helped :) ! 
+
+
+<!--   <div class='heading'>Blast from the past</div><hr/>  <p>
+      <picture>
+<source srcset="BOX_IntelBOX387SX20.webp" type="image/webp">
+<img  src="BOX_IntelBOX387SX20.jpg" style="float:right;width:35%; margin-left: 2ch; margin-bottom: 2ch; border: solid 1px black;">
+</picture> 
+
+Since floating point units were so slow, why did the C language end up with "float" and "double" types ? After all, the machine used to invent the language (PDP-11) did not have a floating point unit!
+<br/>
+<br/>
+ The manufacturer (DEC) had promised to Dennis Ritchie and Ken Thompson the next model would have one. Being astronomy enthusiasts they decided to add those two types to their language.<br/>
+<br/>
+
+
+<b><u>Trivia:</u></b>  People who really wanted a hardware floating point unit in 1991 could buy one. The only people who could possibly want one back then would have been scientists (as per Intel understanding of the market). They were marketed as "Math CoProcessor". Performance were average and price was outrageous (200 USD in 1993 equivalent to 350 USD in 2016.). As a result, sales were mediocre.<br/>
+     
+</p> -->
+<style type='text/css'>td.ref {  padding-bottom: 0ch; width:0;}</style><div class='heading'>References</div><hr/><p id='paperbox' style='text-align:left;'><table><tbody style='vertical-align: top;'><tr><td class='ref' style='width:1ch;'><a name="footnote_1"></a><a href="index.html#back_1">^</a></td><td  class='ref' style='width:4ch;'> [1]</td><td style='width:100%;text-align:left;' class='ref'><a href="../gebb/index.html">Game Engine Black Book: 
+    Wolfenstein 3D</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_2"></a><a href="index.html#back_2">^</a></td><td  class='ref' style='width:4ch;'> [2]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://en.wikipedia.org/wiki/Floating-point_arithmetic">Wikipedia, Floating-point arithmetic</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_3"></a><a href="index.html#back_3">^</a></td><td  class='ref' style='width:4ch;'> [3]</td><td style='width:100%;text-align:left;' class='ref'><a href="http://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html">What Every Computer Scientist Should Know About Floating-Point Arithmetic</a></td></tr></tbody></table></p> <hr>
+ <center>*

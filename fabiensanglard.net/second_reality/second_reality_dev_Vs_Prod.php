@@ -30,7 +30,7 @@
 
 
     <h1 id="site-name">
-        <a  href="https://fabiensanglard.net/" >Fabien Sanglard's Website</a>
+        <a  href="../index.html" >Fabien Sanglard's Website</a>
     </h1>
 
 <script>
@@ -78,19 +78,19 @@
 <header id="header" role="banner"><nav id="nav" role="navigation"><div class="menu">
 	<ul id="menu-primary-navigation-1" >
          <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home menu-item-91">
-           <a href="http://fabiensanglard.net/" >Home</a>
+           <a href="../index.html" >Home</a>
          </li>
          <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-95">
-           <a href="http://fabiensanglard.net/about/">About</a>
+           <a href="../about/index.html">About</a>
          </li>
           <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home menu-item-96">
-           <a href="http://fabiensanglard.net/faq/">FAQ</a>
+           <a href="../faq/index.html">FAQ</a>
          </li>
          <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home menu-item-92">
             <a id="mail" href="mailto:fabiensanglard.net@gmail.com?subject=Tunnel" title="Send me an email.">Email</a>
          </li>
          <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home menu-item-93">
-            <a href="http://fabiensanglard.net/rss.xml" title="Suscribe to RSS Feed.">Rss</a>
+            <a href="../rss.xml" title="Suscribe to RSS Feed.">Rss</a>
          </li>
          <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home menu-item-94">
             <a href="http://twitter.com/fabynou" title="Follow me on Twitter.">Twitter</a>
@@ -102,8 +102,8 @@
 
 
 		
-<link rel="alternate" type="application/rss+xml" title="Fabien Sanglard &raquo; Feed" href="http://fabiensanglard.net/rss.xml" />
-<link rel="alternate" type="application/rss+xml" title="Fabien Sanglard &raquo; Comments Feed" href="http://fabiensanglard.net/rss.xml" />
+<link rel="alternate" type="application/rss+xml" title="Fabien Sanglard &raquo; Feed" href="../rss.xml" />
+<link rel="alternate" type="application/rss+xml" title="Fabien Sanglard &raquo; Comments Feed" href="../rss.xml" />
 <div id="date">
        August 16th, 2013</div>
    <h1>Second Reality Code Review: Part 4 (DEV Vs Prod)</h1>

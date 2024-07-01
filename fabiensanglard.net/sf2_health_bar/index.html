@@ -1,0 +1,302 @@
+<html>
+<head>
+  <link rel="alternate" type="application/rss+xml"  title="RSS Feed for fabiensanglard.net" href="../rss.xml" />
+  <style type="text/css">
+
+    @font-face {
+      font-family: 'fabfont';
+      src: url('../font/DejaVuSansMono.woff2');
+      font-display: block;
+    }
+
+    @font-face {
+      font-family: 'fabfont';
+      src: url('../font/DejaVuSansMono-Bold.woff2');
+      font-weight: bold;
+      font-display: block;
+    }
+
+    * {
+       font-size: 16px;
+    }
+
+    html {
+      font-family: fabfont,  monospace;
+      max-width: 900px;  /* For Desktop PC (see @media for Tablets/Phones) */
+      padding-left: 2%;
+      padding-right: 3%;
+      margin: 0 auto;
+      background: #F5F5F0;
+  	} 
+    
+
+
+  	a {
+      color: black;
+      font-weight: bold;
+    }
+
+    img {
+      border: none; 
+    }
+
+    p {
+      margin-top: 0px;
+      text-align: justify;
+    }
+    sup {
+      vertical-align: 0.3em;
+      font-size: 0.65em;
+    }   
+
+    pre {
+      font-family: fabfont, monospace;
+      background-color: white; 
+      border: 1px solid Black; 
+      padding-left: 2%;
+      padding-top: 1ch;
+      padding-bottom: 1ch;
+      /* Only take care of X overflow since this is the only part that can be too wide.
+         The Y axis will never overflow.
+      */
+      overflow: hidden;
+    }
+
+    div.heading {
+      font-weight: bold;      
+      text-transform: uppercase;
+      margin-top: 4ch;
+    }
+
+    /** {
+      font-size: 16px;
+    }*/
+    @media (max-width: 500px) { /* For small screen decices */
+      * {
+        font-size: 12px; 
+      }
+    }   
+    .title {
+      text-decoration: none;
+    }
+
+    img.pixel, canvas.pixel {
+      image-rendering: pixelated;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: crisp-edges;
+    }
+
+    blockquote { 
+    background-color: #f3f3f3;
+    border: dashed 1px grey; 
+    width: 97.5%; 
+    font-style: italic; 
+    text-align: justify;
+
+    padding: 1ch; 
+    padding-top: 2ch; 
+    padding-bottom: 2ch;     
+    
+    margin : 0ch; 
+    margin-bottom: 2ch; 
+    margin-top: 0ch;
+  }
+
+  blockquote div {
+    text-transform: none;
+    text-align: right;
+    width: 100%;
+  }
+
+  code {
+    /*font-size: 110%;*/
+    font-weight: bold;
+    background-color: #e1e1e1;
+    border-radius: 0.5ch;
+    padding-left: 0.3ch;
+    padding-right: 0.3ch;
+  }
+
+  .trivia {
+    border-left: 1px black solid;
+    padding-left: 1ch;
+  }
+
+  .trivia::before {
+  font-weight: bold;
+  text-decoration: underline;
+  padding-right: 1ch;
+  content: "Trivia:";
+
+  </style>
+  <title>Street Fighter II, subtile accurate animation</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=12.0, minimum-scale=1.0, user-scalable=yes">
+</head>  
+  <body><br><center>
+    <div style="display: inline-block; vertical-align:middle;">
+<a href="../index.html" class="title"><b>FABIEN SANGLARD'S WEBSITE</b><br>
+</a><hr/><div style="text-align: justify;display: inline-block; width: 100%;">
+<!-- <a class="title" href="/about/index.html">ABOUT</a> &nbsp;<a class="title" href="/contact/index.html">EMAIL</a> &nbsp;<a class="title" href="../rss.xml">RSS</a> &nbsp;<a class="title" href="https://paypal.me/fabiensanglard">DONATE</a></div></div> -->
+<a class="title" href="../about/index.html">ABOUT</a> &nbsp;<a class="title" href="../contact/index.html">CONTACT</a> &nbsp;<a class="title" href="../rss.xml">RSS</a> &nbsp;<a class="title" href="https://paypal.me/fabiensanglard">GIVE</a></div></div>
+
+</center><br><br>
+<div style="margin-bottom: 2ch;text-transform: none;">
+Dec 25, 2021</div>
+<div class='heading'>Street Fighter II, subtile accurate animation</div><hr/><style type="text/css">
+
+
+
+code {
+    /*font-size: 110%;*/
+    font-weight: bold;
+    background-color: #e1e1e1;
+    border-radius: 0.5ch;
+    padding-left: 0.3ch;
+    padding-right: 0.3ch;
+}
+
+.center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+table tr td {
+   border: 2px black solid;
+   
+}
+</style>
+
+<p>
+    <i>This article is the final part of a <a href="../sf2_sheets/index.html">series</a> about Street Fighter II and the CPS-1. It is recommended to read the previous entries before reading this one.</i>
+</p>
+
+<div class='heading'>The problem</div><hr/><p>
+  If you read the previous entries, it is now abundantly clear that the machine running Street Fighter II can only manipulates tiles made of 16x16 pixels. Keeping this in mind, take a look at this short segment of gameplay. Something odd, not feasible should come to your attention.
+</p>
+
+  <img loading="lazy" src="compressed_health.gif" class="pixel center" style="width: 100%;margin-bottom:2ch; margin-bottom: 1ch; border: 1px black solid;aspect-ratio: 4 / 3;"/> 
+<p>
+  <p>
+    The opponents stamina "health bar" are animated smoothly on a per-pixel basis. How is this possible?
+    If the developer had worked with three tiles (one for the "edge", one for "full", and one for "empty"), the twelve tiles health bars would have changed only in increment of 16 pixels as follows.
+</p>
+    <script type="text/javascript">
+    function slide_coarse(e) {
+      var v = parseInt(e.value, 10);
+      var bid =  Math.ceil(v/10);
+      for (let i = 0; i < bid; i++) { 
+        var img = document.getElementById(i.toString());
+        img.src = "f.png";
+      }
+
+      for (let i = bid; i <= 9; i++) { 
+        var img = document.getElementById(i.toString());
+        img.src = "e.png";
+      }
+      
+    }
+
+   
+
+  </script>
+
+  <table style="width: 100%;border-collapse: collapse;margin-bottom: 2ch;">
+     <tr>
+      <td style="width: 8%;margin:0; padding:0;"><img  class="pixel" src="side.png" width="100%" style="transform: scaleX(-1);" /></td>
+       <td style="width: 8%;margin:0; padding:0;"><img id=0 class="pixel" src="f.png" width="100%" /></td>
+       <td style="width: 8%;margin:0; padding:0;"><img id=1 class="pixel" src="e.png" width="100%"/></td>
+       <td style="width: 8%;margin:0; padding:0;"><img id=2 class="pixel" src="e.png" width="100%"/></td>
+
+       <td style="width: 8%;margin:0; padding:0;"><img id=3 class="pixel" src="e.png" width="100%"/></td>
+       <td style="width: 8%;margin:0; padding:0;"><img id=4 class="pixel" src="e.png" width="100%"/></td>
+       <td style="width: 8%;margin:0; padding:0;"><img id=5 class="pixel" src="e.png" width="100%"/></td>
+
+       <td style="width: 8%;margin:0; padding:0;"><img id=6 class="pixel" src="e.png" width="100%"/></td>
+       <td style="width: 8%;margin:0; padding:0;"><img id=7 class="pixel" src="e.png" width="100%"/></td>
+       <td style="width: 8%;margin:0; padding:0;"><img id=8 class="pixel" src="e.png" width="100%"/></td>
+
+       <td style="width: 8%;margin:0; padding:0;"><img id=9 class="pixel" src="e.png" width="100%"/></td>
+       <td style="width: 8%;margin:0; padding:0;"><img  class="pixel" src="side.png" width="100%" /></td>
+      </tr>
+  </table>
+   <table style="width: 100%;border:none;">
+    <tr><td style="width: 8%;margin:0; padding:0;border:none;"></td>
+    <td style="width: 84%;margin:0; padding:0;border:none;"> <input type="range" min="0" max="99" value="0"  style="width:100%" oninput="slide_coarse(this);" /></td>
+    <td style="width: 8%;margin:0; padding:0;border:none;"></td>
+    </tr>
+ </table>     
+<p style="margin-top:2ch;">
+  Not only this implementation makes the animation choppy, it also creates a feeling of inaccuracy that present the mechanics of the game in a poor light. A better system had to be used.
+</p>
+
+
+<div class='heading'>Fine stamina tracking</div><hr/><p>
+  Poking in the game sheets reveals how Capcom programmers made it work smoothly. The health bar tiles are located on sheet <code>0x81</code>.
+</p>
+<img loading="lazy" src="0x8100.svg" class="pixel center" width="133.98253pt" height="136.40675pt" style="width: 70%; height: auto; margin-top:2ch;margin-bottom:2ch;"/><p>
+   We can see not three but twenty tiles being used showing that a lot of problems can be solved by throwing memory or storage at them.
+</p>
+<p>
+    The intermediate states for a tile are all pre-rendered on row <code>OxF0</code>. These extra tiles allow a pixel perfect health bar animation.
+</p>
+
+  <table style="width: 100%;border-collapse: collapse;">
+     <tr>
+      <td style="width: 8%;margin:0; padding:0;"><img  class="pixel" src="side.png" width="100%" style="transform: scaleX(-1);" /></td>
+       <td style="width: 8%;margin:0; padding:0;"><img id=s0 class="pixel" src="e.png" width="100%" /></td>
+       <td style="width: 8%;margin:0; padding:0;"><img id=s1 class="pixel" src="e.png" width="100%"/></td>
+       <td style="width: 8%;margin:0; padding:0;"><img id=s2 class="pixel" src="e.png" width="100%"/></td>
+
+       <td style="width: 8%;margin:0; padding:0;"><img id=s3 class="pixel" src="e.png" width="100%"/></td>
+       <td style="width: 8%;margin:0; padding:0;"><img id=s4 class="pixel" src="e.png" width="100%"/></td>
+       <td style="width: 8%;margin:0; padding:0;"><img id=s5 class="pixel" src="e.png" width="100%"/></td>
+
+       <td style="width: 8%;margin:0; padding:0;"><img id=s6 class="pixel" src="e.png" width="100%"/></td>
+       <td style="width: 8%;margin:0; padding:0;"><img id=s7 class="pixel" src="e.png" width="100%"/></td>
+       <td style="width: 8%;margin:0; padding:0;"><img id=s8 class="pixel" src="e.png" width="100%"/></td>
+
+       <td style="width: 8%;margin:0; padding:0;"><img id=s9 class="pixel" src="e.png" width="100%"/></td>
+       <td style="width: 8%;margin:0; padding:0;"><img  class="pixel" src="side.png" width="100%" /></td>
+      </tr>
+  </table>
+
+      <script type="text/javascript">
+    function sslide_coarse(e) {
+      var v = parseInt(e.value, 10);
+      var fv = Math.floor(v / 16);
+      
+      for (let i = 0; i < fv; i++) { 
+        var img = document.getElementById("s" + i.toString());
+        img.src = "16.png";
+      }
+
+      if (v == 160) {
+        return;
+      }
+
+      if (v % 16 != 0 && v != 0) {
+        var img = document.getElementById("s" + fv.toString());
+        var id =  (v - Math.floor(v / 16 ) * 16).toString(16); 
+        img.src = id + "_15.png";
+      }
+
+      if (v == 0) {
+        fv = fv -1;
+      }
+
+      for (let i = fv + 1; i <=9; i++) { 
+        var img = document.getElementById("s" + i.toString());
+        img.src = "0_15.png";
+      }
+      
+    }
+  </script>
+  <table style="width: 100%;border:none;">
+    <tr><td style="width: 8%;margin:0; padding:0;border:none;"></td>
+      <td style="width: 84%;margin:0; padding:0;border:none;"><input type="range" min="0" max="160" value="0"  style="width:100%" oninput="sslide_coarse(this);" /></td>
+      <td style="width: 8%;margin:0; padding:0;border:none;"></td>
+    </tr>
+ </table>     
+ <hr>
+ <center>*

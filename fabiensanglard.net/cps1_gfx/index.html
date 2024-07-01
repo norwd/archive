@@ -1,0 +1,339 @@
+<html>
+<head>
+  <link rel="alternate" type="application/rss+xml"  title="RSS Feed for fabiensanglard.net" href="../rss.xml" />
+  <style type="text/css">
+
+    @font-face {
+      font-family: 'fabfont';
+      src: url('../font/DejaVuSansMono.woff2');
+      font-display: block;
+    }
+
+    @font-face {
+      font-family: 'fabfont';
+      src: url('../font/DejaVuSansMono-Bold.woff2');
+      font-weight: bold;
+      font-display: block;
+    }
+
+    * {
+       font-size: 16px;
+    }
+
+    html {
+      font-family: fabfont,  monospace;
+      max-width: 900px;  /* For Desktop PC (see @media for Tablets/Phones) */
+      padding-left: 2%;
+      padding-right: 3%;
+      margin: 0 auto;
+      background: #F5F5F0;
+  	} 
+    
+
+
+  	a {
+      color: black;
+      font-weight: bold;
+    }
+
+    img {
+      border: none; 
+    }
+
+    p {
+      margin-top: 0px;
+      text-align: justify;
+    }
+    sup {
+      vertical-align: 0.3em;
+      font-size: 0.65em;
+    }   
+
+    pre {
+      font-family: fabfont, monospace;
+      background-color: white; 
+      border: 1px solid Black; 
+      padding-left: 2%;
+      padding-top: 1ch;
+      padding-bottom: 1ch;
+      /* Only take care of X overflow since this is the only part that can be too wide.
+         The Y axis will never overflow.
+      */
+      overflow: hidden;
+    }
+
+    div.heading {
+      font-weight: bold;      
+      text-transform: uppercase;
+      margin-top: 4ch;
+    }
+
+    /** {
+      font-size: 16px;
+    }*/
+    @media (max-width: 500px) { /* For small screen decices */
+      * {
+        font-size: 12px; 
+      }
+    }   
+    .title {
+      text-decoration: none;
+    }
+
+    img.pixel, canvas.pixel {
+      image-rendering: pixelated;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: crisp-edges;
+    }
+
+    blockquote { 
+    background-color: #f3f3f3;
+    border: dashed 1px grey; 
+    width: 97.5%; 
+    font-style: italic; 
+    text-align: justify;
+
+    padding: 1ch; 
+    padding-top: 2ch; 
+    padding-bottom: 2ch;     
+    
+    margin : 0ch; 
+    margin-bottom: 2ch; 
+    margin-top: 0ch;
+  }
+
+  blockquote div {
+    text-transform: none;
+    text-align: right;
+    width: 100%;
+  }
+
+  code {
+    /*font-size: 110%;*/
+    font-weight: bold;
+    background-color: #e1e1e1;
+    border-radius: 0.5ch;
+    padding-left: 0.3ch;
+    padding-right: 0.3ch;
+  }
+
+  .trivia {
+    border-left: 1px black solid;
+    padding-left: 1ch;
+  }
+
+  .trivia::before {
+  font-weight: bold;
+  text-decoration: underline;
+  padding-right: 1ch;
+  content: "Trivia:";
+
+  </style>
+  <title>Capcom CPS-1 Graphic system study</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=12.0, minimum-scale=1.0, user-scalable=yes">
+</head>  
+  <body><br><center>
+    <div style="display: inline-block; vertical-align:middle;">
+<a href="../index.html" class="title"><b>FABIEN SANGLARD'S WEBSITE</b><br>
+</a><hr/><div style="text-align: justify;display: inline-block; width: 100%;">
+<!-- <a class="title" href="/about/index.html">ABOUT</a> &nbsp;<a class="title" href="/contact/index.html">EMAIL</a> &nbsp;<a class="title" href="../rss.xml">RSS</a> &nbsp;<a class="title" href="https://paypal.me/fabiensanglard">DONATE</a></div></div> -->
+<a class="title" href="../about/index.html">ABOUT</a> &nbsp;<a class="title" href="../contact/index.html">CONTACT</a> &nbsp;<a class="title" href="../rss.xml">RSS</a> &nbsp;<a class="title" href="https://paypal.me/fabiensanglard">GIVE</a></div></div>
+
+</center><br><br>
+<div style="margin-bottom: 2ch;text-transform: none;">
+Feb 20, 2022</div>
+<div class='heading'>Capcom CPS-1 Graphic system study</div><hr/><style type="text/css">
+
+
+
+code {
+    /*font-size: 110%;*/
+    font-weight: bold;
+    background-color: #e1e1e1;
+    border-radius: 0.5ch;
+    padding-left: 0.3ch;
+    padding-right: 0.3ch;
+}
+
+.center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.box {
+ 
+  height: 1.7ch;
+  width: 1.7ch;
+  vertical-align: text-bottom;
+  border: 1px solid black;
+  clear: both;
+  display:inline-block
+}
+
+</style>
+<script type="text/javascript">
+  function flip(e){   
+    src = e.src
+    if (src.includes("-color")) {
+      src = src.replace("-color", "-rgb");
+    } else {
+      src = src.replace("-rgb", "-color");
+    }
+    e.src = src;
+}
+</script>
+<p>
+   As I keep on exploring the internals of the machine that animated so many hours of my childhood, I came to study its GFX system.
+</p>
+<p>
+   The CPS-1 was a powerhouse at the time of its release. Capcom's 1989 marvel was capable of composing across six layers, stacked in any order. Developers could use three tilemap "background" layers (<code>SCROLL1</code>, <code>SCROLL2</code>, <code>SCROLL3</code>), one <code>OBJ</code> layer (where tiles are aggregated into sprites), and two starfields (<code>STAR1</code>, <code>STAR2</code>). 
+</p>
+
+<p>
+  There is a fun way to study how these layers were used by modifying Mame's <code>video/cps1.cpp</code> driver. The rest of this article explores CPS-1 games architecture using color codes. 
+</p>
+<p>
+  <span class="box" style="background-color: red;">&nbsp;&nbsp;</span> = SCROLL1, <span class="box" style="background-color: green;">&nbsp;&nbsp;</span> = SCROLL2, <span class="box" style="background-color: blue;">&nbsp;&nbsp;</span> = SCROLL3, 
+  <span class="box" style="background-color: black;">&nbsp;&nbsp;</span> = OBJ, 
+  <span class="box" style="background-color: cyan;">&nbsp;&nbsp;</span> = STAR1, 
+  <span class="box" style="background-color: yellow;">&nbsp;&nbsp;</span> = STAR2. 
+</p>
+<br/>
+<p><center><span style="color: red;"><blink>
+  You can mouse over or click images to flip between RGB and layer view.
+</blink>
+  </span>
+  </center>
+</p>
+
+<div class='heading'>Forgotten Worlds (May 1988)</div><hr/><p>
+ Forgotten Worlds was the very first title released on the platform. Could it be that Capcom wanted to showcase the power of their new machine, the game very first scene features all layers.
+</p>
+
+  <img loading="lazy" src="forgottn-rgb.png" class="pixel center" style="width: 100%;margin-bottom:2ch; margin-bottom: 1ch; border: 1px black solid;aspect-ratio: 4 / 3;" onmouseout="flip(this);" onclick="flip(this);"   onmouseover="flip(this);"/> 
+ 
+<p>
+ Notice the choices made by the developers where they placed GUI elements in SCROLL1 (<span  class="box" style="background-color: red;">&nbsp;&nbsp;</span>). This may seem surprising because a tilemap forces elements to be aligned on a grid with regards to each others. Using the OBJ layer would have allowed GUI elements to be placed anywhere on the screen.
+</p>
+<p>
+ It is in fact a favorable trade-off since GUI elements are mostly aligned anyway but more importantly the machine is limited to 256 tiles on its OBJ layer. OBJ tiles must be used wisely.
+</p>  
+
+
+
+
+
+
+<div class='heading'>Ghouls'n Ghosts (December 1988)</div><hr/><p>
+  The same year, Capcom released the sequel of their hit from 1985, Ghosts 'n Goblins. Despite its Ikarugesque<a name="back_1" style="text-decoration: none;" href="index.html#footnote_1"><sup>[1]</sup></a> difficulty, the game was very well received.
+</p>
+  <img loading="lazy" src="gg-rgb.png" class="pixel center" style="width: 100%;margin-bottom:2ch; margin-bottom: 1ch; border: 1px black solid;aspect-ratio: 4 / 3;" onmouseout="flip(this);" onclick="flip(this);"   onmouseover="flip(this);"/><p>
+  Notice how, once again, SCROLL1 (<span  class="box" style="background-color: red;">&nbsp;&nbsp;</span>) is used for GUI. It is not a random choice. SCROLL layers have different tile size where SCROLL1 (<span  class="box" style="background-color: red;">&nbsp;&nbsp;</span>) uses 8x8 tiles, SCROLL2 (<span  class="box" style="background-color: green;">&nbsp;&nbsp;</span>) uses 16x16 tiles, and SCROLL3 (<span  class="box" style="background-color: blue;">&nbsp;&nbsp;</span>) uses 32x32 tiles. Designers logically used the one with the finest granularity.
+</p>
+
+<p>
+  Besides, zombies, Red Arremer, and unforgiving controls, Arthur must also face the elements. A little bit after the start of Level 1, rain starts to fall.
+</p>
+
+  <img loading="lazy" src="gg.gif" class="pixel center" style="width: 100%;margin-bottom:2ch; margin-bottom: 1ch; border: 1px black solid;aspect-ratio: 4 / 3;"/>
+<p>
+ But, as we have just seen, nearly all layers are used. STAR2 can only generate tiny dots so it is of no help here. How did they make it rain?
+</p>
+<p>
+  Easy. When it rains, every four frames, the GUI is not displayed in favor of rain tiles.
+</p>
+  <img loading="lazy" src="gg_rain-rgb.png" class="pixel center" style="width: 100%;margin-bottom:2ch; margin-bottom: 1ch; border: 1px black solid;aspect-ratio: 4 / 3;" onmouseout="flip(this);" onclick="flip(this);"   onmouseover="flip(this);"/><p>The human eye and CRTs of the time blend it all together.
+</p>
+
+<div class='heading'>Strider (March 1989)</div><hr/><p>
+  Strider was an ambitious project with interesting ideas. One of them is that it occasionally combined OBJ tiles not to make several small enemies but to build one humongous opponent. That was an impressive effect at the time.
+</p>
+ <img loading="lazy" src="strider-rgb.png" class="pixel center" style="width: 100%;margin-bottom:2ch; margin-bottom: 1ch; border: 1px black solid;aspect-ratio: 4 / 3;" onmouseout="flip(this);" onclick="flip(this);"   onmouseover="flip(this);"/>  
+  
+<p>
+
+   Strider also features non-aligned surfaces with which the hero integrates  well. It is even more of an achievement when you see that Hiryu interacts with SCROLL3 (<span  class="box" style="background-color: blue;">&nbsp;&nbsp;</span>) but also the OBJ layer (<span  class="box" style="background-color: black;">&nbsp;&nbsp;</span>).
+</p>
+  <img loading="lazy" src="stridera-rgb.gif" class="pixel center" style="width: 100%;margin-bottom:2ch; margin-bottom: 1ch; border: 1px black solid;aspect-ratio: 4 / 3;" onmouseout="flip(this);" onclick="flip(this);"   onmouseover="flip(this);"/>
+
+
+
+
+<div class='heading'>Final Fight (December 1989)</div><hr/><p>
+  Final fight was done on a tight GFX budget. At the time, ROM prices was so high that artists were only allocated 2MiB. That did not prevent them from producing one of the best hit of the platform.
+</p>
+<p>
+  All layers have a priority that can be set freely. Here we can see that SCROLL3 (<span  class="box" style="background-color: blue;">&nbsp;&nbsp;</span>) has the lowerst priority to serve as skyline. Then SCROLL2 (<span  class="box" style="background-color: green;">&nbsp;&nbsp;</span>) for the fighting area. Then come the OBJ (<span  class="box" style="background-color: black;">&nbsp;&nbsp;</span>) where we see characters, barrels, and tires and finally the GUI on SCROLL1 (<span  class="box" style="background-color: red;">&nbsp;&nbsp;</span>) has top priority.
+</p>
+
+
+  <img loading="lazy" src="ff-rgb.png" class="pixel center" style="width: 100%;margin-bottom:2ch; margin-bottom: 1ch; border: 1px black solid;aspect-ratio: 4 / 3;" onmouseout="flip(this);" onclick="flip(this);"   onmouseover="flip(this);"/>
+ <p>That all makes sense until we look at Mike Haggar which seems to be both in front and behind SCROLL2 (<span  class="box" style="background-color: green;">&nbsp;&nbsp;</span>). This is made possible by "priority mask" which grants special property to the layer behind OBJ. Tiles can be assigned such a mask to have some of their colors appear over OBJ instead of being occluded. In this case, colors <span  class="box" style="background-color: #ddcc99;">&nbsp;&nbsp;</span>, <span  class="box" style="background-color: #998855;">&nbsp;&nbsp;</span>, <span  class="box" style="background-color: #776633;">&nbsp;&nbsp;</span>, and <span  class="box" style="background-color: #554400;">&nbsp;&nbsp;</span>  are marked as such, resulting in a staircase sandwiching the characters. 
+
+<div class='heading'>Carrier Air Wing (October 1990)</div><hr/><p>
+  The intro of Carrier Air Wing is particularly cool. Not only because it is gorgeous but because it features effects that should not be possible to a tile engine. First, there is the horizontal  stream left behind by the F-14 which expands one line at at time, a granularity the machine cannot reach. Then there is a fizzlefade effect that happens on a per pixel basis.
+</p>
+  <img loading="lazy" src="cawing-color.gif" class="pixel center" style="width: 100%;margin-bottom:2ch; margin-bottom: 1ch; border: 1px black solid;aspect-ratio: 4 / 3;" onmouseout="flip(this);" onclick="flip(this);"   onmouseover="flip(this);"/><p>
+As the layers view reveals, this is all done via OBJ tiles, alike the smooth Street Fighter 2 energy bar<a name="back_2" style="text-decoration: none;" href="index.html#footnote_2"><sup>[2]</sup></a> . The fizzlefade is in fact a precomputed pattern across several tiles, repeated over and over. As often, when things move very fast, the human eye tends to fill the blanks.
+ 
+  </p>
+
+
+<div class='heading'>Street Fighter 2 (February 1991)</div><hr/><p>
+  Street Fighter 2 is a peculiar title because developers decided to use SCROLL1 (<span  class="box" style="background-color: red;">&nbsp;&nbsp;</span>) to better the parallax effects instead of using it for GUI. As a result, it is fully implemented with OBJ tiles (<span  class="box" style="background-color: black;">&nbsp;&nbsp;</span>) .
+</p>
+
+
+  <img loading="lazy" src="sf2-dha-rgb.png" class="pixel center" style="width: 100%;margin-bottom:2ch; margin-bottom: 1ch; border: 1px black solid;aspect-ratio: 4 / 3;" onmouseout="flip(this);" onclick="flip(this);"   onmouseover="flip(this);"/>
+<p>
+  There are also weird things like Guile stage where the cockpit and the tail of the F-16 are partially done with OBJ (<span  class="box" style="background-color: black;">&nbsp;&nbsp;</span>).
+</p>
+
+    <img loading="lazy" src="sf2-guile-rgb.png" class="pixel center" style="width: 100%;margin-bottom:2ch; margin-bottom: 1ch; border: 1px black solid;aspect-ratio: 4 / 3;" onmouseout="flip(this);" onclick="flip(this);"   onmouseover="flip(this);"/><p>
+  A GFX ROM is divided in four areas at the hardware level. There is one area for each SCROLL plus one for the OBJ layer. The size of these areas is decided at the beginning of the development and set <strike>in stone</strike> in EPROM.
+</p>
+<p>
+  My theory about this weird background is that artists ran out of space on SCROLL2 (<span  class="box" style="background-color: green;">&nbsp;&nbsp;</span>) layer and finished the background with OBJ tiles which they had a small excess of. 
+</p>
+
+<p>
+  SCROLL2 (<span  class="box" style="background-color: green;">&nbsp;&nbsp;</span>) is famous for having a special power. Originally it was not a very useful feature until Street Fighter 2 came along and used it to implement a per-line floor parallax effect. It works by horizontally scrolling tiles on a per-line basis. 
+</p>
+
+<div class='heading'>Street Fighter 2 Champion Edition (March 1992)</div><hr/><p>
+  <blockquote>
+  Back in the days of SF2, the arcade boards’ specs weren’t as good
+as they are today, and there was a limit to how many sprites could
+be displayed on screen at once. We carefully planned things out
+so that the biggest character and the second biggest character
+could just barely fit on screen at the same time.
+
+But when mirror matches became possible in Champion Edition,
+that meant that we had to be able to display two copies of the
+biggest character on screen. We ended up having to remove back-
+ground elements and such.
+<br/>
+<br/>
+   <div>- Akira Nishitani, Producer (Capcom)</div>
+</blockquote>
+<p>
+  Sure enough, if we checkout Ryu's stage from the original SF2 we can see that the art team used a lot of sprites to make it prettier. As it stands this scene accounts for nearly 200 tiles on the OBJ layer (<span class="box" style="background-color: black  ;">&nbsp;&nbsp;</span>).
+</p>
+    <img loading="lazy" src="sf2-ryu-rgb.png" class="pixel center" style="width: 100%;margin-bottom:2ch; margin-bottom: 1ch; border: 1px black solid;aspect-ratio: 4 / 3;" onmouseout="flip(this);" onclick="flip(this);"   onmouseover="flip(this);"/><p>
+  In order to allow bigger characters (a.k.a Zanghief or Honda) to face their mirror on this stage, the "wind, forest, fire, mountain" ("風林火山") sign was removed. To make up for it, the scroll palettes were also reworked resulting in round happening at night instead of sunset.
+  </p>
+
+
+   <img loading="lazy" src="sf2ce.png" class="pixel center" style="width: 100%;margin-bottom:2ch; margin-bottom: 1ch; border: 1px black solid;aspect-ratio: 4 / 3;"/><p>
+   
+</p>
+
+
+<div class='heading'>Street Fighter II′ Turbo: Hyper Fighting (December 1992)</div><hr/><p>
+  One of the last CPS-1 game was the iconic SF2 Hyper-Fighting (a.k.a Turbo). The title screen is made of mostly black except for the logo. This effect is achieved by giving STAR1 (<span class="box" style="background-color: cyan;">&nbsp;&nbsp;</span>) max priority over other SCROLL layers and setting all its palettes to black so stars are not visible.
+</p>
+
+  <img loading="lazy" src="sf2hf-rgb.png" class="pixel center" style="width: 100%;margin-bottom:2ch; margin-bottom: 1ch; border: 1px black solid;aspect-ratio: 4 / 3;" onmouseout="flip(this);" onclick="flip(this);"   onmouseover="flip(this);"/>
+  <p>Perhaps it is the most poetic aspect of the machine. Most of the time, when you see a large portion of black, you are actually looking at the night sky.<style type='text/css'>td.ref {  padding-bottom: 0ch; width:0;}</style><div class='heading'>References</div><hr/><p id='paperbox' style='text-align:left;'><table><tbody style='vertical-align: top;'><tr><td class='ref' style='width:1ch;'><a name="footnote_1"></a><a href="index.html#back_1">^</a></td><td  class='ref' style='width:4ch;'> [1]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://en.wikipedia.org/wiki/Ikaruga">Ikaruga</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_2"></a><a href="index.html#back_2">^</a></td><td  class='ref' style='width:4ch;'> [2]</td><td style='width:100%;text-align:left;' class='ref'><a href="../sf2_health_bar/index.html">STREET FIGHTER 2, Subtle accurate animation</a></td></tr></tbody></table></p> <hr>
+ <center>*
