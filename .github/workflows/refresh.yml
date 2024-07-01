@@ -18,16 +18,16 @@ env:
   GH_TOKEN: ${{ secrets.AUTO_DOWNLOAD_ARCHIVE }}
 
 jobs:
-
-  refresh-archive-v2:
-    name: "Refresh Archive V2"
+  refresh-archive:
+    name: "Refresh Archive"
     uses: ./.github/workflows/archive.yml
     with:
       url: '${{ matrix.link }}'
 
-    # not sure if needed?
-    #secrets:
-    #  AUTO_DOWNLOAD_ARCHIVE: ${{ secrets.AUTO_DOWNLOAD_ARCHIVE }}
+    secrets:
+      AUTO_DOWNLOAD_ARCHIVE: '${{ secrets.AUTO_DOWNLOAD_ARCHIVE }}'
+      AUTO_COMMIT_GPG_PRIVATE_KEY_ARCHIVE: '${{ secrets.AUTO_COMMIT_GPG_PRIVATE_KEY_ARCHIVE }}'
+      AUTO_COMMIT_GPG_PASSPHRASE_ARCHIVE: '${{ secrets.AUTO_COMMIT_GPG_PASSPHRASE_ARCHIVE }}'
 
     strategy:
       matrix: # this is hard coded for now, as not all websites are straightforward to archive, in the future this might be in file in the repo itself
@@ -58,43 +58,3 @@ jobs:
           - "www.simple-cc.org/"
           - "www.literateprogramming.com/"
           - "developercertificate.org/"
-
-  refresh-archive-v1:
-    name: "Refresh Archive V1"
-    runs-on: ubuntu-latest
-    strategy:
-      matrix: # this is hard coded for now, as not all websites are straightforward to archive, in the future this might be in file in the repo itself
-        link:
-
-          # sigbovik.org gets (roughly) yearly updates, so this just refreshes the current year
-          - "sigbovik.org/2024/" # TODO: update this to be current year automatically?
-
-          # bellard.org has a large tree so to be nice to the server this only refreshes specific disrectories
-          - "bellard.org/tcc/"
-          - "bellard.org/quickjs/"
-          - "bellard.org/otcc/"
-          - "bellard.org/bpg/"
-          - "bellard.org/fbcc/"
-
-          # tom7.org has a large tree so to be nice to the server this only refreshes specific disrectories
-          - "tom7.org/papers/"
-          - "tom7.org/chess/"
-          - "tom7.org/talks/"
-
-          # spec.commonmark.org/current doesn't redirect in wget the same way it does in the browser so this needs revisiting
-          #- "spec.commonmark.org/current/spec.json"
-          #- "spec.commonmark.org/current/changes.html"
-          #- "spec.commonmark.org/current/index.html"
-
-          # full site mirrors
-          - "fabiensanglard.net/"
-          - "www.simple-cc.org/"
-          - "www.literateprogramming.com/"
-          - "developercertificate.org/"
-
-    steps:
-      - name: "Triger Archive Workflow"
-        run: gh workflow run --repo "${REPO}" archive.yml -f url="${LINK}"
-        env:
-          REPO: '${{ github.repository }}'
-          LINK: '${{ matrix.link }}'
