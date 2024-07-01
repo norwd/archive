@@ -18,7 +18,25 @@ env:
   GH_TOKEN: ${{ secrets.AUTO_DOWNLOAD_ARCHIVE }}
 
 jobs:
+  refresh-pull-requests:
+    name: "Refresh Pull Requests"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.AUTO_DOWNLOAD_ARCHIVE }}
+
+      - name: "Create Pull Requests"
+        run: gh api "${API_PATH}" --paginate --jq "${JQ_QUERY}" | grep -E "${REF_REGX}" | awk '{ print $0; system("sleep 60"); }' | xargs -IBRANCH gh pr create --fill-first --head BRANCH
+        env:
+          API_PATH: '/repos/${{ github.repository }}/branches'
+          JQ_QUERY: '.[].name'
+          REF_REGX: '^archive/[0-9]+-[0-9]+-[0-9]+$'
+
   refresh-archive:
+    name: "Refresh Archive"
+    runs-on: ubuntu-latest
     strategy:
       matrix: # this is hard coded for now, as not all websites are straightforward to archive, in the future this might be in file in the repo itself
         link:
@@ -49,8 +67,6 @@ jobs:
           - "www.literateprogramming.com/"
           - "developercertificate.org/"
 
-    name: Refresh Archive
-    runs-on: ubuntu-latest
     steps:
       - name: "Triger Archive Workflow"
         run: gh workflow run --repo "${REPO}" archive.yml -f url="${LINK}"
