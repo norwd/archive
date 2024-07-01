@@ -1,0 +1,467 @@
+<html>
+<head>
+  <link rel="alternate" type="application/rss+xml"  title="RSS Feed for fabiensanglard.net" href="https://fabiensanglard.net/rss.xml" />
+  <style type="text/css">
+
+    @font-face {
+      font-family: 'fabfont';
+      src: url('../font/DejaVuSansMono.woff2');
+      font-display: block;
+    }
+
+    @font-face {
+      font-family: 'fabfont';
+      src: url('../font/DejaVuSansMono-Bold.woff2');
+      font-weight: bold;
+      font-display: block;
+    }
+
+    * {
+       font-size: 16px;
+    }
+
+    html {
+      font-family: fabfont,  monospace;
+      max-width: 900px;  /* For Desktop PC (see @media for Tablets/Phones) */
+      padding-left: 2%;
+      padding-right: 3%;
+      margin: 0 auto;
+      background: #F5F5F0;
+  	} 
+    
+
+
+  	a {
+      color: black;
+      font-weight: bold;
+    }
+
+    img {
+      border: none; 
+    }
+
+    p {
+      margin-top: 0px;
+      text-align: justify;
+    }
+    sup {
+      vertical-align: 0.3em;
+      font-size: 0.65em;
+    }   
+
+    pre {
+      font-family: fabfont, monospace;
+      background-color: white; 
+      border: 1px solid Black; 
+      padding-left: 2%;
+      padding-top: 1ch;
+      padding-bottom: 1ch;
+      /* Only take care of X overflow since this is the only part that can be too wide.
+         The Y axis will never overflow.
+      */
+      overflow: hidden;
+    }
+
+    div.heading {
+      font-weight: bold;      
+      text-transform: uppercase;
+      margin-top: 4ch;
+    }
+
+    /** {
+      font-size: 16px;
+    }*/
+    @media (max-width: 500px) { /* For small screen decices */
+      * {
+        font-size: 12px; 
+      }
+    }   
+    .title {
+      text-decoration: none;
+    }
+
+    img.pixel, canvas.pixel {
+      image-rendering: pixelated;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: crisp-edges;
+    }
+
+    blockquote { 
+    background-color: #f3f3f3;
+    border: dashed 1px grey; 
+    width: 97.5%; 
+    font-style: italic; 
+    text-align: justify;
+
+    padding: 1ch; 
+    padding-top: 2ch; 
+    padding-bottom: 2ch;     
+    
+    margin : 0ch; 
+    margin-bottom: 2ch; 
+    margin-top: 0ch;
+  }
+
+  blockquote div {
+    text-transform: none;
+    text-align: right;
+    width: 100%;
+  }
+
+  code {
+    /*font-size: 110%;*/
+    font-weight: bold;
+    background-color: #e1e1e1;
+    border-radius: 0.5ch;
+    padding-left: 0.3ch;
+    padding-right: 0.3ch;
+  }
+
+  .trivia {
+    border-left: 1px black solid;
+    padding-left: 1ch;
+  }
+
+  .trivia::before {
+  font-weight: bold;
+  text-decoration: underline;
+  padding-right: 1ch;
+  content: "Trivia:";
+
+  </style>
+  <title>CCPS, a Capcom CPS-1 SDK</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=12.0, minimum-scale=1.0, user-scalable=yes">
+</head>  
+  <body><br><center>
+    <div style="display: inline-block; vertical-align:middle;">
+<a href="https://fabiensanglard.net/" class="title"><b>FABIEN SANGLARD'S WEBSITE</b><br>
+</a><hr/><div style="text-align: justify;display: inline-block; width: 100%;">
+<!-- <a class="title" href="/about/index.html">ABOUT</a> &nbsp;<a class="title" href="/contact/index.html">EMAIL</a> &nbsp;<a class="title" href="../rss.xml">RSS</a> &nbsp;<a class="title" href="https://paypal.me/fabiensanglard">DONATE</a></div></div> -->
+<a class="title" href="https://fabiensanglard.net/about/index.html">ABOUT</a> &nbsp;<a class="title" href="https://fabiensanglard.net/contact/index.html">CONTACT</a> &nbsp;<a class="title" href="https://fabiensanglard.net/rss.xml">RSS</a> &nbsp;<a class="title" href="https://paypal.me/fabiensanglard">GIVE</a></div></div>
+
+</center><br><br>
+<div style="margin-bottom: 2ch;text-transform: none;">
+Sep 25, 2022</div>
+<div class='heading'>CCPS, a Capcom CPS-1 SDK</div><hr/><style type="text/css">
+
+
+
+code {
+    /*font-size: 110%;*/
+    font-weight: bold;
+    background-color: #e1e1e1;
+    border-radius: 0.5ch;
+    padding-left: 0.3ch;
+    padding-right: 0.3ch;
+}
+
+.center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.box {
+ 
+  height: 1.7ch;
+  width: 1.7ch;
+  vertical-align: text-bottom;
+  border: 1px solid black;
+  clear: both;
+  display:inline-block
+}
+
+</style>
+<script type="text/javascript">
+  function flip(e){   
+    src = e.src
+    if (src.includes("-color")) {
+      src = src.replace("-color", "-rgb");
+    } else {
+      src = src.replace("-rgb", "-color");
+    }
+    e.src = src;
+}
+</script>
+<p>
+  While I was studying Capcom's CPS-1, I found myself authoring many tools. I combined them together to make a SDK called <code>ccps</code>. The name is a portmanteau between <code>cc</code>, the C compiler and <code>CP-System</code>, the name of the machine before Capcom introduced the CPS-2 in 1993.
+</p>
+
+
+<div class='heading'>Why a SDK?</div><hr/><p>
+  Building a game for a CPS-1 is a tedious process which requires to produce four sets of ROMs.
+</p>
+<img loading="lazy" src="cps1_arch.svg" class="pixel" width="301.12057mm" height="103.6603mm" style="width: 80%; height: auto; border:none;margin-top:4ch;margin-bottom:4ch;margin-left: auto; margin-right: auto;display: block;"/><p>
+  There are two CPUs (one running the game logic, and one taking care of the sound). Each CPU needs to be bootstrapped and their program compiled via different compilers. Both have a peculiar type of data interleaving across ROMs.
+</p>
+<p>
+  The game needs assets made of two sets of ROMs, one for the GFX and one for the SFX (sound samples). Both sets have their own type of interleaved. Additionally, music assets must be placed into the Z-80 ROM set.
+</p>
+<p>And last but not least, each CPS-1 board is slightly different. Registers location can move and even register bit layout can change sometimes even between the same revision of a same game board.
+</p>
+
+<p>
+  The goal of <code>ccps</code> is to automate all of this. A game developer writes code for the game logic, produces GFX and SFX assets and then press "Enter" which results in a fully built game.
+  </p>
+<div class='heading'>Design and Philosophy</div><hr/><p>
+  The design of <code>ccps</code> is strongly inspired of <code>git</code>. It is a single binary working with sub-commands like <code>ccps build</code> or <code>ccps install</code>.
+</p>
+<p>
+  The philosophy of <code>ccps</code> is to strive for simplicity and keep the "genuine window of interest" of a potential game developer open as long as possible. The core idea is to allow a programmer to see and hear the machine perform as fast as possible with as little effort as possible.
+</p>
+<p>
+  For the languages, the SDK supports 68000 ASM, Z-80 ASM and C.
+</p>
+
+<div class='heading'>Installation</div><hr/><p> 
+  Ideally the setup process would feature a single step involving downloading a pre-built executable. But we live in an era where binaries should not be trusted. As a result, <code>ccps</code> is built from the source code.
+</p>
+<p>
+  The full setup takes four lines.
+</p>
+<pre>
+$ git clone git@github.com:fabiensanglard/ccps.git
+$ cd ccps/
+$ ./setup.sh
+$ ./makeAndInstall.sh
+</pre>
+<p>
+  Note that <code>setup.sh</code> is a small script which downloads the 68000 compiler (<code>gcc</code>) and the Z80 compiler (<code>sdcc</code>). 
+</p>
+<pre>
+$ cat setup.sh  
+sudo apt install  sdcc
+sudo apt install gcc-m68k-linux-gnu 
+</pre>
+<p>
+At the time this article is published, only Linux and Windows (via WSL) are supported. If someone owns a Mac and wants to contribute a patch that uses <code>brew</code> or <code>port</code>, they are more than welcome to send a Pull Request.  
+</p>
+
+<div class='heading'>Post</div><hr/><p> 
+  To start playing with the CPS-1, the first sub-command to run is not "hello world" but "post" (power-on self-test) which generates the smallest possible programs to ensures the toolchain is working as expected. 
+</p>
+<pre>
+$ mkdir ~/post
+$ cd ~/post  
+$ ccps post -b sf2
+$ find .
+./cc/z80/crt0.s
+./cc/z80/main.c
+./cc/68000/crt0.s
+./cc/68000/main.c
+</pre>
+<p>
+  Only source code is generated. It ensures that CPUs will bootstrap, run, and talk to each other via the "latches".
+</p>
+
+<div class='heading'>Building</div><hr/><p>
+Now that we have something to compile, it is time to build it. Building is also done via a single command mysteriously called <code>build</code>. The compilers are driven and the resulting blob of instructions are split into files according to the board target (in this case "sf2").
+</p>
+<pre>
+$ ccps build -b sf2
+$ ls out
+sf2_29b.10e  sf2_9.12a    sf2e_30g.11e  sf2e_35g.9f   sf2e_38g.12f
+sf2_36b.10f  sf2e_28g.9e  sf2e_31g.12e  sf2e_37g.11f
+</pre>
+<p>
+  Each ROMs must be interleaved a certain way and <code>ccps</code> took care of it. As expected, no GFX and no SFX ROMs are generated.
+</p>
+
+
+
+
+<div class='heading'>Testing</div><hr/><p> 
+To speed up the developement process, mame emulator is supported. The installation is done via a command audaciously named <code>install</code>.
+</p>
+
+<p>Note that before we install, we need to have the board "sf2" in mame's <code>roms</code> folder. It is not provided here, just know that it is named <code>sf2.zip</code> and contains these <a href="sf2.zip.txt">files</a>.</p>
+
+<pre>
+$ ccps install -d ~/mame/roms/sf2
+</pre>
+<p>
+Launching the game from mame GUI would trigger ROM SHA1 verification which would obviously fail. Using the command-line will result in a warning but works.
+</p>
+<pre>
+$ cd ~/mame
+$ ./mame sf2  
+sf2e_30g.11e WRONG CHECKSUMS:
+    EXPECTED: CRC(fe39ee33) SHA1(22558eb15e035b09b80935a32b8425d91cd79669)
+       FOUND: CRC(d5314bf9) SHA1(af11e43fcc0e41784301c7f10ebb2451ed419484)
+    EXPECTED: ...     
+       FOUND: ... 
+     ...    
+</pre>
+
+<img loading="lazy" src="post.png" class="pixel" width="1023" height="791" style="width: 80%; height: auto; border:none;margin-top:2ch;margin-bottom:2ch;margin-left: auto; margin-right: auto;display: block;"/>
+<p>
+  Because we indicated which board to target in the <code>post</code> command (<code>ccps</code> uses the same board names as found in <code>video/ccps.cpp</code> mame driver), the 68000 program automatically generated something interesting in the GFX ROMs (Ryu). 
+</p>
+<pre>
+Sprite* s;
+s = &sprites[0];
+    
+s->x = 220;
+s->y = 100;
+s->tile =   4;
+s->attributes = 2 |  0x5 << 12 | 0x3 << 8;
+
+
+sprites[1].attributes  = 0xFF00; // Last sprite marker
+</pre>
+<p>
+The tile value is <code>4</code> which matches the upper left corner of Ryu sprite. The value <code>0x5</code> is the height of the sprite -1. The value <code>0x3</code> is the sprite width -1. <code>2</code> is the palette ID. Notice that CPS-1 uses a marker to indicate the last sprite tile (<code>0xFF00</code>).
+</p>
+<img loading="lazy" src="sheet_post.svg" class="pixel center" width="133.98253pt" height="136.40675pt" style="width: 50%; height: auto; margin-bottom:1ch;margin-top:2ch; padding: 0; border:0"/><p>
+  On the Z-80 side, the program generated simply requests the OKI to play a samples one after another every second. As a result, the speaker players "Japan", "USSR", and so on.
+</p>
+<p>
+  Already a developer can play with the programs by using different GFX tile coordinates or request the Z-80 to play different OKI samples.
+</p> 
+
+<div class='heading'>Hello World</div><hr/><p> 
+  Once <code>post</code> is proven to work, we can use a second auto-generated project called hello world (sub-command <code>hw</code>).
+</p>
+<pre>
+$ mkdir ~/hw
+$ cd ~/hw  
+$ ccps hw
+$ find .
+./cc/z80/crt0.s
+./cc/z80/main.c
+./cc/68000/crt0.s
+./cc/68000/main.c
+./gfx/obj/hellworld.png
+./sfx/hellworld.wav
+</pre>
+<p>
+   This time, on top of programs for both CPUs we get two assets, an image <code>hellworld.png</code> and a sound sample <code>hellworld.wav</code>. Upon building, a full game is generated. The filenames are confusing (not by choice) but I swear it is all here.
+ </p>
+ <pre>
+$ ccps build -b sf2
+$ ls out
+sf2-11m.5d  sf2_19.12c   sf2_36b.10f  sf2-6m.4c  sf2-9m.3d     sf2e_35g.9f
+sf2-13m.4d  sf2-1m.3a    sf2-3m.5a    sf2-7m.6a  sf2e_28g.9e   sf2e_37g.11f
+sf2-15m.6d  sf2_29b.10e  sf2-4m.5c    sf2-8m.6c  sf2e_30g.11e  sf2e_38g.12f
+sf2_18.11c  sf2-2m.3c    sf2-5m.4a    sf2_9.12a  sf2e_31g.12e
+</pre>
+<p>
+  Testing the game is done the same as with the "post" example.
+<pre>
+$ ccps install -d ~/mame/roms/sf2
+$ cd ~/mame && ./mame sf2
+</pre>
+<p>
+  And hello world!
+</p>
+  <img loading="lazy" src="helloworld.png" class="pixel" width="1023" height="791" style="width: 80%; height: auto; border:none;margin-top:2ch;margin-bottom:2ch;margin-left: auto; margin-right: auto;display: block;"/>
+
+
+
+
+
+
+
+
+
+<div class='heading'>GFX Debugging</div><hr/><p> 
+  To help troubleshoot problems related to GFX, <code>ccps</code> is able to dump the GFXROM in human visible form. 
+</p>
+<pre>
+ccps dumpgfx -b sf2  
+</pre>
+<p>
+  As discussed in a previous article<a name="back_1" style="text-decoration: none;" href="index.html#footnote_1"><sup>[1]</sup></a>, the GFX ROM is organized in "sheets". This is the format used when dumping.
+ <img loading="lazy" src="sheet_hw.svg" class="pixel center" width="133.98253pt" height="136.40675pt" style="width: 50%; height: auto; margin-bottom:1ch;margin-top:2ch; padding: 0; border:0"/></p>
+<p>
+In the dump above, the image <code>helloworld.png</code> from <code>hw</code> project was processed as a shape. It has been split in 16x16 tiles and each one of them was allocated on the sheet via a first-come first-serve allocator. 
+</p>
+<p>To draw a shape, the 68000 program must issue one draw command per tile.
+</p>
+<pre>
+void draw() {
+  setPalette(0, 2, &phelloworld);
+  int i = 0;
+  for (; i < helloworld.numTiles; i++) {
+     Sprite* s = &sprites[i];
+     GFXShapeTile* t = &(helloworld.tiles[i]);
+     s->x = 196 + t->x * 16;
+     s->y = 100 + t->y * 16;
+     s->tile = t->id;
+     s->attributes = 2; // Palette 2
+  }
+  sprites[i].attributes = 0xFF00; // Last sprite marker
+}
+
+</pre>
+<p>Notice the name of the variables <code>helloworld</code> wich provide the tile coordinates and <code>phelloworld</code> which provides the palette colors. A header and a C file were generated automatically so a developer only has to write a simple loop.
+</p>
+
+
+<div class='heading'>Sprite support</div><hr/><p> 
+For shape that are rectangular, the CPS-1 support "sprite" draw commands where a single tile is provided but with specified dimensions (unfortunately reducing the number of draw calls does not allow to exceed the MAX 256 tiles limit of the machine). Check again the Ryu drawing call in project <code>post</code> where a single tile is specified (<code>0x04</code>) but twenty-four are drawn.
+</p>
+<p>
+To use sprites drawing call, the tiles must be located contiguous in sheep space.
+</p>
+<p>
+To visualize the difference, we can ask help from Honda and duplicate it. It is featured in the <code>gfx/obj</code> directory twice. Once with filename <code>honda.png</code> and then with filename <code>Honda.png</code> (notice the capital). 
+</p>
+<p>
+Capitalized images are treated as Sprite by <code>ccps</code> and allocated as such. Notice upon dumping the ROM how the sheet shows that <code>Honda.png</code> was allocated properly, using upper left tile coordinate <code>0x00</code> and spreading four tile wide and seven tile tall. 
+</p>
+<table style="width:80%;margin-left: auto;margin-right: auto;"><tr>
+  <td style="width: 37%;">
+<img loading="lazy" src="Honda.png" class="pixel center" width="64" height="104" style="width: 100%; height: auto; margin-bottom:1ch;margin-left:1ch; padding: 0; border:0; float:right;"/></td>
+  <td style="width:60%;">
+ <img loading="lazy" src="sheet_cont.svg" class="pixel center" width="133.98253pt" height="136.40675pt" style="width: 100%; height: auto; margin-bottom:1ch;margin-top:2ch; padding: 0; border:0"/></td>
+
+</tr>
+</table>
+<p>On the contrary, the shape <code>honda.png</code> was allocated "linearly". This illustrate the trade-off between Sprites and Shapes. A sprite is rectangular, is more demanding in terms of allocation, and waste tiles if they are fully transparent but it requires only one draw call.
+</p>
+<p>Shapes on the other side have no allocation constraints and allow to discard transparent tiles but the mechanics of rendering them is slightly more difficult.
+</p>
+<p>
+  In practice, Capcom games used Sprites only for splash images or truly rectangular images. 90% of draw calls in Final Fight and Street Fighter II are Shapes. 
+</p>
+
+ <div class='heading'>SFX Debugging</div><hr/><p> 
+  <code>ccps</code> supports ADPCM compression to feed the OKI MSM6295. All .wav files found in the <code>sfx</code> directory are processed and placed in the OKI ROM database.
+</p>
+<p>
+Like with the GFX ROM, <code>ccps</code> features a debugging tool which can be summoned via <code>dumpsfx</code> sub-command. Along with the ID of each samples, it allows to assess compression quality changes.
+</p>
+
+<p style="margin-top: 3ch;">
+Original sound: 16-bit, 48,000 Hz, 1,584,244 bytes:
+</p>
+  <audio controls style="width:100%; margin-bottom: 2ch;"> <source src="molvoda_full.mp3" type="audio/ogg"> </audio><br/>
+
+<p>
+Prepared for compression: 16-bit, 7,575Hz, 250,140 bytes:
+</p>
+  <audio controls style="width:100%; margin-bottom: 2ch;"> <source src="moldova_16-bit.mp3" type="audio/ogg"> </audio><br/>
+ 
+
+<p>
+ADPCM Compressed: 4-bit, 7575Hz, 62,535 bytes:
+</p>
+  <audio controls style="width:100%; margin-bottom: 2ch;"> <source src="moldova_dec_adpcm.mp3" type="audio/ogg"> </audio><br/>
+
+</p>
+
+<div class='heading'>Companion book</div><hr/><p> 
+To help understanding the machine and the SDK better, I am releasing along with it a book named "The Book of CP-System"<a name="back_2" style="text-decoration: none;" href="index.html#footnote_2"><sup>[2]</sup></a>. 
+</p>
+
+<div class='heading'>Contribute</div><hr/><p> 
+  <code>ccps</code> is far from being "done". It is an open source project with many "low-hanging fruits" ready to welcome contributors.
+  </p>
+  <p>The big omission is the lack of music support. It is not very hard to do since one only has to write a VGM parser (preferably authored with the awesome DefleMask Tracker) to extract YM2151 instructions and put then into a <code>.c</code> file. Another thing I haven't had the time to add is support for background layers.
+    </p>
+    <p>
+    Most missing features are not a lot of code to write but someone has to do it. Check out the Github project page<a name="back_3" style="text-decoration: none;" href="index.html#footnote_3"><sup>[3]</sup></a> to find a list of issues/bugs to work on if you are interested.
+</p>
+<style type='text/css'>td.ref {  padding-bottom: 0ch; width:0;}</style><div class='heading'>References</div><hr/><p id='paperbox' style='text-align:left;'><table><tbody style='vertical-align: top;'><tr><td class='ref' style='width:1ch;'><a name="footnote_1"></a><a href="index.html#back_1">^</a></td><td  class='ref' style='width:4ch;'> [1]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://fabiensanglard.net/sf2_sheets">Street Fighter II, paper trails</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_2"></a><a href="index.html#back_2">^</a></td><td  class='ref' style='width:4ch;'> [2]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://fabiensanglard.net/cpsb">The Book of CP-S</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_3"></a><a href="index.html#back_3">^</a></td><td  class='ref' style='width:4ch;'> [3]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://github.com/fabiensanglard/ccps">Github: CCPS, a CPS-1 SDK</a></td></tr></tbody></table></p> <hr>
+ <center>*
