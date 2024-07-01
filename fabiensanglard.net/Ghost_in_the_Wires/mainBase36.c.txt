@@ -1,0 +1,61 @@
+#include <stdio.h>
+#include <string.h>
+#include <math.h>
+
+char base36[256];
+
+char* text[] = 
+{"2B","2T", "W","2X","2Z","26","36","2P","36","2V","3C", "W",
+ "3A","32","39","38","2Z", "W","3D","33","31","38","2V","36",
+ "3D", "W","2R","2Z", "W","3E","3C","2V","2X","2Z","2Y", "W",
+ "3E","39", "W","2R","32","2V","2E", "W","2V","3A","2V","3C",
+ "3E","37","2X","38","3E", "W","2X","39","37","3A","36","2Z",
+ "2S","1R"
+};
+
+void initBase36(void)
+{
+	memset(base36,0,255);
+	base36['0'] =  0;base36['1'] =  1;base36['2'] =  2;base36['3'] =  3;base36['4'] =  4;
+	base36['5'] =  5;base36['6'] =  6;base36['7'] =  7;base36['8'] =  8;base36['9'] =  9;
+	base36['A'] = 10;base36['B'] = 11;base36['C'] = 12;base36['D'] = 13;base36['E'] = 14;
+	base36['F'] = 15;base36['G'] = 16;base36['H'] = 17;base36['I'] = 18;base36['J'] = 19;
+	base36['K'] = 20;base36['L'] = 21;base36['M'] = 22;base36['N'] = 23;base36['O'] = 24;
+	base36['P'] = 25;base36['Q'] = 26;base36['R'] = 27;base36['S'] = 28;base36['T'] = 29;
+	base36['U'] = 30;base36['V'] = 31;base36['W'] = 32;base36['X'] = 33;base36['Y'] = 34;
+	base36['Z'] = 35;
+}
+
+int main(int argc, char** argv)
+{
+	
+	int i,j;
+	char acc;
+	int power ;
+	char* currentChar;
+	int charCursor;
+	char output[1024];
+	int outputTop=0;
+	
+	
+	initBase36();
+
+	for(i=0 ; i < sizeof(text)/sizeof(char*) ; i++)
+	{
+		
+		currentChar = text[i];
+		power = strlen(currentChar) -1 ;
+		acc = 0;
+		for(charCursor=0 ; charCursor < strlen(text[i]) ; charCursor++)
+		{
+			acc += base36[currentChar[charCursor]] * pow(36,power) ;
+			power--;
+		}
+		output[outputTop] = acc;
+		outputTop++;
+	}
+
+	output[outputTop] = 0;
+
+	printf("%s\n",output);
+}

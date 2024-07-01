@@ -1,0 +1,359 @@
+<html>
+<head>
+  <link rel="alternate" type="application/rss+xml"  title="RSS Feed for fabiensanglard.net" href="../rss.xml" />
+  <style type="text/css">
+
+    @font-face {
+      font-family: 'fabfont';
+      src: url('../font/DejaVuSansMono.woff2');
+      font-display: block;
+    }
+
+    @font-face {
+      font-family: 'fabfont';
+      src: url('../font/DejaVuSansMono-Bold.woff2');
+      font-weight: bold;
+      font-display: block;
+    }
+
+    * {
+       font-size: 16px;
+    }
+
+    html {
+      font-family: fabfont,  monospace;
+      max-width: 900px;  /* For Desktop PC (see @media for Tablets/Phones) */
+      padding-left: 2%;
+      padding-right: 3%;
+      margin: 0 auto;
+      background: #F5F5F0;
+  	} 
+    
+
+
+  	a {
+      color: black;
+      font-weight: bold;
+    }
+
+    img {
+      border: none; 
+    }
+
+    p {
+      margin-top: 0px;
+      text-align: justify;
+    }
+    sup {
+      vertical-align: 0.3em;
+      font-size: 0.65em;
+    }   
+
+    pre {
+      font-family: fabfont, monospace;
+      background-color: white; 
+      border: 1px solid Black; 
+      padding-left: 2%;
+      padding-top: 1ch;
+      padding-bottom: 1ch;
+      /* Only take care of X overflow since this is the only part that can be too wide.
+         The Y axis will never overflow.
+      */
+      overflow: hidden;
+    }
+
+    div.heading {
+      font-weight: bold;      
+      text-transform: uppercase;
+      margin-top: 4ch;
+    }
+
+    /** {
+      font-size: 16px;
+    }*/
+    @media (max-width: 500px) { /* For small screen decices */
+      * {
+        font-size: 12px; 
+      }
+    }   
+    .title {
+      text-decoration: none;
+    }
+
+    img.pixel, canvas.pixel {
+      image-rendering: pixelated;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: crisp-edges;
+    }
+
+    blockquote { 
+    background-color: #f3f3f3;
+    border: dashed 1px grey; 
+    width: 97.5%; 
+    font-style: italic; 
+    text-align: justify;
+
+    padding: 1ch; 
+    padding-top: 2ch; 
+    padding-bottom: 2ch;     
+    
+    margin : 0ch; 
+    margin-bottom: 2ch; 
+    margin-top: 0ch;
+  }
+
+  blockquote div {
+    text-transform: none;
+    text-align: right;
+    width: 100%;
+  }
+
+  code {
+    /*font-size: 110%;*/
+    font-weight: bold;
+    background-color: #e1e1e1;
+    border-radius: 0.5ch;
+    padding-left: 0.3ch;
+    padding-right: 0.3ch;
+  }
+
+  .trivia {
+    border-left: 1px black solid;
+    padding-left: 1ch;
+  }
+
+  .trivia::before {
+  font-weight: bold;
+  text-decoration: underline;
+  padding-right: 1ch;
+  content: "Trivia:";
+
+  </style>
+  <title>A history of NVidia Stream Multiprocessor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=12.0, minimum-scale=1.0, user-scalable=yes">
+</head>  
+  <body><br><center>
+    <div style="display: inline-block; vertical-align:middle;">
+<a href="../index.html" class="title"><b>FABIEN SANGLARD'S WEBSITE</b><br>
+</a><hr/><div style="text-align: justify;display: inline-block; width: 100%;">
+<!-- <a class="title" href="/about/index.html">ABOUT</a> &nbsp;<a class="title" href="/contact/index.html">EMAIL</a> &nbsp;<a class="title" href="../rss.xml">RSS</a> &nbsp;<a class="title" href="https://paypal.me/fabiensanglard">DONATE</a></div></div> -->
+<a class="title" href="../about/index.html">ABOUT</a> &nbsp;<a class="title" href="../contact/index.html">CONTACT</a> &nbsp;<a class="title" href="../rss.xml">RSS</a> &nbsp;<a class="title" href="https://paypal.me/fabiensanglard">GIVE</a></div></div>
+
+</center><br><br>
+<div style="margin-bottom: 2ch;text-transform: none;">
+May 2, 2020</div>
+<div class='heading'>A history of NVidia Stream Multiprocessor</div><hr/>
+<p style="margin-bottom: 2ch;">
+<img loading="lazy" src="nvidia.svg" width="1770.4646" height="1171.5273" style="width: 28%; height: auto; float:right;margin-left: 2ch; margin-bottom: 1ch;"/>I spent last week-end getting accustomed to CUDA and SIMT programming. It was a prolific time ending up with a Business Card Raytracer running close to 700x faster<a name="back_1" style="text-decoration: none;" href="index.html#footnote_1"><sup>[1]</sup></a>, from 101s to 150ms.
+<br/><br/>
+ This pleasant experience was a good pretext to spend more time on the topic and learn about the evolution of Nvidia architecture. Thanks to the abundant documentation published over the years by the green team, I was able to go back in time and fast forward though the fascinating evolution of their stream multiprocessors.<br/>
+ <br/>
+Visited in this article:<br/>
+ <pre>
+Year    Arch       Series             Die      Process      Enthusiast Card
+===========================================================================
+2006    Tesla      GeForce 8          G80        90 nm             8800 GTX 
+2010    Fermi      GeForce 400      GF100        40 nm              GTX 480
+2012    Kepler     GeForce 600      GK104        28 nm              GTX 680
+2014    Maxwell    GeForce 900      GM204        28 nm          GTX  980 Ti
+2016    Pascal     GeForce 10       GP102        16 nm          GTX 1080 Ti
+2018    Turing     GeForce 20       TU102        12 nm          RTX 2080 Ti
+</pre>
+</p>
+
+<div class='heading'>The dead end</div><hr/><p>
+  Up to 2006, NVidia's GPU design was correlated to the logical stages in the rendering API<a name="back_2" style="text-decoration: none;" href="index.html#footnote_2"><sup>[2]</sup></a>. The GeForce 7900 GTX, powered by a G71 die is made of three sections dedicated to vertex processing (8 units), fragment generation (24 units), and fragment merging (16 units).
+  <br/><br/>
+  <img loading="lazy" src="g71.svg" width="1934.6899" height="894.28748" style="width: 100%; height: auto; margin-top: 1ch; margin-bottom: 1ch;"/> <span style="text-align: center; display: block; margin-bottom: 2ch;margin-top: 1ch;"><i><small>The G71. Notice the Z-Cull optimization discarding fragment that would fail the Z test. </small></i></span>
+ This correlation forced designers to guess the location of bottlenecks in order to properly balance each layers. With the emergence of yet another stage in DirectX 10, the geometry shader, Nvidia engineers found themselves faced with the difficult task of balancing a die without knowing how much a stage was going to be adopted. It was time for a change.<br/>
+</p>
+
+<div class='heading'>Tesla</div><hr/><p style="margin-bottom: 1ch;">
+  <img loading="lazy" src="tesla_sm.svg" width="690.73828" height="1405.7026" style="width: 22%; height: auto; float:right;margin-left: 2ch; margin-bottom: 2ch;"/>  Nvidia solved the problem of escalating complexity with its "unified" Tesla architecture, released in 2006. 
+  <br/><br/>
+ In the G80 die, there is no more distinction between layers. The Stream Multiprocessor (SM) replaces all previous units thanks to its ability to run vertex, fragment and geometry "kernel" without distinction. The load balancing happens automatically by swapping the "kernel" run by each SM depending on the need of the pipeline.<br/>
+<blockquote style="width:auto; box-sizing: border-box; overflow: hidden; margin-bottom: 2ch; margin-top: 1ch;">We pretty much threw out the entire shader architecture from NV30/NV40 and made a new one from scratch with a new general processor architecture (SIMT), that also introduced new processor design methodologies.
+  <br/>
+  <br/>
+  <div>- Jonah Alben (Interview with extremetech.com)</div>
+</blockquote>
+<p> 
+  No longer SIMD capable, "shaders units" are now "core" capable of one integer or one float32 instruction per clock. SM receive threads in groups of 32 called warps. Ideally all threads in a warp will execute the same instruction at the same time, only on different data (hence the name SIMT). The Multi-threaded Instruction Unit (MT) takes care of enabling/disabling threads in a warp in case their Instruction Pointer (IP) converge/diverge.
+<br/>
+  <br/>
+   Two SFU units are here to help with complex mathematic calculation such as inverse square root, sin, cos, exp, and rcp. These units are also able to execute one instruction per clock but since there are only two of them, warp execution speed is divided by four. There is no hardware support for float64, it is done in software and greatly affects the execution speed.
+  <br/>
+  <br/>
+  A SM will perform at its maximum potential when it can hide memory latency by always having schedulable warps but also when the thread in a warp don't diverge (control-flow keeps them on the same instruction path). The 4KiB Register File (RF) is where thread states are stored. Threads consuming too much stack reduce how many of them can be kept in-flight and will degrade performance.
+  <br/>
+  <br/>
+The Tesla flagship die was the 90nm based G80, featured in the GeForce 8800 GTX. Two SMs are bundled into a Texture Processor Cluster (TPC) along with a Texture Unit and Tex L1 cache. With 8 TPC, the G80 advertised 128 cores generating 345.6 Gflops<a name="back_3" style="text-decoration: none;" href="index.html#footnote_3"><sup>[3]</sup></a>. The 8800 GTX card was immensely popular in its time, receiving stellar reviews and beloved by customers who could afford it. It was such a tour-de-force that thirteen months after its release, it remained one of the fastest GPU on the market.<br/>
+  <img loading="lazy" src="tesla2.svg" width="318.87143mm" height="156.65746mm" style="width: 100%; height: auto; margin-top: 2ch; margin-bottom: 1ch;"/>  <span style="text-align: center; display: block; margin-bottom: 2ch;margin-top: 1ch;"><i><small>The G80 powering the 8800 GTX. The Render Output Units (ROP) takes care of Anti-Aliasing.</small></i></span>
+  
+Along with Tesla, Nvidia introduced the Compute Unified Device Architecture (CUDA) C programming language, a super-set of C99. It was a relief for GPGPU enthusiasts who welcomed an alternative to cheating the GPU with GLSL shaders and textures.
+     <br/><br/>
+   Even though this section focuses extensively on the SM, it is only one half of the system. The SM needs to be fed instructions and data which resides in the GPU memory. To avoid stalling, GPUs don't try to avoid memory trips with a lot of cache and speculation like CPUs do. GPUs embrace latency by saturating the memory bus to satisfy thousands of threads I/O. To this effect a die like the G80 implements a high memory throughput via six bi-directional DRAM memory lines.<br/>
+    <img src="cpu_vs_gpu.svg" style="margin-top: 2ch; margin-bottom:1ch; width:100%;"/>
+      <span style="text-align: center; display: block; margin-bottom: 2ch;margin-top: 1ch;"><i><small>GPUs embrace memory latency while CPUs hide it with immense cache and prediction logic.</small></i></span>
+</p>
+
+
+
+
+
+
+<div class='heading'>Fermi</div><hr/><p style="margin-bottom: 1ch;">
+  <img src="fermi.svg" style="float:right; margin-left: 2ch;width:37%; margin-bottom: 1ch;"/>
+Tesla was a risky move which turned out to be a very Good Thing. It was so successful that it became the foundation of NVidia GPUs for the next two decades.
+
+<blockquote style="width:auto; box-sizing: border-box; overflow: hidden; margin-bottom: 2ch; margin-top: 2ch;">While we’ve definitely made major architectural changes since then (Fermi was a major system architecture change and Maxwell was another large change to the processor design), the basic structure that we introduced in G80 is still very much there today [Pascal].
+  <br/>
+  <br/>
+  <div>- Jonah Alben (Interview with extremetech.com)</div>
+</blockquote>
+
+
+<p>
+ In 2010, Nvidia released the GF100 based on its brand new Fermi architecture. The internals of their latest chip were abundantly described in the Fermi white-paper<a name="back_4" style="text-decoration: none;" href="index.html#footnote_4"><sup>[4]</sup></a>.
+<br/>
+<br/>
+The execution model still revolves around warps of 32 threads scheduled on a SM. Only thanks to a process of 40nm, NVidia doubled/quadrupled everything. A SM can now schedule two half-warp (16 threads) simultaneously thanks to two arrays of 16 CUDA cores. With each core executing one instruction per clock, a SM can retire one warp instruction per clock (4x the capacity of Tesla SM).
+<br/>
+<br/>
+The SFU count was also beefed up although not as much since capacity only doubled. It can be inferred these types of instructions were not widely used.
+<br/>
+<br/>
+There is a semi-hardware support for float64 where operations are carried by two CUDA core combined. The GF100 can do an integer multiplication in a single clock thanks to a 32-bit ALU (vs 24-bit in Tesla) and has better accuracy with a float32 pipeline moving from IEEE 754-1985 to IEEE 754-2008 with Fused Multiply-Add (FMA) (more accurate than MAD used in Tesla).
+<br/>
+<br/>
+From a programming perspective, the unified memory system of Fermi allowed CUDA C to be augmented with C++ features such as object, and virtual methods (but no exceptions).
+<br/>
+<br/>
+  
+ With the Texture Units now part of the SM, the concept of TPC disappeared. It is replaced with the Graphics Processor Clusters (GPC) which features four SMs.
+Last but not least, the SM is gifted with a Polymorph Engine which takes care of vertex fetching, viewport transform, and tessellation. 
+ The flagship card, the GeForce GTX 480 featured a GF100 advertising 512 cores and 1,345 Gflops<a name="back_5" style="text-decoration: none;" href="index.html#footnote_5"><sup>[5]</sup></a>.<br/>
+
+   <img src="gf100.svg" style="margin-top: 2ch; margin-bottom:1ch; width:100%;"/>
+  <span style="text-align: center; display: block; margin-bottom: 2ch;margin-top: 1ch;"><i><small>The GF100 powering the GeForce GTX 480. Notice the six memory controller backing the GPCs.</small></i></span>
+</p>
+
+
+
+
+
+<div class='heading'>Kepler</div><hr/><p>
+<img src="smx.svg" style="float:right; margin-left:2ch; width:50%;"/>
+In 2012 Nvidia released the Kepler architecture named after the astronomer best known for his laws of planetary motion. As usual an inside peek was allowed by the GK104 whitepaper<a name="back_6" style="text-decoration: none;" href="index.html#footnote_6"><sup>[6]</sup></a>. 
+<br/>
+<br/>
+With Kepler, Nvidia drastically improved the energy efficiency of their die by lowering the clock and unifying the core clock with the card clock (they used to be clocked at 2x).
+<br/>
+<br/>
+These changes should have resulted in lower performance. However, thanks to a process halved down to 28nm and the removal of the hardware scheduler in favor of software, Nvidia was able to not only pack more SMs but also improve their design.<br/>
+<br/>
+The Next Generation Streaming Multiprocessor (SMX) is a monster where pretty much everything has been doubled or tripled.
+
+<br/>
+<br/>
+With four warp scheduler able to process a whole warp in one clock (compared to Fermi's half-warp design) the SMX now contains 196 cores. Each scheduler has a double dispatch to execute a second instruction in a warp if it is independent from the instruction currently executed. This double scheduling may not always be doable since one column of 32 cores is shared by two dispatchs.
+
+<br/>
+<br/>
+ This approach made the scheduling logic more complicated (we will revisit this) but with up to six warp instruction per clock a SMX provided 2x the performance of a Fermi SM.
+<br/>
+<br/>
+
+The flagship NVIDIA GeForce GTX 680 card with a GK104 die and 8 SMX advertised 1536 cores to reach 3,250 Gflops<a name="back_7" style="text-decoration: none;" href="index.html#footnote_7"><sup>[7]</sup></a>. The details of the die become so intricate that the labels in the drawing must be removed.<br/>
+
+
+ <img src="gk104.svg" style="margin-top: 2ch; margin-bottom:1ch; width:100%;"/>
+  <span style="text-align: center; display: block; margin-bottom: 2ch;margin-top: 1ch;"><i><small>The GK104 powering the GeForce GTX 680.</small></i></span>
+  Notice how a completely revamped memory sub-systems running at a whooping 6Ghz allowed to reduce the number of memory controllers from six to four.<br/> 
+</p>
+
+
+
+<div class='heading'>Maxwell</div><hr/><p>
+In 2014 Nvidia released Maxwell, its 10th generation GPU. As the GM107 whitepaper<a name="back_8" style="text-decoration: none;" href="index.html#footnote_8"><sup>[8]</sup></a> explains, the soul of the first generation was "Extreme power efficiency and Exceptional
+performance per watt consumed". The consumer target was "power-limited environments like notebooks and small form factor (SFF) PC".
+<br/>
+<br/>
+The major decision was to drop the Kepler approach of having a non-power-of-two CUDA cores per SM where some cores are shared and go back to running half-warp. For the first time in the series, the SMM features less cores than its predecessor with "only" 128 cores. 
+<br/>
+<br/>
+Having the core count "aligned with warp size" improved die partitioning which resulted in saved area and power.<br/>
+<img src="maxwell.svg" style="margin-top: 2ch; margin-bottom:1ch; width:100%;"/>
+<span style="text-align: center; display: block; margin-bottom: 2ch;margin-top: 1ch;"><i><small>A single 2014 SMM has as many cores (128) as a whole 2006 GTX 8800 card.</small></i></span>
+
+The second generation of Maxwell (described in the GM200 whitepaper<a name="back_9" style="text-decoration: none;" href="index.html#footnote_9"><sup>[9]</sup></a>) improved performance significantly while preserving the energy efficiency of the first generation.
+
+<br/>
+<br/>
+ With a process stagnating at 28nm, Nvidia engineers could not bank on raw miniaturization to improve performance.
+ However, fewer cores per SMM reduced their size which meant many more SMM could be packed on a die. Maxwell Gen2 packs 2x the number of SMM as Kepler with only a 25% increase in die area.
+ <br/> 
+ <br/> 
+ On the list of improvements can also be found a simplified scheduling logic which reduced redundant recomputation of scheduling decisions reduced computation latency to provide a better warp occupancy. Memory clock was also cranked up 15%.
+<br/>
+<br/>
+Looking at the Maxwell GM200 block diagram starts to hurt the eyes. But we still do it like the GPU heroes we are. The flagship NVIDIA GeForce GTX 980 Ti card with a GM200 die and 24 SMM advertised 3072 cores to reach 6,060 Gflops<a name="back_10" style="text-decoration: none;" href="index.html#footnote_10"><sup>[10]</sup></a>.<br/>
+
+<img src="gm200.svg" style="margin-top: 2ch; margin-bottom:1ch; width:100%;"/>
+  <span style="text-align: center; display: block; margin-bottom: 0ch;margin-top: 1ch;"><i><small>The GM200 powering the GeForce GTX  980 Ti.</small></i></span>
+</p>
+ 
+
+
+
+
+
+
+<div class='heading'>Pascal</div><hr/><p>
+  In 2016, Nvidia introduced Pascal. The GP104 whitepaper<a name="back_11" style="text-decoration: none;" href="index.html#footnote_11"><sup>[11]</sup></a> gives a impression of "deja-vu" since the Pascal SM looks exactly like the Maxwell SMM. No change in the SM did not mean stagnating performance since the 16nm process allowed to pack more SMs and once again double the Gflops. <br/>
+<br/>
+The other major improvements was the memory system built around the brand new GDDR5X. Providing 10 Gflops transfer rates thanks to eight memory controllers, the 256-bit memory interface provides 43% more memory bandwidth to reduce warp starvation.<br/>
+<br>
+
+The flagship NVIDIA GeForce GTX 1080 Ti card with a GP102 die and 28 TSM advertised 3584 cores to reach 11,340 Gflops
+<a name="back_12" style="text-decoration: none;" href="index.html#footnote_12"><sup>[12]</sup></a>.<br>
+<img src="gp104.svg" style="margin-top: 2ch; margin-bottom:1ch; width:100%;"/>
+  <span style="text-align: center; display: block; margin-bottom: 2ch;margin-top: 1ch;"><i><small>The GP104 powering the GeForce GTX  1080.</small></i></span>
+
+</p>
+
+
+
+
+
+
+<div class='heading'>Turing</div><hr/><p>
+  With the release of Turing in 2018, Nvidia operated its "biggest architectural leap forward in over a decade"<a name="back_13" style="text-decoration: none;" href="index.html#footnote_13"><sup>[13]</sup></a>. Not only the "Turing SM" added A.I dedicated Tensor cores, they also gained Raytracing cores. This fragmented design reminds of the Pre-Tesla layered architecture, proving once again that history likes to repeat itself.<br/>
+ 
+
+
+<img src="turing.svg" style="margin-top: 2ch; margin-bottom:2ch; width:100%;"/>
+  Besides the new cores, Turing added three major features. First, the CUDA core is now a super-scalar able to execute both integer instruction and float instruction in parallel. If you were around in 1996 this may remind you of the Intel "breakthrough" Pentium architecture. 
+<br/><br/>
+Second, the new GDDR6X memory sub-system, backed by 16 controllers, can now achieve 14 Gbps. 
+<br/><br/>
+Last, threads are no longer sharing their Instruction Pointer in a warp. Thanks to Independent Thread Scheduling introduced in Volta each thread has its own IP. As a result, SMs are free to fine schedule threads in a warp without the need to make them converge as soon as possible. 
+<br/><br/>
+The flagship NVIDIA GeForce GTX 2080 Ti card with a TU102 die and 68 TSM advertised 4352 cores to reach 13.45 Tflops<a name="back_14" style="text-decoration: none;" href="index.html#footnote_14"><sup>[14]</sup></a>. No block diagram is provided since it would have looked like a blurry green blob.<br/>
+</p>
+
+
+
+
+
+<div class='heading'>Next</div><hr/><p>
+The next architecture, codenamed Ampere, is rumored to be announced later in 2020. Since Intel proved that there is still room for miniaturization with the 7nm of Ice Lake, there is little doubt Nvidia will leverage it to shrink its SM even more and double performance again. 
+<br/>
+<img src="chart.svg" style="margin-top: 2ch; margin-bottom:1ch; width:100%;"/>
+  <span style="text-align: center; display: block; margin-bottom: 2ch;margin-top: 1ch;"><i><small>Tflops/s per Nvidia die/card (datasource: techpowerup.com).</small></i></span>
+<br/>
+What will be interesting is to see is how Nvidia keeps on evolving now that there dies have three types of cores serving different purpose. Will we see dies entirely made of Tensors cores or RT cores? I am curious to find out.
+<br/>
+</p>
+<style type='text/css'>td.ref {  padding-bottom: 0ch; width:0;}</style><div class='heading'>References</div><hr/><p id='paperbox' style='text-align:left;'><table><tbody style='vertical-align: top;'><tr><td class='ref' style='width:1ch;'><a name="footnote_1"></a><a href="index.html#back_1">^</a></td><td  class='ref' style='width:4ch;'> [ 1]</td><td style='width:100%;text-align:left;' class='ref'><a href="../revisiting_the_businesscard_raytracer/index.html">Revisiting the Business Card Raytracer</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_2"></a><a href="index.html#back_2">^</a></td><td  class='ref' style='width:4ch;'> [ 2]</td><td style='width:100%;text-align:left;' class='ref'><a href="fermi-the_first_complete_gpu_architecture.pdf">Fermi: The First Complete GPU Computing Architecture</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_3"></a><a href="index.html#back_3">^</a></td><td  class='ref' style='width:4ch;'> [ 3]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://www.techpowerup.com/gpu-specs/geforce-8800-gtx.c187">NVIDIA GeForce 8800 GTX (techpowerup.com)</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_4"></a><a href="index.html#back_4">^</a></td><td  class='ref' style='width:4ch;'> [ 4]</td><td style='width:100%;text-align:left;' class='ref'><a href="Fermi_Compute_Architecture_Whitepaper.pdf">Fermi (GF100) whitepaper</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_5"></a><a href="index.html#back_5">^</a></td><td  class='ref' style='width:4ch;'> [ 5]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://www.techpowerup.com/gpu-specs/geforce-gtx-480.c268">NVIDIA GeForce GTX 480</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_6"></a><a href="index.html#back_6">^</a></td><td  class='ref' style='width:4ch;'> [ 6]</td><td style='width:100%;text-align:left;' class='ref'><a href="nvidia-gtx-680.pdf">Kepler (GK104) whitepaper</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_7"></a><a href="index.html#back_7">^</a></td><td  class='ref' style='width:4ch;'> [ 7]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://www.techpowerup.com/gpu-specs/geforce-gtx-680.c342">NVIDIA GeForce GTX 680</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_8"></a><a href="index.html#back_8">^</a></td><td  class='ref' style='width:4ch;'> [ 8]</td><td style='width:100%;text-align:left;' class='ref'><a href="GeForce-GTX-750-Ti-Whitepaper.pdf">Maxwell Gen1 (GM107) whitepaper</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_9"></a><a href="index.html#back_9">^</a></td><td  class='ref' style='width:4ch;'> [ 9]</td><td style='width:100%;text-align:left;' class='ref'><a href="GeForce_GTX_980_Whitepaper.pdf">Maxwell Gen2 (GM200) whitepaper</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_10"></a><a href="index.html#back_10">^</a></td><td  class='ref' style='width:4ch;'> [10]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://www.techpowerup.com/gpu-specs/geforce-gtx-980-ti.c2724">NVIDIA GeForce GTX 980 Ti</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_11"></a><a href="index.html#back_11">^</a></td><td  class='ref' style='width:4ch;'> [11]</td><td style='width:100%;text-align:left;' class='ref'><a href="GeForce_GTX_1080_Whitepaper.pdf">Pascal (GP102) whitepaper</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_12"></a><a href="index.html#back_12">^</a></td><td  class='ref' style='width:4ch;'> [12]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://www.techpowerup.com/gpu-specs/geforce-gtx-1080-ti.c2877">NVIDIA GeForce GTX 1080 Ti</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_13"></a><a href="index.html#back_13">^</a></td><td  class='ref' style='width:4ch;'> [13]</td><td style='width:100%;text-align:left;' class='ref'><a href="Turing-Architecture-Whitepaper.pdf">Turing (TU102) whitepaper</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_14"></a><a href="index.html#back_14">^</a></td><td  class='ref' style='width:4ch;'> [14]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://www.techpowerup.com/gpu-specs/geforce-rtx-2080-ti.c3305">NVIDIA GeForce GTX 2080 Ti</a></td></tr></tbody></table></p> <hr>
+ <center>*

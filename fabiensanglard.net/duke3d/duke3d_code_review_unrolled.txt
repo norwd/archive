@@ -1,0 +1,130 @@
+Duken Nukem Code Review: Fully unrolled loop by Fabien Sanglard
+
+Note: Because the code base is not using method/function is it not easy to
+"unroll" the game loop the way I did it in idSoftware engines.
+
+int main(int argc,char **argv)
+{
+
+  //Detect GRP files. check the magic number.
+  load_duke3d_groupfile 
+
+  //Detect GRP version. cache1d.c
+  grpVersion = DUKEITOUTINDC_GRP
+ 
+  //Check GRP is not corrupted.
+
+  //CRC engine CRC, check that it has not been altered (copy protection ?).
+
+  checkcommandline();
+
+  copyprotect();    //Detect if CD is in CD-ROM drive (DOS only).
+ 
+  setvmode(0x03);   //SDL call
+
+  setmmxoverlay();
+
+  RegisterShutdownFunction( ShutDown );
+
+  Startup()
+  {
+      CONSOLE_Init
+      KB_Startup
+      CONFIG_GetSetupFilename
+      CONFIG_ReadSetup
+      compilecons
+      CONTROL_Startup
+      
+      initengine()
+      {
+         loadtables
+         clearbuf
+         loadpalette   //Open palette.dat in the GRP file.
+         {
+             setpalookupaddress
+             fixtransluscence
+             initfastcolorlookup
+         }
+      }
+      
+      inittimer
+      readsavenames
+      initmultiplayers
+      SetupGameButtons
+      SoundStartup
+      MusicStartup
+      
+      loadtmb
+  }
+
+
+  getnames
+
+  RTS_Init(ud.rtsname);
+
+  genspriteremaps();
+
+  setbrightness(...);
+
+  FX_StopAllSounds
+
+  clearsoundlocks
+
+  MAIN_LOOP_RESTART:
+
+  if()
+  else if(ud.warp_on == 1)
+  {
+     newgame()   
+     enterlevel(MODE_GAME);
+  }
+  else 
+    vscrn();
+
+
+  //Finally we reach the main loop....
+  while ( !(ps[myconnectindex].gm&MODE_END) ) //The whole loop!!!!!!!!!!!!!!!!!!
+  {
+     sampletimer();
+     ...
+     ...
+     ...
+     cheats();
+     displayrooms(screenpeek,i)
+     {
+          dointerpolations();
+          animatecamsprite();
+          se40code();
+          drawrooms();          //JUMP TO KEN's BUILD ENGINE
+          animatesprites();     //JUMP BACK TO GAME MODULE
+          drawmasks();          //JUMP TO KEN's BUILD ENGINE
+     }
+     displayrest(i);
+     checksync();
+     nextpage();                      // JUMP TO KEN's BUILD ENGINE
+     {                                // It seems that "nextpage was the way to blit the new frame and pump the events from 
+        _nextpage                     // the operating system.
+        {
+           _handle_events
+        }
+     }
+  }
+}
+
+
+It seems the engine starts by drawing in the sector the player is. (pp->cursectnum).
+Now the questions are:
+
+Q: How is cursectnum set ?
+
+Q: How does the engine finds out where the player sector is in ?
+
+Q: How does the engine knows when to stop ?
+
+Q: How does the engine knows how to sort walls ?
+
+
+
+
+
+

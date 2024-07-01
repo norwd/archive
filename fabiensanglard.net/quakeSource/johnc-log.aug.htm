@@ -1,0 +1,420 @@
+<head>
+<title>QuakeWorld by John Carmack</title>
+<meta http-equiv="Content-Type" content="text/html; utf-8">
+<style type="text/css">
+body {font-family: courier new;
+font-size: 10pt;
+color: 00000;
+}
+</style>
+
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write("\<script src='&quot;&#32;+&#32;gaJsHost&#32;+&#32;&quot;google-analytics.com/ga.js' type='text/javascript'>\<\/script>" );
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-3217394-1");
+pageTracker._initData();
+pageTracker._trackPageview();
+</script>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-3217394-2");
+pageTracker._trackPageview();
+</script>
+
+</head>
+<body>
+<pre>
+
+[idsoftware.com] 
+Login name: johnc     			In real life: John Carmack
+Directory: /raid/nardo/johnc        	Shell: /bin/bash
+Last login Fri Aug 16 12:36 on ttyp2 from idnewt
+Plan:
+
+Here is The New Plan:
+
+I copied off the quake codebase and set about doing some major improvements.  
+The old v1.01 codebase will still be updated to fix bugs with the current 
+version, but I didn't want to hold back from fixing things properly even if 
+it involves some major changes.
+
+I am focusing on the internet play aspect of the game.  While I can lay out 
+a grand clean-sheet-of-paper design, I have chosen to pursue something of a
+limited enough scope that I can expect to start testing it around the end 
+of the month (august).  I still have my grand plans for the future, but I 
+want to get some stuff going NOW.
+
+QuakeWorld.
+
+The code I am developing right now is EXCLUSIVELY for internet play.  It 
+will be rolled back into the single player game sometime along the road 
+to Quake 2 (or whatever it turns out to be called), but the experimental 
+QuakeWorld release will consist of seperate programs for the client and 
+the server.  They will use the same data as the current registered quake, 
+so the only thing that will be distributed is new executables (they will 
+peacefully coexist with current quake).
+
+There will be a single master server running here at id.  Whenever anyone 
+starts up a server, it will register itself with the master server, and 
+whenever a client wants to start a game, it will inquire with the master 
+to find out which servers are available.
+
+Users will have a persistant account, and all frags on the entire internet 
+will be logged.  I want us to be able to give a global ranking order of 
+everyone playing the game.  You should be able to say, "I am one of the 
+ten best QuakeWorld players in existance", and have the record to back it 
+up.  There are all sorts of other cool stats that we could mine out of 
+the data: greatest frags/minute, longest uninterrupted quake game, 
+cruelest to newbies, etc, etc.
+
+For the time being, this is just my pet research project.  The new exes 
+will only work with registered Quake, so I can justify it as a registration 
+incentive (don't pirate!).
+
+If it looks feasable, I would like to see internet focused gaming become 
+a justifiable biz direction for us.  Its definately cool, but it is 
+uncertain if people can actually make money at it.  My halfway thought 
+out proposal for a biz plan is that we let anyone play the game as an 
+anonymous newbie to see if they like it, but to get their name registered 
+and get on the ranking list, they need to pay $10 or so.  Newbies would 
+be automatically kicked from servers if a paying customer wants to get on.  
+Sound reasonable?
+
+
+Technical improvements.
+
+The game physics is being reworked to make it faster and more uniform.  
+Currently, a p90 dedicated server is about 50% loaded with eight players.  
+The new network code causes a higher cpu load, so I am trying to at least
+overbalance that, and maybe make a little headway.  A single p6-200 system 
+should be able to run around ten simultanious eight player servers.  
+Multiple servers running on a single machine will work a lot better with 
+the master server automatically dealing with different port adresses 
+behind the client's back.
+
+A couple subtle features are actually going away.  The automatic view 
+tilting on slopes and stairs is buggy in v1.01, and over a couple hundred 
+millisecond latancy connection, it doesn't usually start tilting until you
+are allready on a different surface, so I just ripped it out entirely.  
+A few other non-crucial game behaviors are also being cut in the interest 
+of making the physics easier to match on the client side.
+
+I'm going to do a good chat mode.
+
+Servers will have good access control lists.  If somebody manages to piss 
+off the entire community, we could even ban them at the master server.
+
+The big difference is in the net code.  While I can remember and justify 
+all of my decisions about networking from DOOM through Quake, the bottom 
+line is that I was working with the wrong basic assumptions for doing a 
+good internet game.  My original design was targeted at <200ms connection 
+latencies.  People that have a digital connection to the internet through 
+a good provider get a pretty good game experience.  Unfortunately, 99% of 
+the world gets on with a slip or ppp connection over a modem, often through 
+a crappy overcrowded ISP.  This gives 300+ ms latencies, minimum.  Client. 
+User's modem. ISP's modem. Server. ISP's modem. User's modem.  Client. 
+God, that sucks.
+
+Ok, I made a bad call.  I have a T1 to my house, so I just wasn't familliar 
+with PPP life.  I'm adressing it now.
+
+The first move was to scrap the current net code.  It was based on a 
+reliable stream as its original primitive (way back in qtest), then was 
+retrofited to have an unreliable sideband to make internet play feasable.  
+It was a big mess, so I took it out and shot it.  The new code has the 
+unreliable packet as its basic primitive, and all the complexities that 
+entails is now visible to the main code instead of hidden under the net api.  
+This is A Good Thing.  Goodbye phantom unconnected players, messages not
+ getting through, etc.
+
+The next move was a straightforward attack on latency.  The communications 
+channel is not the only thing that contributes to a latent response, and 
+there was some good ground to improve on.
+
+In a perfect environment, the instant you provided any input (pressed a 
+key, moved a mouse, etc) you would have feedback on the screen (or speaker) 
+from the action.
+
+In the real world, even single player games have latency.
+
+A typical game loop goes something like:  Read user input.  Simulate the 
+world.  Render a new graphics scene.  Repeat.
+
+If the game is running 15 frames a second, that is 66 ms each frame.  The 
+user input will arive at a random point in the frame, so it will be an 
+average of 33 ms before the input is even looked at.  The input is then 
+read, and 66 more ms pass before the result is actually displayed to the 
+user, for a total of nearly 100 ms of latency, right on your desktop. 
+(you can even count another 8 ms or so for raster refresh if you want to 
+get picky).
+
+The best way to adress that latency is to just make the game run faster if 
+possible.  If the screen was sized down so that the game ran 25 fps, the 
+latency would be down to 60ms.  There are a few other things that can be 
+done to shave a bit more off, like short circuiting some late braeking 
+information (like view angles) directly into the refresh stage, bypassing 
+the simulation stage. 
+
+The bearing that this all has on net play, aside from setting an upper 
+limit on performance, is that the current Quake servers have a similar 
+frame cycle.  They had to, to provide -listen server support.  Even when 
+you run a dedicated server, the model is still: fetch all input, process 
+the world, send updates out to all clients.  The default server framerate 
+is 20 fps (50 ms).  You can change this by adjusting the sys_ticrate cvar, 
+but there are problems either way.  If you ask for more fps from the server, 
+you may get less latency, but you would almost certainly overcommit the 
+bandwidth of a dialup link, resulting in all sorts of unwanted buffering 
+in the routers and huge multi thousand ms latency times as things unclog 
+(if they ever do).
+
+The proper way to address this is by changing the server model from a 
+game style loop to a fileserver/database style loop.
+
+Instead of expecting everyone's messages to be dealt with at once, I now 
+deal with each packet as it comes in.  That player alone is moved forward 
+in time, and a custom response is sent out in very short order.  The rest 
+of the objects in the world are spread out between the incoming packets.  
+There are a lot of issues that that brings up.  Time is no longer advancing 
+uniformly for all objects in the world, which can cause a lot of problems.
+
+It works, though!  The average time from a packet ariving at the system to 
+the time a response is sent back is down to under 4ms, as opposed to over 
+50 with the old dedicated servers. 
+
+Another side benefit is that the server never blindly sends packets out 
+into the void, they must be specifically asked for (note that this is 
+NOT a strict request/reply, because the client is streaming request 
+without waiting for the replies).
+
+I am going to be adding bandwidth estimation to help out modem links.  
+If quake knows that a link is clogged up, it can choose not to send 
+anything else, which is far, far better than letting the network buffer 
+everything up or randomly drop packets.  A dialup line can just say 
+"never send more than 2000 bytes a second in datagrams", and while the 
+update rate may drop in an overcommited situation, the latency will 
+never pile up like it can with the current version of quake.
+
+The biggest difference is the addition of client side movement simulation.
+
+I am now allowing the client to guess at the results of the users movement 
+until the authoritative response from the server comes through.  This is a 
+biiiig architectural change.  The client now needs to know about solidity 
+of objects, friction, gravity, etc.  I am sad to see the elegent 
+client-as-terminal setup go away, but I am practical above idealistic.
+
+The server is still the final word, so the client is allways repredicting 
+it's movement based off of the last known good message from the server.  
+
+There are still a lot of things I need to work out, but the basic results 
+are as hoped for:  even playing over a 200+ ms latency link, the player 
+movement feels exactly like you are playing a single player game (under 
+the right circumstances -- you can also get it to act rather weird at 
+the moment).
+
+The latency isn't gone, though.  The client doesn't simulate other objects 
+in the world, so you apear to run a lot closer to doors before they open, 
+and most noticably, projectiles from your weapons seem to come out from 
+where you were, instead of where you are, if you are strafing sideways 
+while you shoot.
+
+An interesting issue to watch when this gets out is that you won't be 
+able to tell how long the latency to the server is based on your movement, 
+but you will need to lead your opponents differently when shooting at them.
+
+In a clean sheet of paper redesign, I would try to correct more of the 
+discrepencies, but I think I am going to have a big enough improvement 
+coming out of my current work to make a lot of people very happy.
+
+===============================================
+
+aug 8:
+
+Romero is now gone from id.
+
+There will be no more grandiose statements about our future projects.
+
+I can tell you what I am thinking, and what I am trying to acomplish, 
+but all I promise is my best effort.
+
+
+John Carmack
+
+===============================================
+
+aug 10:
+
+QuakeWorld structural addendum:
+
+After hearing many arguments against the single master server, ranging 
+from coherent and well reasoned to paranoid whining, I now agree that 
+the single global master server isn't sufficient.
+
+During the R&D phase, there will still be only the single server, but 
+after all the kinks get worked out, I will allow a small number of 
+sites to run private master servers.  This will not be a general 
+release, but only to properly licensed third parties.  That will still 
+allow me to collect my 100% coverage data, and it will prevent a 
+single network/computer/software failure from preventing all QuakeWorld
+play.
+
+QuakeWorld technical addendum:
+
+I am reining in the client side prediction to a fairly minimal amount.
+It has too many negative effects in different circumstances.  The problem
+of running away from or in front of your missiles was so bad that I 
+considered simulating the missiles on the client side, but that is the 
+second step on a slippery slope.  If just the missiles were simulated, 
+then a missile would fire through an enemy until the server informed 
+you it exploded on them.  Then you consider simulating interactions, 
+but then you have to guess at other player inputs (which is hopeless)...
+
+Lesson learned: Simulating 300 ms on the client side in a Quake style 
+game is just out of the question.  It probably works fine for flight sim 
+or driving sims, but not in out twitch reaction games.
+
+I am currently using client side simulation to smooth out the beat 
+frequency interactions between server packet arrival and client frame 
+times.  In the shipping version of Quake, some latency was introduced 
+on purpose to keep the displayed frame simulation time between the last 
+two packets from the server so that the variability in arrival time 
+could be smoothed out.  In QuakeWorld, I am always starting with the 
+most current packet, and using simulation to smooth out the variability.
+This <100ms of client side motion seems to be very manageable, and cuts 
+out some real latency as well as doing the gueswork.
+
+It looks like I am going to split the QuakeWorld client into multiple 
+threads to reduce the avg 1/2 frame latency between input and packet 
+sending.  This is also a step towards building a multi-threaded Quake 
+renderer, which will let multi-cpu NT machines render twice as fast.
+Lets hope the windows thread scheduler is decent...
+
+I have been cutting down the message sizes a bit here and there as 
+well.  On a modem link, every couple bytes I save translates into a 
+millisecond of latency saved.  I cut an average of 17 bytes from the 
+server to client and 8 from the client to server today.
+
+===============================================
+
+Aug 12:
+
+Apogee's Prey team (and Duke's Levelord) leave 3drealms to work 
+with Quake technology as Hipnotic Interactive.
+
+:-)
+
+===============================================
+
+Aug 13:
+
+I am considering increasing the default sv_friction value for 
+QuakeWorld from 4 to 6 or 8.
+
+It might take a little getting used to, but I think it gives more 
+precise control for wide area network play.
+
+If anyone wants to run some experiments with different friction 
+levels on a current Quake server, I would be interested in hearing 
+some feedback.
+
+===============================================
+
+Aug 17:
+
+The remote server console commands are fully implemented for 
+QuakeWorld.
+
+To allow remote administration, the server must set the "password" 
+cvar.  By default, remote administration is turned off.
+
+On a client, if you set the "password" cvar to the same value, 
+you can issue "rcon" commands to the remote server :
+
+rcon <server command> <arguments> ...
+
+You can go to different levels, shut the server down, change 
+cvars, ban people, etc.  The output from the command is redirected 
+over the net and will be echoed on the remote console.
+
+You can also execute commands without even connecting to the 
+server (if it was full) by setting the "rconadr" cvar to the full 
+internet address (including port) of the system you want to administer.
+
+
+2:00 in the morning:
+
+My testarossa snapped another input shaft (the third time).  
+damn dman damn.
+>1000 HP is bad for your drivetrain.
+
+===============================================
+
+Aug 18:
+
+PACKET FILTERING
+
+QuakeWorld supports two types of filtering: IP packet filtering 
+and user id filtering.  Userid filtering is the most convenient way 
+to keep a specific person off of a server, but because anyone can 
+create as many accounts as they want, a malicious user could just 
+keep logging back in with a new account.  If their ip address is 
+banned, they won't be able to log on with any account from that 
+computer.  Unfortunately, most dialup accounts give a different ip 
+address for each connection, so you may be forced to ban an entire 
+subnet to keep a specific person off.
+
+You can add or remove addresses from the filter list with:
+
+addip <ip>
+removeip <ip>
+
+The ip address is specified in dot format, and any unspecified 
+digits will match any value, so you can specify an entire class 
+C network with "addip 192.246.40".
+
+Removeip will only remove an address specified exactly the same way. 
+You cannot addip a subnet, then removeip a single host.
+
+iplist
+Prints the current list of filters.
+
+writeip
+Dumps "addip <ip>" commands to iplist.cfg so it can be execed at 
+a later date.  The filter lists are not saved and restored by 
+default, because I beleive it would cause too much confusion.
+
+filterban <0 or 1>
+
+If 1 (the default), then ip addresses matching the current list 
+will be prohibited from entering the game.  This is the default 
+setting.
+
+If 0, then only addresses matching the list will be allowed.  This 
+lets you easily set up a private game, or a game that only allows 
+players from your local network.
+
+===============================================
+
+Aug 22:
+
+The rendition 3d accelerated version of Quake looks very good.
+
+The image quality is significantly better than software - dithered,
+bilinear interpolated textures, and subpixel, subtexel polygon 
+models.
+
+It is faster than software even at 320*200, and at 512*384 it is 
+almost twice as fast.
+
+We do take a bit of a hit when we have to generate a lot of 16 bit 
+surfaces, so occasionally the framerate gets a bit uneven, but 
+overall it is a very solid improvement.
+</pre>
+</body>
+</html>
+

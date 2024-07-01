@@ -1,0 +1,155 @@
+John Carmack on shadow volumes...
+
+I recieved this in email from John on May 23rd, 2000.
+
+- Mark Kilgard
+
+
+I solved this in a way that is so elegant you just won't believe it.  Here
+is a description that I posted to a private mailing list:
+
+----------------------------------------------------------
+
+I first implemented stencil shadow volumes over two years ago in the
+post-Q2 research period.  They looked great until you flew the viewpoint
+into one of the volumes, and depending on the exact test you used, either
+most of the screen went into negative shadow, or most of the shadows
+disappeared.
+
+The classic shadow volume works that stencil shadows are derived from
+usually suggest "inverting the test when the view is inside a shadow
+volume".  That is not a robust solution, because a non-zero near clip plane
+will give situations where the plane is not cleanly on one side or the
+other of the view point.  It is also non-trivial to make the "inside a
+shadow volume" determination, especially after silhouette optimizations.
+
+The conventional wisdom has been that you will need to clip the shadow
+volumes to the view plane and cap with triangles, treating the shadow
+volumes as if they were polyhedrons.
+
+I implemented the easy cases of this, choosing to project the silhouette
+points to either the far plane of the light's effect or the view plane.
+For the clear-cut cases, this worked fine, allowing you to walk in front of
+a shadowed object, or look directly at it with the light behind it.
+Intermediate cases, where some of the vertexes should project onto the
+light plane and some should project onto the view plane could also be
+handled, but the cost of all the testing was starting to pile up.
+
+Unfortunately, there are cases when an occluding triangle projects a shadow
+volume that will clip to something other than a triangular prism.  There
+are cases where real, honest volume clipping must take place.
+
+Anything that requires finding convex hulls in realtime is starting to
+sound like a Bad Idea.
+
+I sweated over this for a while, with the code getting grosser and grosser,
+but then I had an idea for a different direction.
+
+It should be possible to let the shadow volumes get clipped off at the view
+plane like they always do, then find the clipped off areas in image space
+and correct them.
+
+The way to find if a volume has been clipped off is to render the shadow
+volume with depth testing disabled, incrementing for the front faces and
+decrementing for the back faces.  If the stencil buffer ends up with the
+original value, the shadow volume is well formed in front of the view volume.
+
+My first attempt to utilize this involved a whole bunch of passes to
+determine if it was well formed and combine it with the standard volume
+stencil operations.  It was an interesting experiment with masking and
+anding in the stencil buffer to perform two operations, but it turned out
+that, while it worked for simple shapes, complex shapes needed more
+information from the volume clipping than just "well formed" or not.
+
+The next iteration involved attempting to "preload" the standard stencil
+shadow algorithm by the number of clipped away planes.  I first drew the
+shadow volumes with depth test disabled, incrementing for back sides and
+decrementing for front sides.  This finishes with a positive value in the
+stencil buffer for each plane that is clipped away at the view plane.  The
+normal depth tested shadow volume is drawn next, with the change polarity
+reversed, decrementing for back sides and incrementing for front sides.
+The areas not equal to the initial clear value are in shadow.
+
+That works all the time.
+
+Later, I realized something else.  The algorithm was now basically:
+
+Draw back sides, incrementing both with depth pass and depth fail.
+Draw front sides, decrementing both with depth pass and depth fail.
+Draw back sides, decrementing with depth pass and doing nothing with depth
+fail.
+Draw front sides, incrementing both with depth and doing nothing with depth
+fail.
+
+Rearrange the passes and you get:
+Draw back sides, incrementing both with depth pass and depth fail.
+Draw back sides, decrementing with depth pass and doing nothing with depth
+fail.
+Draw front sides, decrementing both with depth pass and depth fail.
+Draw front sides, incrementing both with depth and doing nothing with depth
+fail.
+
+It is then obvious that they partially cancel each out and can be combined
+into:
+
+Draw back sides, doing nothing with depth pass and incrementing with depth
+fail.
+Draw front sides, doing nothing with depth pass and decrementing with depth
+fail.
+
+I was shocked.  I went from feeling pretty clever with my unbalanced
+preloading algorithm (which I would only apply on surfaces that were likely
+to intersect the view plane) to just feeling dumb that I had never seen the
+trivial solution before.  Thinking about operating on depth test fails is a
+bit non-intuitive, but if you work it through a couple times, what is going
+on makes pretty good sense.
+
+Shadows done this way have none of the "fragile" feel that geometric
+algorithms tend to give.  You can use them for major occluders in the world
+and noclip fly right through them without any problems at all.
+
+Stencil shadows still aren't cheap by any means.  It can cost 3x the
+triangle count of the source model (although <2x with some optimizations is
+reasonable) per shadowing light, and it can have pathological fill rate
+utilization in some cases, like a light shining out horizontally through a
+jail cell door.  Still, they are quick operations even if there are a lot
+of them.  The vertexes are just bare xyz points without texcoords or color,
+and the fill rate is only to the depth/stencil buffer.
+
+There are lots of subtleties to actually using this, like making sure your
+shadow volumes are capped on both ends if they need to be (you can often
+optimize away the caps based on culling information), making sure that none
+of the shadow volumes get clipped off by your far clipping plane (which
+would unbalance the count), and all the normal picky silhouette
+optimization issues.
+
+Depth buffer based shadows still sound like they have a lot of advantages:
+
+Not much in the way of coding subtleties required.
+
+The performance is more level (fixed fill rate overhead) and theoretically
+somewhat faster (only one extra drawing of the surface into the shadow
+buffer) in most cases.
+
+They avoid the silhouette finding work that still needs to be done with the
+shadow volumes (a per-face dot product and some copying), and don't require
+any connectivity information.
+
+Unfortunately, the quality just isn't good enough unless you use extremely
+high resolution shadow maps (or possibly many offset passes with a lower
+resolution map, although the bias issues become complex), and you need to
+tweak the biases and ranges in many scenes.   For comparison, Pixar will
+commonly use 2k or 4k shadow maps, focused in on a very narrow field of
+view (they assume projections outside the map are NOT in shadow, which
+works for movie sets but not for architectural walkthroughs), along with 16
+jittered samples of the shadow map for each pixel and occasional hand
+tweaking of the bias.
+
+I still want to research the options for cropping and skewing shadow depth
+buffer projection planes, but I am now positive that the stencil shadow
+architecture works out.
+
+
+John Carmack
+
+
