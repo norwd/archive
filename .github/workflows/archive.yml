@@ -70,6 +70,10 @@ jobs:
         env:
           URL: ${{ steps.target.outputs.url }}
 
+      - name: Remove Files Over 100 Megabytes
+        working-directory: ${{ steps.target.outputs.directory }}
+        run: find . -size +100M | xargs -IFILE rm -rf FILE
+
       - name: Push Downloaded Directory
         id: auto-commit
         uses: stefanzweifel/git-auto-commit-action@v4
@@ -91,6 +95,7 @@ jobs:
       # See also https://gist.github.com/vpadhariya/90ab71c2a6a1203f5f9aa75ad5c5f32a
       - name: Clean up query strings
         continue-on-error: true # Don't worry if files could not be converted, just get it pushed
+        working-directory: ${{ steps.target.outputs.directory }}
         run: for i in `find $1 -type f -name "*\?*"`; do mv $i `echo $i | cut -d? -f1`; done
 
       - name: Push Downloaded Directory
