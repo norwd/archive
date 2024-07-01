@@ -1,0 +1,914 @@
+<html>
+<head>
+  <link rel="alternate" type="application/rss+xml"  title="RSS Feed for fabiensanglard.net" href="https://fabiensanglard.net/rss.xml" />
+  <style type="text/css">
+
+    @font-face {
+      font-family: 'fabfont';
+      src: url('../font/DejaVuSansMono.woff2');
+      font-display: block;
+    }
+
+    @font-face {
+      font-family: 'fabfont';
+      src: url('../font/DejaVuSansMono-Bold.woff2');
+      font-weight: bold;
+      font-display: block;
+    }
+
+    * {
+       font-size: 16px;
+    }
+
+    html {
+      font-family: fabfont,  monospace;
+      max-width: 900px;  /* For Desktop PC (see @media for Tablets/Phones) */
+      padding-left: 2%;
+      padding-right: 3%;
+      margin: 0 auto;
+      background: #F5F5F0;
+  	} 
+    
+
+
+  	a {
+      color: black;
+      font-weight: bold;
+    }
+
+    img {
+      border: none; 
+    }
+
+    p {
+      margin-top: 0px;
+      text-align: justify;
+    }
+    sup {
+      vertical-align: 0.3em;
+      font-size: 0.65em;
+    }   
+
+    pre {
+      font-family: fabfont, monospace;
+      background-color: white; 
+      border: 1px solid Black; 
+      padding-left: 2%;
+      padding-top: 1ch;
+      padding-bottom: 1ch;
+      /* Only take care of X overflow since this is the only part that can be too wide.
+         The Y axis will never overflow.
+      */
+      overflow: hidden;
+    }
+
+    div.heading {
+      font-weight: bold;      
+      text-transform: uppercase;
+      margin-top: 4ch;
+    }
+
+    /** {
+      font-size: 16px;
+    }*/
+    @media (max-width: 500px) { /* For small screen decices */
+      * {
+        font-size: 12px; 
+      }
+    }   
+    .title {
+      text-decoration: none;
+    }
+
+    img.pixel, canvas.pixel {
+      image-rendering: pixelated;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: crisp-edges;
+    }
+
+    blockquote { 
+    background-color: #f3f3f3;
+    border: dashed 1px grey; 
+    width: 97.5%; 
+    font-style: italic; 
+    text-align: justify;
+
+    padding: 1ch; 
+    padding-top: 2ch; 
+    padding-bottom: 2ch;     
+    
+    margin : 0ch; 
+    margin-bottom: 2ch; 
+    margin-top: 0ch;
+  }
+
+  blockquote div {
+    text-transform: none;
+    text-align: right;
+    width: 100%;
+  }
+
+  code {
+    /*font-size: 110%;*/
+    font-weight: bold;
+    background-color: #e1e1e1;
+    border-radius: 0.5ch;
+    padding-left: 0.3ch;
+    padding-right: 0.3ch;
+  }
+
+  .trivia {
+    border-left: 1px black solid;
+    padding-left: 1ch;
+  }
+
+  .trivia::before {
+  font-weight: bold;
+  text-decoration: underline;
+  padding-right: 1ch;
+  content: "Trivia:";
+
+  </style>
+  <title>Exploring Linux command-line space time</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=12.0, minimum-scale=1.0, user-scalable=yes">
+</head>  
+  <body><br><center>
+    <div style="display: inline-block; vertical-align:middle;">
+<a href="https://fabiensanglard.net/" class="title"><b>FABIEN SANGLARD'S WEBSITE</b><br>
+</a><hr/><div style="text-align: justify;display: inline-block; width: 100%;">
+<!-- <a class="title" href="/about/index.html">ABOUT</a> &nbsp;<a class="title" href="/contact/index.html">EMAIL</a> &nbsp;<a class="title" href="../rss.xml">RSS</a> &nbsp;<a class="title" href="https://paypal.me/fabiensanglard">DONATE</a></div></div> -->
+<a class="title" href="https://fabiensanglard.net/about/index.html">ABOUT</a> &nbsp;<a class="title" href="https://fabiensanglard.net/contact/index.html">CONTACT</a> &nbsp;<a class="title" href="https://fabiensanglard.net/rss.xml">RSS</a> &nbsp;<a class="title" href="https://paypal.me/fabiensanglard">GIVE</a></div></div>
+
+</center><br><br>
+<div style="margin-bottom: 2ch;text-transform: none;">
+Sep 26, 2023</div>
+<div class='heading'>Exploring Linux command-line space time</div><hr/>
+<style type="text/css">
+    .red {
+        color:red;
+    }
+    pre {
+        overflow: auto;
+    }
+</style>
+<p>I was curious to explore how long a program takes to run, how much memory is used over time, and what processes/threads are spawned. To provide answers I wrote a tool, which I named <code>st</code>. Here are a few things I looked into.</p>
+
+<p>See details at the bottom if you are interested in how the tool works (and why I did not use <code><a href="https://man7.org/linux/man-pages/man1/time.1.html">time(1)</a></code> and <code>strace(1)</code>).</p>
+
+
+<div class='heading'>Fill</div><hr/><p>An entertaining way to use <code>st</code> is so to predict the outcome of a command and explore the reasons for discrepancies. I started with a simple C program, <a href="fill.c">fill.c</a> allocating 1GiB and setting each byte individually.</p>
+
+<!-- HTML generated using hilite.me -->
+<pre style="margin-bottom: 2ch; line-height: 125%"><span style="color: #557799">#include &lt;stdio.h&gt;</span>
+<span style="color: #557799">#include &lt;stdlib.h&gt;</span>
+<span style="color: #557799">#include &lt;stdint.h&gt;</span>
+
+<span style="color: #333399; font-weight: bold">void</span> <span style="color: #0066BB; font-weight: bold">fill</span>(<span style="color: #333399; font-weight: bold">uint8_t</span><span style="color: #333333">*</span> addr, <span style="color: #333399; font-weight: bold">size_t</span> amount, <span style="color: #333399; font-weight: bold">char</span> value) {
+    <span style="color: #008800; font-weight: bold">for</span> (<span style="color: #333399; font-weight: bold">size_t</span> i <span style="color: #333333">=</span> <span style="color: #0000DD; font-weight: bold">0</span>; i <span style="color: #333333">&lt;</span> amount; i<span style="color: #333333">++</span>) {
+        <span style="color: #333333">*</span>(addr <span style="color: #333333">+</span> i) <span style="color: #333333">=</span> value;
+    }
+}
+
+<span style="color: #333399; font-weight: bold">int</span> <span style="color: #0066BB; font-weight: bold">main</span>(<span style="color: #333399; font-weight: bold">int</span> argc, <span style="color: #333399; font-weight: bold">char</span> <span style="color: #333333">**</span>argv) {
+    <span style="color: #333399; font-weight: bold">size_t</span> s <span style="color: #333333">=</span> <span style="color: #0000DD; font-weight: bold">1</span><span style="color: #333333">&lt;&lt;</span><span style="color: #0000DD; font-weight: bold">30</span>;
+    <span style="color: #333399; font-weight: bold">uint8_t</span><span style="color: #333333">*</span> buffer <span style="color: #333333">=</span> (<span style="color: #333399; font-weight: bold">uint8_t</span><span style="color: #333333">*</span>)malloc(s);
+    fill(buffer, s, atoi(argv[<span style="color: #0000DD; font-weight: bold">0</span>]));
+    <span style="color: #008800; font-weight: bold">return</span> EXIT_SUCCESS;
+}
+</pre>
+
+
+
+<p>Let's build and run it via <code>st</code>.</p>
+
+<pre><b>$</b> clang -o fill fill.c
+<b>$</b> sudo st fill
+<span class="red"><span class="red">EXEC</span>:</span> [/home/leaf/fill]
+Num threads = 1
+Num process = 1
+Max PSS: 1,073,762,304 bytes
+Walltime: 1,229ms - user-space: 1,109ms - kernel-space: 87ms
+</pre>
+
+<pre style="border:0; background-color:#F5F5F0; line-height: 1; padding-left:0;">
+  1┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+   ┃                                                                               ██████┃
+   ┃                                                                         ████████████┃
+   ┃                                                                    █████████████████┃
+   ┃                                                               ██████████████████████┃
+   ┃                                                         ████████████████████████████┃
+   ┃                                                    █████████████████████████████████┃
+   ┃                                              ███████████████████████████████████████┃
+   ┫                                         ████████████████████████████████████████████┃
+   ┃                                   ██████████████████████████████████████████████████┃
+   ┃                             ████████████████████████████████████████████████████████┃
+   ┃                        █████████████████████████████████████████████████████████████┃
+   ┃                  ███████████████████████████████████████████████████████████████████┃
+   ┃            █████████████████████████████████████████████████████████████████████████┃
+   ┃       ██████████████████████████████████████████████████████████████████████████████┃
+   ┃█████████████████████████████████████████████████████████████████████████████████████┃
+0GB┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+   0s                                                                                    1</pre>
+
+<p>I expected 1GiB to be filled in 10ms but it took a whole second. The issue is that the program is generating many page faults. I remember Firefox sped up their startup time 2x by solving a similar issue<a name="back_1" style="text-decoration: none;" href="index.html#footnote_1"><sup>[1]</sup></a>.</p>
+
+<p>Also noteworthy, the memory usage did not increase abruptly from 0 to 1GiB with <code>malloc</code>. Instead we see a staircase pattern which shows that physical RAM consumption increased as virtual pages were written to by the <code>fill</code> function.</p>
+
+
+<div class='heading'>fillfill</div><hr/><p>Another test program, <a href="fillfill.c">fillfill.c</a>, to check the tool is properly tracking PSS, processes, and threads.</p>
+
+<!-- HTML generated using hilite.me -->
+<pre style="margin-bottom: 2ch; line-height: 125%"><span style="color: #557799">#include &lt;stdio.h&gt;</span>
+<span style="color: #557799">#include &lt;stdlib.h&gt;</span>
+<span style="color: #557799">#include &lt;unistd.h&gt;</span>
+<span style="color: #557799">#include &lt;sys/wait.h&gt;</span>
+<span style="color: #557799">#include &lt;stdint.h&gt;</span>
+
+<span style="color: #333399; font-weight: bold">void</span> <span style="color: #0066BB; font-weight: bold">malloc_and_fill</span>(<span style="color: #333399; font-weight: bold">size_t</span> s) {
+  <span style="color: #333399; font-weight: bold">uint8_t</span><span style="color: #333333">*</span> buffer <span style="color: #333333">=</span> (<span style="color: #333399; font-weight: bold">uint8_t</span><span style="color: #333333">*</span>) malloc(s);
+  <span style="color: #008800; font-weight: bold">for</span> (<span style="color: #333399; font-weight: bold">size_t</span> i <span style="color: #333333">=</span> <span style="color: #0000DD; font-weight: bold">0</span>; i <span style="color: #333333">&lt;</span> s; i<span style="color: #333333">++</span>) {
+    <span style="color: #333333">*</span>(buffer<span style="color: #333333">+</span> i) <span style="color: #333333">=</span> <span style="color: #0044DD">&#39;F&#39;</span>;
+  }
+  free(buffer);
+}
+
+<span style="color: #333399; font-weight: bold">int</span> <span style="color: #0066BB; font-weight: bold">main</span>(<span style="color: #333399; font-weight: bold">int</span> argc, <span style="color: #333399; font-weight: bold">char</span> <span style="color: #333333">**</span>argv) {
+  malloc_and_fill(<span style="color: #0000DD; font-weight: bold">1L</span> <span style="color: #333333">&lt;&lt;</span> <span style="color: #0000DD; font-weight: bold">30</span>);
+  <span style="color: #333399; font-weight: bold">int</span> pid <span style="color: #333333">=</span> fork();
+  <span style="color: #008800; font-weight: bold">if</span> (pid <span style="color: #333333">==</span> <span style="color: #0000DD; font-weight: bold">0</span>) {
+    malloc_and_fill(<span style="color: #0000DD; font-weight: bold">1L</span> <span style="color: #333333">&lt;&lt;</span> <span style="color: #0000DD; font-weight: bold">31</span>);   
+  } <span style="color: #008800; font-weight: bold">else</span> {
+    waitpid(pid, <span style="color: #007020">NULL</span>, <span style="color: #0000DD; font-weight: bold">0</span>);
+  }
+  <span style="color: #008800; font-weight: bold">return</span> <span style="color: #0000DD; font-weight: bold">0</span>;
+}
+</pre>
+
+
+<p>First allocate 1GiB, free it, then spawn a process which does the same but with 2GiB.</p>
+
+<pre><b>$</b> sudo st ./fillfill
+<span class="red">EXEC</span>: [./fillfill]
+Num threads = 2
+Num process = 2
+Max PSS: 2,147,591,168 bytes
+Walltime: 3,608ms - user-space: 3,277ms - kernel-space: 327ms</pre>
+
+<pre style="border:0; background-color:#F5F5F0; line-height: 1; padding-left:0;">
+  2┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+   ┃                                                                                ███  ┃
+   ┃                                                                            ███████  ┃
+   ┃                                                                         ██████████  ┃
+   ┃                                                                     ██████████████  ┃
+   ┃                                                                 ███████████████████ ┃
+   ┃                                                              ██████████████████████ ┃
+   ┃                                                          ██████████████████████████ ┃
+   ┫                          █                           ██████████████████████████████ ┃
+   ┃                      ██████                       █████████████████████████████████ ┃
+   ┃                   █████████                   █████████████████████████████████████ ┃
+   ┃               █████████████               █████████████████████████████████████████ ┃
+   ┃           █████████████████            ████████████████████████████████████████████ ┃
+   ┃        ████████████████████        ████████████████████████████████████████████████ ┃
+   ┃    ████████████████████████    ████████████████████████████████████████████████████ ┃
+   ┃█████████████████████████████████████████████████████████████████████████████████████┃
+0GB┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+   0s                                                                                    3</pre>
+
+
+
+<div class='heading'>Fill -O3</div><hr/><p>Let's get back to <a href="fill.c">fill.c</a> but this time compile it with full optimization (<code>-O3</code>).
+  </p>
+
+<pre><b>$</b> clang -o fillo <span class="red">-O3</span> fill.c
+<b>$</b> sudo st fillo
+<span class="red"><span class="red">EXEC</span>:</span>: [ /home/leaf/fillo]
+Num threads = 1
+Num process = 1
+Max PSS: 164,864 bytes
+Walltime: 5ms - user-space: 1ms - kernel-space: 0ms
+</pre>
+<pre style="border:0; background-color:#F5F5F0; line-height: 1; padding-left:0;">
+164┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+   ┃█████████████████████████████████████████████████████████████████████████████████████┃
+   ┃█████████████████████████████████████████████████████████████████████████████████████┃
+   ┃█████████████████████████████████████████████████████████████████████████████████████┃
+   ┃█████████████████████████████████████████████████████████████████████████████████████┃
+   ┃█████████████████████████████████████████████████████████████████████████████████████┃
+   ┃█████████████████████████████████████████████████████████████████████████████████████┃
+   ┃█████████████████████████████████████████████████████████████████████████████████████┃
+   ┫█████████████████████████████████████████████████████████████████████████████████████┃
+   ┃█████████████████████████████████████████████████████████████████████████████████████┃
+   ┃█████████████████████████████████████████████████████████████████████████████████████┃
+   ┃█████████████████████████████████████████████████████████████████████████████████████┃
+   ┃█████████████████████████████████████████████████████████████████████████████████████┃
+   ┃█████████████████████████████████████████████████████████████████████████████████████┃
+   ┃█████████████████████████████████████████████████████████████████████████████████████┃
+   ┃█████████████████████████████████████████████████████████████████████████████████████┃
+0KB┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+   0ms                                                                                   0</pre>  
+
+<p>Wow. From 1000ms to 5ms. And only using 164 KiB?! According to Binary Ninja<a name="back_2" style="text-decoration: none;" href="index.html#footnote_2"><sup>[2]</sup></a>, the compiler discarded both <code>malloc</code> and <code>fill</code>. It makes sense since the program did not read what was allocated and written. Flag <code>-O3</code> effectively turned <code><a href="fill.c">fill.c</a></code> into an empty <code>main</code> function.</p>
+
+<pre style="margin-botton: 2ch; line-height: 125%"><span style="color: #006699; font-weight: bold">int</span> main(<span style="color: #006699; font-weight: bold">int</span> argc, char <span style="color: #555555">**</span>argv) {
+    <span style="color: #006699; font-weight: bold">return</span> EXIT_SUCCESS;
+}
+</pre>
+
+
+<p><b><u>Sidenote:</u></b> Exploring compiler <code>-O3</code> outputs with Binary Ninja is a source of endless amazement. Loop to memset substitution (<a href="fill.c">fill.c</a>, <a href="fill.webp">cc</a>, <a href="fillo.webp">cc -O3</a>), <code>strlen</code> caching ...even without <code>-O3</code> (<a href="strlen.c">strlen.c</a>, <a href="https://cloud.binary.ninja/embed/44fb8393-c731-4cda-b412-5cee57989840">cc</a>, <a href="https://cloud.binary.ninja/embed/6c81b81f-6c3d-4ac2-8297-6c291d7667bb">cc -O3</a>), and <code>printf("%c", 'x')</code> to <code>putchar('x')</code>!) substitution are only a few among many cool optimizations.</p>
+
+
+
+
+<div class='heading'>clang helloworld.c</div><hr/>
+<p>I have written extensively about <a href="https://fabiensanglard.net/dc">compiler drivers</a> by the past so it was a good opportunity to double check that <code>clang</code> behaved as expected when compiling <a href="hello.c">hello.c</a>.</p>
+
+<pre style="margin-bottom: 2ch; line-height: 125%"><span style="color: #557799">#include &lt;stdio.h&gt;</span>
+<span style="color: #333399; font-weight: bold">int</span> <span style="color: #0066BB; font-weight: bold">main</span>() {
+   printf(<span style="background-color: #fff0f0">&quot;Hello, World!&quot;</span>);
+   <span style="color: #008800; font-weight: bold">return</span> <span style="color: #0000DD; font-weight: bold">0</span>;
+}
+</pre>
+
+
+<pre><b>$</b> sudo st clang -o hello hello.c
+<span class="red"><span class="red">EXEC</span>:</span>: [ clang -o hello hello.c]
+<span class="red"><span class="red">EXEC</span>:</span>: [/usr/lib/llvm-14/bin/clang -cc1 -triple aarch64-unknown-linux-gnu -emit-obj -mrelax-all --mrelax-relocations -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name hello.c -mrelocation-model pic -pic-level 2 -pic-is-pie -mframe-pointer=non-leaf -fmath-errno -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -target-cpu generic -target-feature +neon -target-feature +v8a -target-abi aapcs -fallow-half-arguments-and-returns -mllvm -treat-scalable-fixed-error-as-warning -debugger-tuning=gdb -fcoverage-compilation-dir=/home/leaf -resource-dir /usr/lib/llvm-14/lib/clang/14.0.0 -internal-isystem /usr/lib/llvm-14/lib/clang/14.0.0/include -internal-isystem /usr/local/include -internal-isystem /usr/bin/../lib/gcc/aarch64-linux-gnu/11/../../../../aarch64-linux-gnu/include -internal-externc-isystem /usr/include/aarch64-linux-gnu -internal-externc-isystem /include -internal-externc-isystem /usr/include -fdebug-compilation-dir=/home/leaf]
+<span class="red"><span class="red">EXEC</span>:</span>: [/usr/bin/ld -pie -EL -z relro --hash-style=gnu --build-id --eh-frame-hdr -m aarch64linux -dynamic-linker /lib/ld-linux-aarch64.so.1 -o hello /lib/aarch64-linux-gnu/Scrt1.o /lib/aarch64-linux-gnu/crti.o /usr/bin/../lib/gcc/aarch64-linux-gnu/11/crtbeginS.o -L/usr/bin/../lib/gcc/aarch64-linux-gnu/11 -L/lib/aarch64-linux-gnu -L/usr/lib/aarch64-linux-gnu -L/usr/lib/llvm-14/bin/../lib -L/lib -L/usr/lib /tmp/hello-df1527.o -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/bin/../lib/gcc/aarch64-linux-gnu/11/crtendS.o /lib/aarch64-linux-gnu/crtn.o ]
+Num threads = 3
+Num process = 3
+Max PSS: 90,911,744 bytes
+Walltime: 71ms - user-space: 24ms - kernel-space: 45ms</pre>
+
+<pre style="border:0; background-color:#F5F5F0; line-height: 1; padding-left:0;">
+ 63┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+   ┃                                                                             ████████┃
+   ┃                                                                           ██████████┃
+   ┃                                                                      ███████████████┃
+   ┃                                                                    █████████████████┃
+   ┃                                                               ██████████████████████┃
+   ┃                                                             ████████████████████████┃
+   ┃                                                        █████████████████████████████┃
+   ┫                                                 ████████████████████████████████████┃
+   ┃                                               ██████████████████████████████████████┃
+   ┃                                        █████████████████████████████████████████████┃
+   ┃                                   ██████████████████████████████████████████████████┃
+   ┃                            █████████████████████████████████████████████████████████┃
+   ┃                         ████████████████████████████████████████████████████████████┃
+   ┃                  ███████████████████████████████████████████████████████████████████┃
+   ┃█████████████████████████████████████████████████████████████████████████████████████┃
+0MB┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+   0ms                                                                                  36</pre>
+
+<p>Without surprise, we see two forks. One when the driver invokes the compiler and one to invoke the linker. There is no assembler step since it is built-in <code>clang</code>.
+
+
+
+
+<div class='heading'>gcc helloworld.c</div><hr/><p>After clang, let's check <code>gcc</code>.
+
+<pre><b>$</b> sudo st gcc -o hello hello.c
+<span class="red"><span class="red">EXEC</span>:</span>: [ gcc -o hello hello.c]
+<span class="red"><span class="red">EXEC</span>:</span>: [/usr/lib/gcc/aarch64-linux-gnu/11/cc1 -quiet -imultiarch aarch64-linux-gnu hello.c -quiet -dumpbase hello.c -dumpbase-ext .c -mlittle-endian -mabi=lp64 -fasynchronous-unwind-tables -fstack-protector-strong -Wformat -Wformat-security -fstack-clash-protection -o /tmp/ccmt0cw6.s ]
+<span class="red"><span class="red">EXEC</span>:</span>: [as -EL -mabi=lp64 -o /tmp/ccSRW1gq.o /tmp/ccmt0cw6.s ]
+<span class="red"><span class="red">EXEC</span>:</span>: [/usr/lib/gcc/aarch64-linux-gnu/11/collect2 -plugin /usr/lib/gcc/aarch64-linux-gnu/11/liblto_plugin.so -plugin-opt=/usr/lib/gcc/aarch64-linux-gnu/11/lto-wrapper -plugin-opt=-fresolution=/tmp/cceZH2hF.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --build-id --eh-frame-hdr --hash-style=gnu --as-needed -dynamic-linker /lib/ld-linux-aarch64.so.1 -X -EL -maarch64linux --fix-cortex-a53-843419 -pie -z now -z relro -o hello /usr/lib/gcc/aarch64-linux-gnu/11/../../../aarch64-linux-gnu/Scrt1.o /usr/lib/gcc/aarch64-linux-gnu/11/../../../aarch64-linux-gnu/crti.o /usr/lib/gcc/aarch64-linux-gnu/11/crtbeginS.o -L/usr/lib/gcc/aarch64-linux-gnu/11 -L/usr/lib/gcc/aarch64-linux-gnu/11/../../../aarch64-linux-gnu -L/usr/lib/gcc/aarch64-linux-gnu/11/../../../../lib -L/lib/aarch64-linux-gnu -L/lib/../lib -L/usr/lib/aarch64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/aarch64-linux-gnu/11/../../.. /tmp/ccSRW1gq.o -lg]
+<span class="red"><span class="red">EXEC</span>:</span>: [/usr/bin/ld -plugin /usr/lib/gcc/aarch64-linux-gnu/11/liblto_plugin.so -plugin-opt=/usr/lib/gcc/aarch64-linux-gnu/11/lto-wrapper -plugin-opt=-fresolution=/tmp/cceZH2hF.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --build-id --eh-frame-hdr --hash-style=gnu --as-needed -dynamic-linker /lib/ld-linux-aarch64.so.1 -X -EL -maarch64linux --fix-cortex-a53-843419 -pie -z now -z relro -o hello /usr/lib/gcc/aarch64-linux-gnu/11/../../../aarch64-linux-gnu/Scrt1.o /usr/lib/gcc/aarch64-linux-gnu/11/../../../aarch64-linux-gnu/crti.o /usr/lib/gcc/aarch64-linux-gnu/11/crtbeginS.o -L/usr/lib/gcc/aarch64-linux-gnu/11 -L/usr/lib/gcc/aarch64-linux-gnu/11/../../../aarch64-linux-gnu -L/usr/lib/gcc/aarch64-linux-gnu/11/../../../../lib -L/lib/aarch64-linux-gnu -L/lib/../lib -L/usr/lib/aarch64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/aarch64-linux-gnu/11/../../.. /tmp/ccSRW1gq.o -lgcc --push-state --as-needed -lg]
+Num threads = 5
+Num process = 5
+Max PSS: 18,597,888 bytes
+Walltime: 51ms - user-space: 20ms - kernel-space: 20ms</pre>
+
+<pre style="border:0; background-color:#F5F5F0; line-height: 1; padding-left:0;">
+ 17┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+   ┃                                          ███████                                    ┃
+   ┃                                          ███████                                    ┃
+   ┃                                        █████████                                    ┃
+   ┃                                        █████████                                    ┃
+   ┃                                   ██████████████                                    ┃
+   ┃                              ███████████████████                                    ┃
+   ┃                         ████████████████████████                                    ┃
+   ┫                       ██████████████████████████                            ███████ ┃
+   ┃                     ████████████████████████████                          █████████ ┃
+   ┃                  ███████████████████████████████                        ███████████ ┃
+   ┃                  ███████████████████████████████                   ████████████████ ┃
+   ┃              ███████████████████████████████████     █████       ██████████████████ ┃
+   ┃           ██████████████████████████████████████  ████████    █████████████████████ ┃
+   ┃         ████████████████████████████████████████  ██████████████████████████████████┃
+   ┃█████████████████████████████████████████████████████████████████████████████████████┃
+0MB┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+   0ms                                                                                  36</pre>
+
+<p><code>gcc</code> uses two more steps than <code>clang</code>. One for the self-explanatory assembler <code>as</code> and one for the cryptic <code>collect2</code>. I read the <a href="https://gcc.gnu.org/onlinedocs/gccint/Collect2.html">documentation page</a> but I still don't understand what it does.</p>
+
+<p>Noteworthy, <code>gcc</code> uses four times less memory than <code>clang</code>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class='heading'>clang++ hello.cc</div><hr/><p>Let's checkout the C++ compiler driver from LLVM suite with <code><a href="hello.cc">hello.cc</a></code>.</p>
+
+<pre style="margin-bottom: 2ch; line-height: 125%"><span style="color: #557799">#include &lt;iostream&gt;</span>
+
+<span style="color: #333399; font-weight: bold">int</span> <span style="color: #0066BB; font-weight: bold">main</span>() {
+    std<span style="color: #333333">::</span>cout <span style="color: #333333">&lt;&lt;</span> <span style="background-color: #fff0f0">&quot;Hello World!&quot;</span>;
+    <span style="color: #008800; font-weight: bold">return</span> <span style="color: #0000DD; font-weight: bold">0</span>;
+}
+</pre>
+
+
+<pre><b>$</b> sudo st clang++ hello.cc
+<span class="red">EXEC</span>: [ clang++ /home/leaf/hello.cc]
+<span class="red">EXEC</span>: [/usr/lib/llvm-14/bin/clang -cc1 -triple aarch64-unknown-linux-gnu -emit-obj -mrelax-all --mrelax-relocations -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name hello.cc -mrelocation-model pic -pic-level 2 -pic-is-pie -mframe-pointer=non-leaf -fmath-errno -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -target-cpu generic -target-feature +neon -target-feature +v8a -target-abi aapcs -fallow-half-arguments-and-returns -mllvm -treat-scalable-fixed-error-as-warning -debugger-tuning=gdb -fcoverage-compilation-dir=/home/leaf/repos/st -resource-dir /usr/lib/llvm-14/lib/clang/14.0.0 -internal-isystem /usr/bin/../lib/gcc/aarch64-linux-gnu/11/../../../../include/c++/11 -internal-isystem /usr/bin/../lib/gcc/aarch64-linux-gnu/11/../../../../include/aarch64-linux-gnu/c++/11 -internal-isystem /usr/bin/../lib/gcc/aarch64-linux-gnu/11/../../../../include/c++/11/backward -internal-isystem /usr/lib/llvm-14/lib/clang/14.0.0/include -internal-isystem /u]
+<span class="red">EXEC</span>: [/usr/bin/ld -pie -EL -z relro --hash-style=gnu --build-id --eh-frame-hdr -m aarch64linux -dynamic-linker /lib/ld-linux-aarch64.so.1 -o a.out /lib/aarch64-linux-gnu/Scrt1.o /lib/aarch64-linux-gnu/crti.o /usr/bin/../lib/gcc/aarch64-linux-gnu/11/crtbeginS.o -L/usr/bin/../lib/gcc/aarch64-linux-gnu/11 -L/lib/aarch64-linux-gnu -L/usr/lib/aarch64-linux-gnu -L/usr/lib/llvm-14/bin/../lib -L/lib -L/usr/lib /tmp/hello-32e667.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/bin/../lib/gcc/aarch64-linux-gnu/11/crtendS.o /lib/aarch64-linux-gnu/crtn.o ]
+Num threads = 3
+Num process = 3
+Max PSS: 127,156,224 bytes
+Walltime: 221ms - user-space: 136ms - kernel-space: 69ms</pre>
+
+<pre style="border:0; background-color:#F5F5F0; line-height: 1; padding-left:0;">
+127┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+   ┃                                                                                     ┃
+   ┃                                                                                     ┃
+   ┃                                                          █████████████              ┃
+   ┃            █                    ██████████████████████████████████████              ┃
+   ┃            █           ███████████████████████████████████████████████              ┃
+   ┃            █         █████████████████████████████████████████████████      █ ████  ┃
+   ┃            █  ████████████████████████████████████████████████████████  ████████████┃
+   ┫            ███████████████████████████████████████████████████████████ █████████████┃
+   ┃           ██████████████████████████████████████████████████████████████████████████┃
+   ┃          ███████████████████████████████████████████████████████████████████████████┃
+   ┃        █████████████████████████████████████████████████████████████████████████████┃
+   ┃      ███████████████████████████████████████████████████████████████████████████████┃
+   ┃    █████████████████████████████████████████████████████████████████████████████████┃
+   ┃   ██████████████████████████████████████████████████████████████████████████████████┃
+   ┃█████████████████████████████████████████████████████████████████████████████████████┃
+0MB┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+   0ms                                                                                 221</pre>
+
+<p>No surprises here either. Compiling <code>C++</code> is much more costly in terms of memory (2x), and takes much longer than <code><a href="hello.c">hello.c</a></code> (4x).</p>
+
+
+<div class='heading'>g++ hello.cc</div><hr/>
+<p>Let's checkout the C++ compiler driver from GNU suite, <code>g++</code>.</p>
+
+<pre><b>$</b> sudo st g++ hello.cc
+<span class="red">EXEC</span>: [ g++ /home/leaf/hello.cc]
+<span class="red">EXEC</span>: [/usr/lib/gcc/aarch64-linux-gnu/11/cc1plus -quiet -imultiarch aarch64-linux-gnu -D_GNU_SOURCE /home/leaf/hello.cc -quiet -dumpdir a- -dumpbase hello.cc -dumpbase-ext .cc -mlittle-endian -mabi=lp64 -fasynchronous-unwind-tables -fstack-protector-strong -Wformat -Wformat-security -fstack-clash-protection -o /tmp/ccBFHbve.s ]
+<span class="red">EXEC</span>: [as -EL -mabi=lp64 -o /tmp/cckOP2RY.o /tmp/ccBFHbve.s ]
+<span class="red">EXEC</span>: [/usr/lib/gcc/aarch64-linux-gnu/11/collect2 -plugin /usr/lib/gcc/aarch64-linux-gnu/11/liblto_plugin.so -plugin-opt=/usr/lib/gcc/aarch64-linux-gnu/11/lto-wrapper -plugin-opt=-fresolution=/tmp/ccpZysdX.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --build-id --eh-frame-hdr --hash-style=gnu --as-needed -dynamic-linker /lib/ld-linux-aarch64.so.1 -X -EL -maarch64linux --fix-cortex-a53-843419 -pie -z now -z relro /usr/lib/gcc/aarch64-linux-gnu/11/../../../aarch64-linux-gnu/Scrt1.o /usr/lib/gcc/aarch64-linux-gnu/11/../../../aarch64-linux-gnu/crti.o /usr/lib/gcc/aarch64-linux-gnu/11/crtbeginS.o -L/usr/lib/gcc/aarch64-linux-gnu/11 -L/usr/lib/gcc/aarch64-linux-gnu/11/../../../aarch64-linux-gnu -L/usr/lib/gcc/aarch64-linux-gnu/11/../../../../lib -L/lib/aarch64-linux-gnu -L/lib/../lib -L/usr/lib/aarch64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/aarch64-linux-gnu/11/../../.. /tmp/cckOP2RY.o -lstdc++ -lm]
+<span class="red">EXEC</span>: [/usr/bin/ld -plugin /usr/lib/gcc/aarch64-linux-gnu/11/liblto_plugin.so -plugin-opt=/usr/lib/gcc/aarch64-linux-gnu/11/lto-wrapper -plugin-opt=-fresolution=/tmp/ccpZysdX.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --build-id --eh-frame-hdr --hash-style=gnu --as-needed -dynamic-linker /lib/ld-linux-aarch64.so.1 -X -EL -maarch64linux --fix-cortex-a53-843419 -pie -z now -z relro /usr/lib/gcc/aarch64-linux-gnu/11/../../../aarch64-linux-gnu/Scrt1.o /usr/lib/gcc/aarch64-linux-gnu/11/../../../aarch64-linux-gnu/crti.o /usr/lib/gcc/aarch64-linux-gnu/11/crtbeginS.o -L/usr/lib/gcc/aarch64-linux-gnu/11 -L/usr/lib/gcc/aarch64-linux-gnu/11/../../../aarch64-linux-gnu -L/usr/lib/gcc/aarch64-linux-gnu/11/../../../../lib -L/lib/aarch64-linux-gnu -L/lib/../lib -L/usr/lib/aarch64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/aarch64-linux-gnu/11/../../.. /tmp/cckOP2RY.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgc]
+Num threads = 5
+Num process = 5
+Max PSS: 60,565,504 bytes
+Walltime: 232ms - user-space: 127ms - kernel-space: 48ms</pre>
+
+<pre style="border:0; background-color:#F5F5F0; line-height: 1; padding-left:0;">
+ 60┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+   ┃                                                                 ████                ┃
+   ┃                                                             ████████                ┃
+   ┃                                                        █████████████                ┃
+   ┃                                                    █████████████████                ┃
+   ┃                                               ██████████████████████                ┃
+   ┃                                            █████████████████████████                ┃
+   ┃                                         ████████████████████████████                ┃
+   ┫                                      ███████████████████████████████                ┃
+   ┃                                 ████████████████████████████████████                ┃
+   ┃                            █████████████████████████████████████████                ┃
+   ┃                        █████████████████████████████████████████████          █████ ┃
+   ┃                    █████████████████████████████████████████████████         ██████ ┃
+   ┃                █████████████████████████████████████████████████████       █████████┃
+   ┃           ██████████████████████████████████████████████████████████     ███████████┃
+   ┃█████████████████████████████████████████████████████████████████████████████████████┃
+0MB┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+   0ms                                                                                 232</pre>
+
+<p>Alike the C driver, <code>gnu</code>'s version requires twice less RAM than <code>clang++</code>.</p>
+
+<div class='heading'>rust hello.rs</div><hr/><p><code>rustc</code> has a reputation to be slow and memory hungry. Seems appropriate since it ran for nearly 200ms and used 131 MiB of RAM (roughly the same as <code>clang++ hello.cc</code>).</p>
+
+<!-- HTML generated using hilite.me -->
+<pre style="margin-bottom: 2ch; line-height: 125%"><span style="color: #006699; font-weight: bold">fn</span> main() {
+    println<span style="color: #555555">!</span>(<span style="color: #CC3300">&quot;Hello World!&quot;</span>);
+}
+</pre>
+
+
+<p><code>rustc</code> uses an embedded LLVM backend to generates object files. These are handed to the regular <code>gnu</code> suite with <code>collect2</code> and then the linker <code>ld</code>.
+
+<pre>
+<b>$</b> sudo st rustc hello.rs 
+<span class="red"><span class="red">EXEC</span>:</span>: [rustc hello.rs]
+<span class="red"><span class="red">EXEC</span>:</span>: [cc /tmp/rustc4fdpuV/symbols.o hello.hello.f76cf86e-cgu.0.rcgu.o hello.hello.f76cf86e-cgu.1.rcgu.o hello.hello.f76cf86e-cgu.2.rcgu.o hello.hello.f76cf86e-cgu.3.rcgu.o hello.hello.f76cf86e-cgu.4.rcgu.o hello.hello.f76cf86e-cgu.5.rcgu.o hello.2pelail77dwjevsg.rcgu.o -Wl,--as-needed -L /usr/lib/rustlib/aarch64-unknown-linux-gnu/lib -Wl,-Bstatic /usr/lib/rustlib/aarch64-unknown-linux-gnu/lib/libstd-1d2bb2d795f2ca05.rlib /usr/lib/rustlib/aarch64-unknown-linux-gnu/lib/libpanic_unwind-f1c586c276421094.rlib /usr/lib/rustlib/aarch64-unknown-linux-gnu/lib/libobject-8060a154fd842f2c.rlib /usr/lib/rustlib/aarch64-unknown-linux-gnu/lib/libmemchr-1f7fc15c78d3bcac.rlib /usr/lib/rustlib/aarch64-unknown-linux-gnu/lib/libaddr2line-965bde82ccc4b5e8.rlib /usr/lib/rustlib/aarch64-unknown-linux-gnu/lib/libgimli-352be989f07a059f.rlib /usr/lib/rustlib/aarch64-unknown-linux-gnu/lib/librustc_demangle-4f461a85c762abbb.rlib /usr/lib/rustlib/aarch64-unknown-linux-gnu/lib/libstd_detect-814ef12b1b7d93c2.rlib /usr/lib/rustlib/aarch64-unknow]
+<span class="red"><span class="red">EXEC</span>:</span>: [/usr/lib/gcc/aarch64-linux-gnu/11/collect2 -plugin /usr/lib/gcc/aarch64-linux-gnu/11/liblto_plugin.so -plugin-opt=/usr/lib/gcc/aarch64-linux-gnu/11/lto-wrapper -plugin-opt=-fresolution=/tmp/ccXRoDto.res --build-id --eh-frame-hdr --hash-style=gnu --as-needed -dynamic-linker /lib/ld-linux-aarch64.so.1 -X -EL -maarch64linux --fix-cortex-a53-843419 -pie -z now -z relro -o hello /usr/lib/gcc/aarch64-linux-gnu/11/../../../aarch64-linux-gnu/Scrt1.o /usr/lib/gcc/aarch64-linux-gnu/11/../../../aarch64-linux-gnu/crti.o /usr/lib/gcc/aarch64-linux-gnu/11/crtbeginS.o -L/usr/lib/rustlib/aarch64-unknown-linux-gnu/lib -L/usr/lib/rustlib/aarch64-unknown-linux-gnu/lib -L/usr/lib/gcc/aarch64-linux-gnu/11 -L/usr/lib/gcc/aarch64-linux-gnu/11/../../../aarch64-linux-gnu -L/usr/lib/gcc/aarch64-linux-gnu/11/../../../../lib -L/lib/aarch64-linux-gnu -L/lib/../lib -L/usr/lib/aarch64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/aarch64-linux-gnu/11/../../.. /tmp/rustc4fdpuV/symbols.o hello.hello.f76cf86e-cgu.0.rcgu.o hello.hello.f76cf86e-c]
+<span class="red"><span class="red">EXEC</span>:</span>: [/usr/bin/ld -plugin /usr/lib/gcc/aarch64-linux-gnu/11/liblto_plugin.so -plugin-opt=/usr/lib/gcc/aarch64-linux-gnu/11/lto-wrapper -plugin-opt=-fresolution=/tmp/ccXRoDto.res --build-id --eh-frame-hdr --hash-style=gnu --as-needed -dynamic-linker /lib/ld-linux-aarch64.so.1 -X -EL -maarch64linux --fix-cortex-a53-843419 -pie -z now -z relro -o hello /usr/lib/gcc/aarch64-linux-gnu/11/../../../aarch64-linux-gnu/Scrt1.o /usr/lib/gcc/aarch64-linux-gnu/11/../../../aarch64-linux-gnu/crti.o /usr/lib/gcc/aarch64-linux-gnu/11/crtbeginS.o -L/usr/lib/rustlib/aarch64-unknown-linux-gnu/lib -L/usr/lib/rustlib/aarch64-unknown-linux-gnu/lib -L/usr/lib/gcc/aarch64-linux-gnu/11 -L/usr/lib/gcc/aarch64-linux-gnu/11/../../../aarch64-linux-gnu -L/usr/lib/gcc/aarch64-linux-gnu/11/../../../../lib -L/lib/aarch64-linux-gnu -L/lib/../lib -L/usr/lib/aarch64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/aarch64-linux-gnu/11/../../.. /tmp/rustc4fdpuV/symbols.o hello.hello.f76cf86e-cgu.0.rcgu.o hello.hello.f76cf86e-cgu.1.rcgu.o hello.hello.f76cf86]
+Num threads = 14
+Num process = 4
+Max PSS: 131,376,128 bytes
+Walltime: 197ms - user-space: 134ms - kernel-space: 67ms</pre>
+
+
+<pre style="border:0; background-color:#F5F5F0; line-height: 1; padding-left:0;">
+133┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+   ┃                                                  ████████████████████████████████   ┃
+   ┃                                     █████████████████████████████████████████████   ┃
+   ┃                         █        ████████████████████████████████████████████████   ┃
+   ┃                     █████      ██████████████████████████████████████████████████   ┃
+   ┃                   ███████   █████████████████████████████████████████████████████   ┃
+   ┃                  █████████████████████████████████████████████████████████████████  ┃
+   ┃                 ██████████████████████████████████████████████████████████████████  ┃
+   ┫                 ██████████████████████████████████████████████████████████████████  ┃
+   ┃               ████████████████████████████████████████████████████████████████████  ┃
+   ┃              █████████████████████████████████████████████████████████████████████  ┃
+   ┃             ████████████████████████████████████████████████████████████████████████┃
+   ┃           ██████████████████████████████████████████████████████████████████████████┃
+   ┃        █████████████████████████████████████████████████████████████████████████████┃
+   ┃     ████████████████████████████████████████████████████████████████████████████████┃
+   ┃█████████████████████████████████████████████████████████████████████████████████████┃
+0MB┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+   0ms                                                                                 220</pre>
+
+<p>Notice that fourteen threads were created. Ten of then are coming from <code>rustc</code>.</p>
+
+
+
+
+<div class='heading'>javac helloworld.java</div><hr/><pre>
+<b>$</b> cat HelloWorld.java 
+class HelloWorld {
+    public static void main(String[] args) {
+        System.out.println("Hello, World!"); 
+    }
+}
+<b>$</b> sudo st javac HelloWorld.java
+<span class="red"><span class="red">EXEC</span>:</span>: [ javac HelloWorld.java]
+Num threads = 23
+Num process = 1
+Max PSS: 75,673,600 bytes
+Walltime: 272ms - user-space: 472ms - kernel-space: 48ms</pre>
+
+
+<pre style="border:0; background-color:#F5F5F0; line-height: 1; padding-left:0;">
+ 75┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+   ┃                                                                          ███████████┃
+   ┃                                                               ██████████████████████┃
+   ┃                                                       ██████████████████████████████┃
+   ┃                                             ████████████████████████████████████████┃
+   ┃                                      ███████████████████████████████████████████████┃
+   ┃                               ██████████████████████████████████████████████████████┃
+   ┃                        █████████████████████████████████████████████████████████████┃
+   ┫                 ████████████████████████████████████████████████████████████████████┃
+   ┃             ████████████████████████████████████████████████████████████████████████┃
+   ┃          ███████████████████████████████████████████████████████████████████████████┃
+   ┃       ██████████████████████████████████████████████████████████████████████████████┃
+   ┃       ██████████████████████████████████████████████████████████████████████████████┃
+   ┃       ██████████████████████████████████████████████████████████████████████████████┃
+   ┃   ██████████████████████████████████████████████████████████████████████████████████┃
+   ┃█████████████████████████████████████████████████████████████████████████████████████┃
+0MB┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+   0ms                                                                                 263</pre>
+
+
+<p>Since the compiler is written in Java, I was expecting to see a second process, execing something like <code>java -cp javac.jar java.tools.Javac ...</code>. Surprisingly, javac is actually a JNI wrapper which acts as a launcher<a name="back_3" style="text-decoration: none;" href="index.html#footnote_3"><sup>[3]</sup></a>. It instantiates a VM in-process and there is no fork/exec needed.</p>
+
+
+<p>Also surprising is the number of threads created. Although the next test shows that it is probably just a thread pool created at startup regardless of what the VM actually does.</p>
+
+
+<div class='heading'>java Helloworld</div><hr/><pre>
+<b>$</b> sudo st java -cp . HelloWorld
+<span class="red">EXEC</span>: [ java -cp /home/leaf HelloWorld]
+Hello, World!
+Num threads = 19
+Num process = 1
+Max PSS: 30,813,184 bytes
+Walltime: 38ms - user-space: 10ms - kernel-space: 21ms</pre>
+
+
+<pre style="border:0; background-color:#F5F5F0; line-height: 1; padding-left:0;">
+ 30┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+   ┃                                                                   █████████████     ┃
+   ┃                                                          ██████████████████████     ┃
+   ┃                                                   █████████████████████████████     ┃
+   ┃                                      ██████████████████████████████████████████     ┃
+   ┃                                      ██████████████████████████████████████████     ┃
+   ┃                                   █████████████████████████████████████████████     ┃
+   ┃                                   █████████████████████████████████████████████     ┃
+   ┫                                 ███████████████████████████████████████████████     ┃
+   ┃                             ███████████████████████████████████████████████████     ┃
+   ┃                          ███████████████████████████████████████████████████████████┃
+   ┃                      ███████████████████████████████████████████████████████████████┃
+   ┃                    █████████████████████████████████████████████████████████████████┃
+   ┃                 ████████████████████████████████████████████████████████████████████┃
+   ┃             ████████████████████████████████████████████████████████████████████████┃
+   ┃█████████████████████████████████████████████████████████████████████████████████████┃
+0MB┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+   0ms                                                                                  38</pre>
+
+<p>Same elevated number of thread as <code>javac</code>. Likely, <code>javac</code> only created four threads (23-19=4).</p>
+
+<div class='heading'>go build helloworld.go</div><hr/><p><code>go</code> stood up to its reputation of being fast. It generated an executable in 54ms while using only 15MiB of RAM. In this limited helloworld study, it is both the fastest and the least RAM hungry compiler.</p>
+
+<!-- HTML generated using hilite.me -->
+<pre style="margin-bottom: 2ch; line-height: 125%"><span style="color: #006699; font-weight: bold">package</span> main
+<span style="color: #006699; font-weight: bold">import</span> <span style="color: #CC3300">&quot;fmt&quot;</span>
+<span style="color: #006699; font-weight: bold">func</span> main() {
+    fmt.Println(<span style="color: #CC3300">&quot;hello world&quot;</span>)
+}
+</pre>
+
+
+<pre><b>$</b> sudo st go build helloworld.go 
+<span class="red"><span class="red">EXEC</span>:</span>: [ go build helloworld.go]
+Num threads = 9
+Num process = 1
+Max PSS: 15,591,424 bytes
+Walltime: 54ms - user-space: 25ms - kernel-space: 39ms
+</pre>
+
+
+<pre style="border:0; background-color:#F5F5F0; line-height: 1; padding-left:0;">
+ 15┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+   ┃                                                █████████████████████████████████████┃
+   ┃                                      ███████████████████████████████████████████████┃
+   ┃                                    █████████████████████████████████████████████████┃
+   ┃                                █████████████████████████████████████████████████████┃
+   ┃                                █████████████████████████████████████████████████████┃
+   ┃                           ██████████████████████████████████████████████████████████┃
+   ┃                         ████████████████████████████████████████████████████████████┃
+   ┫                         ████████████████████████████████████████████████████████████┃
+   ┃                      ███████████████████████████████████████████████████████████████┃
+   ┃                      ███████████████████████████████████████████████████████████████┃
+   ┃                      ███████████████████████████████████████████████████████████████┃
+   ┃                █████████████████████████████████████████████████████████████████████┃
+   ┃        █████████████████████████████████████████████████████████████████████████████┃
+   ┃      ███████████████████████████████████████████████████████████████████████████████┃
+   ┃█████████████████████████████████████████████████████████████████████████████████████┃
+0MB┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+   0ms                                                                                  53</pre>
+
+
+
+<p>Golang relies heavily on goroutines, I was surprised to see nine threads being used on a four core system. Something to look into someday.</p>
+
+
+
+
+
+
+<div class='heading'>Opening Chromium</div><hr/><pre><b>$</b> sudo st chromium --headless https://fabiensanglard.net/index.html
+<span class="red">EXEC</span>: [ chromium https://fabiensanglard.net/index.html]
+<span class="red">EXEC</span>: [ chromium https://fabiensanglard.net/index.html]
+<span class="red">EXEC</span>: [/snap/snapd/20102/usr/lib/snapd/snap-seccomp version-info ]
+Num threads = 21
+Num process = 2
+Max PSS: 32,493,568 bytes
+Walltime: 51ms - user-space: 639ms - kernel-space: 565ms
+</pre>
+
+
+<pre style="border:0; background-color:#F5F5F0; line-height: 1; padding-left:0;">
+ 32┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+   ┃                                                                                     ┃
+   ┃                                                                                     ┃
+   ┃                                                                                     ┃
+   ┃                                                                                     ┃
+   ┃           █                                                                         ┃
+   ┃           █                                                                         ┃
+   ┃           █ ████████████████████████████████████████████████████████████████████████┃
+   ┫           ██████████████████████████████████████████████████████████████████████████┃
+   ┃          ███████████████████████████████████████████████████████████████████████████┃
+   ┃     █    ███████████████████████████████████████████████████████████████████████████┃
+   ┃   ████ █████████████████████████████████████████████████████████████████████████████┃
+   ┃   ████ █████████████████████████████████████████████████████████████████████████████┃
+   ┃   ████ █████████████████████████████████████████████████████████████████████████████┃
+   ┃  ███████████████████████████████████████████████████████████████████████████████████┃
+   ┃█████████████████████████████████████████████████████████████████████████████████████┃
+0MB┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+   0ms                                                                                 280</pre>
+
+<p>The process spawned by Chromium is for the GPU render. It looks like it also executed a command to check the version of <a href="https://en.wikipedia.org/wiki/Seccomp">seccomp</a> before sandboxing the GPU.</p>
+
+
+<div class='heading'>curl</div><hr/><pre><b>$</b> sudo st curl https://fabiensanglard.net/index.html 
+<span class="red">EXEC</span>: [ curl https://fabiensanglard.net/index.html]
+Num threads = 2
+Num process = 1
+Max PSS: 4,878,336 bytes
+Walltime: 356ms - user-space: 47ms - kernel-space: 7ms
+</pre>
+
+
+<pre style="border:0; background-color:#F5F5F0; line-height: 1; padding-left:0;">
+  4┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+   ┃                                █████████████████████████████████████████████████████┃
+   ┃                             ████████████████████████████████████████████████████████┃
+   ┃                         ████████████████████████████████████████████████████████████┃
+   ┃                       ██████████████████████████████████████████████████████████████┃
+   ┃                       ██████████████████████████████████████████████████████████████┃
+   ┃                       ██████████████████████████████████████████████████████████████┃
+   ┃   ██████████████████████████████████████████████████████████████████████████████████┃
+   ┫   ██████████████████████████████████████████████████████████████████████████████████┃
+   ┃   ██████████████████████████████████████████████████████████████████████████████████┃
+   ┃   ██████████████████████████████████████████████████████████████████████████████████┃
+   ┃  ███████████████████████████████████████████████████████████████████████████████████┃
+   ┃  ███████████████████████████████████████████████████████████████████████████████████┃
+   ┃  ███████████████████████████████████████████████████████████████████████████████████┃
+   ┃ ████████████████████████████████████████████████████████████████████████████████████┃
+   ┃█████████████████████████████████████████████████████████████████████████████████████┃
+0MB┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+   0ms                                                                                 356</pre>
+
+
+<div class='heading'>wget</div><hr/><pre><b>$</b> sudo st wget https://fabiensanglard.net/index.html 
+<span class="red">EXEC</span>: [ wget https://fabiensanglard.net/index.html]
+Num threads = 1
+Num process = 1
+Max PSS: 2,942,976 bytes
+Walltime: 348ms - user-space: 8ms - kernel-space: 8ms
+</pre>
+
+
+<pre style="border:0; background-color:#F5F5F0; line-height: 1; padding-left:0;">
+  2┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+   ┃                                        █████████████████████████████████████████████┃
+   ┃                      ███████████████████████████████████████████████████████████████┃
+   ┃   ██████████████████████████████████████████████████████████████████████████████████┃
+   ┃   ██████████████████████████████████████████████████████████████████████████████████┃
+   ┃   ██████████████████████████████████████████████████████████████████████████████████┃
+   ┃   ██████████████████████████████████████████████████████████████████████████████████┃
+   ┃   ██████████████████████████████████████████████████████████████████████████████████┃
+   ┫   ██████████████████████████████████████████████████████████████████████████████████┃
+   ┃  ███████████████████████████████████████████████████████████████████████████████████┃
+   ┃  ███████████████████████████████████████████████████████████████████████████████████┃
+   ┃  ███████████████████████████████████████████████████████████████████████████████████┃
+   ┃  ███████████████████████████████████████████████████████████████████████████████████┃
+   ┃ ████████████████████████████████████████████████████████████████████████████████████┃
+   ┃ ████████████████████████████████████████████████████████████████████████████████████┃
+   ┃█████████████████████████████████████████████████████████████████████████████████████┃
+0MB┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+   0ms                                                                                 348</pre>
+
+<p><code>wget</code> seems to use less RAM than <code>curl</code>. Also, it uses one thread instead of two.</p>
+
+
+
+<div class='heading'>git make</div><hr/>
+<p>Let's build a medium size project, <code>git</code>, with <code>make</code>.</p>
+
+<pre><b>$</b> sudo apt-get install dh-autoreconf libcurl4-gnutls-dev libexpat1-dev gettext libz-dev libssl-dev
+<b>$</b> sudo apt-get install asciidoc xmlto docbook2x
+<b>$</b> gh repo clone git/git
+<b>$</b> cd git
+<b>$</b> make configure
+<b>$</b> ./configure --prefix=/usr
+<b>$</b> sudo st make all
+...
+</pre>
+
+<pre>Num threads = 3,155
+Num process = 3,155
+Max PSS: 144,361,472 bytes
+Walltime: 95,427ms - user-space: 83,485ms - kernel-space: 10,995ms
+</pre>
+
+
+<pre style="border:0; background-color:#F5F5F0; line-height: 1; padding-left:0;">
+144┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+   ┃                                                                                     ┃
+   ┃                                                                                     ┃
+   ┃                                                                                     ┃
+   ┃                                                                                     ┃
+   ┃                                                                                     ┃
+   ┃                                   █                                                 ┃
+   ┃  █        █                       █                              █                  ┃
+   ┫  █        ██       █             ███             █        █      █                  ┃
+   ┃  █ █ ███  ███ █    ██ █     ███  ███     █  █    █ █ █ █  ██  █  █ ██  █            ┃
+   ┃ ████ ████████ ██ █████████████████████  ███ ██  ██████ ██ █████ █████████   █       ┃
+   ┃ ██████████████████████████████████████████████████████████████████████████  ████████┃
+   ┃████████████████████████████████████████████████████████████████████████████ ████████┃
+   ┃█████████████████████████████████████████████████████████████████████████████████████┃
+   ┃█████████████████████████████████████████████████████████████████████████████████████┃
+   ┃█████████████████████████████████████████████████████████████████████████████████████┃
+0MB┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+   0s                                                                                   95</pre>
+
+<div class='heading'>git make -j8</div><hr/><p>Let's observe how parallel compilation, <code>-j4</code>,trades walltime with RAM/cores.</p>
+
+<pre><b>$</b> git clean
+<b>$</b> sudo st make <span class="red">-j4</span> all
+...
+Num threads = 3155
+Num process = 3155
+Max PSS: 288,531,456 bytes
+Walltime: 27,556ms - user-space: 90,311ms - kernel-space: 11,458ms
+</pre>
+
+
+<pre style="border:0; background-color:#F5F5F0; line-height: 1; padding-left:0;">
+
+288┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+   ┃                                                                                     ┃
+   ┃                                                                                     ┃
+   ┃               █                                  █                                  ┃
+   ┃               █     █                █           █                                  ┃
+   ┃     █       █ █     ██       █    █ ██           █       █      █                   ┃
+   ┃    ██ █     ███     ██       █  ██████      █    █ █ █   █      █                   ┃
+   ┃   ███ ████ ████     ███      ██ ██████   █  █   ██ █ █  ████  █████  █              ┃
+   ┫  ████ ████ █████ █ ███████████████████  ██  █  █████ ██ ██████████████  █           ┃
+   ┃  █████████████████████████████████████ ██████  ██████████████████████████   █       ┃
+   ┃  ████████████████████████████████████████████████████████████████████████   ██ ███  ┃
+   ┃  █████████████████████████████████████████████████████████████████████████  ███████ ┃
+   ┃  █████████████████████████████████████████████████████████████████████████ █████████┃
+   ┃  █████████████████████████████████████████████████████████████████████████ █████████┃
+   ┃ ██████████████████████████████████████████████████████████████████████████ █████████┃
+   ┃█████████████████████████████████████████████████████████████████████████████████████┃
+0MB┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+   0s                                                                                   27</pre>
+
+<p>Using four cores, dropped runtime nearly linearly (3.5) and doubled RAM usage.</p>
+
+<div class='heading'>m</div><hr/><p>The latest command I wanted to observe was <code>m</code> which builds AOSP.</p>
+<pre><b>$</b> cd aosp_24
+<b>$</b> cat > source build/envsetup.sh
+source build/envsetup.sh
+lunch aosp_arm64-eng
+m -j8
+<b>$</b> chmod +x make.sh
+<b>$</b> sudo st make.sh
+...
+</pre>
+<pre>
+Num threads = 136,305
+Num process = 132,891
+Max PSS: 6,152,478,720 bytes
+Walltime: 700864ms - user-space: 9942532ms - kernel-space: 900950ms
+</pre>
+
+
+<pre style="border:0; background-color:#F5F5F0; line-height: 1; padding-left:0;">
+  6┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+   ┃                                                                                     ┃
+   ┃                                                                                     ┃
+   ┃                                       █                                             ┃
+   ┃                                      ██                                       █     ┃
+   ┃                  █████               ███                     █                █     ┃
+   ┃                  ███████         ███████                     █ █   █          ██    ┃
+   ┃                  ███████████ █ █ ███████                     █ █████          ██    ┃
+   ┫                  ███████████████████████                     ████████         ██    ┃
+   ┃                 ████████████████████████          ██         ████████         ██    ┃
+   ┃          █ █   █████████████████████████        ██████   █   ██████████   █ █ ███ ██┃
+   ┃          █ ██ ██████████████████████████        ██████████ █ ██████████████ ████████┃
+   ┃  █   ███ ████████████████████████████████       ████████████████████████████████████┃
+   ┃ ████ ███████████████████████████████████████   █████████████████████████████████████┃
+   ┃ ████████████████████████████████████████████████████████████████████████████████████┃
+   ┃█████████████████████████████████████████████████████████████████████████████████████┃
+0GB┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+   0s                                                                                  700</pre>
+
+<p>6 GiB and 11 minutes to build a whole OS with 8 cores. Not bad at all!</p>
+
+
+<div class='heading'>st internals</div><hr/><p>Before writing the tool, I considered relying on <code><a href="https://man7.org/linux/man-pages/man1/time.1.html">time(1)</a></code> and <code>strace(1)</code>. However I was not completely satisfied with them. If <code>time(1)</code> invoked via <code>/usr/bin/time -v</code> could retrieve child processes stats and show peak RSS, I wanted PSS. Also, I wanted to see PSS over time.</p>
+
+<p>Likewise, <code>strace -f</code> could follow child processes but it had a tremendous performance overhead and did not show the command invoked by <code>clone</code> upon fork/thread creation.</p>
+
+<p>In the end, I wrote my own tool and called it <code>st</code> (for space-time). The data sources are as follows.</p>
+
+<ul>
+<li>CPU time/ Kernel time relies on <code><a href="https://linux.die.net/man/2/waitpid">waitpid(2)</a></code> and <code><a href="https://man7.org/linux/man-pages/man2/getrusage.2.html">getrusage(2)</a></code>.</li>
+
+<li>PSS over time relies on sampling <code><a href="https://man7.org/linux/man-pages/man5/proc.5.html">proc(5)</a></code>(<code>/proc/PID/smaps</code>) on a regular interval.</li>
+
+<li>Following process/thread creation is done via <code><a href="https://man7.org/linux/man-pages/man7/netlink.7.html">netlink(7)</a></code>.</li>
+
+</ul>
+
+<div class='heading'>Working with netlink</div><hr/><p>Following processes lifecycle via netlink proved more challenging than expected, mainly because of poor documentation (maybe because netlink needs <code>root</code> anyway?). If I managed to dig out <a href="process-events.txt">process-events.txt</a> from a mailing list and found a working sample <a href="exec-notify.c">exec-notify.c</a>, there wasn't much more around.</p>
+
+<p>One series of articles did stand out. Natan Yellin's blog<a name="back_4" style="text-decoration: none;" href="index.html#footnote_4"><sup>[4]</sup></a><a name="back_5" style="text-decoration: none;" href="index.html#footnote_5"><sup>[5]</sup></a><a name="back_6" style="text-decoration: none;" href="index.html#footnote_6"><sup>[6]</sup></a><a name="back_7" style="text-decoration: none;" href="index.html#footnote_7"><sup>[7]</sup></a>. is a gem. Among many excellent insights, he clarified<a name="back_8" style="text-decoration: none;" href="index.html#footnote_8"><sup>[8]</sup></a> the less than intuitive values provided by netlink for parent-gid and parent-pid which saved me a lot of time.
+
+</p>
+
+<p>Hopefully, <code>st</code>'s(<a href="https://github.com/fabiensanglard/st">source code</a>) will add a little extra clarity to <code>netlink</code>.</p>
+
+
+<style type='text/css'>td.ref {  padding-bottom: 0ch; width:0;}</style><div class='heading'>References</div><hr/><p id='paperbox' style='text-align:left;'><table><tbody style='vertical-align: top;'><tr><td class='ref' style='width:1ch;'><a name="footnote_1"></a><a href="index.html#back_1">^</a></td><td  class='ref' style='width:4ch;'> [1]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://bugzilla.mozilla.org/show_bug.cgi?id=627591">Firefox Bugzilla: Preload dlls on windows</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_2"></a><a href="index.html#back_2">^</a></td><td  class='ref' style='width:4ch;'> [2]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://binary.ninja/">Binary Ninja</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_3"></a><a href="index.html#back_3">^</a></td><td  class='ref' style='width:4ch;'> [3]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://gist.github.com/mauricio/2310831">java-launcher.c</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_4"></a><a href="index.html#back_4">^</a></td><td  class='ref' style='width:4ch;'> [4]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://natanyellin.com/posts/life-and-death-of-a-linux-process">
+Life and Death of a Linux Process</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_5"></a><a href="index.html#back_5">^</a></td><td  class='ref' style='width:4ch;'> [5]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://natanyellin.com/posts/using-linux-audit-to-track-processes">
+Using the Linux Audit API to Track Processes</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_6"></a><a href="index.html#back_6">^</a></td><td  class='ref' style='width:4ch;'> [6]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://natanyellin.com/posts/buggy-netlink-process-connectors">
+When Netlink Process Connectors Don’t Process</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_7"></a><a href="index.html#back_7">^</a></td><td  class='ref' style='width:4ch;'> [7]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://natanyellin.com/posts/tracking-running-processes-on-linux">
+The Difficulties of Tracking Running Processes on Linux</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_8"></a><a href="index.html#back_8">^</a></td><td  class='ref' style='width:4ch;'> [8]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://natanyellin.com/posts/understanding-netlink-process-connector-output">
+Understanding Netlink Process Connector Output</a></td></tr></tbody></table></p> <hr>
+ <center>*
