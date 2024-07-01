@@ -1,0 +1,466 @@
+<html>
+<head>
+  <link rel="alternate" type="application/rss+xml"  title="RSS Feed for fabiensanglard.net" href="../rss.xml" />
+  <style type="text/css">
+
+    @font-face {
+      font-family: 'fabfont';
+      src: url('../font/DejaVuSansMono.woff2');
+      font-display: block;
+    }
+
+    @font-face {
+      font-family: 'fabfont';
+      src: url('../font/DejaVuSansMono-Bold.woff2');
+      font-weight: bold;
+      font-display: block;
+    }
+
+    * {
+       font-size: 16px;
+    }
+
+    html {
+      font-family: fabfont,  monospace;
+      max-width: 900px;  /* For Desktop PC (see @media for Tablets/Phones) */
+      padding-left: 2%;
+      padding-right: 3%;
+      margin: 0 auto;
+      background: #F5F5F0;
+  	} 
+    
+
+
+  	a {
+      color: black;
+      font-weight: bold;
+    }
+
+    img {
+      border: none; 
+    }
+
+    p {
+      margin-top: 0px;
+      text-align: justify;
+    }
+    sup {
+      vertical-align: 0.3em;
+      font-size: 0.65em;
+    }   
+
+    pre {
+      font-family: fabfont, monospace;
+      background-color: white; 
+      border: 1px solid Black; 
+      padding-left: 2%;
+      padding-top: 1ch;
+      padding-bottom: 1ch;
+      /* Only take care of X overflow since this is the only part that can be too wide.
+         The Y axis will never overflow.
+      */
+      overflow: hidden;
+    }
+
+    div.heading {
+      font-weight: bold;      
+      text-transform: uppercase;
+      margin-top: 4ch;
+    }
+
+    /** {
+      font-size: 16px;
+    }*/
+    @media (max-width: 500px) { /* For small screen decices */
+      * {
+        font-size: 12px; 
+      }
+    }   
+    .title {
+      text-decoration: none;
+    }
+
+    img.pixel, canvas.pixel {
+      image-rendering: pixelated;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: crisp-edges;
+    }
+
+    blockquote { 
+    background-color: #f3f3f3;
+    border: dashed 1px grey; 
+    width: 97.5%; 
+    font-style: italic; 
+    text-align: justify;
+
+    padding: 1ch; 
+    padding-top: 2ch; 
+    padding-bottom: 2ch;     
+    
+    margin : 0ch; 
+    margin-bottom: 2ch; 
+    margin-top: 0ch;
+  }
+
+  blockquote div {
+    text-transform: none;
+    text-align: right;
+    width: 100%;
+  }
+
+  code {
+    /*font-size: 110%;*/
+    font-weight: bold;
+    background-color: #e1e1e1;
+    border-radius: 0.5ch;
+    padding-left: 0.3ch;
+    padding-right: 0.3ch;
+  }
+
+  .trivia {
+    border-left: 1px black solid;
+    padding-left: 1ch;
+  }
+
+  .trivia::before {
+  font-weight: bold;
+  text-decoration: underline;
+  padding-right: 1ch;
+  content: "Trivia:";
+
+  </style>
+  <title>A trip down NBA Jam graphics pipeline</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=12.0, minimum-scale=1.0, user-scalable=yes">
+</head>  
+  <body><br><center>
+    <div style="display: inline-block; vertical-align:middle;">
+<a href="../index.html" class="title"><b>FABIEN SANGLARD'S WEBSITE</b><br>
+</a><hr/><div style="text-align: justify;display: inline-block; width: 100%;">
+<!-- <a class="title" href="/about/index.html">ABOUT</a> &nbsp;<a class="title" href="/contact/index.html">EMAIL</a> &nbsp;<a class="title" href="../rss.xml">RSS</a> &nbsp;<a class="title" href="https://paypal.me/fabiensanglard">DONATE</a></div></div> -->
+<a class="title" href="../about/index.html">ABOUT</a> &nbsp;<a class="title" href="../contact/index.html">CONTACT</a> &nbsp;<a class="title" href="../rss.xml">RSS</a> &nbsp;<a class="title" href="https://paypal.me/fabiensanglard">GIVE</a></div></div>
+
+</center><br><br>
+<div style="margin-bottom: 2ch;text-transform: none;">
+Oct 28, 2019</div>
+<div class='heading'>A trip down NBA Jam graphics pipeline</div><hr/><style type="text/css">
+  img {
+     border: solid 1px black;
+  }
+</style>
+<p>
+  <picture>
+    <source srcset="logo.webp" type="image/webp">
+    <img loading="lazy" src="logo.png" width="826" height="305" style="width: 40%; height: auto; float:right;margin-bottom: 1ch; margin-left: 2ch;border:none;"/>  </picture>
+
+ I was invited to a party in Sunnyvale over the summer. The hosts happened to own a four-player arcade cabinet running NBA JAM Tournament Edition in their garage. Despite the game being 25 years old (it was released in 1993) it was a lot of fun to play, especially with four passionate players.<br/>
+ <br/>
+ I was surprised by the Chicago Bulls roster from which Michael Jordan was absent. Reportedly<a name="back_1" style="text-decoration: none;" href="index.html#footnote_1"><sup>[1]</sup></a>, MJ managed his license himself and was not part of the deal Midway struck with the NBA.<br/>
+ <br/>
+Inquiring with the owner of the cabinet, I learned that hackers had released a SNES mod name "NBA Jam 2K17" allowing to play with new players and MJ. But nobody had taken the time to do figure out how the arcade version worked. That is all the reasons I needed to take a peek inside.
+</p>
+
+<div class='heading'>Genesis</div><hr/><p style="margin-bottom: 0;">
+The story of NBA Jam does not find its roots in basketball but rather, like all things, in Jean-Claude Van Damme. Around the same time "Universal Soldier" got released, "Midway Games" had developed a technology allowing to manipulate large digitized photo-realist sprites and preserve the likeness of real actors. We are talking about a huge technological leap here with 60 frames per second animations and unseen-before 100x100 pixels sprites, each with their own 256 colors palette.<br/> 
+<br/>
+They had used the technology with great success for the popular shooter game "Terminator 2: Judgment Day"<a name="back_2" style="text-decoration: none;" href="index.html#footnote_2"><sup>[2]</sup></a> but were unable to secure a license for "Universal Soldier" (JCVD financial conditions were deemed unacceptable<a name="back_3" style="text-decoration: none;" href="index.html#footnote_3"><sup>[3]</sup></a>). When negotiation collapsed, Midway "pivoted" to build a combat game in the spirit of Capcom's 1991 mega-hit named "Street Fighter II: The World Warrior".<br/>
+<br/>
+An initial team of four (Ed Boon for programming, John Tobias for art and story, John Vogel for graphics, and Dan Forden for sound design) assembled and got to work. Within a year of hard work<a name="back_4" style="text-decoration: none;" href="index.html#footnote_4"><sup>[4]</sup></a>, Midway released Mortal Kombat in 1992.<br/>
+<br/>
+The visual style was a departure from the usual pixel-art and the game design was, to put it mildly, "controversial". Featuring a lot of blood on screen and insanely gore "fatalities", the game became an instant worldwide hit gathering close to 1 billion dollar within one year<a name="back_5" style="text-decoration: none;" href="index.html#footnote_5"><sup>[5]</sup></a>.<br/>
+<br/>
+  <center>
+  <picture>
+    <source srcset="sf2.webp" type="image/webp">
+    <img loading="lazy" src="sf2.png" class="pixel" width="384" height="288" style="width: 48.5%; height: auto; margin-bottom: 1ch;"/>  </picture>
+
+  
+  <picture>
+    <source srcset="mk.webp" type="image/webp">
+    <img loading="lazy" src="mk.png" class="pixel" width="400" height="300" style="width: 48.5%; height: auto; margin-bottom: 1ch;"/>  </picture>
+  </center>
+  <i><center>SF2: 384×224 with 4,096 colors. MK: 400×254 with 32,768 colors.</center></i>
+  <br/><br/>
+  <p>
+  <u><b>Trivia:</b></u> Like the VGA Mode 0x13 on PC, these games have non square-pixels. Even though Mortal Kombat framebuffer is 400 × 254, it is stretched on a 4:3 CRT to 400 × 300<a name="back_6" style="text-decoration: none;" href="index.html#footnote_6"><sup>[6]</sup></a>.<br/>
+</p>
+<div style="clear:both;"></div>
+
+ 
+<div class='heading'>Midway T-Unit hardware</div><hr/><p style="margin-bottom: 1ch;">
+  The hardware Midway developed for Mortal Kombat turned out to be really good. So good that it was given a name, T-Unit, and reused for other games.
+  <ul>
+<li>Mortal Kombat.</li>
+<li>Mortal Kombat II.</li>
+<li>NBA Jam.</li>
+<li>NBA Jam Tournament Edition.</li>
+  <li>Judge Dredd (unreleased).</li>
+</ul>
+<p style="margin-bottom:0;">
+A T-Unit is made of two boards. The largest one is where game logic and graphics happen.<br/>
+<br/>
+  
+  <picture>
+    <source srcset="nbajam_board.webp" type="image/webp">
+    <img loading="lazy" src="nbajam_board.png" width="913" height="670" style="width: 100%; height: auto; margin-bottom: 2ch; border:0;"/>  </picture>
+  <center><i>NBA JAM TE Edition CPU board (about 40cm by 40cm or 15 inches).</i></center>
+</p>
+
+<p>
+  <picture>
+    <source srcset="nbajam_soundboard.webp" type="image/webp">
+    <img loading="lazy" src="nbajam_soundboard.png" width="600" height="470" style="width: 55%; height: auto; float:right; margin-left: 2ch;margin-bottom: 1ch; border:0;"/>  </picture> 
+  
+  The other board is less complex in comparison but manage to perform a lot anyway. Dedicated to audio, it is not only capable to play music via FM synthesis but also digitized sound playback.<br/>
+  <br/>
+   The sound board is connected to the power supply and to the graphic board, mounted beside it. Notice the huge passive heat sink on its upper left corner.<br/> 
+
+  <br/>
+  Together the two boards account for more than two hundreds chips, resistances, and EPROMs. To make sense of everything using only serial numbers would have been a daunting task. But the amazing thing about stuff from the 90s is that it is occasionally documented. And in the case of NBA Jam, it is beautifully documented. 
+  <div style="clear:both;"></div>
+</p> 
+
+<div class='heading'>Midway T-Unit architecture</div><hr/><p style="margin-bottom: 0px">
+In my quest for data, I stumbled upon the NBA Jam Kit. The level of details in this document is astonishing<a name="back_7" style="text-decoration: none;" href="index.html#footnote_7"><sup>[7]</sup></a>. Among other things, we can find here an extended description of the boards wiring including EPROM and chip connections. <br/>
+<br/>
+  <picture>
+    <source srcset="nbajam_schematics.webp" type="image/webp">
+    <img loading="lazy" src="nbajam_schematics.jpg" width="2427" height="1866" style="width: 100%; height: auto; margin-bottom: 2ch; border:0;"/>  </picture>
+<br/>
+The informations from the kit allowed to draw a map of the boards and identify the function of each parts. To help reference components, a board has coordinates with origin in the lower-right (UA0) increasing to the upper-left (UJ26).<br/>
+<br/>
+
+<img loading="lazy" src="mainboard_drawingsvg.svg" width="320.83875mm" height="236.4809mm" style="width: 100%; height: auto; margin-bottom: 2ch; border:0;"/>
+<br/>
+At the heart of the main board, we find a Texas Instrument TMS34010 (UB21) running at 50Mhz with 1MiB of code in EPROMs and 512 KiB DRAM<a name="back_8" style="text-decoration: none;" href="index.html#footnote_8"><sup>[8]</sup></a>. The 34010 is a 32-bit chip with a 16-bit bus which features cool graphic instructions such as PIXT and PIXBLT<a name="back_9" style="text-decoration: none;" href="index.html#footnote_9"><sup>[9]</sup></a>. This chip was used in several hardware-accelerating<a name="back_10" style="text-decoration: none;" href="index.html#footnote_10"><sup>[10]</sup></a> card in the early 90s and I expected it to do a lot of GFX work. Surprisingly, it only takes care of the game logic and does not draw anything.<br/>
+<br/> The graphic powerhouse is in fact the U13 chip called "DMA2". According to the kit diagrams, it has an impressive (at the time) 32-bit data bus and a 32-bit address bus, making it the biggest chip of the board. The super-blitter ASIC is capable of many graphic operations prowess which are detailed later.<br/>
+<br/>
+All chips (System RAM, GFX EPROMs, Palette SDRAM, Code, Video Banks) are mapped into the same 32-bit memory address space and are connected to the same bus. I was unable to dig anything about the bus protocol so if you have any knowledge of the matter, please email me.<br/>
+<br/> 
+Notice the cool trick of using the same EPROM component (in blue) to build different storage system (and save money). These 512 KiB EPROMS have 32-bit address pins and 8-bit data pins. For the 34010, which needs a 16-bit data bus, two EPROMS (J12 and G12) are two-way interleaved into 1 MiB. In the same fashion, the graphic assets are four-way interleaved to form a 32-bit address, 32-bit data storage system storing 8MiB.<br/>
+<br/>
+
+<p>
+  Event though this article is mostly about the graphic pipeline, I cannot resist describing briefly the audio system.<br/>
+  <br/>
+    <img loading="lazy" src="soundboard_drawingsvg.svg" width="212.44609mm" height="166.15504mm" style="width: 55%; height: auto; float:right; margin-bottom: 1ch; margin-left:2ch;border:0;"/>    On the right, the map of the sound board details how the Motorola 6809 (U4 running at 2Mhz) is fed instructions from a single EPROM (U3) to orchestrate the music and sound effects.<br/>
+    <br/> 
+    The Yamaha 2151 FM synthesis chip (3.5Mhz) generates musics directly from instructions received from the 6809 (musics are using fairly low bandwidth).<br/>
+    <br/>
+    The OKI6295 (1Mhz) is in charge of digitized audio ADPCM playback (such as  Tim Kitzrow legendary "Boomshakalaka"<a name="back_11" style="text-decoration: none;" href="index.html#footnote_11"><sup>[11]</sup></a>).<br/>
+    <br/>
+     Notice how, like in the main board, the same blue 512KiB 32a/8d EPROMs are used in a 16-bit two-way interleave system for the digitized voices storage and there is no interleave for the 8-bit data/address Motorola 6809 instructions.<br/>
+     <br/>
+  <div style="clear:both;"></div>
+
+
+
+
+
+<div class='heading'>Life of a frame</div><hr/><p style="margin-bottom: 0px">
+The whole NBA Jam screen is 16-bit palette indexed. Colors are stored as xRGB 1555 in a 64 KiB palette. The palette is divided in 128 blocks of (256 * 16-bit) 512 bytes. Sprites are stored in the EPROM set labeled "GFX". Each sprite has its own palette with up to 256x16-bit colors.  A sprite often uses one palette block but never more than one. CRT signal is sent to the monitor by a RAMDAC which, for each pixel, reads an index from the Video DRAM banks and lookup the color in the palette.<br/>
+<br/>
+ The life of a NBA Jam video frame is as follow:
+<ol style="text-align: justify;">
+  <li>The game logic made of 16-bit instructions flow from J12/G12 to the 34010.</li>
+  <li>The 34010 reads player inputs, computes the game state and then draws the screen. 
+  <li>To draw anything to the screen, the 34010 first find an unused block in the palette and writes the sprite palette there (sprite palettes are stored along with the 34010 instructions in J12/G12).
+  <li>The 34010 issues a request to the DMA2 which includes the sprite's address, dimensions, 8-bit palette block used, clipping, scaling, what to do with transparent pixels and so on.
+  <li>The DMA2 reads 8-bit sprite indexes from J14-G23 GFX ROMs, combine that value with the 8-bit palette block index and write the 16-bit index into the Video banks. The DMA2 can be seen as a blitter reading 8-bit values from GFX EPROM and writing 16-bit values in the Video banks</li>
+  <li>Steps 3-5 repeat until all sprites drawing request have been completed.
+  <li>When the screen needs to be refreshed, the RAMDAC convert what is in the Video banks into a signal the CRT can understand.  To keep up with the bandwidth requirements of converting 16-bit index to 16-bit RGB, the palette is stored in extremely expensive and extremely fast SRAM.</li>
+</ol>
+</p>
+
+<p>
+<picture>
+    <source srcset="eprom_eraser.webp" type="image/webp">
+    <img loading="lazy" src="eprom_eraser.jpg" width="1200" height="1200" style="width: 18%; height: auto; float:right; margin-bottom:2ch; margin-left:2ch;"/>  </picture>
+     <p>
+
+     <u><b>Trivia:</b></u> Flashing an EPROM is not a straight-forward process. Before writing to the chip, its content needs to be completely erased.<br/>
+     <br/>
+     To do that, the chip must be bombarded with UV light. Start by peeling off the sticker on top of the EPROM in order to expose its circuitry. Then place the EPROM face up in a special eraser which contains a UV lamp.<br/>
+     <br/>
+     After a 20 minutes nap the EPROM is full of 1s and ready to be written (and you can only write 0s).
+  <div style="clear:both;"></div>
+
+</p>
+
+<div class='heading'>MAME documentation</div><hr/><p style="margin-bottom: 0;">
+   With an understanding of the hardware, I knew in which set of EPROMs Michael would have to find its way (palette in Code EPROMs and indices in GFX EPROMs). However i still had no idea about the exact location and the graphic format to use.<br/>
+   <br/>
+   The missing documentation was located in MAME.
+    If you are unfamiliar with how the amazing emulator works, here is a quick introduction. MAME is built around the concept of "drivers" which replicate a board. Each driver is made of components replicating (usually) each chips. In the case of the Midway T-Unit, all files of interest are here.
+   <pre>mame/includes/midtunit.h
+mame/src/mame/video/midtunit.cpp
+mame/src/mame/drivers/midtunit.cpp
+mame/src/mame/machine/midtunit.cpp
+cpu/tms34010/tms34010.h</pre>
+<p style="margin-bottom: 0;">
+  If we look at drivers/midtunit.cpp, we can see that every memory chip is part of a single 32-bit address space. The driver source code reveal how the palette starts at 0x01800000, the gfxrom at 0x02000000, and the DMA2 chip at 0x01a80000. To follow the data path, one has to follow the C++ functions triggered when a memory address is subject to a read or write operation.
+   
+
+<pre style="color:#000000;background:#ffffff;"><span style="color:#800000; font-weight:bold; ">void</span> midtunit_state<span style="color:#800080; ">::</span>main_map<span style="color:#808030; ">(</span>address_map <span style="color:#808030; ">&amp;</span>map<span style="color:#808030; ">)</span> <span style="color:#800080; ">{</span>
+  map<span style="color:#808030; ">.</span>unmap_value_high<span style="color:#808030; ">(</span><span style="color:#808030; ">)</span><span style="color:#800080; ">;</span>
+  map<span style="color:#808030; ">(</span><span style="color:#008000; ">0x00000000</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x003fffff</span><span style="color:#808030; ">)</span><span style="color:#808030; ">.</span>rw<span style="color:#808030; ">(</span>m_video<span style="color:#808030; ">,</span> FUNC<span style="color:#808030; ">(</span>midtunit_vram_r<span style="color:#808030; ">)</span><span style="color:#808030; ">,</span> FUNC<span style="color:#808030; ">(</span>midtunit_vram_w<span style="color:#808030; ">)</span><span style="color:#808030; ">)</span><span style="color:#800080; ">;</span>
+  map<span style="color:#808030; ">(</span><span style="color:#008000; ">0x01000000</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x013fffff</span><span style="color:#808030; ">)</span><span style="color:#808030; ">.</span>ram<span style="color:#808030; ">(</span><span style="color:#808030; ">)</span><span style="color:#800080; ">;</span>
+  map<span style="color:#808030; ">(</span><span style="color:#008000; ">0x01400000</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x0141ffff</span><span style="color:#808030; ">)</span><span style="color:#808030; ">.</span>rw<span style="color:#808030; ">(</span>FUNC<span style="color:#808030; ">(</span>midtunit_cmos_r<span style="color:#808030; ">)</span><span style="color:#808030; ">,</span> FUNC<span style="color:#808030; ">(</span>midtunit_cmos_w<span style="color:#808030; ">)</span><span style="color:#808030; ">)</span><span style="color:#808030; ">.</span>share<span style="color:#808030; ">(</span><span style="color:#800000; ">"</span><span style="color:#0000e6; ">nvram</span><span style="color:#800000; ">"</span><span style="color:#808030; ">)</span><span style="color:#800080; ">;</span>
+  map<span style="color:#808030; ">(</span><span style="color:#008000; ">0x01480000</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x014fffff</span><span style="color:#808030; ">)</span><span style="color:#808030; ">.</span>w<span style="color:#808030; ">(</span>FUNC<span style="color:#808030; ">(</span>midtunit_cmos_enable_w<span style="color:#808030; ">)</span><span style="color:#808030; ">)</span><span style="color:#800080; ">;</span>
+  map<span style="color:#808030; ">(</span><span style="color:#008000; ">0x01600000</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x0160000f</span><span style="color:#808030; ">)</span><span style="color:#808030; ">.</span>portr<span style="color:#808030; ">(</span><span style="color:#800000; ">"</span><span style="color:#0000e6; ">IN0</span><span style="color:#800000; ">"</span><span style="color:#808030; ">)</span><span style="color:#800080; ">;</span>
+  map<span style="color:#808030; ">(</span><span style="color:#008000; ">0x01600010</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x0160001f</span><span style="color:#808030; ">)</span><span style="color:#808030; ">.</span>portr<span style="color:#808030; ">(</span><span style="color:#800000; ">"</span><span style="color:#0000e6; ">IN1</span><span style="color:#800000; ">"</span><span style="color:#808030; ">)</span><span style="color:#800080; ">;</span>
+  map<span style="color:#808030; ">(</span><span style="color:#008000; ">0x01600020</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x0160002f</span><span style="color:#808030; ">)</span><span style="color:#808030; ">.</span>portr<span style="color:#808030; ">(</span><span style="color:#800000; ">"</span><span style="color:#0000e6; ">IN2</span><span style="color:#800000; ">"</span><span style="color:#808030; ">)</span><span style="color:#800080; ">;</span>
+  map<span style="color:#808030; ">(</span><span style="color:#008000; ">0x01600030</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x0160003f</span><span style="color:#808030; ">)</span><span style="color:#808030; ">.</span>portr<span style="color:#808030; ">(</span><span style="color:#800000; ">"</span><span style="color:#0000e6; ">DSW</span><span style="color:#800000; ">"</span><span style="color:#808030; ">)</span><span style="color:#800080; ">;</span>
+  map<span style="color:#808030; ">(</span><span style="color:#008000; ">0x01800000</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x0187ffff</span><span style="color:#808030; ">)</span><span style="color:#808030; ">.</span>ram<span style="color:#808030; ">(</span><span style="color:#808030; ">)</span><span style="color:#808030; ">.</span>w<span style="color:#808030; ">(</span>m_palette<span style="color:#808030; ">,</span> FUNC<span style="color:#808030; ">(</span>write16<span style="color:#808030; ">)</span><span style="color:#808030; ">)</span><span style="color:#808030; ">.</span>share<span style="color:#808030; ">(</span><span style="color:#800000; ">"</span><span style="color:#0000e6; ">palette</span><span style="color:#800000; ">"</span><span style="color:#808030; ">)</span><span style="color:#800080; ">;</span>
+  map<span style="color:#808030; ">(</span><span style="color:#008000; ">0x01a80000</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x01a800ff</span><span style="color:#808030; ">)</span><span style="color:#808030; ">.</span>rw<span style="color:#808030; ">(</span>m_video<span style="color:#808030; ">,</span> FUNC<span style="color:#808030; ">(</span>midtunit_dma_r<span style="color:#808030; ">)</span><span style="color:#808030; ">,</span> FUNC<span style="color:#808030; ">(</span>midtunit_dma_w<span style="color:#808030; ">)</span><span style="color:#808030; ">)</span><span style="color:#800080; ">;</span>
+  map<span style="color:#808030; ">(</span><span style="color:#008000; ">0x01b00000</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x01b0001f</span><span style="color:#808030; ">)</span><span style="color:#808030; ">.</span>w<span style="color:#808030; ">(</span>m_video<span style="color:#808030; ">,</span> FUNC<span style="color:#808030; ">(</span>midtunit_control_w<span style="color:#808030; ">)</span><span style="color:#808030; ">)</span><span style="color:#800080; ">;</span>
+  map<span style="color:#808030; ">(</span><span style="color:#008000; ">0x01d00000</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x01d0001f</span><span style="color:#808030; ">)</span><span style="color:#808030; ">.</span>r<span style="color:#808030; ">(</span>FUNC<span style="color:#808030; ">(</span>midtunit_sound_state_r<span style="color:#808030; ">)</span><span style="color:#808030; ">)</span><span style="color:#800080; ">;</span>
+  map<span style="color:#808030; ">(</span><span style="color:#008000; ">0x01d01020</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x01d0103f</span><span style="color:#808030; ">)</span><span style="color:#808030; ">.</span>rw<span style="color:#808030; ">(</span>FUNC<span style="color:#808030; ">(</span>midtunit_sound_r<span style="color:#808030; ">)</span><span style="color:#808030; ">,</span> FUNC<span style="color:#808030; ">(</span>midtunit_sound_w<span style="color:#808030; ">)</span><span style="color:#808030; ">)</span><span style="color:#800080; ">;</span>
+  map<span style="color:#808030; ">(</span><span style="color:#008000; ">0x01d81060</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x01d8107f</span><span style="color:#808030; ">)</span><span style="color:#808030; ">.</span>w<span style="color:#808030; ">(</span><span style="color:#800000; ">"</span><span style="color:#0000e6; ">watchdog</span><span style="color:#800000; ">"</span><span style="color:#808030; ">,</span> FUNC<span style="color:#808030; ">(</span>watchdog_timer_device<span style="color:#800080; ">::</span>reset16_w<span style="color:#808030; ">)</span><span style="color:#808030; ">)</span><span style="color:#800080; ">;</span>
+  map<span style="color:#808030; ">(</span><span style="color:#008000; ">0x01f00000</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x01f0001f</span><span style="color:#808030; ">)</span><span style="color:#808030; ">.</span>w<span style="color:#808030; ">(</span>m_video<span style="color:#808030; ">,</span> FUNC<span style="color:#808030; ">(</span>midtunit_control_w<span style="color:#808030; ">)</span><span style="color:#808030; ">)</span><span style="color:#800080; ">;</span>
+  map<span style="color:#808030; ">(</span><span style="color:#008000; ">0x02000000</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x07ffffff</span><span style="color:#808030; ">)</span><span style="color:#808030; ">.</span>r<span style="color:#808030; ">(</span>m_video<span style="color:#808030; ">,</span> FUNC<span style="color:#808030; ">(</span>midtunit_gfxrom_r<span style="color:#808030; ">)</span><span style="color:#808030; ">)</span><span style="color:#808030; ">.</span>share<span style="color:#808030; ">(</span><span style="color:#800000; ">"</span><span style="color:#0000e6; ">gfxrom</span><span style="color:#800000; ">"</span><span style="color:#808030; ">)</span><span style="color:#800080; ">;</span>
+  map<span style="color:#808030; ">(</span><span style="color:#008000; ">0x1f800000</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x1fffffff</span><span style="color:#808030; ">)</span><span style="color:#808030; ">.</span>rom<span style="color:#808030; ">(</span><span style="color:#808030; ">)</span><span style="color:#808030; ">.</span>region<span style="color:#808030; ">(</span><span style="color:#800000; ">"</span><span style="color:#0000e6; ">maincpu</span><span style="color:#800000; ">"</span><span style="color:#808030; ">,</span> <span style="color:#008c00; ">0</span><span style="color:#808030; ">)</span><span style="color:#800080; ">;</span> <span style="color:#696969; ">/* mirror used by MK*/</span>
+  map<span style="color:#808030; ">(</span><span style="color:#008000; ">0xff800000</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0xffffffff</span><span style="color:#808030; ">)</span><span style="color:#808030; ">.</span>rom<span style="color:#808030; ">(</span><span style="color:#808030; ">)</span><span style="color:#808030; ">.</span>region<span style="color:#808030; ">(</span><span style="color:#800000; ">"</span><span style="color:#0000e6; ">maincpu</span><span style="color:#800000; ">"</span><span style="color:#808030; ">,</span> <span style="color:#008c00; ">0</span><span style="color:#808030; ">)</span><span style="color:#800080; ">;</span>
+<span style="color:#800080; ">}</span>
+</pre>
+
+
+  <p style="margin-bottom: 0;">
+    In the same "drivers/midtunit.cpp" file, located at the bottom, we can see how the EPROMs content is loaded in RAM. In the case of the graphic assets "gfxrom" (mapped at 0x02000000), we can see they span over eight MiBs of address space in blocks of four-interleaved chips. Notice how the filenames match the chip location (e.g: UJ12/UG12). A set of these EPROMs files is more commonly known as "ROMs" in the world of emulators.
+  
+
+<pre style="color:#000000;background:#ffffff;">ROM_START<span style="color:#808030; ">(</span> nbajamte <span style="color:#808030; ">)</span>
+  ROM_REGION<span style="color:#808030; ">(</span> <span style="color:#008000; ">0x50000</span><span style="color:#808030; ">,</span> <span style="color:#800000; ">"</span><span style="color:#0000e6; ">adpcm:cpu</span><span style="color:#800000; ">"</span><span style="color:#808030; ">,</span> <span style="color:#008c00; ">0</span> <span style="color:#808030; ">)</span> <span style="color:#696969; ">/* sound CPU*/</span>
+  ROM_LOAD<span style="color:#808030; ">(</span>  <span style="color:#800000; ">"</span><span style="color:#0000e6; ">l1_nba_jam_tournament_u3_sound_rom.u3</span><span style="color:#800000; ">"</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x010000</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x20000</span><span style="color:#808030; ">,</span> NO_DUMP<span style="color:#808030; ">)</span>
+  ROM_RELOAD<span style="color:#808030; ">(</span>             <span style="color:#008000; ">0x030000</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x20000</span> <span style="color:#808030; ">)</span>
+
+  ROM_REGION<span style="color:#808030; ">(</span> <span style="color:#008000; ">0x100000</span><span style="color:#808030; ">,</span> <span style="color:#800000; ">"</span><span style="color:#0000e6; ">adpcm:oki</span><span style="color:#800000; ">"</span><span style="color:#808030; ">,</span> <span style="color:#008c00; ">0</span> <span style="color:#808030; ">)</span>  <span style="color:#696969; ">/* ADPCM*/</span>
+  ROM_LOAD<span style="color:#808030; ">(</span> <span style="color:#800000; ">"</span><span style="color:#0000e6; ">l1_nba_jam_tournament_u12_sound_rom.u12</span><span style="color:#800000; ">"</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x000000</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x80000</span><span style="color:#808030; ">,</span> NO_DUMP<span style="color:#808030; ">)</span>
+  ROM_LOAD<span style="color:#808030; ">(</span> <span style="color:#800000; ">"</span><span style="color:#0000e6; ">l1_nba_jam_tournament_u13_sound_rom.u13</span><span style="color:#800000; ">"</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x080000</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x80000</span><span style="color:#808030; ">,</span> NO_DUMP<span style="color:#808030; ">)</span>
+
+  ROM_REGION16_LE<span style="color:#808030; ">(</span> <span style="color:#008000; ">0x100000</span><span style="color:#808030; ">,</span> <span style="color:#800000; ">"</span><span style="color:#0000e6; ">maincpu</span><span style="color:#800000; ">"</span><span style="color:#808030; ">,</span> <span style="color:#008c00; ">0</span> <span style="color:#808030; ">)</span>   <span style="color:#696969; ">/* 34010 code*/</span>
+  ROM_LOAD16_BYTE<span style="color:#808030; ">(</span> <span style="color:#800000; ">"</span><span style="color:#0000e6; ">l4_nba_jam_tournament_game_rom_uj12.uj12</span><span style="color:#800000; ">"</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x00000</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x80000</span><span style="color:#808030; ">,</span> NO_DUMP<span style="color:#808030; ">)</span>
+  ROM_LOAD16_BYTE<span style="color:#808030; ">(</span> <span style="color:#800000; ">"</span><span style="color:#0000e6; ">l4_nba_jam_tournament_game_rom_ug12.ug12</span><span style="color:#800000; ">"</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x00001</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x80000</span><span style="color:#808030; ">,</span> NO_DUMP<span style="color:#808030; ">)</span>
+
+  ROM_REGION<span style="color:#808030; ">(</span> <span style="color:#008000; ">0xc00000</span><span style="color:#808030; ">,</span> <span style="color:#800000; ">"</span><span style="color:#0000e6; ">gfxrom</span><span style="color:#800000; ">"</span><span style="color:#808030; ">,</span> <span style="color:#008c00; ">0</span> <span style="color:#808030; ">)</span>
+  ROM_LOAD32_BYTE<span style="color:#808030; ">(</span> <span style="color:#800000; ">"</span><span style="color:#0000e6; ">l1_nba_jam_tournament_game_rom_ug14.ug14</span><span style="color:#800000; ">"</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x000000</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x80000</span><span style="color:#808030; ">,</span> NO_DUMP<span style="color:#808030; ">)</span>
+  ROM_LOAD32_BYTE<span style="color:#808030; ">(</span> <span style="color:#800000; ">"</span><span style="color:#0000e6; ">l1_nba_jam_tournament_game_rom_uj14.uj14</span><span style="color:#800000; ">"</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x000001</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x80000</span><span style="color:#808030; ">,</span> NO_DUMP<span style="color:#808030; ">)</span>
+  ROM_LOAD32_BYTE<span style="color:#808030; ">(</span> <span style="color:#800000; ">"</span><span style="color:#0000e6; ">l1_nba_jam_tournament_game_rom_ug19.ug19</span><span style="color:#800000; ">"</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x000002</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x80000</span><span style="color:#808030; ">,</span> NO_DUMP<span style="color:#808030; ">)</span>
+  ROM_LOAD32_BYTE<span style="color:#808030; ">(</span> <span style="color:#800000; ">"</span><span style="color:#0000e6; ">l1_nba_jam_tournament_game_rom_uj19.uj19</span><span style="color:#800000; ">"</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x000003</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x80000</span><span style="color:#808030; ">,</span> NO_DUMP<span style="color:#808030; ">)</span>
+
+  ROM_LOAD32_BYTE<span style="color:#808030; ">(</span> <span style="color:#800000; ">"</span><span style="color:#0000e6; ">l1_nba_jam_tournament_game_rom_ug16.ug16</span><span style="color:#800000; ">"</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x200000</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x80000</span><span style="color:#808030; ">,</span> NO_DUMP<span style="color:#808030; ">)</span>
+  ROM_LOAD32_BYTE<span style="color:#808030; ">(</span> <span style="color:#800000; ">"</span><span style="color:#0000e6; ">l1_nba_jam_tournament_game_rom_uj16.uj16</span><span style="color:#800000; ">"</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x200001</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x80000</span><span style="color:#808030; ">,</span> NO_DUMP<span style="color:#808030; ">)</span>
+  ROM_LOAD32_BYTE<span style="color:#808030; ">(</span> <span style="color:#800000; ">"</span><span style="color:#0000e6; ">l1_nba_jam_tournament_game_rom_ug20.ug20</span><span style="color:#800000; ">"</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x200002</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x80000</span><span style="color:#808030; ">,</span> NO_DUMP<span style="color:#808030; ">)</span>
+  ROM_LOAD32_BYTE<span style="color:#808030; ">(</span> <span style="color:#800000; ">"</span><span style="color:#0000e6; ">l1_nba_jam_tournament_game_rom_uj20.uj20</span><span style="color:#800000; ">"</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x200003</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x80000</span><span style="color:#808030; ">,</span> NO_DUMP<span style="color:#808030; ">)</span>
+
+  ROM_LOAD32_BYTE<span style="color:#808030; ">(</span> <span style="color:#800000; ">"</span><span style="color:#0000e6; ">l1_nba_jam_tournament_game_rom_ug17.ug17</span><span style="color:#800000; ">"</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x400000</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x80000</span><span style="color:#808030; ">,</span> NO_DUMP<span style="color:#808030; ">)</span>
+  ROM_LOAD32_BYTE<span style="color:#808030; ">(</span> <span style="color:#800000; ">"</span><span style="color:#0000e6; ">l1_nba_jam_tournament_game_rom_uj17.uj17</span><span style="color:#800000; ">"</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x400001</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x80000</span><span style="color:#808030; ">,</span> NO_DUMP<span style="color:#808030; ">)</span>
+  ROM_LOAD32_BYTE<span style="color:#808030; ">(</span> <span style="color:#800000; ">"</span><span style="color:#0000e6; ">l1_nba_jam_tournament_game_rom_ug22.ug22</span><span style="color:#800000; ">"</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x400002</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x80000</span><span style="color:#808030; ">,</span> NO_DUMP<span style="color:#808030; ">)</span>
+  ROM_LOAD32_BYTE<span style="color:#808030; ">(</span> <span style="color:#800000; ">"</span><span style="color:#0000e6; ">l1_nba_jam_tournament_game_rom_uj22.uj22</span><span style="color:#800000; ">"</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x400003</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x80000</span><span style="color:#808030; ">,</span> NO_DUMP<span style="color:#808030; ">)</span>
+
+  ROM_LOAD32_BYTE<span style="color:#808030; ">(</span> <span style="color:#800000; ">"</span><span style="color:#0000e6; ">l1_nba_jam_tournament_game_rom_ug18.ug18</span><span style="color:#800000; ">"</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x600000</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x80000</span><span style="color:#808030; ">,</span> NO_DUMP<span style="color:#808030; ">)</span>
+  ROM_LOAD32_BYTE<span style="color:#808030; ">(</span> <span style="color:#800000; ">"</span><span style="color:#0000e6; ">l1_nba_jam_tournament_game_rom_uj18.uj18</span><span style="color:#800000; ">"</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x600001</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x80000</span><span style="color:#808030; ">,</span> NO_DUMP<span style="color:#808030; ">)</span>
+  ROM_LOAD32_BYTE<span style="color:#808030; ">(</span> <span style="color:#800000; ">"</span><span style="color:#0000e6; ">l1_nba_jam_tournament_game_rom_ug23.ug23</span><span style="color:#800000; ">"</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x600002</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x80000</span><span style="color:#808030; ">,</span> NO_DUMP<span style="color:#808030; ">)</span>
+  ROM_LOAD32_BYTE<span style="color:#808030; ">(</span> <span style="color:#800000; ">"</span><span style="color:#0000e6; ">l1_nba_jam_tournament_game_rom_uj23.uj23</span><span style="color:#800000; ">"</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x600003</span><span style="color:#808030; ">,</span> <span style="color:#008000; ">0x80000</span><span style="color:#808030; ">,</span> NO_DUMP<span style="color:#808030; ">)</span>
+ROM_END
+</pre>
+
+
+<p>
+  <b><u>Trivia:</u></b> In the code sample above, the last function parameter was changed to "NO_DUMP" in order to allowed modded EPROM to load. These fields are usually<a name="back_12" style="text-decoration: none;" href="index.html#footnote_12"><sup>[12]</sup></a> a CRC/SHA1 hash of the EPROM content. This is how MAME identify which ROM belongs to what game and is able to tell you if one ROM in the set is missing/corrupted.
+ </p>
+
+
+  <div class='heading'>The heart of the video engine: DMA2</div><hr/><p style="margin-bottom: 0;">
+  The key to understand the graphic format is in the function handing DMA write/read to the DMA2 256 registers spanning from 0x01a80000 to 0x01a800ff. All the hard work of reverse-engineering had already been done by MAME developers. They even took the time to beautifully document the command format.
+  <pre>
+ DMA registers
+ ------------------
+
+  Register | Bit              | Use
+ ----------+-FEDCBA9876543210-+------------
+     0     | xxxxxxxx-------- | pixels to drop at the start of each row
+           | --------xxxxxxxx | pixels to drop at the end of each row
+     1     | x--------------- | trigger write (or clear if zero)
+           | -421------------ | image bpp (0=8)
+           | ----84---------- | post skip size = (1&lt;&lt;x)
+           | ------21-------- | pre skip size = (1&lt;&lt;x)
+           | --------8------- | pre/post skip enable
+           | ---------4------ | clipping enable
+           | ----------2----- | flip y
+           | -----------1---- | flip x
+           | ------------8--- | blit nonzero pixels as color
+           | -------------4-- | blit zero pixels as color
+           | --------------2- | blit nonzero pixels
+           | ---------------1 | blit zero pixels
+     2     | xxxxxxxxxxxxxxxx | source address low word
+     3     | xxxxxxxxxxxxxxxx | source address high word
+     4     | -------xxxxxxxxx | detination x
+     5     | -------xxxxxxxxx | destination y
+     6     | ------xxxxxxxxxx | image columns
+     7     | ------xxxxxxxxxx | image rows
+     8     | xxxxxxxxxxxxxxxx | palette
+     9     | xxxxxxxxxxxxxxxx | color
+    10     | ---xxxxxxxxxxxxx | scale x
+    11     | ---xxxxxxxxxxxxx | scale y
+    12     | -------xxxxxxxxx | top/left clip
+    13     | -------xxxxxxxxx | bottom/right clip
+    14     | ---------------- | test
+    15     | xxxxxxxx-------- | zero detect byte
+           | --------8------- | extra page
+           | ---------4------ | destination size
+           | ----------2----- | select top/bottom or left/right for reg 12/13
+ </pre>
+ <p>
+  There is even a debug feature allowing to save source sprites as the DMA2 blits them (written by long-time MAME contributor, Ryan Holtz<a name="back_13" style="text-decoration: none;" href="index.html#footnote_13"><sup>[13]</sup></a>). All I had to do was to play the game to get all sprites saved on disk along with metadata.<br/>
+  <br/>  
+  It turned out sprites are made of plain 16-bit palette entries with no compression. All sprites don't have the same number of colors however. Some sprite use only 16 colors with 4-bit color indexes while some other use 256 colors requesting 8-bit color indexes.
+</p>
+
+<div class='heading'>Patching</div><hr/><p>
+  With knowledge of sprite location and format, I had only a minimal amount of reverse-engineering to perform. I wrote a small Golang program to de-interleave the "code" and "gfx" EPROMs. With de-interleaved content, it was easy to search for ASCII or known values since I worked with exactly what the RAM looked like at runtime.<br/>
+  <br/>
+  From there, finding player stats was easy. It turns out their were all stored one after an other as 16-bit unsigned big-endian (which made a lot of sense since the 34010 is BE). I added a  patcher to modify player attributes. Not knowing basketball much I went with SPEED=9, 3 PTS=9, DUNKS=9, PASS=9, POWER=9, STEAL=9, BLOCK=9, and CLTCH=9.<br/>
+  <br/>
+  I also wrote something to patches new sprites with the only constraint that new sprites have to be the same dimensions as what it overwrites. For MJ photo, I crafted a 256 colors indexed PNG (available <a href="mike.png">here</a>).<br/>
+  <br/>
+  Finally I added something to interleave the intermediate format into individual burnable EPROMs files.
+</p>
+
+<div class='heading'>Running it</div><hr/><p>
+  <picture>
+      <source srcset="check.webp" type="image/webp">
+    <img loading="lazy" src="check.png" width="800" height="600" style="width: 49%; height: auto; float:left; margin-bottom:2ch; margin-right:2ch;"/>  </picture>
+  After patching the content of the EPROMs, NBAJam diagnostic tool showed that several chips content were "BAD". This was expected since I patched the content of the EPROMs but did not bother to find the CRC format or even where it was stored.<br/>
+  <br/> The GFX EPROMS are marked red (UG16/UJ16, UG17/UJ17, UG18/UJ18, UG20/UJ20, UG22/UJ22, and UG23/UJ23) because this is where images I touched are stored. The two EPROMs storing the instructions (UG12 and UJ12) are also red because this is where the palettes are stored.<br/>
+  <br/>
+  Luckily CRCs are not used here to prevent modded content but only to check chips integrity. The game proceeded to startup. And it worked :) !<br/>
+  <br/>
+</p>
+   <picture>
+      <source srcset="itworks.webp" type="image/webp">
+    <img loading="lazy" src="itworks.png" width="400" height="254" style="width: 100%; height: auto; margin-bottom:0ch;"/>  </picture>
+  </p>
+
+  <div class='heading'>NeXT</div><hr/>  <p>
+  With the technical challenge gone, I quickly lost interest in the tool and stopped developing it. Ideas for someone willing to toy with the code:
+  <ul>
+    <li>Add the Toronto Raptors to the Eastern Conference.</li>
+    <li>Add ability to change player names. These are sadly not ASII based but pre-generated images.</li>
+    <li>Change the PCM samples (and hire Tim Kitzrow) via Williams OKI Editor<a name="back_14" style="text-decoration: none;" href="index.html#footnote_14"><sup>[14]</sup></a>.</li>
+  </ul>
+</p>
+<div style="clear:both;"></div>
+
+
+
+<div class='heading'>Further reading</div><hr/><p>
+ If you are a fan of NBA Jam, Reyan Ali wrote a whole book<a name="back_15" style="text-decoration: none;" href="index.html#footnote_15"><sup>[15]</sup></a> about it. You can get it <a href="https://bossfightbooks.com/collections/books/products/nba-jam-by-reyan-ali">here</a>.<br/>
+ <br/>
+ If you want to explore the architecture of the T-Unit further, you may find it interesting to go through the previous generation, the Z-UNIT, Theory and Maintenance Manual<a name="back_16" style="text-decoration: none;" href="index.html#footnote_16"><sup>[16]</sup></a> which was used for NARC.
+</p>
+
+<div class='heading'>Source Code</div><hr/><p>
+ If you want to contribute of merely look how it is done, the full source code is available on github <a href="https://github.com/fabiensanglard/roaster">here</a>.
+</p>
+<style type='text/css'>td.ref {  padding-bottom: 0ch; width:0;}</style><div class='heading'>References</div><hr/><p id='paperbox' style='text-align:left;'><table><tbody style='vertical-align: top;'><tr><td class='ref' style='width:1ch;'><a name="footnote_1"></a><a href="index.html#back_1">^</a></td><td  class='ref' style='width:4ch;'> [ 1]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://bossfightbooks.com/products/nba-jam-by-reyan-ali">'NJA Jam' by Reyan Ali</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_2"></a><a href="index.html#back_2">^</a></td><td  class='ref' style='width:4ch;'> [ 2]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://bossfightbooks.com/products/nba-jam-by-reyan-ali">'NJA Jam' by Reyan Ali</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_3"></a><a href="index.html#back_3">^</a></td><td  class='ref' style='width:4ch;'> [ 3]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://bossfightbooks.com/products/nba-jam-by-reyan-ali">'NJA Jam' by Reyan Ali</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_4"></a><a href="index.html#back_4">^</a></td><td  class='ref' style='width:4ch;'> [ 4]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://www.youtube.com/watch?v=CUBAKk64FS8">Mortal Kombat 1 Behind The Scenes</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_5"></a><a href="index.html#back_5">^</a></td><td  class='ref' style='width:4ch;'> [ 5]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://bossfightbooks.com/products/nba-jam-by-reyan-ali">'NJA Jam' by Reyan Ali</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_6"></a><a href="index.html#back_6">^</a></td><td  class='ref' style='width:4ch;'> [ 6]</td><td style='width:100%;text-align:left;' class='ref'><a href="http://www.firebrandx.com/consoleaspectcorrection.html">4:3 versus Square Pixels</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_7"></a><a href="index.html#back_7">^</a></td><td  class='ref' style='width:4ch;'> [ 7]</td><td style='width:100%;text-align:left;' class='ref'>Sadly the days of gorgeous documentation like this instance are long gone.</td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_8"></a><a href="index.html#back_8">^</a></td><td  class='ref' style='width:4ch;'> [ 8]</td><td style='width:100%;text-align:left;' class='ref'><a href="mame_startup.png">Mame NBA Jam start-up screen</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_9"></a><a href="index.html#back_9">^</a></td><td  class='ref' style='width:4ch;'> [ 9]</td><td style='width:100%;text-align:left;' class='ref'><a href="TMS34010_Instruction_Set.pdf">TMS34010 Instruction Set</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_10"></a><a href="index.html#back_10">^</a></td><td  class='ref' style='width:4ch;'> [10]</td><td style='width:100%;text-align:left;' class='ref'><a href="t34010_user_guide.pdf">T34010 User Guide</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_11"></a><a href="index.html#back_11">^</a></td><td  class='ref' style='width:4ch;'> [11]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://www.youtube.com/watch?v=mOLxlzrxCv0)">NBA Jam—BoomShakaLaka video</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_12"></a><a href="index.html#back_12">^</a></td><td  class='ref' style='width:4ch;'> [12]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://github.com/mamedev/mame/blob/52d873062c8025915d55b15547edc66de0f17492/src/mame/drivers/midtunit.cpp#L1305">MAME T-Unit driver.cpp</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_13"></a><a href="index.html#back_13">^</a></td><td  class='ref' style='width:4ch;'> [13]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://github.com/mamedev/mame/commit/6c9ab2f93fe42b499d0230831821249e26dfdd83">Commit 'midtunit.cpp: Added an optional DMA-blitter viewer'</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_14"></a><a href="index.html#back_14">^</a></td><td  class='ref' style='width:4ch;'> [14]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://github.com/fabiensanglard/WilliamsOKIEditor">Williams OKI Editor</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_15"></a><a href="index.html#back_15">^</a></td><td  class='ref' style='width:4ch;'> [15]</td><td style='width:100%;text-align:left;' class='ref'><a href="https://bossfightbooks.com/products/nba-jam-by-reyan-ali">'NBA JAM Book' by Reyan Ali</a></td></tr><tr><td class='ref' style='width:1ch;'><a name="footnote_16"></a><a href="index.html#back_16">^</a></td><td  class='ref' style='width:4ch;'> [16]</td><td style='width:100%;text-align:left;' class='ref'><a href="Williams_Z-Unit_CPU_Theory_and_Maintanence&#32;Manual.pdf">Z-UNIT Theory and Maintenance Manual (thanks Louis Koziarz)</a></td></tr></tbody></table></p> <hr>
+ <center>*

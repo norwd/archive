@@ -1,0 +1,512 @@
+Starting to study the renderer architecture (May 16, Flight Toronto-Paris):
+=============================================
+
+
+The frontend/backend architecture was meant for SMP systems. As many cores should be in the backend so copying array and method calls are
+not impacting the CPU too much ?
+
+
+Q: Determine what is done with .map and what it done with .proc. Is .map completely discarded ?
+A: Not discarded: Map is loaded from the game part, this is where the lights are.
+
+Q: Where are texture loaded to the GPU ? Are they all loaded ?
+A: ActuallyLoadImage: Absolutely every image goes through this path
+
+
+Read from .map/.proc
+  lightDef
+  entityDefs
+  -> Stored in idRenderWorldLocal in idList
+
+.proc loading : 
+==============
+
+    Loaded in idRenderWorldLocal::InitFromMap
+  
+    The .proc has the following structure:
+
+    1. Models
+        - Surfaces   
+    2. Inter-area portals
+    3. BSP (leaves are negative).
+    4. Precalculated shadow volumes
+  
+  
+  
+  
+  
+  
+.map loading :
+==============
+
+Done in idGameLocal::InitFromNewMap
+
+ 1. Model loading
+      Nothing special. Model is parsed and added to database via the ModelManager    
+ 
+  2. ParseInterAreaPortals
+       - Get number of areas.
+       - Get number of interareaportals.
+
+       For each interareaportal, 
+           Generate two portals. 
+           Insert both of them into: portalAreas[a] 
+           Also update doublePortal[i] array 
+
+  3. ParseNode
+       
+      Store the entire BSP in areaNodes[i] array
+      
+           
+
+  4. Parse Shadow Volumes
+
+     Not really interesting, load volumes with a specific parser and then store it in ModelManaget using the name of the model.
+
+
+  Analysis :
+  ==========
+    It seems that all models are not connected to the BSP
+     Q: How in the world does the engine knows which model is in which area ?
+     A:
+
+     Q: BSP Nodes and interareaportals are not connected for now ? Does the id in the portalAreas array matches the BSP node ids ? I hope so !
+     A: BSP Nodes are connected to area since a negative node id indicate a leave in area: -1-nodeId.
+
+     
+  5. CommonChildrenArea_r
+        Populate the BSP commonChildrenArea value.
+             - can be -2 if two area are under this node.
+             - otherwise it will be the value of the common area.
+
+  6. AddWorldModelEntities
+      Look in the ModelManager for _area*, those models are containers for each surface in the area. 
+  
+    AddWorldModelEntities
+      AddEntityRefToArea
+       
+   
+  7. ClearPortalStates
+     Do some stuff on the portals. Recursive & floodFill
+     
+       
+           
+  
+  
+UNrolled loop :
+===============:w
+  
+  
+  idSessionLocal::MoveToNewMap
+    idSessionLocal::ExecuteMapChange
+    {
+    
+      // .PROD LOADING
+      idRenderWorldLocal::InitFromMap
+      {
+      |  ParseModel
+      |     AddModel
+      |  ParseInterAreaPortals
+      |  ParseNodes
+      |  ParseShadowModel
+      |     AddModel
+      |
+      |  CommonChildrenArea_r
+      |  AddWorldModelEntities
+      |  ClearPortalStates
+      }
+
+      //GPU Uploading textures
+      idSessionLocal::ExecuteMapChange
+        idRenderSystemLocal::EndLevelLoad
+          idRenderModelManagerLocal::EndLevelLoad
+             ActuallyLoadImage
+
+       // .MAP LOADING
+       idGameLocal::InitFromNewMap
+       {
+         LoadMap
+         {
+         |    mapFile = new idMapFile;
+         |    mapFile->Parse( idStr( mapName ) + ".map" )
+         |    {
+         |        //Try to load a reg file
+         |        //Try to load a map file
+         |        fullName.SetFileExtension( "map" );
+         |        src.LoadFile( fullName, osPath );
+         |
+         |        while( 1 )
+         |        {
+         |            mapEnt = idMapEntity::Parse( src, ( entities.Num() == 0 ), version )
+         |            {
+         |               // parse brush, brushDef, brushDef2, brushDef3
+         |               // parse patchDef2, patchDef3
+         |               // parse a key / value pair (lights, monsters, script triggers etc...)
+         |            }
+         |            // entities is just an idList
+         |            dMapFile::entities.Append( mapEnt );
+         |        }
+         |    }
+         |
+         |    // load the collision map
+         |    collisionModelManager->LoadMap( mapFile );
+         |
+         |    // load navigation system for all the different monster sizes
+         |    for( i = 0; i < aasNames.Num(); i++ )
+         |       aasList[ i ]->Init( idStr( mapFileName ).SetFileExtension( aasNames[ i ] ).c_str(), mapFile->GetGeometryCRC() );
+         |
+         }
+         InitScriptForMap
+         MapPopulate
+       }
+      }
+    Note: AddModel used the Model Manager. The Model Manager stores each model in a hashtable using the model's name as hash.
+
+   
+   
+   
+Runtime: 
+
+Great: No more word and entities rendered separately. This is unification !
+
+What does the frontend do ?
+How does it do it ?
+
+
+Frontend will flow through each area visible and emit:
+
+entityDefs -> viewEntities
+lightDefs  -> viewLights
+
+The view elements are allocated on the stack because they will not be needed next frame.
+
+Q: It seems there is a vertexcache operating, controlled by the front end. HOW DOES IT WORK ?
+
+Q: Where are entities and lights added to areas?
+A: GenerateAllInteractions ?
+     CreateLightDefInteractions
+
+   Note:  It is also in GenerateAllInteractions that the interactionTable is allocated space (entitiesNum*modelsNum)
+   Note2: It seems many interactions are pre-generated in GenerateAllInteractions since for each lights (lightDefs) an interaction is created
+
+
+Q: Where are areas added to lights and entities (areaReference_t) ?
+AddEntityDef    &&   AddLightDef
+ UpdateEntityDef  &&  UpdateLightDef   
+  R_CreateEntityRefs && R_CreateLightRefs   
+  
+      both call:
+    
+      PushVolumeIntoTree
+         PushVolumeIntoTree_r
+            AddEntityRefToArea
+            AddLightRefToArea
+
+
+  R_RenderView
+  
+
+
+
+      
+
+
+Q: Ref from word database on the head get transformed into "view"....very likely allocated on the stack. Confirm this.
+A: Nope, "view*" are not allocated on the stack but on the heap. They are proxies for idRenderEntity and idRenderLight. Those proxy are
+   consumed by the backend and can be viewed as an intermediate representation.
+  
+    FindViewLightsAndEntities
+    |   PointInArea( tr.viewDef->initialViewAreaOrigin )
+    |   
+    |   // Update tr.viewDef->connectedAreas[area id] to 0 or 1.
+    |   // This will block on blocking portals. THIS IS NO BUILDING VISIBLE TO PLAYER AREAS, THIS IS USED TO DETECT ALL INTERACTIONS.
+    |   BuildConnectedAreas
+    |     BuildConnectedAreas_r
+    |
+    |   // Recurse to reach leaves of the BSP. THIS BUILD THE VISIBLE AREA, LIGHT AND MODELS with viewCount = tr.viewCount
+    |   FlowViewThroughPortals
+    |     FloodViewThroughArea_r( origin, tr.viewDef->areaNum, &ps )
+    |     {
+    |        // Mark area visible (portalAreas[ areaNum ].viewCount = tr.viewCount)
+    |        // Clip area models and lights to the remaining of the view frustrum in this area
+    |        AddAreaRefs(areaNum)
+    |        {
+    |          
+    |          //Go through every area->entityRefs,
+    |          AddAreaEntityRefs(areaNum)
+    |          {
+    |              CullEntityByPortals
+    |
+    |              // This will add entity to tr.viewDef->viewEntitys
+    |              R_SetEntityDefViewEntity    //mark visible def->viewCount = tr.viewCount;
+    |          }
+    |          
+    |          //Go through every area->lightRefs
+    |          AddAreaLightRefs(areaNum)
+    |          {
+    |              // Different ways to test for light frustrum intersection with the portal stack.
+    |              CullLightByPortals
+    |
+    |              // This will add the light on tr.viewDef->viewLights
+    |              R_SetLightDefViewLight     //mark visible def->viewCount = tr.viewCount;
+    |          }
+    |        }
+    |
+    |        FloodViewThroughArea_r( origin, p->intoArea, &newStack );
+    |     }
+    
+    
+    // At this point we havea a list of every model and light that interact with the view frustrum in each area:
+    // tr.viewDef->viewLights
+    // tr.viewDef->viewEntitys
+    
+    // Even the light originating from non visible area but potentially interacting with the view of generating shadows are in the sets,
+    // thanks to the way the database is constructed.
+
+
+    // Try to remove lights from the view list if they are flashed off or tuned off.
+    // Add any model that IS NOT VIEWED but interact with that light was not captured by FindViewLightsAndEntities since it may cast a shadow
+        Q: What set of entities is used to check interaction with the light ? Is it a floodFill algorithm again ?
+        A: No floodFill, only look for entities in this area
+        Note: The "raw" check can create false positive but cannot reject false negative.
+              The raw check test the entity boundingbox against the light frustrum.
+       This could create empty interaction if an entity is actually not in the light's view frustrum.
+       The way an entity is tested against the frustrum is:
+                       - Quick radius check (center-to-corner culling test)
+                       - Accurate corner/frustrum check
+    R_AddLightSurfaces 
+    {
+       // For each lights in tr.viewDef->viewLights
+         // For each area this light touches:
+         //     For each entity in this area:
+         //         If this entity is visible (within the view frustrum)
+         //              add viewEntities touched and even the ones that may cast shadows, even if they aren't directly visible. 
+         //  
+         // Any real work will be deferred until we walk through the viewEntities in R_AddModelSurfaces
+         CreateLightDefInteractions
+             AllocAndLink
+    }
+
+
+    
+    //Instanciate dynamic models and create interactions
+Q: Intersting here: How are data organized in order to be sent efficiently to the GPU ?
+A: surf_t contains triangles_t containing vertexCache that are usually within a VBO
+Q: Related to the same topic: I have heard of a vertexCache. how is it working ?
+A: 
+
+    R_AddModelSurfaces //Go through every tr.viewDef->viewEntitys, define scissor for each entity if r_useEntityScissors is defined
+    {
+         // go through each entity that is either visible to the view, or to
+	     // any light that intersects the view (for shadows)
+    
+         // Animate !!!
+         if ( !vEntity->scissorRect.IsEmpty() ) 
+         {
+            R_EntityDefDynamicModel
+    
+            R_AddAmbientDrawsurfs
+               R_AddDrawSurf
+         }
+ //TODO try to play with r_showInteractionFrustums to see what is culled        
+         for ( inter = vEntity->entityDef->firstInteraction; inter != NULL && !inter->IsEmpty(); inter = next ) {
+            inter->AddActiveInteraction();
+            {
+              
+               CalcInteractionScissorRectangle
+               {
+                  // the code from Cass at nvidia,
+                  // Note from FAB: refering to Cass Everitt ( Practical and Robust Stenciled Shadow Volumes for Hardware-Accelerated Rendering)
+                  //                http://arxiv.org/pdf/cs/0301002.pdf
+                  // Note from FAB: Coding style does not match id software from here
+                  R_CalcIntersectionScissor
+                  return
+                  
+                  or
+                  
+                  // the following is Mr.E's code           
+                  // Note from FAB WHO is Mr.E ?
+               }
+               
+               if ( IsDeferred() )
+                   CreateInteraction( model );
+            }
+    }
+    
+    
+    //Since each light will result in a pass, try to remove the stencil buffer generation if no needed since it consums A LOT !!!
+    // go through each visible light and check if the local/global shadow can be removed.
+			vLight->localShadows = NULL;
+			vLight->globalShadows = NULL;
+	
+    
+    R_RemoveUnecessaryViewLights
+    {
+       //Go throught all tr.viewDef->viewLights
+       for each light:
+        if ( !vLight->localInteractions && !vLight->globalInteractions && !vLight->translucentInteractions ) {
+			vLight->localShadows = NULL;
+			vLight->globalShadows = NULL;
+		}
+        
+        
+       //Also combine:
+           - globalInteractions
+           - globalShadows           
+           - localShadows
+           - localInteractions
+           - translucentInteractions
+       // into one scissorRestangle to save some fillrate later.
+    }
+    
+    R_SortDrawSurfs
+    {
+       qsort(tr.viewDef->drawSurfs) ;
+    }
+    
+    // Usefull when generating mirror on a surface or x-rays view.
+    R_GenerateSubViews
+    
+TODO: 
+   test r_skipSubviews 0 to see if a subview is a portal view or only mirrors and camera
+
+What does the backend  do ?
+How does it do it ?
+
+
+TODO: Make a drawing where the a light from a non-visible area cast shadow in the view frustrum. This will demonstrate that entity have to be looked up from the light's area.
+
+Q: What if we have a case where a light from a non-visible area is casting a shadow on the view frustrum....but the entity is actually located in
+an other area than the light's area ? This would be a bug.
+
+Looking at those edge cases and how they are resolved, I have a clear understanding that idTech4 was created for a very specific type of game and was not meant to be licensed the way it was. Unfortunately the trend at the time was outdoor, doom3 excelled at indoor and shadow casting.
+
+
+VERTEX CACHE (VBO BY DEFAULT WITH 32MB SPACE) :
+===============================================
+
+Q: Where is the vertex cache populated ?
+A: idVertexCache is a set of method to operate on vertCache_t. idVertexCache::Alloc is where a vertCache_t is filled and "maybe" also uploaded to the GPU.
+   The decision to store a vertCache_t in memory or in a vbo is done according to virtualMemory.
+   Supposed to use minimum of 8MB of VRAM and by default enabled and set to 32MB.
+   
+   
+Q: How is a a VBO cache re-used accross frames ?
+A: 
+
+Q: When is it freed ?
+A: Deferred free, Free doesn't free anything, instead a freed vertexCache_t is added to the deferedList and freed for real when
+   vertexcache.EndFrame is called (go over all items in deferedlist and call ActuallyFree.
+   Also freed on PurgeAll which is called on R_VidRestart_f and ShutDown.
+
+Q: What is the VBO cache policy ?   
+A: LRU (Least Recently Used). When a vertexCache block is touched it is moved at the top of the vertex cache list.
+
+vertexCache.EndFrame will unbound GL_ARRAY_BUFFER_ARB and GL_ELEMENT_ARRAY_BUFFER_ARB
+
+vertexCache blocks size = 0x200000 (2,097,152 bytes )
+
+
+I am starting to see better the datastructure and how it is moved:
+
+The frontEnd generates:
+
+  drawSurf_t
+    srfTriangles_t
+       vertCache_s * indexCache;
+       vertCache_s * ambientCache;
+	   vertCache_s * lightingCache;
+	   vertCache_s * shadowCache;	
+
+ The vertex cache takes care of storing the data in either virtualMemory or the VBO. It seems a static cache entry is never freed until 
+ the level ends.
+ 
+ The backend pickups the drawSurf_t and just bind the right textures, the geometry is already there waiting in a VBO (static or dynamic)
+ 
+ 
+ 
+
+BACKEND :
+=========
+
+    RB_ExecuteBackEndCommands
+      RB_DrawView 
+        RB_STD_DrawView
+          RB_BeginDrawingView
+          RB_DetermineLightScale
+          RB_STD_FillDepthBuffer
+          RB_ARB2_DrawInteractions
+          {
+             //One pass per light
+             for ( vLight = backEnd.viewDef->viewLights ; vLight ; vLight = vLight->next ) 
+             {
+               backEnd.vLight = vLight;
+               
+               //Set scissor
+               //Clear stencil buffer
+               
+               // Note the usage of vertexcache.Position that abstrace VBO or not VBO
+               RB_ARB2_CreateDrawInteractions(const drawSurf_t *surf )
+               {
+                   for ( ; surf ; surf=surf->nextOnLight ) 
+                   {
+                      idDrawVert	*ac = (idDrawVert *)vertexCache.Position( surf->geo->ambientCache );
+		              qglColorPointer( 4, GL_UNSIGNED_BYTE, sizeof( idDrawVert ), ac->color );
+                      qglVertexAttribPointerARB( 11, 3, GL_FLOAT, false, sizeof( idDrawVert ), ac->normal.ToFloatPtr() );
+                      qglVertexAttribPointerARB( 10, 3, GL_FLOAT, false, sizeof( idDrawVert ), ac->tangents[1].ToFloatPtr() );
+                      qglVertexAttribPointerARB( 9, 3, GL_FLOAT, false, sizeof( idDrawVert ), ac->tangents[0].ToFloatPtr() );
+                      qglVertexAttribPointerARB( 8, 2, GL_FLOAT, false, sizeof( idDrawVert ), ac->st.ToFloatPtr() );
+                      qglVertexPointer( 3, GL_FLOAT, sizeof( idDrawVert ), ac->xyz.ToFloatPtr() );
+                      
+                      RB_CreateSingleDrawInteractions( surf, RB_ARB2_DrawInteraction );
+                   }
+               }
+             }
+          }
+          RB_STD_LightScale
+          RB_STD_DrawShaderPasses
+          RB_STD_FogAllLights
+          RB_RenderDebugTools
+
+
+
+Q: What is the interaction table ?
+A: 	// all light / entity interactions are referenced here for fast lookup without
+	// having to crawl the doubly linked lists.  EnntityDefs are sequential for better
+	// cache access, because the table is accessed by light in idRenderWorldLocal::CreateLightDefInteractions()
+	// Growing this table is time consuming, so we add a pad value to the number
+	// of entityDefs and lightDefs
+     
+    // allocating these tables may take several megs on big maps, but it saves 3% to 5% of
+    // the CPU time.  The table is updated at interaction::AllocAndLink() and interaction::UnlinkAndFree()
+
+   CreateLightDefInteractions uses it to lookup interactiontable cache, this avoids calls to
+       scan double linked edef->firstInteraction
+      idInteraction::AllocAndLink
+      R_CullLocalBox
+      R_SetEntityDefViewEntity
+
+Interactions :
+==============
+
+    Q: Weird, datas are passed via AllocandLink(idRenderEntityLocal *edef, idRenderLightLocal *ldef).
+    ...I thought everything was there but CreateInteraction( const idRenderModel *model ) takes a model ??! WTF is the model for ?
+    
+    A: It seems model = R_EntityDefDynamicModel( entityDef ), so the idRenderModel an instance of a idRenderEntityLocal) ?
+       Yes, actually if the model is not dynamic R_EntityDefDynamicModel just returns the class instead of instanciating a new model.
+
+
+Shadow :
+========
+
+Q: What algorithm is used for shadow generation in dynamic models ?
+A: 
+
+
+PSV (idPVS) does not seem to be used in the game at all ??!!
+
+Q: How does the engine prevents a light not bleed through walls ? A shadow casting light will have the stencil buffer prevent bleeding...
+   But what about a light without one ? 
+A: TODO: Try to play with the editor and the realtime renderer. I wonder if every light has a shadow volume ?
+
+Q: I still cannot figure out what Interaction are used for....Does it stores light+model ? How are surf_t generated anyway ?

@@ -1,0 +1,279 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html><head>
+<title></title>
+  <style type="text/css">
+    <!--code { font-family: Courier New, Courier; font-size: 10pt; margin: 0px; }-->
+  </style>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+</head><body>
+
+
+<!-- ======================================================== -->
+<!-- = Java Sourcecode to HTML automatically converted code = -->
+<!-- =   Java2Html Converter 5.0 [2006-02-26] by Markus Gebhard  markus@jave.de   = -->
+<!-- =     Further information: http://www.java2html.de     = -->
+<div align="left" class="java">
+<table border="0" cellpadding="3" cellspacing="0" bgcolor="#ffffff">
+  <!-- start headline -->
+   <tr>
+    <td colspan="2">
+     <center><font size="+2">
+      <code><b>
+OrbBeam.java
+      </b></code>
+     </font></center>
+    </td>
+   </tr>
+  <!-- end headline -->
+   <tr>
+  <!-- start source code -->
+   <td nowrap="nowrap" valign="top" align="left">
+    <code>
+<font color="#808080">001</font>&nbsp;<font color="#3f7f5f">/*</font><br />
+<font color="#808080">002</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*</font><br />
+<font color="#808080">003</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;Created:&nbsp;Jun&nbsp;&nbsp;7&nbsp;2006</font><br />
+<font color="#808080">004</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*</font><br />
+<font color="#808080">005</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;Copyright&nbsp;(C)&nbsp;1999-2000&nbsp;Fabien&nbsp;Sanglard</font><br />
+<font color="#808080">006</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;</font><br />
+<font color="#808080">007</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;This&nbsp;program&nbsp;is&nbsp;free&nbsp;software;&nbsp;you&nbsp;can&nbsp;redistribute&nbsp;it&nbsp;and/or</font><br />
+<font color="#808080">008</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;modify&nbsp;it&nbsp;under&nbsp;the&nbsp;terms&nbsp;of&nbsp;the&nbsp;GNU&nbsp;General&nbsp;Public&nbsp;License</font><br />
+<font color="#808080">009</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;as&nbsp;published&nbsp;by&nbsp;the&nbsp;Free&nbsp;Software&nbsp;Foundation;&nbsp;either&nbsp;version&nbsp;2</font><br />
+<font color="#808080">010</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;of&nbsp;the&nbsp;License,&nbsp;or&nbsp;(at&nbsp;your&nbsp;option)&nbsp;any&nbsp;later&nbsp;version.</font><br />
+<font color="#808080">011</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;</font><br />
+<font color="#808080">012</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;This&nbsp;program&nbsp;is&nbsp;distributed&nbsp;in&nbsp;the&nbsp;hope&nbsp;that&nbsp;it&nbsp;will&nbsp;be&nbsp;useful,</font><br />
+<font color="#808080">013</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;but&nbsp;WITHOUT&nbsp;ANY&nbsp;WARRANTY;&nbsp;without&nbsp;even&nbsp;the&nbsp;implied&nbsp;warranty&nbsp;of</font><br />
+<font color="#808080">014</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;MERCHANTABILITY&nbsp;or&nbsp;FITNESS&nbsp;FOR&nbsp;A&nbsp;PARTICULAR&nbsp;PURPOSE.&nbsp;&nbsp;See&nbsp;the</font><br />
+<font color="#808080">015</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;GNU&nbsp;General&nbsp;Public&nbsp;License&nbsp;for&nbsp;more&nbsp;details.</font><br />
+<font color="#808080">016</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;</font><br />
+<font color="#808080">017</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;You&nbsp;should&nbsp;have&nbsp;received&nbsp;a&nbsp;copy&nbsp;of&nbsp;the&nbsp;GNU&nbsp;General&nbsp;Public&nbsp;License</font><br />
+<font color="#808080">018</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;along&nbsp;with&nbsp;this&nbsp;program;&nbsp;if&nbsp;not,&nbsp;write&nbsp;to&nbsp;the&nbsp;Free&nbsp;Software</font><br />
+<font color="#808080">019</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*&nbsp;Foundation,&nbsp;Inc.,&nbsp;59&nbsp;Temple&nbsp;Place&nbsp;-&nbsp;Suite&nbsp;330,&nbsp;Boston,&nbsp;MA&nbsp;&nbsp;02111-1307,&nbsp;USA.</font><br />
+<font color="#808080">020</font>&nbsp;<font color="#ffffff">&nbsp;</font><font color="#3f7f5f">*/</font><br />
+<font color="#808080">021</font>&nbsp;<font color="#ffffff"></font><br />
+<font color="#808080">022</font>&nbsp;<font color="#7f0055"><b>package&nbsp;</b></font><font color="#000000">rtype.entity;</font><br />
+<font color="#808080">023</font>&nbsp;<font color="#ffffff"></font><br />
+<font color="#808080">024</font>&nbsp;<font color="#7f0055"><b>import&nbsp;</b></font><font color="#000000">java.util.ArrayList;</font><br />
+<font color="#808080">025</font>&nbsp;<font color="#7f0055"><b>import&nbsp;</b></font><font color="#000000">java.util.Random;</font><br />
+<font color="#808080">026</font>&nbsp;<font color="#ffffff"></font><br />
+<font color="#808080">027</font>&nbsp;<font color="#7f0055"><b>import&nbsp;</b></font><font color="#000000">org.lwjgl.opengl.GL11;</font><br />
+<font color="#808080">028</font>&nbsp;<font color="#7f0055"><b>import&nbsp;</b></font><font color="#000000">org.lwjgl.util.vector.Vector2f;</font><br />
+<font color="#808080">029</font>&nbsp;<font color="#ffffff"></font><br />
+<font color="#808080">030</font>&nbsp;<font color="#7f0055"><b>import&nbsp;</b></font><font color="#000000">com.sun.media.sound.AlawCodec;</font><br />
+<font color="#808080">031</font>&nbsp;<font color="#ffffff"></font><br />
+<font color="#808080">032</font>&nbsp;<font color="#7f0055"><b>import&nbsp;</b></font><font color="#000000">rtype.Prototyp;</font><br />
+<font color="#808080">033</font>&nbsp;<font color="#ffffff"></font><br />
+<font color="#808080">034</font>&nbsp;<font color="#7f0055"><b>public&nbsp;class&nbsp;</b></font><font color="#000000">OrbBeam&nbsp;</font><font color="#7f0055"><b>extends&nbsp;</b></font><font color="#000000">Entity</font><br />
+<font color="#808080">035</font>&nbsp;<font color="#000000">{</font><br />
+<font color="#808080">036</font>&nbsp;<font color="#ffffff"></font><br />
+<font color="#808080">037</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>float&nbsp;</b></font><font color="#000000">percentage&nbsp;=&nbsp;</font><font color="#990000">0</font><font color="#000000">;</font><br />
+<font color="#808080">038</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#000000">LightningOrb&nbsp;orb&nbsp;=&nbsp;</font><font color="#7f0055"><b>null</b></font><font color="#000000">;</font><br />
+<font color="#808080">039</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>private&nbsp;</b></font><font color="#000000">ArrayList&nbsp;meltingPoints&nbsp;=&nbsp;</font><font color="#7f0055"><b>new&nbsp;</b></font><font color="#000000">ArrayList</font><font color="#000000">()</font><font color="#000000">;</font><br />
+<font color="#808080">040</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>float&nbsp;&nbsp;</b></font><font color="#000000">fThickness&nbsp;=&nbsp;</font><font color="#990000">4</font><font color="#000000">;</font><br />
+<font color="#808080">041</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>private&nbsp;</b></font><font color="#7f0055"><b>float&nbsp;</b></font><font color="#000000">disaperanceSpeed&nbsp;=&nbsp;</font><font color="#990000">1.7f</font><font color="#000000">;</font><font color="#3f7f5f">//&nbsp;0.3f;//&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">042</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>private&nbsp;</b></font><font color="#7f0055"><b>float&nbsp;</b></font><font color="#000000">maxNormalWidth&nbsp;=&nbsp;</font><font color="#990000">0</font><font color="#000000">;</font><br />
+<font color="#808080">043</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>private&nbsp;</b></font><font color="#7f0055"><b>float&nbsp;</b></font><font color="#000000">minNormalWidth&nbsp;=&nbsp;</font><font color="#990000">0</font><font color="#000000">;</font><br />
+<font color="#808080">044</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>private&nbsp;</b></font><font color="#7f0055"><b>float&nbsp;</b></font><font color="#000000">SEQ_IN_BEAM&nbsp;=&nbsp;</font><font color="#990000">8</font><font color="#000000">;</font><br />
+<font color="#808080">045</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>private&nbsp;static&nbsp;</b></font><font color="#000000">Vector2f&nbsp;controlPoint</font><font color="#000000">[]&nbsp;</font><font color="#000000">=&nbsp;</font><font color="#7f0055"><b>new&nbsp;</b></font><font color="#000000">Vector2f</font><font color="#000000">[</font><font color="#990000">3</font><font color="#000000">]</font><font color="#000000">;</font><br />
+<font color="#808080">046</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><br />
+<font color="#808080">047</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>public&nbsp;</b></font><font color="#000000">OrbBeam</font><font color="#000000">(</font><font color="#000000">LightningOrb&nbsp;orb,&nbsp;Vector2f</font><font color="#000000">[]&nbsp;</font><font color="#000000">p,float&nbsp;fThickness,boolean&nbsp;bWay,float&nbsp;r,float&nbsp;g,float&nbsp;b,float&nbsp;a,&nbsp;</font><font color="#7f0055"><b>float&nbsp;</b></font><font color="#000000">modulo,&nbsp;</font><font color="#7f0055"><b>float&nbsp;</b></font><font color="#000000">minimalArcHeight</font><font color="#000000">)</font><br />
+<font color="#808080">048</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#000000">{</font><br />
+<font color="#808080">049</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>this</b></font><font color="#000000">.disaperanceSpeed&nbsp;=&nbsp;a&nbsp;*&nbsp;disaperanceSpeed;</font><br />
+<font color="#808080">050</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>this</b></font><font color="#000000">.r&nbsp;=&nbsp;r;</font><br />
+<font color="#808080">051</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>this</b></font><font color="#000000">.g&nbsp;=&nbsp;g;</font><br />
+<font color="#808080">052</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>this</b></font><font color="#000000">.b&nbsp;=&nbsp;b;</font><br />
+<font color="#808080">053</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>this</b></font><font color="#000000">.a&nbsp;=&nbsp;a;</font><br />
+<font color="#808080">054</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>this</b></font><font color="#000000">.fThickness&nbsp;=&nbsp;fThickness;</font><br />
+<font color="#808080">055</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>this</b></font><font color="#000000">.type&nbsp;=&nbsp;ORB_BEAM;</font><br />
+<font color="#808080">056</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">init</font><font color="#000000">()</font><font color="#000000">;</font><br />
+<font color="#808080">057</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>this</b></font><font color="#000000">.orb&nbsp;=&nbsp;orb;</font><br />
+<font color="#808080">058</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>this</b></font><font color="#000000">.position.x&nbsp;=&nbsp;orb.position.x;</font><br />
+<font color="#808080">059</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>this</b></font><font color="#000000">.position.y&nbsp;=&nbsp;orb.position.y;</font><br />
+<font color="#808080">060</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>this</b></font><font color="#000000">.rotation&nbsp;=&nbsp;orb.rotation;</font><br />
+<font color="#808080">061</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>this</b></font><font color="#000000">.damage&nbsp;=&nbsp;</font><font color="#990000">1000</font><font color="#000000">;</font><br />
+<font color="#808080">062</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">063</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">Vector2f&nbsp;p1&nbsp;;</font><br />
+<font color="#808080">064</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">Vector2f&nbsp;p2&nbsp;;</font><br />
+<font color="#808080">065</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>int&nbsp;</b></font><font color="#000000">i,k;</font><br />
+<font color="#808080">066</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">067</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">068</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>for</b></font><font color="#000000">(</font><font color="#000000">i=</font><font color="#990000">0</font><font color="#000000">,&nbsp;k=</font><font color="#990000">1</font><font color="#000000">;&nbsp;i&lt;</font><font color="#000000">(</font><font color="#7f0055"><b>int</b></font><font color="#000000">)</font><font color="#000000">p.length-</font><font color="#990000">1</font><font color="#000000">;&nbsp;i++,&nbsp;k++</font><font color="#000000">)</font><br />
+<font color="#808080">069</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">{</font><br />
+<font color="#808080">070</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">p1=p</font><font color="#000000">[</font><font color="#000000">i</font><font color="#000000">]</font><font color="#000000">;</font><br />
+<font color="#808080">071</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">p2=p</font><font color="#000000">[</font><font color="#000000">k</font><font color="#000000">]</font><font color="#000000">;</font><br />
+<font color="#808080">072</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">meltingPoints.add</font><font color="#000000">(</font><font color="#990000">0</font><font color="#000000">,p1</font><font color="#000000">)</font><font color="#000000">;</font><br />
+<font color="#808080">073</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">Vector2f&nbsp;norm&nbsp;=&nbsp;GLUTILS.makeNormalForPoints</font><font color="#000000">(</font><font color="#000000">p1,p2</font><font color="#000000">)</font><font color="#000000">;</font><br />
+<font color="#808080">074</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>if&nbsp;</b></font><font color="#000000">(</font><font color="#000000">Logger.isLogActivate</font><font color="#000000">)&nbsp;</font><font color="#000000">Logger.log</font><font color="#000000">(</font><font color="#2a00ff">&#34;norm&#34;</font><font color="#000000">+norm</font><font color="#000000">)</font><font color="#000000">;</font><br />
+<font color="#808080">075</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">076</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">077</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>int&nbsp;</b></font><font color="#000000">ran&nbsp;=&nbsp;</font><font color="#000000">(</font><font color="#7f0055"><b>int</b></font><font color="#000000">)&nbsp;(</font><font color="#000000">Prototyp.random.nextInt</font><font color="#000000">()&nbsp;</font><font color="#000000">%&nbsp;modulo&nbsp;+&nbsp;minimalArcHeight</font><font color="#000000">)</font><font color="#000000">;</font><br />
+<font color="#808080">078</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">079</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">080</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">Vector2f&nbsp;mid=&nbsp;bWay&nbsp;?&nbsp;&nbsp;</font><br />
+<font color="#808080">081</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>new&nbsp;</b></font><font color="#000000">Vector2f</font><font color="#000000">(</font><font color="#000000">p1.x&nbsp;+&nbsp;</font><font color="#000000">((</font><font color="#000000">p2.x-p1.x</font><font color="#000000">)</font><font color="#000000">*</font><font color="#990000">0.5f</font><font color="#000000">)&nbsp;</font><font color="#000000">+&nbsp;norm.x&nbsp;*&nbsp;&nbsp;ran,</font><br />
+<font color="#808080">082</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">p1.y&nbsp;+&nbsp;</font><font color="#000000">((</font><font color="#000000">p2.y-p1.y</font><font color="#000000">)</font><font color="#000000">*</font><font color="#990000">0.5f</font><font color="#000000">)&nbsp;</font><font color="#000000">+&nbsp;norm.y&nbsp;*&nbsp;&nbsp;ran</font><font color="#000000">)</font><br />
+<font color="#808080">083</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">:</font><br />
+<font color="#808080">084</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>new&nbsp;</b></font><font color="#000000">Vector2f</font><font color="#000000">(</font><font color="#000000">p1.x&nbsp;&nbsp;+&nbsp;</font><font color="#000000">((</font><font color="#000000">p2.x&nbsp;-&nbsp;p1.x&nbsp;</font><font color="#000000">)</font><font color="#000000">*</font><font color="#990000">0.5f</font><font color="#000000">)&nbsp;</font><font color="#000000">-&nbsp;norm.x&nbsp;*&nbsp;ran,</font><br />
+<font color="#808080">085</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">p1.y&nbsp;&nbsp;+&nbsp;</font><font color="#000000">((</font><font color="#000000">p2.y&nbsp;-&nbsp;p1.y&nbsp;</font><font color="#000000">)</font><font color="#000000">*</font><font color="#990000">0.5f</font><font color="#000000">)&nbsp;</font><font color="#000000">-&nbsp;norm.y&nbsp;*&nbsp;ran</font><br />
+<font color="#808080">086</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">)</font><font color="#000000">;</font><br />
+<font color="#808080">087</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">088</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>if&nbsp;</b></font><font color="#000000">(</font><font color="#000000">bWay</font><font color="#000000">)</font><br />
+<font color="#808080">089</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">{</font><br />
+<font color="#808080">090</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>if&nbsp;</b></font><font color="#000000">(</font><font color="#000000">norm.y&nbsp;*&nbsp;ran&nbsp;&gt;&nbsp;</font><font color="#7f0055"><b>this</b></font><font color="#000000">.maxNormalWidth</font><font color="#000000">)</font><br />
+<font color="#808080">091</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>this</b></font><font color="#000000">.maxNormalWidth&nbsp;=&nbsp;norm.y&nbsp;*&nbsp;ran;</font><br />
+<font color="#808080">092</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">}</font><br />
+<font color="#808080">093</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>else</b></font><br />
+<font color="#808080">094</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">{</font><br />
+<font color="#808080">095</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>if&nbsp;</b></font><font color="#000000">(</font><font color="#000000">-&nbsp;norm.y&nbsp;*&nbsp;ran&nbsp;&lt;&nbsp;</font><font color="#7f0055"><b>this</b></font><font color="#000000">.minNormalWidth</font><font color="#000000">)</font><br />
+<font color="#808080">096</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>this</b></font><font color="#000000">.minNormalWidth&nbsp;=&nbsp;-&nbsp;norm.y&nbsp;*&nbsp;ran;</font><br />
+<font color="#808080">097</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">}&nbsp;&nbsp;</font><br />
+<font color="#808080">098</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">bWay&nbsp;=&nbsp;!bWay;</font><br />
+<font color="#808080">099</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">100</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>float&nbsp;</b></font><font color="#000000">f&nbsp;=&nbsp;</font><font color="#990000">1.0f</font><font color="#000000">/</font><font color="#000000">(</font><font color="#7f0055"><b>float</b></font><font color="#000000">)(</font><font color="#000000">SEQ_IN_BEAM+</font><font color="#990000">1</font><font color="#000000">)</font><font color="#000000">;</font><br />
+<font color="#808080">101</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>float&nbsp;</b></font><font color="#000000">s=&nbsp;f;</font><br />
+<font color="#808080">102</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">103</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">104</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">105</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">controlPoint</font><font color="#000000">[</font><font color="#990000">0</font><font color="#000000">]</font><font color="#000000">=p1;</font><br />
+<font color="#808080">106</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">controlPoint</font><font color="#000000">[</font><font color="#990000">2</font><font color="#000000">]</font><font color="#000000">=mid;</font><br />
+<font color="#808080">107</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">controlPoint</font><font color="#000000">[</font><font color="#990000">1</font><font color="#000000">]</font><font color="#000000">=p2;</font><br />
+<font color="#808080">108</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">109</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">110</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>for</b></font><font color="#000000">(</font><font color="#7f0055"><b>int&nbsp;</b></font><font color="#000000">n=</font><font color="#990000">0</font><font color="#000000">;&nbsp;n&lt;SEQ_IN_BEAM;&nbsp;n++</font><font color="#000000">)</font><br />
+<font color="#808080">111</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">{</font><br />
+<font color="#808080">112</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">meltingPoints.add</font><font color="#000000">(</font><font color="#990000">0</font><font color="#000000">,calculatePointOnCurve</font><font color="#000000">(</font><font color="#000000">controlPoint,s</font><font color="#000000">))</font><font color="#000000">;</font><br />
+<font color="#808080">113</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">s+=f;</font><br />
+<font color="#808080">114</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">}</font><br />
+<font color="#808080">115</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">116</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">}</font><br />
+<font color="#808080">117</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">118</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#000000">}</font><br />
+<font color="#808080">119</font>&nbsp;<font color="#ffffff"></font><br />
+<font color="#808080">120</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>private&nbsp;static&nbsp;</b></font><font color="#000000">Vector2f&nbsp;calculatePointOnCurve</font><font color="#000000">(</font><font color="#000000">Vector2f</font><font color="#000000">[]&nbsp;</font><font color="#000000">c,&nbsp;</font><font color="#7f0055"><b>float&nbsp;</b></font><font color="#000000">distance</font><font color="#000000">)</font><br />
+<font color="#808080">121</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#000000">{</font><br />
+<font color="#808080">122</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>float&nbsp;</b></font><font color="#000000">a&nbsp;=&nbsp;</font><font color="#990000">1</font><font color="#000000">;</font><br />
+<font color="#808080">123</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>float&nbsp;</b></font><font color="#000000">b&nbsp;=&nbsp;</font><font color="#990000">0</font><font color="#000000">;</font><br />
+<font color="#808080">124</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>float&nbsp;</b></font><font color="#000000">step&nbsp;=&nbsp;distance;</font><br />
+<font color="#808080">125</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">Vector2f&nbsp;p&nbsp;=&nbsp;</font><font color="#7f0055"><b>new&nbsp;</b></font><font color="#000000">Vector2f</font><font color="#000000">()</font><font color="#000000">;</font><br />
+<font color="#808080">126</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">a-=step;</font><br />
+<font color="#808080">127</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">b=</font><font color="#990000">1</font><font color="#000000">-a;</font><br />
+<font color="#808080">128</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">p.x&nbsp;=&nbsp;c</font><font color="#000000">[</font><font color="#990000">0</font><font color="#000000">]</font><font color="#000000">.x*a*a&nbsp;+&nbsp;c</font><font color="#000000">[</font><font color="#990000">2</font><font color="#000000">]</font><font color="#000000">.x*</font><font color="#990000">2</font><font color="#000000">*a*b&nbsp;+&nbsp;c</font><font color="#000000">[</font><font color="#990000">1</font><font color="#000000">]</font><font color="#000000">.x*b*b;</font><br />
+<font color="#808080">129</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">p.y&nbsp;=&nbsp;c</font><font color="#000000">[</font><font color="#990000">0</font><font color="#000000">]</font><font color="#000000">.y*a*a&nbsp;+&nbsp;c</font><font color="#000000">[</font><font color="#990000">2</font><font color="#000000">]</font><font color="#000000">.y*</font><font color="#990000">2</font><font color="#000000">*a*b&nbsp;+&nbsp;c</font><font color="#000000">[</font><font color="#990000">1</font><font color="#000000">]</font><font color="#000000">.y*b*b;</font><br />
+<font color="#808080">130</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>return&nbsp;</b></font><font color="#000000">p;</font><br />
+<font color="#808080">131</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#000000">}</font><br />
+<font color="#808080">132</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><br />
+<font color="#808080">133</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>float&nbsp;</b></font><font color="#000000">r&nbsp;=&nbsp;</font><font color="#990000">0.3f</font><font color="#000000">;</font><br />
+<font color="#808080">134</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>float&nbsp;</b></font><font color="#000000">g&nbsp;=&nbsp;&nbsp;</font><font color="#990000">0.8f</font><font color="#000000">;</font><br />
+<font color="#808080">135</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>float&nbsp;</b></font><font color="#000000">b&nbsp;=&nbsp;</font><font color="#990000">1</font><font color="#000000">;</font><br />
+<font color="#808080">136</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>float&nbsp;</b></font><font color="#000000">a=</font><font color="#990000">1</font><font color="#000000">;</font><br />
+<font color="#808080">137</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#3f7f5f">//float&nbsp;alphaToDisplay&nbsp;=&nbsp;a;</font><br />
+<font color="#808080">138</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><br />
+<font color="#808080">139</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>public&nbsp;</b></font><font color="#7f0055"><b>void&nbsp;</b></font><font color="#000000">draw</font><font color="#000000">()</font><br />
+<font color="#808080">140</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#000000">{</font><br />
+<font color="#808080">141</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>if&nbsp;</b></font><font color="#000000">(</font><font color="#000000">a&nbsp;&lt;&nbsp;</font><font color="#990000">0</font><font color="#000000">)</font><br />
+<font color="#808080">142</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">{</font><br />
+<font color="#808080">143</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">layer.remove</font><font color="#000000">(</font><font color="#7f0055"><b>this</b></font><font color="#000000">)</font><font color="#000000">;</font><br />
+<font color="#808080">144</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>if&nbsp;</b></font><font color="#000000">(</font><font color="#000000">Logger.isLogActivate</font><font color="#000000">)&nbsp;</font><font color="#000000">Logger.log</font><font color="#000000">(</font><font color="#2a00ff">&#34;OrbBeam&nbsp;removed&nbsp;itself&nbsp;from&nbsp;the&nbsp;layer&#34;</font><font color="#000000">)</font><font color="#000000">;</font><br />
+<font color="#808080">145</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>return</b></font><font color="#000000">;</font><br />
+<font color="#808080">146</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">}</font><br />
+<font color="#808080">147</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">148</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">a&nbsp;-=&nbsp;disaperanceSpeed&nbsp;*&nbsp;tick&nbsp;;</font><br />
+<font color="#808080">149</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">150</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">GL11.glBindTexture</font><font color="#000000">(</font><font color="#000000">GL11.GL_TEXTURE_2D,&nbsp;</font><font color="#7f0055"><b>this</b></font><font color="#000000">.texture.getTextureId</font><font color="#000000">()&nbsp;)</font><font color="#000000">;</font><br />
+<font color="#808080">151</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">GL11.glLoadIdentity</font><font color="#000000">()</font><font color="#000000">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">152</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">GL11.glTranslatef</font><font color="#000000">(</font><font color="#000000">position.x,position.y,Prototyp.DEFAULT_Z</font><font color="#000000">)</font><font color="#000000">;&nbsp;</font><br />
+<font color="#808080">153</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">GL11.glRotatef</font><font color="#000000">(</font><font color="#000000">rotation,</font><font color="#990000">0f</font><font color="#000000">,</font><font color="#990000">0f</font><font color="#000000">,</font><font color="#990000">1f</font><font color="#000000">)</font><font color="#000000">;</font><br />
+<font color="#808080">154</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">155</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">GL11.glBlendFunc</font><font color="#000000">(</font><font color="#000000">GL11.GL_SRC_ALPHA,&nbsp;GL11.GL_ONE</font><font color="#000000">)</font><font color="#000000">;</font><br />
+<font color="#808080">156</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#3f7f5f">//GL11.glBlendFunc(GL11.GL_SRC_ALPHA,&nbsp;GL11.GL_ONE_MINUS_SRC_ALPHA);</font><br />
+<font color="#808080">157</font>&nbsp;<font color="#ffffff"></font><br />
+<font color="#808080">158</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">Vector2f&nbsp;p,p2,p3,n,n2;</font><br />
+<font color="#808080">159</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">160</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">161</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">GL11.glColor4f</font><font color="#000000">(</font><font color="#000000">r,g,b,a</font><font color="#000000">)</font><font color="#000000">;</font><br />
+<font color="#808080">162</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">163</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">GL11.glBegin</font><font color="#000000">(</font><font color="#000000">GL11.GL_QUADS</font><font color="#000000">)</font><font color="#000000">;</font><br />
+<font color="#808080">164</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">{</font><br />
+<font color="#808080">165</font>&nbsp;<font color="#ffffff"></font><br />
+<font color="#808080">166</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>for</b></font><font color="#000000">(</font><font color="#7f0055"><b>int&nbsp;</b></font><font color="#000000">i=</font><font color="#990000">0</font><font color="#000000">;&nbsp;i&lt;</font><font color="#000000">(</font><font color="#7f0055"><b>int</b></font><font color="#000000">)</font><font color="#000000">meltingPoints.size</font><font color="#000000">()</font><font color="#000000">-</font><font color="#990000">2</font><font color="#000000">;&nbsp;i++</font><font color="#000000">)</font><br />
+<font color="#808080">167</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">{</font><br />
+<font color="#808080">168</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">169</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">p&nbsp;=&nbsp;&nbsp;</font><font color="#000000">(</font><font color="#000000">Vector2f</font><font color="#000000">)</font><font color="#000000">meltingPoints.get</font><font color="#000000">(</font><font color="#000000">i</font><font color="#000000">)</font><font color="#000000">;</font><br />
+<font color="#808080">170</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">p2&nbsp;=&nbsp;</font><font color="#000000">(</font><font color="#000000">Vector2f</font><font color="#000000">)</font><font color="#000000">meltingPoints.get</font><font color="#000000">(</font><font color="#000000">i+</font><font color="#990000">1</font><font color="#000000">)</font><font color="#000000">;</font><br />
+<font color="#808080">171</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">p3&nbsp;=&nbsp;</font><font color="#000000">(</font><font color="#000000">Vector2f</font><font color="#000000">)</font><font color="#000000">meltingPoints.get</font><font color="#000000">(</font><font color="#000000">i+</font><font color="#990000">2</font><font color="#000000">)</font><font color="#000000">;</font><br />
+<font color="#808080">172</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">n=&nbsp;&nbsp;&nbsp;</font><font color="#000000">(</font><font color="#000000">Vector2f</font><font color="#000000">)&nbsp;</font><font color="#000000">GLUTILS.makeNormalForPoints</font><font color="#000000">(</font><font color="#000000">p&nbsp;,p2</font><font color="#000000">)</font><font color="#000000">.scale</font><font color="#000000">(</font><font color="#000000">fThickness</font><font color="#000000">)</font><font color="#000000">;</font><br />
+<font color="#808080">173</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">n2=&nbsp;&nbsp;</font><font color="#000000">(</font><font color="#000000">Vector2f</font><font color="#000000">)&nbsp;</font><font color="#000000">GLUTILS.makeNormalForPoints</font><font color="#000000">(</font><font color="#000000">p2,p3</font><font color="#000000">)</font><font color="#000000">.scale</font><font color="#000000">(</font><font color="#000000">fThickness</font><font color="#000000">)</font><font color="#000000">;</font><br />
+<font color="#808080">174</font>&nbsp;<font color="#ffffff"></font><br />
+<font color="#808080">175</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>if&nbsp;</b></font><font color="#000000">(</font><font color="#000000">i&nbsp;==&nbsp;meltingPoints.size</font><font color="#000000">()</font><font color="#000000">-</font><font color="#990000">3</font><font color="#000000">)</font><br />
+<font color="#808080">176</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">{</font><br />
+<font color="#808080">177</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">178</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">GL11.glColor4f</font><font color="#000000">(</font><font color="#000000">r,g,b,</font><font color="#990000">0</font><font color="#000000">)</font><font color="#000000">;</font><br />
+<font color="#808080">179</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#3f7f5f">//System.out.println(0);</font><br />
+<font color="#808080">180</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">}</font><br />
+<font color="#808080">181</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">GL11.glTexCoord2f</font><font color="#000000">(</font><font color="#990000">15</font><font color="#000000">/</font><font color="#990000">32.0f</font><font color="#000000">,</font><font color="#990000">1</font><font color="#000000">)</font><font color="#000000">;</font><br />
+<font color="#808080">182</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">GL11.glVertex2f</font><font color="#000000">(</font><font color="#000000">p2.x+n2.x,p2.y+n2.y</font><font color="#000000">)</font><font color="#000000">;</font><br />
+<font color="#808080">183</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">184</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">GL11.glTexCoord2f</font><font color="#000000">(</font><font color="#990000">15</font><font color="#000000">/</font><font color="#990000">32.0f</font><font color="#000000">,</font><font color="#990000">0</font><font color="#000000">)</font><font color="#000000">;</font><br />
+<font color="#808080">185</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">GL11.glVertex2f</font><font color="#000000">(</font><font color="#000000">p2.x-n2.x,p2.y-n2.y</font><font color="#000000">)</font><font color="#000000">;</font><br />
+<font color="#808080">186</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">187</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>if&nbsp;</b></font><font color="#000000">(</font><font color="#000000">i&nbsp;==&nbsp;meltingPoints.size</font><font color="#000000">()</font><font color="#000000">-</font><font color="#990000">3</font><font color="#000000">)</font><br />
+<font color="#808080">188</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">{</font><br />
+<font color="#808080">189</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">GL11.glColor4f</font><font color="#000000">(</font><font color="#000000">r,g,b,a</font><font color="#000000">)</font><font color="#000000">;</font><br />
+<font color="#808080">190</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#3f7f5f">//System.out.println(a);</font><br />
+<font color="#808080">191</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">}&nbsp;&nbsp;</font><br />
+<font color="#808080">192</font>&nbsp;<font color="#ffffff"></font><br />
+<font color="#808080">193</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">GL11.glTexCoord2f</font><font color="#000000">(</font><font color="#990000">15</font><font color="#000000">/</font><font color="#990000">32.0f</font><font color="#000000">,</font><font color="#990000">0</font><font color="#000000">)</font><font color="#000000">;</font><br />
+<font color="#808080">194</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">GL11.glVertex2f</font><font color="#000000">(</font><font color="#000000">p.x-n.x,p.y-n.y</font><font color="#000000">)</font><font color="#000000">;</font><br />
+<font color="#808080">195</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">196</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">GL11.glTexCoord2f</font><font color="#000000">(</font><font color="#990000">15</font><font color="#000000">/</font><font color="#990000">32.0f</font><font color="#000000">,</font><font color="#990000">1</font><font color="#000000">)</font><font color="#000000">;</font><br />
+<font color="#808080">197</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">GL11.glVertex2f</font><font color="#000000">(</font><font color="#000000">p.x+n.x,p.y+n.y</font><font color="#000000">)</font><font color="#000000">;</font><br />
+<font color="#808080">198</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">199</font>&nbsp;<font color="#ffffff"></font><br />
+<font color="#808080">200</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">201</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">202</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">203</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">204</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">205</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><br />
+<font color="#808080">206</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">}</font><br />
+<font color="#808080">207</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">}</font><br />
+<font color="#808080">208</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">GL11.glEnd</font><font color="#000000">()</font><font color="#000000">;</font><br />
+<font color="#808080">209</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">210</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#000000">GL11.glColor4f</font><font color="#000000">(</font><font color="#990000">1f</font><font color="#000000">,</font><font color="#990000">1f</font><font color="#000000">,</font><font color="#990000">1f</font><font color="#000000">,</font><font color="#990000">1f</font><font color="#000000">)</font><font color="#000000">;&nbsp;&nbsp;&nbsp;&nbsp;</font><br />
+<font color="#808080">211</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#000000">}</font><br />
+<font color="#808080">212</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><br />
+<font color="#808080">213</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>public&nbsp;</b></font><font color="#7f0055"><b>boolean&nbsp;</b></font><font color="#000000">collided</font><font color="#000000">(</font><font color="#000000">Entity&nbsp;entity</font><font color="#000000">)</font><br />
+<font color="#808080">214</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#000000">{</font><br />
+<font color="#808080">215</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>return&nbsp;false</b></font><font color="#000000">;</font><br />
+<font color="#808080">216</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#000000">}</font><br />
+<font color="#808080">217</font>&nbsp;<font color="#ffffff"></font><br />
+<font color="#808080">218</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>public&nbsp;</b></font><font color="#7f0055"><b>float&nbsp;</b></font><font color="#000000">getMaxNormalWidth</font><font color="#000000">()</font><br />
+<font color="#808080">219</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#000000">{</font><br />
+<font color="#808080">220</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>return&nbsp;</b></font><font color="#000000">maxNormalWidth;</font><br />
+<font color="#808080">221</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#000000">}</font><br />
+<font color="#808080">222</font>&nbsp;<font color="#ffffff"></font><br />
+<font color="#808080">223</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#7f0055"><b>public&nbsp;</b></font><font color="#7f0055"><b>float&nbsp;</b></font><font color="#000000">getMinNormalWidth</font><font color="#000000">()</font><br />
+<font color="#808080">224</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#000000">{</font><br />
+<font color="#808080">225</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#7f0055"><b>return&nbsp;</b></font><font color="#000000">minNormalWidth;</font><br />
+<font color="#808080">226</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><font color="#000000">}</font><br />
+<font color="#808080">227</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><br />
+<font color="#808080">228</font>&nbsp;<font color="#ffffff">&nbsp;&nbsp;</font><br />
+<font color="#808080">229</font>&nbsp;<font color="#000000">}</font></code>
+    
+   </td>
+  <!-- end source code -->
+   </tr>
+</table>
+</div>
+<!-- =       END of automatically generated HTML code       = -->
+<!-- ======================================================== -->
+
+
+</body></html><script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write("\<script src='&quot;&#32;+&#32;gaJsHost&#32;+&#32;&quot;google-analytics.com/ga.js' type='text/javascript'>\<\/script>" );
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-3217394-1");
+pageTracker._initData();
+pageTracker._trackPageview();
+</script>

@@ -1,0 +1,568 @@
+<html>
+<head>
+
+	<title>Quake 2 methods tree unrolled</title>
+
+	<meta http-equiv="Content-Type" content="text/html; utf-8">
+
+	<style type="text/css">
+
+		body 
+		{
+			font-family: courier new;
+			font-size: 10pt;
+			color: 00000;
+		}
+
+	</style>
+	
+	<script type="text/javascript">
+		var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+		document.write("\<script src='&quot;&#32;+&#32;gaJsHost&#32;+&#32;&quot;google-analytics.com/ga.js' type='text/javascript'>\<\/script>" );
+	</script>
+
+	<script type="text/javascript">
+		var pageTracker = _gat._getTracker("UA-3217394-1");
+		pageTracker._initData();
+		pageTracker._trackPageview();
+	</script>
+
+	<script type="text/javascript">
+		var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+		document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+	</script>
+
+	<script type="text/javascript">
+		var pageTracker = _gat._getTracker("UA-3217394-2");
+		pageTracker._trackPageview();
+</script>
+
+
+</head>
+<body>
+<pre>
+
+Userfull commands: 
+
+r_drawentities 0
+bind p "screenshot"
+demomap map2.md2
+
+keys.c: Mapped the '*' key to screenshot command since I didn't have it in macosx
+	if (key == '*')
+	{
+		if (down)
+			Cmd_ExecuteString("screenshot");
+	}
+
+
+
+C has no namespace so method names are prefixed by domain of activity:
+
+    SCR_    Screen                 : Anything related to the screen (refresh, palette, ...)
+    CL_     Communication Layer    : Client side code
+    V_      View                   : Anything related to the view setting
+    R_      Rendition              : Anything related to the rendition phase
+    SV_     Server                 : Server client side
+
+
+    
+WinMain
+{
+    Qcommon_Init
+    {
+        COM_InitArgv                         // Just grab command line parameters, nothing to see with Microsoft COM
+        Swap_Init                            // Setup bigEndian/LittleEndian conversion flags
+        Cbuf_Init
+        Cmd_Init                             // Register a set of commands via Cmd_AddCommand (cmdlist,exec,echo,alias,wait)
+        Cvar_Init                            // Register further commands via Cmd_AddCommand (set,cvarlist)
+        Key_Init                             // Set what keys press are monitored. Register further commmands (bind,unbind,unbindall,bindlist)
+                        
+        ...                                  // Register command(z_stats,error,quit)
+        
+        Sys_Init                             // Check OS version. Reject win32 "Quake2 doesn't run on Win32s"
+        NET_Init                             // Init winsock variables, do not open the connection yet.
+        Netchan_Init                         // Init a few variables.
+
+        SV_Init                         
+            SV_InitOperatorCommands          // Register further command via Cmd_AddCommand: Notice "load" command associated with  SV_Loadgame_f method
+                                             // SV_Loadgame_f ultimately leads to a calls to SV_InitGameProgs, which assign ge variable a value, providing the engine with an implementation (see not about abstraction) (ge contain all the game methods). ge is assigned using Sys_GetGameAPI()
+                                            
+        CL_Init                              // Check if running as dedicated server.
+        {
+            Con_Init                         // Init console and register set of commands via Cmd_AddCommand
+            VID_Init                         // Grab videos parameters and register set of commands via Cmd_AddCommand
+            S_Init                           // Grab sounds parameters and register set of commands via Cmd_AddCommand
+            V_Init                           // Grab rendition parameters (crosshair etc...) and register set of commands via Cmd_AddCommand
+            M_Init                           // Register all menu parameters
+            SCR_Init                         // Grab further rendition parameters and register set of commands via Cmd_AddCommand
+            CDAudio_Init                     // Init CD Music player
+            CL_InitLocal                     // Grab networl parameters and Register net commands via Cmd_AddCommand
+            IN_Init                          // Grab control parameters (mouse/keyboard/joystick ) and register commands via Cmd_AddCommand
+            FS_ExecAutoexec                  // Grab autoexec.cfg location, inject following command: "exec autoexec.cfg\n"
+            Cbuf_Execute                     // Exec command from buffer "exec autoexec.cfg\n"
+        }
+    }
+
+    while(1)
+    {
+        PeekMessage
+        TranslateMessage
+        DispatchMessage
+        _controlfp                           // Set the floating point precision ...
+                                             // Question: Why do that for every frames ? Probably because precision is altered during the loop execution.
+                                             // Answer: The is no other call to this function. It appears that floating point precision remains the same during program execution.
+        Qcommon_Frame
+        {
+            setjmp                           // Anything bad happen, the program will jump back here.
+            Cbuf_Execute
+            SV_Frame                         // Server frame
+            {
+	            
+	            if (!svs.initialized)        // If playing over network, using a server somwhere, not the local one
+                       return;
+
+                       
+                rand ()                      // What the fuck ?
+                SV_CheckTimeouts
+                SV_ReadPackets
+                SV_CalcPings
+                SV_GiveMsec
+                SV_RunGameFrame
+                {
+                    ge->RunFrame             // ge variable is a struct game_export_t. It comes from gamex86.dll, and work as an abtraction layer. This is how quake2 mod were programmed, generating a new DLL. Quake2 engine did not see any difference between running id's original content and a fan's mod.
+                                             // ge gets assigned in SV_InitGameProgs method from sv_game.c
+                }
+                SV_SendClientMessages
+                SV_RecordDemoMessage
+                Master_Heartbeat
+                SV_PrepWorldFrame    
+            }
+            
+            CL_Frame                          // Client frame
+            {
+	             if (dedicated->value)        // If running as a dedicated server, no need to perform the Client frame.
+                       return;    
+	            
+                IN_Frame					//Mouse only, grab pointer
+                CL_ReadPackets
+                CL_SendCommand
+                {
+                    
+                    Sys_SendKeyEvents ();  // get new key events
+                    IN_Commands ();        // allow mice or other external controllers to add commands
+                    Cbuf_Execute ();       // process console commands
+                    CL_FixCvarCheats ();   // fix any cheating cvars
+                    CL_SendCmd ();         // send intentions now
+
+	// resend a connection request if necessary
+                    CL_CheckForResend ();
+                }
+                CL_PredictMovement
+                VID_CheckChanges              // Very neat: Allow to change the DLL (ref_soft.dll or ref_gl.dll) on the fly to change the rendering path.
+                    VID_LoadRefresh           // This is the function actually performing the switch by redefining GetRefAPI.
+                CL_PrepRefresh
+                SCR_UpdateScreen
+                {
+                    //This method supports stereo rendering, up to two "frames" with slightly different POV can be rendered here.
+                    for(int i=0 ; i <numStereoFrames ; i++)
+                    {
+                        re.BeginFrame( separation[i] );
+
+                        //From here we are in the rendition DLL.
+                        
+                        // Very different from Quake 1. In order to deal with abstraction of the renderer implementation(gl or soft), pretty much everything is done via the re variable ( re is a struc refexport_t, populated via VID_LoadRefresh)
+                        // This is much cleaner than Quake1 way, where things were done via import. With this architecture, Quake2 can switch on the fly with any rendition path, as long as a matching DLL is provided.
+                        SCR_CalcVrect
+                        SCR_TileClear
+                        V_RenderView   // Prepare a refdef_t structure to send to the renderer
+                        {
+                            V_ClearScene
+                            CL_AddEntities
+                            {
+                                CL_CalcViewValues        //Setup view frustrum
+                                CL_AddPacketEntities()
+                                CL_AddTEnts ();
+                                CL_AddParticles ();
+                                CL_AddDLights ();        //Build a list of the dymamic lights currently impacting the player's position
+                                {
+	                                V_AddLight
+                                }
+                                CL_AddLightStyles ();
+                            }
+                            re.RenderFrame             // openGL path explored from here
+                            {
+                                R_RenderView(refdef_t *fd)   // fd contains all entities, light, particules necessary to rendition        
+                                {
+
+                                    r_newrefdef = *fd;
+
+                                    R_PushDlights
+                                    R_SetupFrame
+                                    R_SetFrustum
+                                    R_SetupGL                // Rotating Y and Z axis as Quake z axis and x axis are switched with openGL.
+                                    R_MarkLeaves
+                                    {
+                                        Mod_ClusterPVS
+                                        {
+                                            Mod_DecompressVis
+                                        }
+                                    }
+                                    R_DrawWorld
+                                    {
+                                        R_RecursiveWorldNode
+                                        {
+                                            for ( c = node->numsurfaces, surf = r_worldmodel->surfaces + node->firstsurface; c ; c--, surf++)
+                                            	GL_RenderLightmappedPoly
+                                            	{
+                                            		if (light is dynamic)
+                                            		{
+                                            			R_BuildLightMap
+                                            			R_SetCacheState
+                                            			qglTexSubImage2D
+                                            		}
+                                            	}
+                                        }
+                                        DrawTextureChains ();
+	                                    R_BlendLightmaps ();
+		                                R_DrawSkyBox ();
+		                                R_DrawTriangleOutlines ();
+                                    }
+                                    R_DrawEntitiesOnList            //Rendere explosions, beam, lasers and players
+                                    {
+                                        //Drawn non transparent things, far to near:
+                                        for (i=0 ; i &lt; r_newrefdef.num_entities ; i++)
+                                        {
+                                            R_DrawAliasModel
+                                                GL_DrawAliasFrameLerp    //Models vertices are interpolated lerp style
+                                        }
+                                        //Drawn transparent things, far to near:
+                                        for (i=0 ; i &lt; r_newrefdef.num_entities ; i++)
+                                        {
+                                            R_DrawAliasModel
+                                                GL_DrawAliasFrameLerp    //Models vertices are interpolated lerp style
+                                        }
+                                    }
+                                    R_RenderDlights
+                                        for (i=0 ; i &lt; r_newrefdef.num_dlights ; i++, l++)
+                                            R_RenderDlight (l);
+                                    R_DrawParticles
+                                    R_DrawAlphaSurfaces
+                                    R_Flash
+                                }
+                                R_SetLightLevel 
+                                R_SetGL2D 
+                            }    
+                            SCR_AddDirtyPoint
+                            SCR_AddDirtyPoint
+                            SCR_DrawCrosshair
+                        }
+                        SCR_DrawStats // Health and Ammo icons 
+                        SCR_DrawNet
+                        SCR_CheckDrawCenterString
+                    
+                        SCR_DrawPause
+                        SCR_DrawConsole
+                        M_Draw
+                        SCR_DrawLoading
+
+                        re.EndFrame();
+                        
+                         //From here we are NOT the rendition DLL anymore.
+                    }
+                    
+                }
+                S_Update
+                CDAudio_Update
+                CL_RunDLights 
+                CL_RunLightStyles 
+                SCR_RunCinematic 
+                SCR_RunConsole
+                cls.framecount++;                                                                
+            }    
+            // Note here a lot of time delta are maintained (all,sv,cl,gm,rf)    
+
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//John Carmack did Not really bother with cache miss and indirection
+Little/Big endian function pointer for conversion
+
+Quake2 BSP format(Gold): 
+http://www.flipcode.com/archives/Quake_2_BSP_File_Format.shtml
+http://jheriko-rtw.blogspot.com/2010/11/dissecting-quake-2-bsp-format.html
+RADIOSITY: This article is FUCKING GOOOOLD http://freespace.virgin.net/hugo.elias/radiosity/radiosity.htm !!
+
+
+Quake2 Model format:
+http://icculus.org/~phaethon/q3a/formats/md2-schoenblum.html
+10 keyframes per seconds fixed (http://en.wikipedia.org/wiki/Id_Tech_3).
+
+MQuake 2 can be run in both software-rendering and in hardware accelerated mode, for the later you need a OpenGL compatible graphics card in addition to id Softwares official specs below.
+Minimum requirements:
+A 100% Windows 95/98/ME/NT 4.0/2000-compatible computer system (including compatible 32-bit drivers for CD-ROM drive , video card, sound card and input devices)
+Pentium? 90 MHz processor (133 recommended) or higher or Athlon? processor
+16MB RAM required for Windows 95/98, 24MB required for all other supported operating systems
+Quad-speed CD-ROM drive (600 K/sec. sustained transfer rate)
+100% Microsoft?-compatible mouse and driver
+25MB of uncompressed hard disk space for game files (Minimum Install), plus 45MB for the Windows swap file
+Supports network and Internet play via IPX and TCP/IP
+
+Michael abrash: Quake 2 levels are taking up to an hour to process. (Note, however, that that includes BSPing, PVS calculations, and radiosity lighting, which I’ll discuss later.)
+Michael abrash: The most interesting graphics change is in the preprocessing, where John has added support for radiosity lighting;
+
+Tried to build, error found:
+
+winquake.h(26) : fatal error C1083: Cannot open include file: 'dsound.h': No such file or directory
+
+Add to add manually dsound.h reference from DirectX SDK.
+
+Build fine after that.
+
+Starting exploring via the quake2 project:
+
+Just like for Quake 1, WinMain is in sys_win.c
+
+We can find the DLL API acquirment in Sys_GetGameAPI
+
+Main game loop calls method Qcommon_Frame
+
+Abstraction layer in Quake2: Interface design pattern in pure C.
+
+    Rendition now is abstracted, Quake engine doesn't know what is the rendering path, only uses a refexport_t struct to call function pointers. The rendition is still based on BSP/PVS
+    According to abrash book, I was expecting Portal mecanisms. PHS (Potentialy Hearable Set), is used for sound sent from server to client. This significantly reduced the bandwidth consumption 
+    as the time, allowing multiplayer game to host 32 max players instead of 16.
+    
+    
+    Game content is also abstracted via a ge variable, no more Quake C, people not have to compile a DLL (game86x.dll), type game_export_t. Commercial version of Quake2 loaded game_export_t via pointer to gamex86.dll. But quake2 also shipped with source code to generate 
+    a new DLL, enabling fans to produce MODs. 
+    
+    
+
+    
+Command design patterns
+Floating point precision alteration at runtime
+md2: linear frame interpolation. quake models had 250 faces.  Quake2: Our models run from 400 to 700 with the bosses around 2000 faces.
+The explosions are now models.    
+Import game_import_t also provides TagMalloc and TagFree for memory managment
+Colored DYNAMIC lights (Romero "Masters of doom")    
+
+
+Piece of history here: R_RenderDlight This is the method responsible of the DYNAMIC LIGHTS BLEND RENDERING. The piece of code that allegibly prompted John Romero to switch Daikatana to use the Quake 2 engine
+
+
+Question to answer: Does a game.dll can add entities to the list sent to the renderer ?
+
+Sometimes parameters are passed to functions via global variables instead of regular parameter: WTF ?! Is it because of the C/Assembly optimization
+portabilty ?
+
+
+WTF is a bmodel anyway ?
+	http://developer.valvesoftware.com/wiki/Source_BSP_File_Format
+	A Model, in the terminology of the BSP file format, is a collection of brushes and faces, often called a "bmodel" ??
+RLY ??!!
+
+Entities are added and cleared on a per Scene basis (V_ClearScene,V_AddEntity)
+CL_AddViewWeapon also calls V_AddEntity
+
+
+
+TODO:
+
+		- Find out how the Server's frequency is maintained to 10Hz (time = sv.framenum * 100 msec).
+				* Q: Does it mean server time and realtime are not the same ?
+				* A: Yes, It does.
+				
+
+
+LIGHTMAPS LOADING:
+------------------
+Lightmap have 4 mipmapping levels ?(MAXLIGHTMAPS) WRONG: Only textures have 4 mipmap
+Lightmap totat byte size is 4 * 128 * 128
+
+
+From http://www.flipcode.com/archives/Quake_2_BSP_File_Format.shtml
+Lightmap Lump 
+
+
+Static lighting is handled in the Quake environment using lightmaps, 
+which are low resolution bitmaps that are combined with the texture 
+when rendering a face. Lightmaps are unique to a face (unlike textures 
+which may be used on multiple faces). The maximum size for any lightmap 
+is 16x16 which is enforced by the BSP creation tool by splitting faces 
+which would require larger lightmaps. In Quake 1 lightmaps were limited 
+to grayscale, however Quake 2 allows for 24-bit true color lighting.
+
+Lightmaps are applied either through multi-texturing or multi-pass rendering 
+and should be multiplied with the texture for a face when rendering.
+
+The lightmap lump contains the data for all of the lightmaps in the world 
+stored consecutively. Faces store the offset of their lightmap in this lump 
+in the bsp_face structure's lightmap_offset. The actual lightmap data is 
+stored in a 24-bits-per-pixel RGB format in a left-right, top-down order 
+starting at this offset.
+
+The width and height of a lightmap isn't explicitly stored anywhere and 
+must be computed. If max_u is the maximum u component of all of the texture 
+coordinates for a face, and min_u is the minimum u component of all the texture 
+coordinates for a face (and similarly for the max_v and min_v), then the width 
+and height of the lightmap for the face is given by the computation:
+
+lightmap_width  = ceil(max_u / 16) - floor(min_u / 16) + 1
+lightmap_height = ceil(max_v / 16) - floor(min_v / 16) + 1
+
+Previous formula is WRONG:  The maximum size for any lightmap is 17x17
+
+
+
+VRAM Consomption:
+Textures, 12045 KB, 267units
+Lightmap textures: 17textures at 128*128: 48Kb/texture = 816KB
+Seems the maximum amount of VRAM consumed is 128 * 128 * 128 * 4 (MAX_LIGHTMAPS * BLOCK_HEIGHT * BLOCK_WIDTH * LIGHTMAP_BYTES)
+
+
+Mod_LoadFaces
+	GL_BeginBuildingLightmaps
+	for ( surfnum=0 ; surfnum &lt; count ; surfnum++, in++, out++)
+	{
+		CalcSurfaceExtents
+		GL_CreateSurfaceLightmap
+		{
+			LM_AllocBlock			// Get a texture id from the pre-allocated set
+			LM_UploadBlock			// Upload a lightmap texture
+			LM_InitBlock
+			R_SetCacheState
+			R_BuildLightMap
+		}
+		GL_BuildPolygonFromSurface
+	}
+	GL_EndBuildingLightmaps ();
+	
+	
+The Quake 2 palette is saved in the file baseq2/pics/colormap.pcx of your Quake 2 installation.  (open it with GIMP, photoshop poops in your shoes and display greyscale)	
+
+OpenGL quake doesn't use GenTextures ? It uses it's OWN textureID tracking because programmed against openGL 1.0: That's why this is used:
+#define	TEXNUM_LIGHTMAPS	1024 
+#define	TEXNUM_SCRAPS		1152
+#define	TEXNUM_IMAGES		1153
+#define		MAX_GLTEXTURES	1024
+
+
+OpenGL renderer is a nice trick. Because there is no palette available, the color switch is incorporated in the lightmap !! The multitexturing hence perform the palette switch AND the lighting !!!
+
+
+
+Stats per level: 
+base1.bsp 1,991,772 bytes   lightmap:725,910 bytes 		36%
+
+pak explorer: 
+pak0.pak    48.000 KB 
+./demos:       138 KB
+./env:       1.200 KB
+./maps:      6.000 KB
+./models     7.500 KB
+./pics       1.000 KB
+./sounds:   28.000 KB
+./sprites:   1.000 KB
+./textures:  2.200 KB
+
+
+
+MEMORY SUBSYSTEMS:
+==================
+
+- Surface Stack cs_base allocator (Make a graph showing exponential) // 32bits aligned
+- Surface stack for BSP ordering
+- Hunk allocator (Hunk_Begin uses virtual Alloc), used to load BSP files, // round to cacheline.
+- ZONE MEMORY ALLOCATION (common.c) still here (used to load ressources such as images, sounds and textures. But no usage of tags.
+- Discuss the way stack,linked list and no memory is allocate
+
+ADD CVAR for movie generation and command for screenshot
+
+
+CONSOLE SYSTEM:
+===============
+
+		Complex system made of function callback, state variable (cvar), alias.
+		The console even features a basic bash style completion system (no listing, first match only)(Cmd_CompleteCommand). This system
+		is still capable of completing function, alias or cvar names ;) !
+		
+		Ability to load a script with C comment capability.
+		
+		All non client calls are also sent to the server over the network
+
+		FUNCTION SUB-SYSTEM (kernel::cmd.c):
+		====================================
+		
+		Stored in cmd_functions
+		
+		Linked list, with command name and associated void (*)() function pointer.
+		Linear linked list search with strcmp
+		
+		The function take it's argv and argc from Cmd_Argv abd Cmd_Args global variables.
+		
+		"cmd" command will be forwared to server via the network
+		
+		CVAR SUB-SYSTEM (kernel::cvar.c):
+		=================================
+		
+		Stored in cvar_vars
+		
+		Linear linked list search with strcmp  
+		
+		To improve performances, some cvar pointer cache cvar lookups (instead of using Cvar_Get every time). This is particularly true in
+		the renderer modules, they keep reference to "hand" via a r_lefthand, "gl_lightmap" in gl_lightmap and so on
+		
+		ALIAS SUB_SYSTEM: (kernel::cmd.c):
+		==================================
+		
+		Stored in cmd_alias
+		
+		
+		
+		Note you don't have to use "set" command to set a cvar you can just type its name and new value: Cmd_ExecuteString will try function,alias and cvars
+
+
+TIME SYSTEM:
+============		
+
+- extratime =  sum of last msec.
+- extratime is a counter to skip framerate under cl_maxfps
+
+
+	cls.frametime = extratime/1000.0;		// How much time was elapsed since last frame was renderer as float
+	cl.time += extratime;					// Same as cls.frametime, used to send back to server
+	cls.realtime = curtime;					// curtime comes from Sys_Milliseconds = time since Quake started
+	
+	
+Netchan still base of networking communication	
+
+
+TODO:
+=====
+        - Finish explosing the mipmapping system.
+        - Check sound system memory consumption, memory map of Quake2 ?
+
+</pre>
+</body>
+</html>
