@@ -1,0 +1,173 @@
+OVERVIEW
+
+The process events connector is a kernel-userspace multicast socket
+ that reports process events like fork, exec, id change (real and effective
+user and group ids), and exit events to userspace. Applications that may 
+find these events useful include auditing, system activity monitoring 
+(e.g. top), security, and likely many more.
+
+	The low-level details describing the permissions needed and how to
+read messages from the connector are best described in
+Documentation/connector/connector.txt and netlink(3). This document describes
+messages sent back and forth between the kernel and userspace listeners using
+the connector message format.
+
+GETTING STARTED
+
+	The necessary definitions of the connector address and userspace/kernel
+data can be found by including:
+
+	#include <linux/connector.h>
+	#include <linux/cn_proc.h>
+
+	To listen for process events a task must open a netlink socket and
+bind to a special address:
+
+struct sockaddr_nl cn_addr = {
+	.nl_family = AF_NETLINK,
+	.nl_groups = CN_IDX_PROC,
+	.nl_pid = getpid()
+};
+
+Once bound the listener must inform the kernel that at least one task is
+interested in receiving multicast process events on this socket. This requires
+sending a message with PROC_CN_MCAST_LISTEN in it's payload:
+
+union {
+	struct cn_msg listen_msg = {
+		.id = {
+			.idx = CN_IDX_PROC,
+			.val = CN_VAL_PROC,
+		},
+		.seq = X,
+		.ack = Y,
+		.len = sizeof(enum proc_cn_mcast_op)
+	};
+	char bytes[sizeof(struct cn_msg) + sizeof(enum proc_cn_mcast_op)];
+} buf;
+...
+*((enum proc_cn_mcast_op*)buf.listen_msg.data) = PROC_CN_MCAST_LISTEN;
+
+After sending this message to the kernel the application should expect
+an acknowledgement message (more on ack messages below). Similar to the
+PROC_CN_MCAST_LISTEN message, userspace may send a message with
+PROC_CN_MCAST_IGNORE as its sole payload. Because it is bound to a multicast
+address the IGNORE "control" operation does not necessarily prevent process
+events from becoming available on the socket. Only the last application to
+issue IGNORE ensures that no more process events will be delivered.
+
+Packets received from the kernel are either an acknowledgement of a control
+message or a proper event. Both are described by struct proc_event:
+
+struct proc_event {
+        enum what {
+                PROC_EVENT_NONE = 0x00000000,
+                PROC_EVENT_FORK = 0x00000001,
+                PROC_EVENT_EXEC = 0x00000002,
+                PROC_EVENT_UID  = 0x00000004,
+                PROC_EVENT_GID  = 0x00000040,
+                /* "next" should be 0x00000400 */
+                /* "last" is the last process event: exit */
+                PROC_EVENT_EXIT = 0x80000000
+        } what;
+        __u32 cpu;
+        __u64 __attribute__((aligned(8))) timestamp_ns;
+                /* Number of nano seconds since system boot */
+        union { /* must be last field of proc_event struct */
+                struct {
+                        __u32 err;
+                } ack;
+
+                struct fork_proc_event {
+                        pid_t parent_pid;
+                        pid_t parent_tgid;
+                        pid_t child_pid;
+                        pid_t child_tgid;
+                } fork;
+
+                struct exec_proc_event {
+                        pid_t process_pid;
+                        pid_t process_tgid;
+                } exec;
+
+                struct id_proc_event {
+                        pid_t process_pid;
+                        pid_t process_tgid;
+                        union {
+                                __u32 ruid; /* task uid */
+                                __u32 rgid; /* task gid */
+                        } r;
+                        union {
+                                __u32 euid;
+                                __u32 egid;
+                        } e;
+                } id;
+		struct sid_proc_event {
+			pid_t process_pid;
+			pid_t process_tgid;
+		} sid;
+                struct exit_proc_event {
+                        pid_t process_pid;
+                        pid_t process_tgid;
+                        __u32 exit_code, exit_signal;
+                } exit;
+        } event_data;
+};
+
+All events have valid what, cpu, and timestamp_ns fields. These record what
+the event is, which cpu reported it, and a monotonically-increasing timestamp
+in nanosecond units. Note that while the timestamp is reported in nanoseconds
+the actual time resolution may vary depending on the kernel's clock source(s).
+The cpu, timestamp, and sequence number from the netlink message wrapper
+provide a best-effort means of reassembling events from multiple CPUs
+"in order". It is best-effort because strictly speaking the parallel nature of 
+execution between CPUs precludes offering the strongest ordering guarantees.
+
+Another wrinkle to consider: pids, tgids, session ids, exist in pid namespaces
+while the netlink sockets are part of a network namespace. If these namespaces
+do not coincide then the pids, tgids, and session ids may not exist or may
+refer to the wrong tasks.
+
+TYPES OF PACKETS
+
+There are several types of messages, each with a corresponding .what value:
+	Acknowledgement		PROC_EVENT_NONE
+	Fork			PROC_EVENT_FORK
+	Exec			PROC_EVENT_EXEC
+	UID Change		PROC_EVENT_UID
+	GID Change		PROC_EVENT_GID
+	Session ID Change	PROC_EVENT_SID
+	Exit			PROC_EVENT_EXIT
+
+(Note that while these values are encoded as bits (1 << n) the
+kernel does not report multiple events in the same message.) Each event also
+has a corresponding struct in the event_data union which describes the data
+that is valid for the event.
+
+ACKNOWLEDGEMENT
+
+Acknowledgement messages contain an err field in their
+event_data. When non-zero the err field indicates that the control operation 
+did not succeed. The value is suitable for, but not stored in, errno. For
+example an illegal or unrecognized control operation returns an acknowledgement
+message with event_data.ack.err == EINVAL.
+
+All other messages include at least one pid and a corresponding tgid describing
+which task(s) the event relates to. As with normal Linux convention, pid == tid.
+Each task described in the event has a pid and tgid pair.
+
+FORK
+
+Fork messages are emitted when a task calls the fork() or clone() system calls. 
+They contain the pid and tgid of the parent and child tasks.
+
+EXEC messages indicate via pid and tgid which task exec'd.
+
+UID messages indicate that the task's real and/or effective user id has changed.
+
+GID messages indicate that the task's real and/or effective group id has changed.
+
+SID messages indicate that the task has started a new session.
+
+EXIT messages indicate that the task has exitted and provide the exit code and
+exit signal.
