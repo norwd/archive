@@ -4,6 +4,7 @@ name: "Archive Link"
 run-name: "Archiving ${{ inputs.url }}"
 
 on:
+
   workflow_dispatch:
     inputs:
       url:
@@ -14,6 +15,22 @@ on:
 
           By default, only the file specified will be archived.
           If the url ends with a `/` then it will be treated like a directory and will be mirrored.
+
+  workflow_call:
+    inputs:
+      url:
+        required: true
+        type: string
+        description: |
+          The url to archive.
+
+          By default, only the file specified will be archived.
+          If the url ends with a `/` then it will be treated like a directory and will be mirrored.
+
+    # not sure if this is needed?
+    #secrets:
+    #  AUTO_DOWNLOAD_ARCHIVE:
+    #    required: true
 
 env:
   GH_TOKEN: ${{ secrets.AUTO_DOWNLOAD_ARCHIVE }}
