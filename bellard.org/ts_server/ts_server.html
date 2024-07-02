@@ -77,9 +77,8 @@ ul.no-bullet {list-style: none}
   <li><a name="toc-Text-to-image-_0028ts_005fsd_0029" href="ts_server.html#Text-to-image-_0028ts_005fsd_0029">3.2 Text to image (<code>ts_sd</code>)</a></li>
   <li><a name="toc-Chat-_0028ts_005fchat_0029" href="ts_server.html#Chat-_0028ts_005fchat_0029">3.3 Chat (<code>ts_chat</code>)</a></li>
   <li><a name="toc-Speech-to-text-transcription-_0028ts_005faudiototext_0029" href="ts_server.html#Speech-to-text-transcription-_0028ts_005faudiototext_0029">3.4 Speech to text transcription (<code>ts_audiototext</code>)</a></li>
-  <li><a name="toc-Text-compression-_0028ts_005fzip_0029" href="ts_server.html#Text-compression-_0028ts_005fzip_0029">3.5 Text compression (<code>ts_zip</code>)</a></li>
-  <li><a name="toc-Model-Weight-Conversion" href="ts_server.html#Model-Weight-Conversion">3.6 Model Weight Conversion</a></li>
-  <li><a name="toc-Model-Weight-Quantization" href="ts_server.html#Model-Weight-Quantization">3.7 Model Weight Quantization</a></li>
+  <li><a name="toc-Model-Weight-Conversion" href="ts_server.html#Model-Weight-Conversion">3.5 Model Weight Conversion</a></li>
+  <li><a name="toc-Model-Weight-Quantization" href="ts_server.html#Model-Weight-Quantization">3.6 Model Weight Quantization</a></li>
 </ul></li>
 <li><a name="toc-TS-Server-Configuration" href="ts_server.html#TS-Server-Configuration">4 TS Server Configuration</a>
 <ul class="no-bullet">
@@ -105,7 +104,7 @@ generation, ...
 <ul>
 <li> All is included in a single binary. Very few external dependencies (Python is not needed) so installation is easy on Linux and Windows.
 
-</li><li> Supports many Transformer variants (GPT-J, GPT-NeoX, OPT, Fairseq GPT, M2M100, CodeGen, GPT2, T5, RWKV, Llama 2, Falcon, MPT, Mistral, Whisper) and Stable Diffusion.
+</li><li> Supports many Transformer variants (GPT-J, GPT-NeoX, OPT, Fairseq GPT, M2M100, CodeGen, GPT2, T5, RWKV, Llama 2/3, Falcon, MPT, Mistral, Whisper) and Stable Diffusion.
 
 </li><li> Integrated REST JSON API for text completion, translation, image generation and audio transcription.
 
@@ -122,7 +121,7 @@ generation, ...
 </li><li> Support of grammar based sampling to constraint the model output according to a BNF grammar or a JSON schema.
 
 </li><li> Uses the LibNC library for simple tensor manipulation using the C language.
-</li><li> Simple command line tools (<code>ts_test</code>, <code>ts_sd</code>, <code>ts_chat</code>, <code>ts_audiototext</code> and <code>ts_zip</code>) are provided to test the various models.
+</li><li> Simple command line tools (<code>ts_test</code>, <code>ts_sd</code>, <code>ts_chat</code>, <code>ts_audiototext</code>) are provided to test the various models.
 
 </li></ul>
 
@@ -223,16 +222,12 @@ installed. Enough memory must be available to load the model.
 <ol>
 <li> First ensure that it is working on CPU (See <a href="ts_server.html#First-steps">First steps</a>).
 
-</li><li> Ensure that you have a compatible cuda installation with cuda 11.x or 12.x. The software is preconfigured with cuda 11.x. If you want to use cuda 12.x, then change the link to the <samp>libnc_cuda.so</samp> library:
-
-<div class="example">
-<pre class="example">  ln -sf libnc_cuda-12.so libnc_cuda.so
-</pre></div>
+</li><li> Ensure that you have a compatible cuda installation with cuda 11.x or 12.x. <code>ts_server</code> needs the cuBLASLt library which is provided in the cuda toolkit.
 
 </li><li> Then try to use the GPU with the <code>ts_test</code> utility:
 
 <div class="example">
-<pre class="example">  ./ts_test --cuda -m gpt2-117M.bin g  &quot;The Linux kernel is&quot;
+<pre class="example">  ./ts_test --cuda -m gpt2-117M.bin g &quot;The Linux kernel is&quot;
 </pre></div>
 
 <p>If you get an error such as:
@@ -342,7 +337,7 @@ installed. Enough memory must be available to load the model.
 <ol>
 <li> First ensure that it is working on CPU (see the previous section).
 
-</li><li> Ensure that you have a compatible cuda installation with cuda 11.x or 12.x. The software automatically detects the cuda version.
+</li><li> Ensure that you have a compatible cuda installation with cuda 11.x or 12.x. <code>ts_server</code> needs the cuBLASLt library which is provided in the cuda toolkit.
 
 </li><li> Then try to use the GPU with the <code>ts_test</code> utility:
 
@@ -490,45 +485,8 @@ transcripted. <code>out.json</code> contains the transcripted text.
 </p>
 <p>When using a CPU, remove the <code>--cuda</code> option.
 </p>
-<a name="Text-compression-_0028ts_005fzip_0029"></a>
-<h3 class="section">3.5 Text compression (<code>ts_zip</code>)</h3>
-
-<p>To compress a text file (here <samp>alice29.txt</samp>), assuming you
-downloaded the <samp>rwkv_169M.bin</samp> model, use:
-</p>
-<div class="example">
-<pre class="example">./ts_zip --cuda -m rwkv_169M.bin c alice29.txt /tmp/out.bin
-</pre></div>
-
-<p>To decompress it:
-</p>
-<div class="example">
-<pre class="example">./ts_zip --cuda -m rwkv_169M.bin d /tmp/out.bin /tmp/out.txt
-</pre></div>
-
-<p>A checksum is included in the compressed file and it is automatically
-checked. It is essential to use the same software version, language
-model and GPU model when compressing and decompressing a file.
-</p>
-<p>Large compression gains occur only if the input file is in a language
-that the language model has already seen.
-</p>
-<p>The compression ratio, speed and memory usage depend on the language
-model but also on the selected context length (<code>-l</code> option) and
-batch size (<code>-b</code> option). They are both chosen automatically but
-can be overridden:
-</p><ul>
-<li> The memory usage is proportional to the context
-length and batch size.
-</li><li> The speed increases when the batch size increases.
-</li><li> The compression ratio increases with larger context lengths and smaller batch sizes.
-</li></ul>
-
-<p>More information is available at
-<a href="ts_zip.html">https://bellard.org/ts_server/ts_zip.html</a>.
-</p>
 <a name="Model-Weight-Conversion"></a>
-<h3 class="section">3.6 Model Weight Conversion</h3>
+<h3 class="section">3.5 Model Weight Conversion</h3>
 
 <p>TextSynth Server uses a specific file format to store the weights of
 the models. Python scripts are provided in <samp>scripts/</samp> to convert
@@ -550,12 +508,36 @@ Hugging Face model.
 <li> <code>model_dir</code> is the directory containing the
 <samp>config.json</samp> and <samp>pytorch_model*.bin</samp> files.
 
-</li><li> <code>llama_vocab.txt</code> is a ts_server tokenizer file from the <samp>tokenizer/</samp> directory.
+</li><li> <code>llama_vocab.txt</code> is a ts_server tokenizer file from the <samp>tokenizer/</samp> directory. The tokenizer file can also be extracted from an existing model with:
+
+<div class="example">
+<pre class="example">./ncdump -o llama3_vocab.txt llama3_8B_q4.bin tokenizer
+</pre></div>
+
+</li><li> The optional option <code>--chat_template</code> can be used to provide the chat template. The chat template is used to generate the prompt from the conversation history in the <code>chat</code> remote API and in the <code>ts_chat</code> utility. The following chat templates are currently available:
+
+<dl compact="compact">
+<dt><code>rwkv</code></dt>
+<dd><p>Using <code>Bob:</code> and <code>Alice:</code> prompts.
+  </p></dd>
+<dt><code>vicuna</code></dt>
+<dd><p>Using <code>USER:</code> and <code>ASSISTANT:</code> prompts.
+  </p></dd>
+<dt><code>redpajama_incite</code></dt>
+<dd><p>Using <code>&lt;human&gt;:</code> and <code>&lt;bot&gt;:</code> prompts.
+  </p></dd>
+<dt><code>llama2</code></dt>
+<dd><p>Using <code>[INST]</code> and <code>[/INST]</code> prompts.
+  </p></dd>
+<dt><code>llama3</code></dt>
+<dd><p>Using <code>&lt;|start_header_id|&gt;user&lt;|end_header_id|&gt;</code> and <code>&lt;|start_header_id|&gt;assistant&lt;|end_header_id|&gt;</code> prompts.
+  </p></dd>
+</dl>
 
 </li></ul>
 
 <a name="Model-Weight-Quantization"></a>
-<h3 class="section">3.7 Model Weight Quantization</h3>
+<h3 class="section">3.6 Model Weight Quantization</h3>
 
 <p>With the <code>ncconvert</code> utility, it is possible to quantize the
 model weights to 8, 4 or 3 bits. Quantization reduces the GPU memory

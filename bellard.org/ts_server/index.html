@@ -83,14 +83,14 @@ table.sortable th:not([aria-sort]) button:hover span::after {
 <h2>News</h2>
 
 <ul>
+  <li>2024-05-21: Added Llama 3 model support.</li>
   <li>2024-01-20: Added Mixtral model support. Added fast Whisper
   based speech to text transcription.</li>
   <li>2023-10-21: CUDA support in the Windows version, mistral model
   support. Speculative sampling is supported. BNF grammar and JSON
   schema sampling.</li>
   <li>2023-08-07: The GPU version and model conversion utilities are
-  now freely available. New <a href="ts_zip.html">ts_zip</a> utility
-  to efficiently compress text files with large language models.</li>
+  now freely available.</li>
   <li>2023-07-21: The MPT and Llama 2 models are supported.</li>
   <li>2023-06-10: New <b>ts_chat</b> utility to chat with language models. The Falcon and RedPajama-INCITE models are supported.</li>
   <li>2023-03-26: The <a href="https://github.com/facebookresearch/fairseq/tree/nllb">NLLB200</a> and <a href="https://arxiv.org/abs/2205.05131">flan UL2</a> models have been added. An HTML GUI is now available in <b>ts_server</b>.</li>
@@ -105,7 +105,7 @@ generation, ...
 <p>It has the following characteristics:
 <ul>
   <li>All is included in a single binary. Very few external dependencies (Python is not needed) so installation is easy.</li>
-  <li>Supports many Transformer variants (<a href="https://github.com/kingoflolz/mesh-transformer-jax">GPT-J</a>, <a href="https://github.com/EleutherAI/gpt-neox">GPT-NeoX</a>, <a href="https://github.com/EleutherAI/gpt-neo">GPT-Neo</a>, <a href="https://github.com/facebookresearch/metaseq">OPT</a>, <a href="https://github.com/pytorch/fairseq/tree/main/examples/moe_lm">Fairseq GPT</a>, <a href="https://arxiv.org/abs/2010.11125">M2M100</a>, <a href="https://github.com/salesforce/CodeGen">CodeGen</a>, <a href="https://github.com/openai/gpt-2">GPT2</a>, <a href="https://arxiv.org/abs/2210.11416">T5</a>, <a href="https://github.com/BlinkDL/RWKV-LM">RWKV</a>, <a href="https://github.com/facebookresearch/llama">LLAMA</a>, <a href="https://falconllm.tii.ae/">Falcon</a>, <a href="https://github.com/mosaicml/llm-foundry">MPT</a>, <a href="https://arxiv.org/abs/2307.09288">Llama 2</a>, Mistral, Mixtral, Whisper) and <a href="https://github.com/CompVis/stable-diffusion">Stable Diffusion</a>.</li>
+  <li>Supports many Transformer variants (<a href="https://github.com/kingoflolz/mesh-transformer-jax">GPT-J</a>, <a href="https://github.com/EleutherAI/gpt-neox">GPT-NeoX</a>, <a href="https://github.com/EleutherAI/gpt-neo">GPT-Neo</a>, <a href="https://github.com/facebookresearch/metaseq">OPT</a>, <a href="https://github.com/pytorch/fairseq/tree/main/examples/moe_lm">Fairseq GPT</a>, <a href="https://arxiv.org/abs/2010.11125">M2M100</a>, <a href="https://github.com/salesforce/CodeGen">CodeGen</a>, <a href="https://github.com/openai/gpt-2">GPT2</a>, <a href="https://arxiv.org/abs/2210.11416">T5</a>, <a href="https://github.com/BlinkDL/RWKV-LM">RWKV</a>, <a href="https://github.com/facebookresearch/llama">LLAMA</a>, <a href="https://falconllm.tii.ae/">Falcon</a>, <a href="https://github.com/mosaicml/llm-foundry">MPT</a>, <a href="https://arxiv.org/abs/2307.09288">Llama 2</a>, Llama 3, Mistral, Mixtral, Whisper) and <a href="https://github.com/CompVis/stable-diffusion">Stable Diffusion</a>.</li>
   <li>Integrated REST JSON API for text completion, translation, image generation and audio transcription. It is used by <a href="https://textsynth.com/documentation.html">textsynth.com</a>.</li>
   <li>Integrated HTML GUI for testing.</li>
   <li>Very high performance for small and large batches on CPU and GPU. Support of dynamic batching to handle a large number of simultaneous requests.</li>
@@ -115,7 +115,7 @@ generation, ...
   <li>Support of grammar based sampling to constraint the model output according to a BNF grammar or a JSON schema.</li>
   <li>Uses the <a href="../libnc/index.html">LibNC</a> library for simple tensor manipulation using the
   C language.</li>
-  <li>Simple command line tools (<b>ts_test</b>, <b>ts_sd</b>, <b>ts_chat</b>, <a href="ts_zip.html"><b>ts_zip</b></a>) are provided to test the various models.</li>
+  <li>Simple command line tools (<b>ts_test</b>, <b>ts_sd</b>, <b>ts_chat</b>, <b>ts_audiototext</b> are provided to test the various models).</li>
 </ul>
 </p>
 The free version is released as binary code for non-commercial use
@@ -136,8 +136,8 @@ document.write(f("gbcsjdf!bu!cfmmbse!epu!psh"));
 <h2>Download</h2>
                
 <ul>
-  <li>Linux version <a href="ts_server_free-2024-01-20.tar.gz">ts_server_free-2024-01-20.tar.gz</a> (<a href="Changelog">Changelog</a>).</li>
-  <li>Windows version <a href="ts_server_free-2024-01-20-win64.zip">ts_server_free-2024-01-20-win64.zip</a> (<a href="Changelog">Changelog</a>).</li>
+  <li>Linux version <a href="ts_server_free-2024-05-21.tar.gz">ts_server_free-2024-05-21.tar.gz</a> (<a href="Changelog">Changelog</a>).</li>
+  <li>Windows version <a href="ts_server_free-2024-05-21-win64.zip">ts_server_free-2024-05-21-win64.zip</a> (<a href="Changelog">Changelog</a>).</li>
 </ul>
 
 <h2><a href="ts_server.html">Documentation</a></h2>
@@ -375,12 +375,16 @@ with the TextSynth server on a RTX A6000 GPU.
 <tr><td>mistral_7B_q8
 <td class="num">  7.8<td class="num">      3.174<td class="num">      76.0%<td class="num">      81.0%<td class="num">      73.6%<td class="num">      80.4%<td class="num">      80.7%<td class="num">      78.3%</tr>
 
-<tr><td>mixtral_47B_q3
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/mixtral_47B_q3.bin">mixtral_47B_q3</a>
 <td class="num"> 19.3<td class="num">      2.851<td class="num">      76.8%<td class="num">      82.2%<td class="num">      75.6%<td class="num">      81.3%<td class="num">      79.8%<td class="num">      79.1%</tr>
-<tr><td>mixtral_47B_q4
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/mixtral_47B_q4.bin">mixtral_47B_q4</a>
 <td class="num"> 26.5<td class="num">      2.811<td class="num">      78.6%<td class="num">      83.3%<td class="num">      76.0%<td class="num">      82.6%<td class="num">      80.4%<td class="num">      80.2%</tr>
 <tr><td>mixtral_47B_q8
 <td class="num"> 49.7<td class="num">      2.790<td class="num">      79.3%<td class="num">      83.9%<td class="num">      78.1%<td class="num">      82.0%<td class="num">      80.7%<td class="num">      80.8%</tr>
+
+<tr><td>llama3_8B             <td class="num"> 16.1<td class="num">      3.107<td class="num">      76.8%<td class="num">      79.1%<td class="num">      73.1%<td class="num">      79.7%<td class="num">      80.7%<td class="num">      77.9%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/llama3_8B_q4.bin">llama3_8B_q4</a>          <td class="num">  5.5<td class="num">      3.291<td class="num">      75.2%<td class="num">      78.2%<td class="num">      73.5%<td class="num">      78.8%<td class="num">      80.4%<td class="num">      77.2%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/llama3_70B_q4.bin">llama3_70B_q4</a>         <td class="num"> 41.7<td class="num">      2.619<td class="num">      80.4%<td class="num">      84.4%<td class="num">      80.3%<td class="num">      82.1%<td class="num">      83.1%<td class="num">      82.1%</tr>
 
 </tbody>
 </table>
@@ -397,6 +401,7 @@ with the TextSynth server on a RTX A6000 GPU.
     </tr>
   </thead>
   <tbody>
+    <tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/llama3_8B_instruct_q4.bin">llama3_8B_instruct_q4</a><td class="num">5.5<td>Llama 3 8B instruct model</tr>
     <tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/llama2_7B_chat_q4.bin">llama2_7B_chat_q4</a><td class="num">3.9<td>Llama 2 7B chat model</tr>
     <tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/llama2_13B_chat_q4.bin">llama2_13B_chat_q4</a><td class="num">7.6<td>Llama 2 13B chat model</tr>
     <tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/llama2_70B_chat_q4.bin">llama2_70B_chat_q4</a><td class="num">39.3<td>Llama 2 70B chat model</tr>
@@ -435,8 +440,8 @@ Additional Models:
   Notes:
   <ol>
     <li>Some models have restrictive licenses. In particular, OPT,
-    Vicuna and NLLB200 cannot be used commercially. BLOOM,
-    Stable Diffusion and Llama 2 can be used commercially but have use
+    Vicuna and NLLB200 cannot be used commercially. BLOOM, Stable
+    Diffusion, Llama 2, Llama 3 can be used commercially but have use
     limitations.</li>
     <li>For the larger models we don't provide the unquantized version when it is too large for consumer GPUs or when the quantized version gives the same performance as the unquantized version.</li>
     <li>The <b>q8</b> suffix indicates that the model was 8 bit
