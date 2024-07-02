@@ -18,11 +18,8 @@ acceptable speed with large models, a GPU is required.
 --------------
 
 A Linux system is assumed. Just type 'make' to compile the program. A
-binary DLL of the LibNC library is included in the archive. Change the
-symbolic link to libnc_cuda.so if you are using cuda 12.x instead of
-11.x with:
-
-ln -sf libnc_cuda-12.so libnc_cuda.so
+binary DLL of the LibNC library is included in the archive. When using
+CUDA, cuBLAS must be installed too.
 
 Windows cross-compilation from Linux is supported provided the
 libnc*.dll files are copied from the Windows version.
