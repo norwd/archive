@@ -1,33 +1,38 @@
 ﻿Abrasives in Micron Scale: Grand Logarithmic Grit Chart
 
-README revision 14
+README revision 15
 
 http://myplace.frontier.com/~mr.wizard/GLGC/
 
 To purchase prints, or for licensing and customization contact Mr.Wizard@Frontier.com
 
 
+
 License
 ═════════════════════
 
-Copyright 2013–2022 "Mr.Wizard"
+Copyright 2013–2024 "Mr.Wizard"
 
-Please do not upload these images or files (Media) to any web site or file repository.  If you wish to share the chart you may link to "http://myplace.frontier.com/~mr.wizard/GLGC/" only.  I give limited and revocable permission to hot-link the image for noncommercial use on public forums; any such use MUST include a direct and visible link to this README file.
+Please do not upload these images or files (Media) to any web site or file repository.  If you wish to share the chart you may link to [ http://myplace.frontier.com/~mr.wizard/GLGC/ ] only.  I give limited and revocable permission to hot-link the image for noncommercial use on public forums; any such use MUST include a direct and plainly visible link to this README file.
 
-The Media are for personal use only, which means noncommercial use of the Media for display on personal computers, or making image prints for personal use.  The Media may not be used in advertising.  The Media may not be resold, relicensed, or sublicensed.  The Media may not be modified.  Title and ownership, and all rights now and in the future, of and for the Media are reserved.  There are no warranties, express or implied. The Media are provided 'as is.'
+The Media are for personal use only, which means noncommercial use of the Media for display on personal computers, or making image prints for personal use.  The Media may not be used in advertising.  The Media may not be resold, relicensed, or sublicensed.  The Media may not be modified.  Title and ownership, and all rights now and in the future, of and for the Media are reserved.  There are no warranties, express or implied. The Media are provided "as is."
 
 
 
 Acknowledgments
 ═════════════════════
 
-User "Komitadjie" on bladeforums.com, knifeforums.com, etc. for creating the The Grand Unified Grit Chart which inspired this work.  In prior revisions a few values in the Other column were imported from his table, for completeness.  All other data were sourced independently.
+User "Komitadjie" on bladeforums.com, knifeforums.com, etc. for creating the The Grand Unified Grit Chart which inspired this work.
 
 User "cbwx34" (Curtis) for an even earlier unified grit chart that inspired others.
 
 Billy at Lansky customer service for hunting down Lansky diamond plate values.
 
 Clay Allison, founder of Wicked Edge, for specific support.
+
+Konstantin Martynenko, owner of Gritomatic, for enduring patronage.
+
+Users: stringer, captaincaed, ethompson, and cotedupy of kitchenknifeforums.com for extensive guidance on natural whetstones.
 
 
 
@@ -38,19 +43,19 @@ It is the intent to display a broad range of abrasive particle size information 
 
 The chart started out as a table of conversions from grit number to microns but grew in scope to include products that are directly specified in microns.  It is therefore also to a degree a record of availability of products that may be of interest in certain markets.  The logarithmic visual representation is intended to be easier to internalize than numbers simply read from a list.
 
-The chart does not and cannot quantify or compare absolute performance.  (details below)
+The chart does not and cannot quantify or compare absolute performance.  (See section "What the chart is not" below.)
 
 
 
 Reading the Chart
 ═════════════════════
 
-The chart consists of a series of labels arranged in columns by family.  The vertical placement of each label correlates to particle size in microns (micrometers).  Some columns contain more than one product or standard such as the column containing both Lansky Diamond and Shapton stones.  In each case the series are differentiated by color or break and the column labels match the relative placement of the first item of each.  ("Lansky ◊" is above "Shapton" in both the column label and the column itself, and all Lansky items share a distinguishing color.)  The "Other" column has every item named so there is no confusion. (Refer to Acronyms and Abbreviations below.)  In single-family columns congruent standards and alternate names are written in smaller type below the reference standard title, e.g. ISO 8486 below FEPA F, and JIS R 6010 below FEPA P. (JIS R 6010 for coated product is not to be confused with JIS R 6001 for bonded product, charted separately.)
+The chart consists of a series of labels arranged in columns by family.  The vertical placement of each label correlates to particle size in microns (micrometers).  Some columns contain more than one product or standard such as the column containing both Edge Pro Diamond and Norton stones.  In each case the series are differentiated by color or break and the column labels match the relative placement of the first item of each.  ("Edge Pro ◊" is above "Norton" in both the column label and the column itself, and all Norton items share a distinguishing color.)  The "Other" column has every item named so there is no confusion. (Refer to Acronyms and Abbreviations below.)  In single-family columns congruent standards and alternate names are written in smaller type below the reference standard title, e.g. ISO 8486 below FEPA Bonded, and JIS R 6010 below FEPA Coated. (JIS R 6010 for coated product is not to be confused with JIS R 6001 for bonded product, charted separately.)
 
 Some columns have a selection of items highlighted, for example the 3M Trizact™ CF "Gator" belts within the Trizact category, and diamond products in the Norton column, with annotation in matching color.  Others have annotations referring to specific items by name or the entire column.
 
 Range bars, terminating in a point, represent particle size limits imposed on the large majority of a sample, such as D3 and D94 points.  Variance bars, terminating in a crossbar, represent the allowed 
-tolerance of the median value D50.  A bar terminating in an arrowhead indicates an open-ended grade with no limit on how fine a passing sample may be.
+tolerance of the median value D50.  A bar terminating in an arrowhead indicates an open-ended grade with no limit on how fine a passing sample may be.  In the Natural Stone column these marks have a less rigorous meaning, clarified below.
 
 Items with a background color represent products with a physical color such as the lapping films and Pride Water Stones, or a color expressly associated with the product such as the DMT® products.  The colors representing physical product color should be consistent within a series but will not be consistent between series.  For example the colors of the 3M Diamond Microfinishing Film should be reasonably accurate relative to each other, nevertheless the 30, 9, and 3 micron films might be the same physical color as the 3M Aluminum Oxide Lapping Film despite being a different color in the chart.
 
@@ -58,16 +63,11 @@ The black and orange vertical dashed lines (barber poles) provide a visual refer
 
 Items of notably uncertain origin or placement have been styled in gray type.  (See details below.)
 
-Items in purple type were displaced vertically to eliminate overlap and make the labels readable.
+Items in purple type were displaced vertically to eliminate overlap and make the labels readable.  In the base chart:
 
- • The Shapton 15K/16K values were each displaced by roughly 3%.
-
- • The Micro-Mesh™ MXD 600, 800, and 1200 values are nearly identical and had to be displaced by 6%.
- 
+ • The Micro-Mesh™ MXD 600, 800, and 1200 values are nearly identical and had to be displaced by 5%.
  • Clover® "B" and "C" compounds overlapped; they were displaced 4%.
- 
- • Baryonyx Knife Company (BYXCO) "Bull Thistle" stone was displaced 5%.
- 
+ • Baryonyx Knife Company (BYXCO) "Bull Thistle" stone was displaced 3%.
  • BYXCO "Ptarmigan" and Tormek "PA-70" are each 3µ and were displaced 5%.
 
 
@@ -87,7 +87,7 @@ JIS         Japanese Industrial Standards
 ◊           Diamond
 3M          3M Company (Minnesota Mining and Manufacturing)
 ÅLap        ÅngströmLap
-Al2O3       Aluminum Oxide
+Al₂O₃       Aluminum Oxide
 DMT®        Diamond Machining Technology
 LF          Lapping Film
 MFF         Microfinishing Film
@@ -95,7 +95,7 @@ MFF         Microfinishing Film
 SiC         Silicon Carbide
 W.S.        Water Stones
 
-µ           Micron
+µ           Micron (micrometre)
 X           Extra (coarse)
 Cs          Coarse
 Md          Medium
@@ -104,8 +104,6 @@ SF          Super Fine
 UF          Ultra Fine
 cBN         cubic Boron Nitride
 Ark         Arkansas
-HTL         Hard Translucent
-S Blk       Surgical Black
 TPI         Teeth Per Inch
 LA          Levigated Alumina
 P           Pumice
@@ -120,10 +118,10 @@ Flitz       Flitz Paste Polish
 Fuj.        Fujimi Corporation 
 India       Norton India
 PA-70       Tormek PA-70 compound
-Q. Creek    Queer Creek Ohio Blue Sandstone
 Simichr.    Happich Simichrome Polish
 Spydr       Spyderco
 SS          Spyderco Sharpmaker®
+Translu.	Translucent
 
 	Scotch-Brite™
 	─────────────
@@ -150,13 +148,15 @@ Where possible the volume or mass median diameter, abbreviated D50, is used.  Wh
 
 It might appear that the format of the chart lacks precision but in fact it is more than sufficient—its precision exceeds any reasonable measure of the underlying data.  In the base chart a vertical shift of one pixel represents a change of about one percent, while the tightest range for a single D50 value specified by any standard is more than ±3% with most values being closer to ±9%.  Further the standards allow particles in significant quantities (D3 and D94 values) over a much larger range than this.  In revision 14 these tolerances are graphically represented where applicable.  A few labels had to be displaced to prevent crowding; these values are colored differently as an indicator as noted above.
 
-The base chart is arbitrarily limited to values between 0.2 and 800 microns.  Macrogrit standards start as coarse as grit 4, equivalent to roughly 5000 microns (5mm), and there are products (e.g. Linde B, LUXOR® Orange, lapping films) that extended well into the submicron range that are omitted from the base chart.
+The base chart is arbitrarily limited to values between 0.2 and 700 microns.  Macrogrit standards start as coarse as grit 4, equivalent to roughly 5000 microns (5mm), and there are products (e.g. Linde B, LUXOR® Orange, lapping films) that extended well into the submicron range that are omitted from the base chart. Extended range is available for customized editions.
 
 A single sieve standard, ASTM E11 (2020), is included for reference.  Sieves are not themselves abrasive product but provide the foundation for grading macrogrit sizes—roughly 220 and coarser.
 
 Charted microgrit values for ANSI Bonded, ANSI Coated, and JIS R 6001 are those specified for electrical resistance (Coulter counter) method.  Charted microgrit values for FEPA F and FEPA P* are those for photosedimentometer or Sedigraph method.  *See details below.
 
-International Standards ISO 6344 and ISO 8486 are codifications of FEPA P and FEPA F respectively.  JIS R 6001, ANSI B74.12 (bonded), and GB 2477 all share effectively the same macrogrit sieve specifications as ISO 8486, while microgrit specifications are distinct.  Edge Pro standard stones are FEPA F graded, distinct from Edge Pro Diamond Matrix Stones charted separately.
+International Standards ISO 6344 and ISO 8486 are codifications of FEPA P (Coated) and FEPA F (Bonded) respectively.  JIS R 6001, ANSI B74.12 (bonded), and GB 2477 all share effectively the same macrogrit sieve specifications as ISO 8486, while microgrit specifications are distinct.  Edge Pro basic alumina and silicon carbide stones are FEPA F graded, distinct from Edge Pro Diamond Matrix Stones charted separately.
+
+International Standards ISO 6106 is reflected in localized standards including GB/T 6406-2016 and GOST R 53922-2010, and supersedes others including DIN 848-1:1988 and AS 4514-2006.  Grain designations are prefixed with D or B for Diamond or cBN (cubic born nitride) respectively.
 
 Revision 12 updates the FEPA P / ISO 6344 column to draft 2021 values in which grades P3000, P4000, and P5000 are codified.  Grades P240 to P1200 are unchanged, via US sedimentometer.  Grades P1500 and finer are now specified by Sedigraph measurement.  For the purpose of charting the conversion algorithm from ISO 8486-2:1996 is (inversely) applied to grades P240 through P1200.  This provides approximate Eppendorf photosedimentometer equivalents from US sedimentometer values, addressing the discontinuity that was introduced between the raw values of P1200 and P1500 due the change of measurement apparatus.  This conversion implicitly assumes standard particle characteristics.
 
@@ -166,11 +166,9 @@ ANSI Bonded values come from ANSI B74.12 (Table 2) and B74.10, for macrogrits by
 
 ANSI B74.12 contains a very loose specification for grit 240 with an indeterminate D50—over half of its volume could be dust.  This was not used as B74.10 contains a much tighter specification for grit 240 but its existence should be noted.
 
-[Removed in rv.13.  A UAMA representative replied: "We have looked into this and believe the numbers came from JIS.  The committee is further reviewing and we will provide additional information if it becomes available."  No additional information came.] The "UAMA Coated" values are from pop-up data pages on http://www.uama.org/Abrasives101/101Standards.html [URL dead as of 2020; some information present on https://uama.org/abrasives-101/ ] and cited as being from B74.18 R1996 or R2001.  Only grits 800 and finer are directly and uniquely represented on that page.  These values are apparently either nonstandard or deprecated as the 2006 and 2016 revisions of B74.18 do not include values above grit 600.  
-
 The "Diamond Compound" column includes colors for an apparent ad hock near-standard for US diamond paste manufacturers and suppliers.  These include: Advanced Abrasives Corporation, Amplex Superabrasives, BORIDE Engineered Abrasives, Diamond Innovations, DIANAMIC® Abrasive Products, Engis®, Norton, PPT Pro Polishing Tools, United States Products Co., and others.  The color/micron mapping is not exact; they are to serve as a guideline only.
 
-Natural whetstone estimated equivalents in the Other column are a synthesis of multiple sources including Info 20M Number 60e V1.1 [ https://bosq.home.xs4all.nl/info%2020m/grinding_and_honing_part_1.pdf ], Dan's Whetstone Company, and Best Sharpening Stones.  These must all be considered highly approximate due to the variability of natural stones and conditioning methods.  This is especially true for the harder Arkansas stones where performance is largely dependent on the surface finish applied, much like solid sintered ceramics e.g. Spyderco.
+"Natural Stone" items are charted by estimated performance rather than physical geologic grain size.  This departure is necessary for the values to have practical meaning.  All items represent a range though some item names eclipse any range bars that could have been plotted.  The Variance and Range marks hold a different meaning in this column: the crossbar represents a nominal range of performance, while the dot represents additional variation that exists for this type of stone.  An individual sample will not exhibit a performance range that covers this entire span.  These estimates are a synthesis of multiple sources including Henk Bos' four part "Grinding & Honing" series in Info 20M [ https://bosq.home.xs4all.nl/info%2020m/ ], Dan's Whetstone Company, NaturalWhetstones.com, and especially input from members of KitchenKnifeForums.com (KKF).  See caveats below.
 
 "3M Polishing" is short for 3M Wetordry™ Polishing Paper, product designations 281Q, 286Q, 481Q, 486Q.
 
@@ -186,6 +184,26 @@ Natural whetstone estimated equivalents in the Other column are a synthesis of m
 
 "New SuperStone" refers to ceramic fiber abrasive files from Argofile Japan Limited, not to be confused with Super Stone whetstones from Naniwa.
 
+"Wicked Edge" values are the original ones provided by Wicked Edge, with adjustments from [ https://knife.wickededgeusa.com/forums/topic/2200-3000-diamond-stones/page/2/#post-52567 ].  A different table exists with discordant values. [ https://support.wickededgeusa.com/portal/en/kb/articles/wicked-edge-grit-micron-progression-chart ]  Wicked Edge was unresponsive to a request to clarify this situation.  For the time being the classic values are preserved as there is no indication of a corresponding change to the product.
+
+
+Sizing methods of sub-sieve standards
+──────────────────────────────────────────────────────────────────────────
+ Standard     │ Distribution │ Calibration  │ Basis of measurement
+──────────────┼──────────────┼──────────────┼─────────────────────────────
+ANSI B74.18   │  volume      │ unspecified  │ sphere of equivalent volume
+ANSI B74.10   │  volume      │ sphere       │ sphere of equivalent volume
+JIS  R 6001   │  volume      │ sphere       │ sphere of equivalent volume
+FEPA F/Bonded │  volume      │ mastergrit   │ Stokes diameter or volume
+FEPA P/Coated │  volume      │ mastergrit   │ Stokes diameter
+GB/T 35477    │  volume      │ mastergrit   │ laser diffraction and microscopy
+ANSI B74.20   │  counts      │ sphere       │ multiple options
+FEPA 60-77    │  counts      │              │ greatest optical length
+GOST 3647-80  │  counts      │              │ greatest optical length
+GOST 9206-80  │  counts      │              │ unspecified optical size
+
+As sub-sieve standards use different measurement apparatus, calibration media, and aggregating distributions their values are not directly comparable.  In general no attempt has been made to unify their representation through assumption-laden conversions, with the exception of FEPA P (Coated) as warranted by its internal discontinuity.
+
 
 
 What the chart is not
@@ -193,6 +211,7 @@ What the chart is not
 
 The chart does not and cannot quantify or compare absolute performance.  While the chart does contain specific products its primary purpose is to catalog and display different standards, including proprietary ones.  Since different products following the same standard may have vastly different performance due to different formulation it is impossible to make a direct comparison by these numbers alone.  Abrasive performance is not measured by particle size but by the rate that material is removed and the surface roughness of the finished piece under specific conditions, the latter by itself requiring multiple parameters to quantify.  (Ra, Rz, Rrms, etc.)  Abrasive performance is highly variable and depends upon at least these factors that are not quantified with a single median particle size figure:
 
+ • hardness
  • chemical composition
  • friability (tendency to expose new edges and break into finer particles in use)
  • agglomeration or aggregation
@@ -209,7 +228,7 @@ The chart does not and cannot quantify or compare absolute performance.  While t
 
 A reference for several of these factors:  
   http://www.horiba.com/fileadmin/uploads/Scientific/eMag/PSA/Guidebook/pdf/PSA_Guidebook.pdf
-
+  
 Some practical examples:
 
  • Diamond compound on leather cuts much more slowly and produces a much higher surface finish than the same diamond grade bonded to or embedded in a metal lapping plate.
@@ -227,23 +246,35 @@ Some practical examples:
  • For high gloss polishing Solid Surface countertops 3M recommends: 366L 100μ dry; 268XA A35 damp; 268XA A10 damp; 268XA A5 damp; 286Q 9μ damp.  Note the apparent reversal from 5μ to 9μ between steps four and five.
  
  • Charts in https://www.asahidia.co.jp/eng/wp-content/uploads/2015/05/B02.pdf
-
-Because (where possible) this chart displays actual particle size rather than estimated performance it diverges from some other references that you may find.  For example it is clearly stated by 3M that the Trizact A ratings are particle size in microns, yet Komitadjie's chart has them shown differently.  This may be explained by the fact that 3M includes charts giving approximate conversion to FEPA P in some of its literature.  These charts place the Trizact belts at a significantly finer grit than their grading, presumably because 3M claims them to finish to that level relative to some average FEPA P product.  This may be explained by tighter grading and/or their specific formulation.
+ 
+Because (where possible) this chart displays actual particle size rather than estimated performance it diverges from some other references that you may find.  For example it is clearly stated by 3M that the Trizact A ratings are particle size in microns, yet some charts show them differently.  This may be explained by the fact that 3M includes charts giving approximate conversion to FEPA P in some of its literature.  These charts place the Trizact belts at a significantly finer grit than their grading, presumably because 3M claims them to finish to that level relative to some average FEPA P product.  This may be explained by tighter grading and/or their specific formulation.
 
 Values based solely on equivalent or estimated performance are avoided with a few exceptions:
 
  • Spyderco ceramics initially imported from Komitadjie's chart (since refined)
- • Natural whetstones such as Arkansas, Belgian Coticule, etc.
  • 3M Scotch-Brite™ non-woven-fiber coated abrasive
  • New SuperStone ceramic fiber files from Argofile Japan Ltd.
+ • Natural whetstones
  
 Spyderco-type ceramic is a fused material and cannot be graded with the same particle distribution analysis as other abrasives.  For an examination of this see: http://moleculepolishing.wordpress.com/2013/08/08/the-mystery-of-the-spyderco-and-the-wicked-edge-ceramic-stones/  
 
 Wicked Edge microfine ceramics were more recently examined in Molecule Polishing blog; https://moleculepolishing.wordpress.com/2016/03/20/ceramic-stones-for-the-weps-compared-again/ and https://moleculepolishing.wordpress.com/2016/03/20/speed-of-the-wicked-edge-stones-and-diamond-films/
 
+Ceramic fiber cannot be treated as nominally-spherical particles.  Argofile Japan labels the New SuperStone files with JIS R 6001 grades corresponding to their performance.
+
+Regarding Natural Stone it must be understood that even among experienced users there is some disagreement on performance estimates as different applications will provide different results.  The given ranges are large, sometimes extremely so, due not only to the variability of natural material but also to different applications and techniques including surface conditioning.  The latter is especially important for harder types of "novaculite" (Arkansas, Charnley Forest, Llyn Idwal) where performance is largely dependent on the surface finish applied, much like solid sintered ceramics from Spyderco, Norton Ascent, Idahone, etc.
+
 Dan's Whetstone Company writes: "Arkansas Novaculite stones are classified by specific gravity and not the size of the grain.  The grain of the silica crystals that form Novaculite are essentially the same size, 3-5 microns, whether the stone is classified as Soft Arkansas or True Hard Arkansas."
 
-Ceramic fiber cannot be treated as nominally-spherical particles.  Argofile Japan labels the New SuperStone files with JIS R 6001 grades corresponding to their performance.
+KKF user captaincaed summarized: 
+
+	• Hardness is often more important than abrasive particle size since the line between abrasive and binder is fuzzier in natural stones vs synths.
+     If you have a solid mass of abrasive and the particles are large-ish, let's say 5-10um, the close packing and non-friability means you'll have
+     a flat honing surface that finishes in the 0.1-1.0um "effective grit" range since you're only using the very tip of each abrasive iceberg.
+     If you slurry a stone like this it will cut more like it's particle size implies, e.g. translucent Arkansas.
+    
+	• Many top ends of many stone ranges are when honing razors with fixed angles and light pressure.
+     For knives I find the effective top end of the range much lower unless you're being incredibly careful/fussy.
 
 
 
@@ -476,7 +507,7 @@ rv.13
 	
 	• Realign derived values: Grit Symbol, Emery, Flex-Hone, Scotch-Brite, Bristle Disc
 	
-	• Remove "UAMA Coated" as no confirmation could be provided by UAMA
+	• Remove "UAMA Coated" as no confirmation or provenance could be provided by UAMA
 	
 	• Restyle Clover 6A as not discontinued; it is still available in the Pat Gel® formulation
 	
@@ -514,8 +545,27 @@ rv.14
 	• Add Nano Hone NL-4, NL-5, NL-6, NL-8 lapping plates
 	
 	• Update Nano Hone® colors
-	
 
+rv.15
+	• Move natural whetstones to a separate column, greatly expand selection, improve estimates and add ranges
+
+	• Add new Edge Pro Diamond Matrix grades and mark discontinued ones
+
+	• Add GB/T 35477-2017, replacing GB 2477-83 in the base chart
+
+	• Add FEPA 60-77, a semi-deprecated diamond powder grading
+
+	• Add Tsuboman Atoma electroplated diamond, replacing Trend Diamond in base chart
+
+	• Rename FEPA F to FEPA Bonded and FEPA P to FEPA Coated to convey more information
+
+	• Add Zische scythe stones: SILICAR medium and fine
+
+	• Add polishes: Opaline, Ce-C14, #61 Rapid
+
+	• Split Fujimi Inc. super-fines into their own section and add #40,000
+
+	• Rename Shapton to Shapton Pro, drop items not in that family, and add physical colors
 
 
 
