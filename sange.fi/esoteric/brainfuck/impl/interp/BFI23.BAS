@@ -1,0 +1,13 @@
+OPEN "BFI2.COM" FOR BINARY AS #1
+A$ = INPUT$(LOF(1), 1) + " "
+CLOSE #1
+OPEN "BFI2.BIN" FOR OUTPUT AS #1
+FOR A = 1 TO LEN(A$)
+  B = ASC(MID$(A$, A, 1))
+  H = B \ 16
+  L = B - 16 * H
+  PRINT #1, CHR$(H + 65); CHR$(L + 65);
+NEXT A
+CLOSE #1
+END
+

@@ -1,0 +1,178 @@
+.TH bfa 1 "January 26th, 2000" "0.2" "Brain Fuck Assembler"
+.SH NAME
+bfa \- Brain Fuck Assembler
+.SH SYNOPSIS
+.B bfa INFILE OUTFILE
+.SH DESCRIPTION
+.B bfa
+is an assembler for the minimalized programming language
+Brain Fuck. It translates a better readable BFA source code to 
+native absolutely unreadable Brain Fuck code.
+The produced code can be executed with a Brain Fuck Interpreter
+like 
+.B bfi 
+from Urban Mueller, or directly on a system providing a 
+Brain Fuck processor.
+.PP
+The first argument 
+.B INFILE
+is the file name of the BFA source code.
+This file will be translated to native Brain Fuck code
+and written to the file given by the second argument.
+Use 
+.B -
+instead of a filename to use 
+.B stdin 
+or 
+.BR stdout .
+.SH EXAMPLES
+.TP
+.B bfa order.bfa order.b
+Read BFA code from
+.B order.bfa 
+translate it to Brain Fuck code and write it to
+.BR order.b .
+.TP
+.B bfa - order.b
+Read BFA code from
+.B stdin
+translate it to Brain Fuck code and write it to
+.BR order.b .
+.TP
+.B bfa order.bfa -
+Read BFA code from
+.B order.bfa
+translate it to Brain Fuck code and write it to
+.BR stdout .
+.SH "SOURCE CODE"
+One command per line. Empty lines will be ignored. Text behind the
+comment char
+.B ;
+will be ignored. Spaces and tabs outside quotation marks will be ignored.
+To print a quotation mark it must be escaped with
+.BR "\e" .
+The sequence
+.B \en
+will brake a line. To print the char
+.B \e
+itself it must be written as
+.BR \e\e .
+.PP
+The following standard commands are currently supported:
+.TP
+.B MVL
+Move left. This is equivalent to the Brain Fuck command
+.BR < .
+.TP
+.B MVR
+Move right. This is equivalent to the Brain Fuck command
+.BR > .
+.TP
+.B ADD
+Add one. This is equivalent to the Brain Fuck command
+.BR + .
+.TP
+.B SUB
+Subtract one. This is equivalent to the Brain Fuck command
+.BR - .
+.TP
+.B GET
+Get char from 
+.BR stdin .
+This is equivalent to the Brain Fuck command
+.BR , .
+.TP
+.B PUT
+Write char to
+.BR stdout .
+This is equivalent to the Brain Fuck command
+.BR . .
+.TP
+.B LOB
+Begin loop. This is equivalent to the Brain Fuck command
+.BR [ .
+.TP
+.B LOE
+End loop. This is equivalent to the Brain Fuck command
+.BR ] .
+.PP
+The following extended commands are currently supported:
+.TP
+.B MVL x
+Move left
+.B x
+times.
+.TP
+.B MVR x
+Move right
+.B x
+times.
+.TP
+.B ADD x
+Add
+.BR x .
+.TP
+.B SUB x
+Subtract
+.BR x .
+.TP
+.B GET x
+Get 
+.B x
+chars from
+.BR stdin .
+.TP
+.B PUT x
+Write character number
+.B x 
+to
+.BR stdout .
+.TP
+.B PUT \*(lqText\*(rq
+Write text to
+.BR stdout .
+.TP
+.B SET
+Set current value to zero.
+.TP
+.B SET x
+Set current value to
+.BR x .
+.TP
+.B CPL x
+Create 
+.B x 
+copies of current value to the left. After this copy 
+action the current value will be zeroed.
+.TP
+.B CPR x
+Create
+.B x
+copies of the current value to the right. After this copy
+action the current value will be zeroed.
+.SH "EXIT STATUS"
+.TP
+.B 0
+Successfull program execution.
+.TP
+.B 1
+Unsuccessfull program execution. An error message was sent to
+.BR stderr .
+.SH "SEE ALSO"
+.BR bfi .
+.SH HISTORY
+.TP
+.B Version 0.1 - 12/19/1999
+Initial release.
+.TP
+.B Version 0.2 - 01/26/2000
+.B bfa 
+now creates optimized Brain Fuck code. Man page added.
+Some other file changes in the archive.
+.SH AUTHOR
+.B bfa
+was written by Klaus Reimer <kr@ailis.de> and is free software;
+you can redistribute it and/or modify it under 
+the terms of the GNU General Public License as published by the Free Software 
+Foundation; either version 2 of the License, or (at your option) any later 
+version.

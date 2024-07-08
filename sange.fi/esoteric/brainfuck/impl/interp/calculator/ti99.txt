@@ -1,0 +1,78 @@
+From jeffryj@azstarnet.com Thu Aug  2 10:42:45 2001
+Date: Mon, 23 Jul 2001 22:48:46 -0700 (MST)
+From: Jeff  Johnston <jeffryj@azstarnet.com>
+To: lang@esoteric.sange.fi
+Subject: [lang] [bf] [impl] [interp] [old junk] TI-99/4A
+
+Hi!
+
+When my brain runs out of juice I usually write an interpreter.. here's
+one for the TI-99/4A.  It's kinda sloppy but gets the job done.
+
+I have a few extra 99's collecting dust.  If anyone is interested in one,
+let me know..say maybe, free? (plus shipping) :)
+
+Jeff
+
+---8<---CUT HERE----------------------------------------------------------
+BF interpreter for the Texas Instruments TI-99/4A computer
+Programmed by Jeffry Johnston
+Press FCTN+4 to Break
+To save on cassette type: SAVE CS1
+To load type: OLD CS1
+
+1 DIM M(1000)
+2 IP=0
+3 MP=0
+4 Q=0
+5 GOSUB 100
+6 CALL CLEAR
+7 IP=IP+1
+8 IPV=ASC(SEG$(P$,IP,1))
+9 MPV=M(MP)
+10 IF IPV<>64 THEN 12
+11 Q=1
+12 IF IPV<>60 THEN 14
+13 MP=MP-1
+14 IF IPV<>62 THEN 16
+15 MP=MP+1
+16 IF IPV<>43 THEN 18
+17 M(MP)=MPV-256*INT((MPV+1)/256)+1
+18 IF IPV<>45 THEN 20
+19 M(MP)=MPV-256*INT((MPV+255)/256)+255
+20 IF IPV<>46 THEN 22
+21 PRINT CHR$(MPV);
+22 IF IPV<>44 THEN 25
+23 CALL KEY(0,M(MP),STATUS)
+24 IF STATUS=0 THEN 23
+25 IF IPV<>93 THEN 30
+26 DIR=-1
+27 GOSUB 50
+28 IP=IP-1
+29 IPV=0
+30 IF IPV<>91 THEN 34
+31 IF MPV<>0 THEN 34
+32 DIR=1
+33 GOSUB 50
+34 IF Q=0 THEN 7
+35 END
+50 LVL=1
+51 IP=IP+DIR
+52 IPV=ASC(SEG$(P$,IP,1))
+53 IF IPV<>91 THEN 55
+54 LVL=LVL+DIR
+55 IF IPV<>93 THEN 57
+56 LVL=LVL-DIR
+57 IF LVL>0 THEN 51
+58 RETURN
+100 P$="++++++++++[>+++++++>++++++++++>+++>+<<<<-]>++.>+.+++++++..+++.>++.<<+++++++++++++++.>.+++.------."
+101 P$=P$&"--------.>+.>.@"
+102 RETURN
+
+The "Hello World!" test takes 1 minute 15 seconds to run with this
+interpreter :)
+
+
+
+
+
