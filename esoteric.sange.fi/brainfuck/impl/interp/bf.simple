@@ -1,0 +1,24 @@
+<def|source|"+++++[>++++++<-]>.">%
+<def|ip|0>%
+<def|memsize|200>%
+%
+<def|endloop|[<if|<current>|`]||[<incip|1><endloop>]>]>%
+<def|parsechar|[<if|%
+@1@|`+|[<def|mem<ptr>|<+|<mem<ptr>>|1>>]|%
+@1@|`-|[<def|mem<ptr>|<-|<mem<ptr>>|1>>]|%
+@1@|`>|[<def|ptr|<+|<ptr>|1>>]|%
+@1@|`<|[<def|ptr|<-|<ptr>|1>>]|%
+@1@|`.|[<out|<mem<ptr>> >]|%
+@1@|`[|[<push||<ip>><if|<mem<ptr>>|0|[<endloop><pop|>]>]|%
+@1@|`]|[<def|ip|<-|<poplast|>|1>>]%
+>]>%
+<def|zeromem|[<def|mem<ptr>|0><def|ptr|<+|<ptr>|1>><if|<ptr>|<memsize>||[<zeromem>]>]>%
+<def|checkquit|[<if|<ip>|<len|<source>>|[<quit>]>]>%
+<def|current|[<substr|<source>|<ip>|1>]>%
+<def|incip|[<def|ip|<+|<ip>|@1@>>]>%
+<def|run|[<checkquit><parsechar|<current>><incip|1><run>]>%
+%
+<def|ptr|0>%
+<zeromem>%
+<def|ptr|0>%
+<run>
