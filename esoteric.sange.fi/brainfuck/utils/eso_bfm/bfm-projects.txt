@@ -1,0 +1,46 @@
+Future plans for BFM
+--------------------
+
+EXTERNALLY VISIBLE:
+
+  (1)  a compiler ? forget about that !
+  
+  (2)  allow unbalanced [ and ] in macros, etc.
+       (my love of cleanly structured languages made me forbid this. But
+        after all that would not be too bad, specially in the esoteric context.
+        And some people (e.g. XXX) have designed sensible unbalanced 'macros'
+        for Brainfunct.)
+  
+  (3)  checking that a BFM program is legal, i.e. translates into a finite BF
+       program (we want to forbid recursion.)
+  
+  (3)  a typing system to forbid such runtime errors as infinite recursion (see
+       above point), too much or too few arguments on a macro call, concatenating
+       a macro, etc.
+    
+  (4)  a BFM-to-BF translator
+  
+  (5)  adapt BFM to another language than BF. UNLAMBDA looks like a good choice.
+      (but then, we would have two independent lambda-calculus on top of each other. Odd.)
+
+  
+NOT EXTERNALLY VISIBLE:
+
+  Most of the above changes would greatly benefit from a better decoupling
+  of the two layers that compose BFM: the macro interpreter (class BfmRuntime) 
+  and the basic BrainFunct interpreter (class BfRuntime).
+  
+  The macro interpreter would pass characters to the basic interpreter, which
+  could do whatever it wants with them (e.g. parse & interpret them as a BF or
+  Unlambda program). The basic interpreter could remember states of the macro
+  interpreter, and could ask the macro interpreter to resume from these states.
+  (E.g. in Brainfunct, when we meet a '[' we want to be able to get back to it.)
+  
+  Then we could replace the underlying BrainFunct interpreter with:
+      (1) a BrainFunct, Unlambda, ... interpreter
+      (2) something that just prints the passed characters.
+          This would make up a BFM-to-BM translator (and at the same time,
+          an UnlambdaMacro-to-Unlambda translator, etc.)
+      (2a) something that just _counts_ the passed characters, to be sure 
+          they are in finite number.
+      (3) other ideas ?

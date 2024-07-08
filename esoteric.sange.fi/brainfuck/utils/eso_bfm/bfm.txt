@@ -1,0 +1,188 @@
+BFM a.k.a. MACRO_BRAINFUNCT
+---------------------------
+
+    0.0 INSTALLATION
+    1.0 BRAINF***
+    2.0 BRAINFUNCT-MACRO ("BFM" in short form)
+
+
+The author: 
+Frédéric van der Plancke,
+<frederic.vdplancke@writeme.com>
+<http://fvdp.homestead.com/>
+<http://go.to/fvdp/>
+
+LICENSE: public domain, no warranties (as usual)
+
+
+
+0.0 INSTALLATION
+----------------
+
+bfm.py is a Brainf*ck & BFM interpreter written in Python.
+It requires the Python language, version 1.5.1 or higher (perhaps lower too),
+available from <www.python.org>.
+
+Once you've got Python correctly installed, you should be able to launch
+it simply as:
+
+    python.exe  bfm.py
+
+on Windows, or similar on Unix.
+
+
+
+1.0 BRAINF***
+-------------
+
+Brainfunct runtime consists of an infinite array of chars (integers
+in range 0..255) : the memory; an input tape and an output tape.
+There is a pointer pointing somewhere into the array, all operations
+involve the array cell it points to. You can increment, decrement,
+input to, output from the cell under the pointer.
+
+The memory is infinite in both directions.
+
+From Urban Mueller's original definition (?):
+
+<cite>
+The language 'brainf***' knows the following commands:
+
+ Cmd  Effect                                 Equivalent in C
+ ---  ------                                 ---------------
+ +    Increases element under pointer        array[p]++;
+ -    Decrases element under pointer         array[p]--;
+ >    Increases pointer                      p++;
+ <    Decreases pointer                      p--;
+ [    Starts loop, counter under pointer     while(array[p]) {
+ ]    Indicates end of loop                  }
+ .    Outputs ASCII code under pointer       putchar(array[p]);
+ ,    Reads char and stores ASCII under ptr  array[p]=getchar();
+
+
+(...)
+Now while this seems to be a pretty useless language, it can be
+proven that it can compute every solvable mathematical problem (if
+we ignore the array size limit and the executable size limit).
+
+</cite>
+
+
+
+2.0 BRAINFUNCT-MACRO ("BFM" in short form)
+------------------------------------------
+
+To ease brainfunct programming I decided to enrich it with a macro
+system. One [guiding] idea is that I can not add anything to
+brainfunct in the process, that is, a BFM program must be mechanically
+transformable to the brainfunct program it represents. The macro
+systems grew bigger and is now almost a language on its own.
+
+As it turns out, I'm afraid I just reinvented the wheel... Remove
+the brainfunct substrate and you get something much akin untyped
+lambda calculus (but the presence of that substrate makes BFM a
+typed language.)
+
+
+In the original language, unrecognized chars in the program were
+simply ignored. I decided this was  too liberal - only spaces are
+ignored now; comments must start with '#' and extend to end of
+line.
+
+EXAMPLES
+
+
+
+&transfer_to_dist(move_right | move_left)=
+    move_right zero move_left
+    [- move_right + move_left]
+;
+
+
+# see in "bfm_why.txt" how higher-order macros remove the need for duplicating the
+# "distance" argument. You can write:
+
+   &transfer_to_dist_(n)= n(>) zero n(<) [ - n(>) + n(<) ] ;
+
+# or even:
+
+   &transfer_to_dist__(n) = &left=n(<); &right=n(>); right zero left [ - right + left ] ;
+
+#for a transfer a distance 7 you can then write:
+
+   &7(x)= x x x x x x x ;
+   transfer_to_dist_(7) 
+
+# The remaining examples were written before higher-order macros were introduced...
+
+
+&zeroes7=
+    7x(zero >)
+    7x(<)
+;
+
+# &dup: duplicate top of stack.
+&dup=
+   #Clear two local variables:
+       2x(> zero) 2x(<)   
+   #exhaust & duplicate top
+       [->+>+<<]
+   #move back top+2 to top
+       >>
+       [-<<+>>]
+       <<
+   #move to new top
+       >
+;       
+   
+ 
+# &add: pop x, y; push x+y (mod 256); yes it's simple, awfully simple !
+&add=
+   [-<+>]
+   <
+;
+
+&rotn(left|right)=
+   #&left=Nx(<); &right=Nx(+); where N = depth of item to copy, 0 for top of stack
+   #Clear two local variables:
+       2x(> zero) 2x(<)   
+   #stack now: x ... [top] 0 0
+   #exhaust & duplicate item
+       left [- right >+>+<< left] right
+   #move back top+2 to top
+       >>
+       [- <<left + >>right]
+       <<
+   #move to new top
+       >
+;       
+   
+# &rot: copy second item on top of stack
+&rot=rotn(<|>);
+
+   
+&mult=
+   #Stack during operation:  x'  y  y*x"
+   #Stack is: x y
+      > zero
+   #Stack is: x y 0
+      <<
+      [-
+          >> rot add <<
+      ]
+   #Move top+2 to top (no need to zero current top it's already zero)
+      >>
+      [-<<+>>]
+      <<
+   #move to new top
+      >
+;
+
+
+
+ABOUT THIS FILE
+---------------
+$Revision: 1.4 $
+Sorry for the draftish state of BFM documentation. The implementation
+is better ;-)
+

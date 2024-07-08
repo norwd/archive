@@ -1,0 +1,43 @@
+Casio Color Power Graphic CFX-9800G
+
+Mat A   Program 1x20 (Sample program 5,2,6,3,4,5,2,7,8)
+Mat B   Stack   1x50
+Mat C   Memory  1x250
+D       MP - Memory Pointer
+E       IP - Instruction Pointer
+F       [IP]
+G       SP - Stack Pointer
+H       [MP]
+I       bracket depth
+
+>       0
+<       1
++       2
+-       3
+.       4
+,       5
+[       6
+]       7
+@       8 
+
+1->D:0->E:0->G
+Lbl 2:1+E->E
+Lbl 3:Mat A[1,E]->F:Mat C[1,D]->H
+F=8=>Goto 7
+F=0=>D+1->D
+F=1=>D-1->D
+F=2=>256Frac ((H+1)ö256)->Mat C[1,D]
+F=3=>256Frac ((H+255)ö256)->Mat C[1,D]
+F=4=>H
+F=5=>?->Mat C[1,D]
+FØ6=>Goto 6 
+[ HØ0=>Goto 5:1->I
+Lbl 4:E+1->E
+Mat A[1,E]=6=>I+1->I
+Mat A[1,E]=7=>I-1->I
+Ió0=>Goto 2:Goto 4
+Lbl 5:1+G->G:E->Mat B[1,G]:Goto 2
+Lbl 6:FØ7=>Goto 2
+Mat B[1,G]->E:G-1->G:Goto 3
+Lbl 7:"END"/|
+

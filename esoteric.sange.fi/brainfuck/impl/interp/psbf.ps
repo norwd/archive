@@ -1,0 +1,46 @@
+%!PS-Adobe-3.0
+% written by Fabian 'osz' Debus
+/D{def}bind def/BD{bind D}bind D/A{add}BD/S{sub}BD/L{loop}BD/={eq}BD
+/CF{currentfile}BD/PP{CF fileposition exch sub CF exch setfileposition}BD
+/F{256 A 256 mod} BD
+/psbf {
+        /I { M ptr get } BD
+	/M 30000 array def /ptr 0 D
+        0 1 29999 { M exch 0 put } for
+	{
+		/OP CF read not { exit } if D
+		OP 62 = { /ptr ptr 1 A D } if
+		OP 60 = { /ptr ptr 1 S D } if
+		OP 43 = { M ptr I 1 A F put } if
+		OP 45 = { M ptr I 1 S F put } if
+		OP 46 = { 1 string dup 0 I put show } if
+		OP 44 = { } if
+		OP 91 = {
+			I 0 = {
+				/n 1 def
+				{ n 0 = { exit } if
+					CF read pop dup
+					91 = { /n n 1 A D } if
+					93 = { /n n 1 S D } if
+				} L
+			} if 
+		} if
+		OP 93 = {
+			/n 1 def
+			{ n 0 = { exit } if
+				2 PP
+				CF read pop dup
+				91 = { /n n 1 S D } if
+				93 = { /n n 1 A D } if
+			} L
+			1 PP
+		} if
+	} L
+	showpage
+} BD
+/Times-Bold findfont 10 scalefont setfont
+100 700 moveto
+psbf
+>+++++++++[<++++++++>-]<.---.+++++++..+++.>++++++++[<------>-]<+.>+++++++++[<++
+++++>-]<+.--------.+++.------.--------.>+++++++[<----->-]<.[-]++++++++++.!
+
