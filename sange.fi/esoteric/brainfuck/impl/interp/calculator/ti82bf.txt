@@ -1,0 +1,51 @@
+Texas Instruments TI-82 BrainF*** Interpreter
+
+This one is pretty similar to my Casio interpreter.
+Matrix A is for the program.  Automatically created if it doesn't exist.
+Matrices B & C are for Stack & Memory, they are automatically created and cleared each time.
+
+calc	BF
+0	>
+1	<
+2	+
+3	-
+4	.
+5	,
+6	[
+7 	]
+8	@ (exit)
+
+Key:
+<>	not equal to
+<=	less than or equal to
+/	division
+
+PROGRAM:BF
+{99,1}->dim [A]
+{99,1}->dim [B]:Fill(0,[B])
+{99,1}->dim [C]:Fill(0,[C])
+1->D:0->E:0->G
+Lbl 2:1+E->E
+Lbl 3:[A](E,1)->F:[C](D,1)->H
+If F=8:Goto 7
+If F=0:D+1->D
+If F=1:D-1->D
+If F=2:256fPart ((H+1)/256)->[C](D,1)
+If F=3:256fPart ((H+255)/256)->[C](D,1)
+If F=4:Disp H
+If F=5:Then:Input I:I->[C](D,1):End
+If F<>6:Goto 6
+If H<>0:Goto 5
+1->I:Lbl 4:E+1->E
+If [A](E,1)=6:I+1->I
+If [A](E,1)=7:I-1->I
+If I<=0:Goto 2
+Goto 4
+Lbl 5:1+G->G:E->[B](G,1):Goto 2
+Lbl 6:If F+7:Goto 2
+[B](G,1)->E:G-1->G:Goto 3
+Lbl 7
+
+I didn't time it because A) the "Hello World!" test program wouldn't fit in the 99 instructions.  If I wanted to add more range it gets more complicated and slower, but then who wants to type more than 99 instructions into a calculator in the first place? :) B) I'm running it on an emulator so I don't know if it would be timed right anyways.
+
+Jeff

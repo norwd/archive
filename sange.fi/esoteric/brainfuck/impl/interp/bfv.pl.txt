@@ -1,0 +1,33 @@
+#!/usr/bin/perl
+
+$| = !undef $/;
+
+$ARGV[0] or open CODE, '-';
+
+for (@ARGV)
+{
+	 /^-o/ and open(OPT, ">$'"), next;
+	 /^-m/ and open(MARK, ">$'"), next;
+	 /^-p/ and open(PERL, ">$'"), next;
+	 open(CODE, $_) or die "Can't open $_";
+}
+
+$_ = <CODE>;
+close CODE;
+
+y/-+><[],.//cd;
+print OPT "$_\n";
+close OPT;
+
+print MARK "$_\n";
+{redo if s{-\^*\+|\+\^*-|<\^*>|>\^*<}{'^' x length $&}ge}
+$cnt = @cnt = ($tmp = $_) =~ /\^+/g;
+y/^/ /c;
+print MARK "$_\n$cnt useless segments.\n";
+close MARK;
+($_ = $tmp) =~ y/^//d;
+
+s(([-+\[\]<>,.])\1*)(${{']',qq{@{["\}\n" x length $&]}},'[',qq{@{["while(\$data[\$d])\n\{\n" x length $&]}},'+',"\$data[\$d] += @{[length $&]};\n",'-',"\$data[\$d] -= @{[length $&]};\n",'>',"\$d += @{[length $&]};\n",'<',"\$d -= @{[length $&]};\n",',',qq{@{["read(STDIN, \$t, 1) and \$data[\$d] = ord(\$t) or \$data[\$d] = -1;\n" x length $&]}},'.',qq{@{["print chr(\$data[\$d]) if \$data[\$d] >= 0;\n" x length $&]}}}}{$1})g;
+print PERL;
+close PERL;
+eval;
