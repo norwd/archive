@@ -154,10 +154,10 @@ jobs:
           directory=$(
             dirname "$(
               echo "${URL}" |
+                python3 -c "import sys; from urllib.parse import unquote; print(unquote(sys.stdin.read()));" |
                 sed -E 's/^https?:\/\/web.archive.org\/web\/[0-9]+\/(https?:\/\/)?/https:\/\//' |
                 sed -E 's/^https?:\/\///' |
-                sed -E 's/^ftps?:\/\///' |
-                sed -E 's/%20/ /g'
+                sed -E 's/^ftps?:\/\///'
             )"
           )
 
