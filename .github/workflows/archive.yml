@@ -63,10 +63,10 @@ jobs:
           # Get the directory being saved
           directory=$(
             echo "${URL}" |
+              python3 -c "import sys; from urllib.parse import unquote; print(unquote(sys.stdin.read()));" |
               sed -E 's/^https?:\/\/web.archive.org\/web\/[0-9]+\/(https?:\/\/)?/https:\/\//' |
               sed -E 's/^https?:\/\///' |
-              sed -E 's/^ftps?:\/\///' |
-              python3 -c "import sys; from urllib.parse import unquote; print(unquote(sys.stdin.read()));"
+              sed -E 's/^ftps?:\/\///'
           )
 
           # Get the url of the file (with any sanitisation)
