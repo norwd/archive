@@ -66,7 +66,7 @@ jobs:
               sed -E 's/^https?:\/\/web.archive.org\/web\/[0-9]+\/(https?:\/\/)?/https:\/\//' |
               sed -E 's/^https?:\/\///' |
               sed -E 's/^ftps?:\/\///' |
-              echo -e "$(sed 's/+/ /g;s/%\(..\)/\\x\1/g;')"
+              python3 -c "import sys; from urllib.parse import unquote; print(unquote(sys.stdin.read()));"
           )
 
           # Get the url of the file (with any sanitisation)
