@@ -119,8 +119,9 @@ jobs:
 
       - name: Create Pull Request
         if: ${{ steps.auto-commit.outputs.changes_detected == 'true' || steps.auto-commit-cleanup.outputs.changes_detected == 'true' }}
-        run: gh --repo "${{ github.repository }}" pr create --title "${TITLE}" --body "${BODY}" --head "${HEAD}" | tee -a "${GITHUB_STEP_SUMMARY}" | tee -a pr.txt
+        run: gh --repo "${{ github.repository }}" pr create --title "${TITLE}" --body "${BODY}" --base "${BASE}" --head "${HEAD}" | tee -a "${GITHUB_STEP_SUMMARY}" | tee -a pr.txt
         env:
+          BASE: ${{ github.ref_name }}
           HEAD: ${{ steps.target.outputs.branch }}
           TITLE: "Archive ${{ steps.target.outputs.directory }}"
           BODY: |
@@ -214,8 +215,9 @@ jobs:
 
       - name: Create Pull Request
         if: ${{ steps.auto-commit.outputs.changes_detected == 'true' }}
-        run: gh --repo "${{ github.repository }}" pr create --title "${TITLE}" --body "${BODY}" --head "${HEAD}" | tee -a "${GITHUB_STEP_SUMMARY}" | tee -a pr.txt
+        run: gh --repo "${{ github.repository }}" pr create --title "${TITLE}" --body "${BODY}" --base "${BASE}" --head "${HEAD}" | tee -a "${GITHUB_STEP_SUMMARY}" | tee -a pr.txt
         env:
+          BASE: ${{ github.ref_name }}
           HEAD: ${{ steps.target.outputs.branch }}
           TITLE: "Archive ${{ steps.target.outputs.file }}"
           BODY: |
