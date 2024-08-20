@@ -83,6 +83,7 @@ table.sortable th:not([aria-sort]) button:hover span::after {
 <h2>News</h2>
 
 <ul>
+  <li>2024-08-03: Added Llama 3.1 model support.</li>
   <li>2024-05-21: Added Llama 3 model support.</li>
   <li>2024-01-20: Added Mixtral model support. Added fast Whisper
   based speech to text transcription.</li>
@@ -105,7 +106,7 @@ generation, ...
 <p>It has the following characteristics:
 <ul>
   <li>All is included in a single binary. Very few external dependencies (Python is not needed) so installation is easy.</li>
-  <li>Supports many Transformer variants (<a href="https://github.com/kingoflolz/mesh-transformer-jax">GPT-J</a>, <a href="https://github.com/EleutherAI/gpt-neox">GPT-NeoX</a>, <a href="https://github.com/EleutherAI/gpt-neo">GPT-Neo</a>, <a href="https://github.com/facebookresearch/metaseq">OPT</a>, <a href="https://github.com/pytorch/fairseq/tree/main/examples/moe_lm">Fairseq GPT</a>, <a href="https://arxiv.org/abs/2010.11125">M2M100</a>, <a href="https://github.com/salesforce/CodeGen">CodeGen</a>, <a href="https://github.com/openai/gpt-2">GPT2</a>, <a href="https://arxiv.org/abs/2210.11416">T5</a>, <a href="https://github.com/BlinkDL/RWKV-LM">RWKV</a>, <a href="https://github.com/facebookresearch/llama">LLAMA</a>, <a href="https://falconllm.tii.ae/">Falcon</a>, <a href="https://github.com/mosaicml/llm-foundry">MPT</a>, <a href="https://arxiv.org/abs/2307.09288">Llama 2</a>, Llama 3, Mistral, Mixtral, Whisper) and <a href="https://github.com/CompVis/stable-diffusion">Stable Diffusion</a>.</li>
+  <li>Supports many Transformer variants (<a href="https://github.com/kingoflolz/mesh-transformer-jax">GPT-J</a>, <a href="https://github.com/EleutherAI/gpt-neox">GPT-NeoX</a>, <a href="https://github.com/EleutherAI/gpt-neo">GPT-Neo</a>, <a href="https://github.com/facebookresearch/metaseq">OPT</a>, <a href="https://github.com/pytorch/fairseq/tree/main/examples/moe_lm">Fairseq GPT</a>, <a href="https://arxiv.org/abs/2010.11125">M2M100</a>, <a href="https://github.com/salesforce/CodeGen">CodeGen</a>, <a href="https://github.com/openai/gpt-2">GPT2</a>, <a href="https://arxiv.org/abs/2210.11416">T5</a>, <a href="https://github.com/BlinkDL/RWKV-LM">RWKV</a>, <a href="https://github.com/facebookresearch/llama">LLAMA</a>, <a href="https://falconllm.tii.ae/">Falcon</a>, <a href="https://github.com/mosaicml/llm-foundry">MPT</a>, Llama 3.1, Mistral, Mixtral, Whisper) and <a href="https://github.com/CompVis/stable-diffusion">Stable Diffusion</a>.</li>
   <li>Integrated REST JSON API for text completion, translation, image generation and audio transcription. It is used by <a href="https://textsynth.com/documentation.html">textsynth.com</a>.</li>
   <li>Integrated HTML GUI for testing.</li>
   <li>Very high performance for small and large batches on CPU and GPU. Support of dynamic batching to handle a large number of simultaneous requests.</li>
@@ -136,8 +137,8 @@ document.write(f("gbcsjdf!bu!cfmmbse!epu!psh"));
 <h2>Download</h2>
                
 <ul>
-  <li>Linux version <a href="ts_server_free-2024-05-21.tar.gz">ts_server_free-2024-05-21.tar.gz</a> (<a href="Changelog">Changelog</a>).</li>
-  <li>Windows version <a href="ts_server_free-2024-05-21-win64.zip">ts_server_free-2024-05-21-win64.zip</a> (<a href="Changelog">Changelog</a>).</li>
+  <li>Linux version <a href="ts_server_free-2024-08-03.tar.gz">ts_server_free-2024-08-03.tar.gz</a> (<a href="Changelog">Changelog</a>).</li>
+  <li>Windows version <a href="ts_server_free-2024-08-03-win64.zip">ts_server_free-2024-08-03-win64.zip</a> (<a href="Changelog">Changelog</a>).</li>
 </ul>
 
 <h2><a href="ts_server.html">Documentation</a></h2>
@@ -209,13 +210,13 @@ document.write(f("gbcsjdf!bu!cfmmbse!epu!psh"));
 We provide here model files that can be used with the TextSynth
 Server. Each model was evaluated with
 the <a href="https://github.com/EleutherAI/lm-evaluation-harness">lm-evaluation-harness</a>
-with the TextSynth server on a RTX A6000 GPU.
+with the TextSynth server on a single RTX A6000 GPU.
 <p>Language Models:
 
-<table class="sortable">
+<table class="sortable" id="models">
   <thead>
     <tr>
-      <th aria-sort="ascending" style="width:16em;"><button>Model<sup>(1)(2)(3)</sup><span aria-hidden="true"></span><br></button>
+      <th style="width:16em;"><button>Model<sup>(1)(2)(3)</sup><span aria-hidden="true"></span><br></button>
       <th class="num" style="width:7em;"><button>Size<sup>(4)</sup><span aria-hidden="true"></span><br>(GB)</button>
       <th class="num" style="width:8em;"><button>lambada<sup>(5)</sup><span aria-hidden="true"></span><br>(ppl)</button>
       <th class="num" style="width:8em;"><button>lambada<span aria-hidden="true"></span><br>(acc)</button>
@@ -223,7 +224,7 @@ with the TextSynth server on a RTX A6000 GPU.
       <th class="num" style="width:8.5em;"><button>winogrande<span aria-hidden="true"></span><br>(acc)</button>
       <th class="num" style="width:8em;"><button>piqa<span aria-hidden="true"></span><br>(acc)</button>
       <th class="num" style="width:8em;"><button>coqa<span aria-hidden="true"></span><br>(f1)</button>
-      <th class="num" style="width:8em;"><button>average<span aria-hidden="true"></span><br></button>
+      <th class="num" style="width:8em;" aria-sort="descending"><button>average<span aria-hidden="true"></span><br></button>
     </tr>
   </thead>
   <tbody>
@@ -359,13 +360,13 @@ with the TextSynth server on a RTX A6000 GPU.
 <tr><td>mpt_7B_q8             <td class="num">    7.5<td class="num">      3.850<td class="num">      73.2%<td class="num">      76.2%<td class="num">      68.5%<td class="num">      79.1%<td class="num">      76.4%<td class="num">      74.7%</tr>
 
 <tr><td>llama2_7B             <td class="num">   13.5<td class="num">      3.428<td class="num">      74.5%<td class="num">      76.2%<td class="num">      69.7%<td class="num">      78.4%<td class="num">      77.2%<td class="num">      75.2%</tr>
-<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/llama2_7B_q4.bin">llama2_7B_q4</a>          <td class="num">    4.0<td class="num">      3.535<td class="num">      73.5%<td class="num">      75.4%<td class="num">      69.5%<td class="num">      77.6%<td class="num">      74.5%<td class="num">      74.1%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/llama2_7B_q4.bin">llama2_7B_q4</a>          <td class="num">  4.0<td class="num">      3.487<td class="num">      73.5%<td class="num">      75.5%<td class="num">      69.9%<td class="num">      77.6%<td class="num">      77.8%<td class="num">      74.9%</tr>
 <tr><td>llama2_13B            <td class="num">   26.0<td class="num">      3.051<td class="num">      77.2%<td class="num">      79.6%<td class="num">      72.1%<td class="num">      78.9%<td class="num">      79.3%<td class="num">      77.4%</tr>
-<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/llama2_13B_q4.bin">llama2_13B_q4</a>         <td class="num">    7.6<td class="num">      3.134<td class="num">      76.9%<td class="num">      79.3%<td class="num">      73.2%<td class="num">      78.8%<td class="num">      79.1%<td class="num">      77.5%</tr>
+<tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/llama2_13B_q4.bin">llama2_13B_q4</a>         <td class="num">  7.6<td class="num">      3.109<td class="num">      77.0%<td class="num">      79.0%<td class="num">      72.6%<td class="num">      79.5%<td class="num">      78.9%<td class="num">      77.4%</tr>
 <tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/llama2_70B_q4.bin">llama2_70B_q4</a>         <td class="num">   39.3<td class="num">      2.646<td class="num">      80.6%<td class="num">      84.0%<td class="num">      78.7%<td class="num">      82.0%<td class="num">      83.4%<td class="num">      81.7%</tr>
 
-<tr><td>llama2_7B_q3          <td class="num">  3.2<td class="num">      3.632<td class="num">      72.7%<td class="num">      74.1%<td class="num">      68.4%<td class="num">      77.1%<td class="num">      73.2%<td class="num">      73.1%</tr>
-<tr><td>llama2_13B_q3         <td class="num">  6.1<td class="num">      3.173<td class="num">      76.2%<td class="num">      78.0%<td class="num">      72.1%<td class="num">      78.2%<td class="num">      78.0%<td class="num">      76.5%</tr>
+<tr><td>llama2_7B_q3          <td class="num">  3.2<td class="num">      3.566<td class="num">      72.7%<td class="num">      74.1%<td class="num">      68.0%<td class="num">      77.6%<td class="num">      77.5%<td class="num">      74.0%</tr>
+<tr><td>llama2_13B_q3         <td class="num">  6.1<td class="num">      3.148<td class="num">      76.5%<td class="num">      77.9%<td class="num">      71.4%<td class="num">      78.4%<td class="num">      77.8%<td class="num">      76.4%</tr>
 <tr><td>llama2_70B_q3         <td class="num"> 30.8<td class="num">      2.638<td class="num">      79.9%<td class="num">      82.9%<td class="num">      77.7%<td class="num">      81.7%<td class="num">      82.6%<td class="num">      80.9%</tr>
 
 <tr><td>mistral_7B
@@ -384,7 +385,17 @@ with the TextSynth server on a RTX A6000 GPU.
 
 <tr><td>llama3_8B             <td class="num"> 16.1<td class="num">      3.107<td class="num">      76.8%<td class="num">      79.1%<td class="num">      73.1%<td class="num">      79.7%<td class="num">      80.7%<td class="num">      77.9%</tr>
 <tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/llama3_8B_q4.bin">llama3_8B_q4</a>          <td class="num">  5.5<td class="num">      3.291<td class="num">      75.2%<td class="num">      78.2%<td class="num">      73.5%<td class="num">      78.8%<td class="num">      80.4%<td class="num">      77.2%</tr>
+<tr><td>llama3_70B            <td class="num">141.1<td class="num">      2.597<td class="num">      80.6%<td class="num">      84.9%<td class="num">      80.1%<td class="num">      82.3%<td class="num">      84.0%<td class="num">      82.4%</tr>
 <tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/llama3_70B_q4.bin">llama3_70B_q4</a>         <td class="num"> 41.7<td class="num">      2.619<td class="num">      80.4%<td class="num">      84.4%<td class="num">      80.3%<td class="num">      82.1%<td class="num">      83.1%<td class="num">      82.1%</tr>
+
+<tr><td>llama3.1_8B           <td class="num"> 16.1<td class="num">      3.150<td class="num">      76.6%<td class="num">      78.8%<td class="num">      73.9%<td class="num">      79.9%<td class="num">      80.8%<td class="num">      78.0%</tr>
+<tr><td>llama3.1_70B          <td class="num">141.1<td class="num">      2.670<td class="num">      80.1%<td class="num">      84.9%<td class="num">      79.4%<td class="num">      83.0%<td class="num">      83.7%<td class="num">      82.2%</tr>
+
+<tr><td>llama3.1_70B_q4       <td class="num"> 41.8<td class="num">      2.713<td class="num">      79.9%<td class="num">      84.4%<td class="num">      79.4%<td class="num">      82.6%<td class="num">      83.4%<td class="num">      81.9%</tr>
+
+<tr><td>llama3.1_70B_q3       <td class="num"> 31.1<td class="num">      2.865<td class="num">      78.0%<td class="num">      83.0%<td class="num">      78.4%<td class="num">      82.0%<td class="num">      83.6%<td class="num">      81.0%</tr>
+
+<tr><td>llama3.1_405B_q4      <td class="num">232.4<td class="num">      2.454<td class="num">      81.6%<td class="num">      87.0%<td class="num">      82.4%<td class="num">      83.8%<td class="num">      83.8%<td class="num">      83.7%</tr>
 
 </tbody>
 </table>
@@ -441,8 +452,8 @@ Additional Models:
   <ol>
     <li>Some models have restrictive licenses. In particular, OPT,
     Vicuna and NLLB200 cannot be used commercially. BLOOM, Stable
-    Diffusion, Llama 2, Llama 3 can be used commercially but have use
-    limitations.</li>
+    Diffusion, Llama 2, Llama 3, Llama 3.1 can be used commercially
+    but have use limitations.</li>
     <li>For the larger models we don't provide the unquantized version when it is too large for consumer GPUs or when the quantized version gives the same performance as the unquantized version.</li>
     <li>The <b>q8</b> suffix indicates that the model was 8 bit
     quantized. The <b>q4</b> suffix indicates that the model was 4 bit
