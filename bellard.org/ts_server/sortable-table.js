@@ -78,9 +78,10 @@ function handleButtonClick(columnIndex, ev)
 }
 
 window.addEventListener("load", function() {
+    var tableNode;
     var tab = document.querySelectorAll('table.sortable');
     for(var i = 0; i < tab.length; i++) {
-        var tableNode = tab[i];
+        tableNode = tab[i];
         var columnHeaders = tableNode.querySelectorAll('thead th');
         for(var j = 0; j < columnHeaders.length; j++) {
             var ch = columnHeaders[j];
@@ -89,5 +90,10 @@ window.addEventListener("load", function() {
                 buttonNode.addEventListener('click', handleButtonClick.bind(tableNode, j));
             }
         }
+    }
+    /* initial sort for the models */
+    tableNode = document.getElementById("models");
+    if (tableNode) {
+        sortColumn(tableNode, 8, true, -1)
     }
 });
