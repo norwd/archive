@@ -32,6 +32,8 @@ function sortColumn(tableNode, columnIndex, isNumber, dir)
       data.value = dataCell.textContent.toLowerCase().trim();
       if (isNumber) {
           data.value = parseFloat(data.value);
+          if (isNaN(data.value))
+              data.value = 0;
       }
       dataCells.push(data);
       rowNode = rowNode.nextElementSibling;
@@ -95,5 +97,9 @@ window.addEventListener("load", function() {
     tableNode = document.getElementById("models");
     if (tableNode) {
         sortColumn(tableNode, 8, true, -1)
+    }
+    tableNode = document.getElementById("chat_models");
+    if (tableNode) {
+        sortColumn(tableNode, 2, true, -1)
     }
 });
