@@ -615,12 +615,20 @@ to set a value a few GB lower than the amount of total GPU memory.
 <dd><p>Optional integer (default = 0). See the <code>kv_cache_size</code> parameter.
 </p></dd>
 <dt><code>kv_cache_size</code></dt>
-<dd><p>Optional integer (default = 0). The KV cache is stored in CPU memory
-and is only used by the <code>chat</code> endpoint to store the context of
-the conversation to accelerate the inference. It is disabled by
-default. <code>kv_cache_size</code> sets the maximum KV cache memory in
-bytes. <code>kv_cache_max_count</code> sets the maximum number of cached
-conversations.
+<dd><p>Optional integer (default = 0). The KV cache is used by the
+<code>chat</code> endpoint to store the context of the conversation to
+accelerate the inference. <code>kv_cache_size</code> sets the maximum KV
+cache memory in bytes. <code>kv_cache_max_count</code> sets the maximum
+number of cached entries.
+</p>
+<p>The cache is enabled if <code>kv_cache_max_count</code> or
+<code>kv_cache_size</code> is not zero. When the cache is enabled, a zero
+value for either parameter means infinite.
+</p>
+</dd>
+<dt><code>kv_cache_cpu</code></dt>
+<dd><p>Optional boolean (default = true). Select whether the KV cache is kept
+in the CPU memory (slower) or on the cuda device.
 </p>
 </dd>
 <dt><code>streaming_timeout</code></dt>
@@ -652,7 +660,14 @@ following parameters are defined:
   maximum number of tokens that is predicted by the draft model. The
   optimal value needs to be determined by experimentation. It is
   usually 3 or 4.
-</p>  
+</p>
+</dd>
+<dt><code>cpu_offload</code></dt>
+<dd><p>Optional boolean (default = false). If true, the model is loaded in
+  CPU memory and run on the GPU. This mode is interesting when the
+  model does not fit the CPU. Performance is still good for very large
+  batch sizes.
+</p>
 </dd>
 </dl>
 
@@ -867,6 +882,39 @@ timestamps. Each segment has the following properties:
 <dt><code>duration</code></dt>
 <dd><p>Float. Transcription duration in seconds.
 </p>
+</dd>
+</dl>
+
+</dd>
+<dt><code>v1/engines/{model_id}/embeddings</code></dt>
+<dd>
+<p>Compute the embeddings of a text. The JSON request contains the
+following properties:
+</p>
+<dl compact="compact">
+<dt><code>input</code></dt>
+<dd><p>String or array of strings. Several input texts can be provided.
+</p></dd>
+</dl>
+
+<p>The returned JSON object contains the following properties:
+</p><dl compact="compact">
+<dt><code>object</code></dt>
+<dd><p>String. value = <code>&quot;list&quot;</code>.
+</p></dd>
+<dt><code>data</code></dt>
+<dd><p>Array of objects. Each object has the following properties:
+  </p><dl compact="compact">
+<dt><code>object</code></dt>
+<dd><p>String. value = <code>&quot;embedding&quot;</code>.
+  </p></dd>
+<dt><code>index</code></dt>
+<dd><p>Integer. Index in the array.
+  </p></dd>
+<dt><code>embedding</code></dt>
+<dd><p>Array of floats. The embedding vector computed for the corresponding input text.
+  </p></dd>
+</dl>
 </dd>
 </dl>
 
