@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/>
     <!-- Begin Jekyll SEO tag v2.8.0 -->
 <title>Versionamento Semantico 2.0.0 | Semantic Versioning</title>
-<meta name="generator" content="Jekyll v3.9.5" />
+<meta name="generator" content="Jekyll v3.10.0" />
 <meta property="og:title" content="Versionamento Semantico 2.0.0" />
 <meta name="author" content="Tom Preston-Werner" />
 <meta property="og:locale" content="en_US" />
@@ -628,6 +628,35 @@ siano in grado di migrare tranquillamente alla nuova API.</p>
 è eccessiva. Inoltre, sistemi specifici possono imporre i loro limiti sulla 
 dimensione.</p>
 
+<h3 id="v123-è-una-versione-semantica">“v1.2.3” è una versione semantica?</h3>
+
+<p>No, “v1.2.3” non è una versione semantica. Tuttavia, prefissare una versione semantica
+con una “v” è un modo comune (in inglese) di indicare che si tratta di un numero di versione.
+L’abbreviazione “v” per “version” si incontra spesso nel controllo di versione. Esempio:
+<code class="language-plaintext highlighter-rouge">git tag v1.2.3 -m "Release version 1.2.3"</code>, ove “v1.2.3” è un nome di tag
+e la versione semantica è “1.2.3”.</p>
+
+<h3 id="esiste-una-espressione-regolare-regex-suggerita-per-controllare-la-stringa-semver">Esiste una espressione regolare (RegEx) suggerita per controllare la stringa SemVer?</h3>
+
+<p>Ne esistono due. Una con i gruppi nominati per quei sistemi che li supportano
+(PCRE [Perl Compatible Regular Expressions, i.e. Perl, PHP ed R], Python
+e Go).</p>
+
+<p>Vedi: <a href="https://regex101.com/r/Ly7O1x/3/">https://regex101.com/r/Ly7O1x/3/</a></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>^(?P&lt;major&gt;0|[1-9]\d*)\.(?P&lt;minor&gt;0|[1-9]\d*)\.(?P&lt;patch&gt;0|[1-9]\d*)(?:-(?P&lt;prerelease&gt;(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P&lt;buildmetadata&gt;[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+</code></pre></div></div>
+
+<p>…ed una con invece i gruppi di cattura numerati (quindi cg1 = major, cg2 = minor,
+cg3 = patch, cg4 = prerelease and cg5 = buildmetadata) che è compatibile
+con ECMA Script (JavaScript), PCRE (Perl Compatible Regular Expressions,
+i.e. Perl, PHP ed R), Python e Go.</p>
+
+<p>Vedi: <a href="https://regex101.com/r/vkijKf/1/">https://regex101.com/r/vkijKf/1/</a></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+</code></pre></div></div>
+
 <h2 id="a-riguardo">A riguardo</h2>
 
 <p>La specifica di Versionamento Semantico è scritta da <a href="http://tom.preston-werner.com">Tom
@@ -641,6 +670,8 @@ cofondatore di GitHub.</p>
   <li><a href="http://nonsolojava.blogspot.it/">Emanuele Gesuato</a> (revisore)</li>
   <li><a href="https://twitter.com/atogue">Anicet Foba Togue</a> (revisore)</li>
 </ul>
+
+<p>…e di <a href="https://www.lorenzoancora.info">Lorenzo L. Ancora</a> (autore)</p>
 
 <p>Se vi piacerebbe lasciare un commento, per favore <a href="https://github.com/semver/semver/issues">aprite una segnalazione su 
 GitHub</a>.</p>
