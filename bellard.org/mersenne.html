@@ -5,48 +5,64 @@
 <body>
 <H1>A small C program to print the biggest prime number</H1>
 
-<P>
-Here it is (448 bytes):
-<P>
-<PRE>
-int m=1811939329,N=1,t[1&lt;&lt;26]={2},a,*p,i,e=73421233,s,c,U=1;g(d,h){for(i=s;i&lt;1&lt;&lt;
-25;i*=2)d=d*1LL*d%m;for(p=t;p&lt;t+N;p+=s)for(i=s,c=1;i;i--)a=p[s]*(h?c:1LL)%m,p[s]
-=(m*1U+*p-a)*(h?1LL:c)%m,*p=(a*1U+*p)%m,p++,c=c*1LL*d%m;}main(){while(e/=2){N*=2
-;U=U*1LL*(m+1)/2%m;for(s=N;s/=2;)g(136,0);for(p=t;p&lt;t+N;p++)*p=*p*1LL**p%m*U%m;
-for(s=1;s&lt;N;s*=2)g(839354248,1);for(a=0,p=t;p&lt;t+N;)a+=*p&lt;&lt;(e&amp;1),*p++=a%10,a/=10;
-}while(!*--p);for(t[0]--;p&gt;=t;)putchar(48+*p--);}
-</PRE>
-<P>
-
-This program computes 2<SUP>74207281</SUP>-1, which was the biggest
-known prime number in 2016 (about 23 million digits !). For more
+<p>
+Here it is (447 bytes):
+</p>
+<pre>
+int m=2013265921,N=1,t[1&lt;&lt;27],a,*p,i,e=139390849,s,c,U=1;g(d,h){for(i=s;i&lt;1&lt;&lt;26;
+i*=2)d=d*1LL*d%m;for(p=t;p&lt;t+N;p+=s)for(i=s,c=1;i;i--)a=p[s]*(h?c:1LL)%m,p[s]=(m
+*1U+*p-a)*(h?1LL:c)%m,*p=(a*1U+*p)%m,p++,c=c*1LL*d%m;}main(){for(*t=2;e/=2;){N*=
+2;U=U*1LL*(m+1)/2%m;for(s=N;s/=2;)g(137,0);for(p=t;p&lt;t+N;p++)*p=*p*1LL**p%m*U%m;
+for(s=1;s&lt;N;s*=2)g(749463956,1);for(a=0,p=t;p&lt;t+N;)a+=*p&lt;&lt;(e&amp;1),*p++=a%10,a/=10;
+}while(!*--p);for(--*t;p&gt;=t;)putchar(48+*p--);}
+</pre>
+<p>
+This program computes 2<SUP>136279841</SUP>-1, which is the biggest
+known prime number in 2024 (about 41 million digits !). For more
 information about how it was found and who found it, look at
 the <A HREF="http://www.mersenne.org"> GIMPS Project </A>.
-<P>
+</p>
+<p>
 I compiled it successfully with gcc with Linux. In order to
 compile it, your C compiler must support the 64 bit <I>long long</I>
 type.
-<P>
+</p>
+<p>
 In order to have a small and yet asymptotically efficient code, I
 decided to do the computation of 2<sup>N</sup>-1 directly in base
 10. The power involves repeated squarings and multiplications by
 two. The squarings are implemented by doing fast convolutions using
 a <a href="http://en.wikipedia.org/wiki/Discrete_Fourier_transform_(general)#Number-theoretic_transform">Number
 Theoretic Transform</a>.
-
+</p>
 <p>
 A previous version of this program to compute 2<sup>6972593</sup>-1
 won the <A HREF="http://www.ioccc.org">International Obfuscated C Code
 Contest</A> of Year 2000.
+</p>
 <p>
-Thanks to Marco Cecchi who suggested some syntactic changes to save a
-few characters.
+Thanks to Marco Cecchi and Viktor Korsun who suggested some syntactic
+changes to save a few characters.
+</p>
+<p>The following slightly longer program accepts any number N as
+parameter such as 2 <= N <= 445000000 and computes 2<sup>N</sup>-1 in
+base 10:
+</p>
+<pre>
+int m=2013265921,N=1,t[1&lt;&lt;27],a,*p,i,r,s,c,U=1;g(d,h){for(i=s;i&lt;1&lt;&lt;26;i*=2)d=d*
+1LL*d%m;for(p=t;p&lt;t+N;p+=s)for(i=s,c=1;i;i--)a=p[s]*(h?c:1LL)%m,p[s]=(m*1U+*p-a)
+*(h?1LL:c)%m,*p=(a*1U+*p)%m,p++,c=c*1LL*d%m;}main(e,v)char**v;{for(e=atoi(v[1]),
+r=0;e&gt;&gt;r+1;r++);for(*t=2,p=t;r--;){if((2*(p-t)+3)&gt;N)N*=2,U=U*1LL*(m+1)/2%m;for(s
+=N;s/=2;)g(137,0);for(p=t;p&lt;t+N;p++)*p=*p*1LL**p%m*U%m;for(s=1;s&lt;N;s*=2)g(
+749463956,1);for(a=0,p=t;p&lt;t+N;)a+=*p&lt;&lt;(e&gt;&gt;r&amp;1),*p++=a%10,a/=10;while(!*--p);}
+for(--*t;p&gt;=t;)putchar(48+*p--);}
+</pre>
 <p>
-This program is Freeware.
-
+These programs are Freeware.
+</p>
 <HR>
 Fabrice Bellard - <A HREF="index.html"> http://bellard.org/ </A>
 <BR>
-<B> last update: Sep 26, 2016 </B>
+<B> last update: Oct 27, 2024 </B>
 </body>
 </html>
