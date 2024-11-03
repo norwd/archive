@@ -195,6 +195,16 @@ jobs:
           URL: ${{ steps.target.outputs.url }}
           FILE: ${{ steps.target.outputs.file }}
 
+      - name: Split PDF File By Page
+        if: ${{ endsWith(steps.target.outputs.file, '.pdf') }}
+        working-directory: ${{ steps.target.outputs.directory }}
+        run: |
+          sudo apt-get install pdftk                       # Install tool to split PDF
+          pdftk "${FILE}" burst                            # Split PDF into one doc per page
+          find . -size +100M | xargs -IFILE rm -rf FILE    # Remove any files over 100M (i.e. original if it was too big)
+        env:
+          FILE: ${{ steps.target.outputs.file }}
+
       - name: Push Downloaded File
         id: auto-commit
         uses: stefanzweifel/git-auto-commit-action@v4
