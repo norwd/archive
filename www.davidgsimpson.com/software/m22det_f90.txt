@@ -1,0 +1,85 @@
+!***********************************************************************************************************************************
+!
+!                                                       M 2 2 D E T _ M A I N
+!
+!  Program:      M22DET_MAIN
+!
+!  Programmer:   David G. Simpson
+!                NASA Goddard Space Flight Center
+!                Greenbelt, Maryland  20771
+!
+!  Date:         July 22, 2005
+!
+!  Language:     Fortran-90
+!
+!  Version:      1.00a
+!
+!  Description:  This program is a short "driver" to call function M22DET, which computes the determinant of a 2x2 matrix.
+!
+!  Files:        Source files:
+!
+!                   m22det.f90                   Main program
+!
+!***********************************************************************************************************************************
+
+      PROGRAM M22DET_MAIN
+
+      IMPLICIT NONE
+
+      INTEGER :: I, J
+      DOUBLE PRECISION, DIMENSION(2,2) :: MAT
+      DOUBLE PRECISION :: DET
+
+      DOUBLE PRECISION :: M22DET
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Get user input.
+!
+
+      WRITE (UNIT=*, FMT='(/A/)') ' Enter matrix:'
+
+      DO I = 1, 2
+         DO J = 1, 2
+            WRITE (UNIT=*, FMT='(A,I1,1H,,I1,A)', ADVANCE='NO') ' A(', I, J, ') = '
+            READ (UNIT=*, FMT=*) MAT(I,J)
+         END DO
+      END DO
+
+!
+!     Compute the determinant of the input matrix.
+!
+
+      DET = M22DET (MAT)
+
+!
+!     Print the result.
+!
+
+      WRITE (UNIT=*, FMT='(/A,ES25.15)') ' Det = ', DET
+
+      STOP
+
+      END PROGRAM M22DET_MAIN
+
+
+
+!***********************************************************************************************************************************
+!  M22DET  -  Compute the determinant of a 2x2 matrix.
+!***********************************************************************************************************************************
+
+      FUNCTION M22DET (A) RESULT (DET)
+
+      IMPLICIT NONE
+
+      DOUBLE PRECISION, DIMENSION(2,2), INTENT(IN)  :: A
+      DOUBLE PRECISION :: DET
+
+
+      DET =   A(1,1)*A(2,2) - A(1,2)*A(2,1)
+
+      RETURN
+
+      END FUNCTION M22DET
+

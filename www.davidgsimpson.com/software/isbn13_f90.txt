@@ -1,0 +1,92 @@
+!***********************************************************************************************************************************
+!
+!                                                            I S B N 1 3
+!
+!  Program:      ISBN13
+!
+!  Programmer:   David G. Simpson
+!                Laurel, Maryland
+!
+!  Date:         January 6, 2006
+!
+!  Language:     Fortran-90
+!
+!  Version:      1.00b  (January 7, 2006)
+!
+!  Description:  Computes the check digit for an ISBN-10 number.
+!
+!  Files:        Source file:
+!
+!                   isbn13.f90                   Main program
+!
+!***********************************************************************************************************************************
+
+      PROGRAM ISBN13
+
+      IMPLICIT NONE
+
+      INTEGER :: I, WEIGHT, SUM, CHECK
+      CHARACTER :: CH
+      CHARACTER(LEN=40) :: IN_STR, ISBN_STR
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Ask the user for the ISBN-13 number.
+!
+
+      WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' Enter ISBN-13 number (12 digits, no check digit):  '
+      READ (UNIT=*, FMT='(A)') IN_STR
+
+!
+!     Discard any leading spaces in input.
+!
+
+      IN_STR = ADJUSTL(IN_STR)
+
+!
+!     Discard any dashes or spaces in input.
+!
+
+      ISBN_STR = ' '
+
+      DO I = 1, LEN_TRIM(IN_STR)
+         CH = IN_STR(I:I)
+         IF ((CH.EQ.'-') .OR. (CH.EQ.' ')) CYCLE
+         ISBN_STR = TRIM(ISBN_STR) // CH
+      END DO
+
+!
+!     Check that there are 12 digits.
+!
+
+      IF (LEN_TRIM(ISBN_STR) .NE. 12) THEN
+         WRITE (UNIT=*, FMT='(A)') ' Error:  input must be 12 digits.'
+         STOP
+      END IF
+
+!
+!     Compute the check digit.
+!
+
+      SUM = 0
+      WEIGHT = 1
+
+      DO I = 1, 12
+         SUM = SUM + WEIGHT*(ICHAR(ISBN_STR(I:I))-ICHAR('0'))
+         WEIGHT = 4 - WEIGHT
+      END DO
+
+      CHECK = 10 - MOD(SUM,10)
+      IF (CHECK .EQ. 10) CHECK = 0
+
+!
+!     Print the result.
+!
+
+      WRITE (UNIT=*, FMT='(/A,I1)') ' Check digit = ', CHECK
+
+      STOP
+
+      END PROGRAM ISBN13
+

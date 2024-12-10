@@ -1,0 +1,691 @@
+!***********************************************************************************************************************************
+!
+!                                                          A U X T R I G
+!
+!  Module:       AUXTRIG
+!
+!  Programmer:   Dr. David G. Simpson
+!                NASA Goddard Space Flight Center
+!                Greenbelt, Maryland  20771
+!
+!  Date:         November 8, 2001
+!
+!  Language:     Fortran-90
+!
+!  Description:  This module includes a number of auxiliary trigonometric functions (and their inverses):
+!
+!                   SEC     Secant                     ASEC     Inverse secant
+!                   CSC     Cosecant                   ACSC     Inverse cosecant
+!                   COT     Cotangent                  ACOT     Inverse cotangent
+!                                                      ACOT2    Inverse cotangent (2 arguments)
+!                   EXSEC   Exsecant                   AEXSEC   Inverse exsecant
+!                   VERS    Versine                    AVERS    Inverse versine
+!                   COVERS  Coversine                  ACOVERS  Inverse coversine
+!                   HAV     Haversine                  AHAV     Inverse haversine
+!                   CRD     Chord (of Ptolemy)         ACRD     Inverse chord (of Ptolemy)
+!
+!                All angles are in radians.  A generic interface is provided to handle both single-and double-precision versions.
+!
+!***********************************************************************************************************************************
+
+      MODULE AUXTRIG                                                                ! start of auxtrig module
+
+
+      INTERFACE SEC                                                                 ! interface block for generic sec
+         MODULE PROCEDURE SSEC, DSEC
+      END INTERFACE
+
+      INTERFACE CSC                                                                 ! interface block for generic csc
+         MODULE PROCEDURE SCSC, DCSC
+      END INTERFACE
+
+      INTERFACE COT                                                                 ! interface block for generic cot
+         MODULE PROCEDURE SCOT, DCOT
+      END INTERFACE
+
+      INTERFACE EXSEC                                                               ! interface block for generic exsec
+         MODULE PROCEDURE SEXSEC, DEXSEC
+      END INTERFACE
+
+      INTERFACE VERS                                                                ! interface block for generic vers
+         MODULE PROCEDURE SVERS, DVERS
+      END INTERFACE
+
+      INTERFACE COVERS                                                              ! interface block for generic covers
+         MODULE PROCEDURE SCOVERS, DCOVERS
+      END INTERFACE
+
+      INTERFACE HAV                                                                 ! interface block for generic hav
+         MODULE PROCEDURE SHAV, DHAV
+      END INTERFACE
+
+      INTERFACE CRD                                                                 ! interface block for generic crd
+         MODULE PROCEDURE SCRD, DCRD
+      END INTERFACE
+
+      INTERFACE ASEC                                                                ! interface block for generic asec
+         MODULE PROCEDURE SASEC, DASEC
+      END INTERFACE
+
+      INTERFACE ACSC                                                                ! interface block for generic acsc
+         MODULE PROCEDURE SACSC, DACSC
+      END INTERFACE
+
+      INTERFACE ACOT                                                                ! interface block for generic acot
+         MODULE PROCEDURE SACOT, DACOT
+      END INTERFACE
+
+      INTERFACE ACOT2                                                               ! interface block for generic acot2
+         MODULE PROCEDURE SACOT2, DACOT2
+      END INTERFACE
+
+      INTERFACE AEXSEC                                                              ! interface block for generic aexsec
+         MODULE PROCEDURE SAEXSEC, DAEXSEC
+      END INTERFACE
+
+      INTERFACE AVERS                                                               ! interface block for generic avers
+         MODULE PROCEDURE SAVERS, DAVERS
+      END INTERFACE
+
+      INTERFACE ACOVERS                                                             ! interface block for generic acovers
+         MODULE PROCEDURE SACOVERS, DACOVERS
+      END INTERFACE
+
+      INTERFACE AHAV                                                                ! interface block for generic ahav
+         MODULE PROCEDURE SAHAV, DAHAV
+      END INTERFACE
+
+      INTERFACE ACRD                                                                ! interface block for generic acrd
+         MODULE PROCEDURE SACRD, DACRD
+      END INTERFACE
+
+
+      INTEGER, PARAMETER, PRIVATE :: SGL = KIND (0.0)                               ! single-precision real kind
+      INTEGER, PARAMETER, PRIVATE :: DBL = KIND (0.0D0)                             ! double-precision real kind
+
+
+      CONTAINS
+
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+!  SEC
+!
+!  Secant.
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Single-precision version.
+!
+
+      FUNCTION SSEC (X) RESULT (Y)
+
+      REAL(SGL)               :: Y                                                  ! result: secant
+      REAL(SGL), INTENT (IN)  :: X                                                  ! angle argument (rad)
+
+      Y = 1.0/COS(X)                                                                ! compute secant
+
+      END FUNCTION SSEC
+
+
+!
+!     Double-precision version.
+!
+
+      FUNCTION DSEC (X) RESULT (Y)
+
+      REAL(DBL)               :: Y                                                  ! result: secant
+      REAL(DBL), INTENT (IN)  :: X                                                  ! angle argument (rad)
+
+      Y = 1.0D0/COS(X)                                                              ! compute secant
+
+      END FUNCTION DSEC
+
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+!  CSC
+!
+!  Cosecant.
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Single-precision version.
+!
+
+      FUNCTION SCSC (X) RESULT (Y)
+
+      REAL(SGL)               :: Y                                                  ! result: cosecant
+      REAL(SGL), INTENT (IN)  :: X                                                  ! angle argument (rad)
+
+      Y = 1.0/SIN(X)                                                                ! compute cosecant
+
+      END FUNCTION SCSC
+
+
+!
+!     Double-precision version.
+!
+
+      FUNCTION DCSC (X) RESULT (Y)
+
+      REAL(DBL)               :: Y                                                  ! result: cosecant
+      REAL(DBL), INTENT (IN)  :: X                                                  ! angle argument (rad)
+
+      Y = 1.0D0/SIN(X)                                                              ! compute cosecant
+
+      END FUNCTION DCSC
+
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+!  COT
+!
+!  Cotangent.
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Single-precision version.
+!
+
+      FUNCTION SCOT (X) RESULT (Y)
+
+      REAL(SGL)               :: Y                                                  ! result: cotangent
+      REAL(SGL), INTENT (IN)  :: X                                                  ! angle argument (rad)
+
+      Y = 1.0/TAN(X)                                                                ! compute cotangent
+
+      END FUNCTION SCOT
+
+
+!
+!     Double-precision version.
+!
+
+      FUNCTION DCOT (X) RESULT (Y)
+
+      REAL(DBL)               :: Y                                                  ! result: cotangent
+      REAL(DBL), INTENT (IN)  :: X                                                  ! angle argument (rad)
+
+      Y = 1.0D0/TAN(X)                                                              ! compute cotangent
+
+      END FUNCTION DCOT
+
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+!  EXSEC
+!
+!  Exsecant.
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Single-precision version.
+!
+
+      FUNCTION SEXSEC (X) RESULT (Y)
+
+      REAL(SGL)               :: Y                                                  ! result: exsecant
+      REAL(SGL), INTENT (IN)  :: X                                                  ! angle argument (rad)
+
+      Y = 1.0/COS(X) - 1.0                                                          ! compute exsecant
+
+      END FUNCTION SEXSEC
+
+
+!
+!     Double-precision version.
+!
+
+      FUNCTION DEXSEC (X) RESULT (Y)
+
+      REAL(DBL)               :: Y                                                  ! result: exsecant
+      REAL(DBL), INTENT (IN)  :: X                                                  ! angle argument (rad)
+
+      Y = 1.0D0/COS(X) - 1.0D0                                                      ! compute exsecant
+
+      END FUNCTION DEXSEC
+
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+!  VERS
+!
+!  Versine.
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Single-precision version.
+!
+
+      FUNCTION SVERS (X) RESULT (Y)
+
+      REAL(SGL)               :: Y                                                  ! result: versine
+      REAL(SGL), INTENT (IN)  :: X                                                  ! angle argument (rad)
+
+      Y = 1.0 - COS(X)                                                              ! compute versine
+
+      END FUNCTION SVERS
+
+
+!
+!     Double-precision version.
+!
+
+      FUNCTION DVERS (X) RESULT (Y)
+
+      REAL(DBL)               :: Y                                                  ! result: versine
+      REAL(DBL), INTENT (IN)  :: X                                                  ! angle argument (rad)
+
+      Y = 1.0D0 - COS(X)                                                            ! compute versine
+
+      END FUNCTION DVERS
+
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+!  COVERS
+!
+!  Coversine.
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Single-precision version.
+!
+
+      FUNCTION SCOVERS (X) RESULT (Y)
+
+      REAL(SGL)               :: Y                                                  ! result: coversine
+      REAL(SGL), INTENT (IN)  :: X                                                  ! angle argument (rad)
+
+      Y = 1.0 - SIN(X)                                                              ! compute coversine
+
+      END FUNCTION SCOVERS
+
+
+!
+!     Double-precision version.
+!
+
+      FUNCTION DCOVERS (X) RESULT (Y)
+
+      REAL(DBL)               :: Y                                                  ! result: coversine
+      REAL(DBL), INTENT (IN)  :: X                                                  ! angle argument (rad)
+
+      Y = 1.0D0 - SIN(X)                                                            ! compute coversine
+
+      END FUNCTION DCOVERS
+
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+!  HAV
+!
+!  Haversine.
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Single-precision version.
+!
+
+      FUNCTION SHAV (X) RESULT (Y)
+
+      REAL(SGL)               :: Y                                                  ! result: haversine
+      REAL(SGL), INTENT (IN)  :: X                                                  ! angle argument (rad)
+
+      Y = (SIN(0.5*X))**2                                                           ! compute haversine
+
+      END FUNCTION SHAV
+
+
+!
+!     Double-precision version.
+!
+
+      FUNCTION DHAV (X) RESULT (Y)
+
+      REAL(DBL)               :: Y                                                  ! result: haversine
+      REAL(DBL), INTENT (IN)  :: X                                                  ! angle argument (rad)
+
+      Y = (SIN(0.5D0*X))**2                                                         ! compute haversine
+
+      END FUNCTION DHAV
+
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+!  CRD
+!
+!  Chord (of Ptolemy).
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Single-precision version.
+!
+
+      FUNCTION SCRD (X) RESULT (Y)
+
+      REAL(SGL)               :: Y                                                  ! result: chord
+      REAL(SGL), INTENT (IN)  :: X                                                  ! angle argument (rad)
+
+      Y = 2.0*SIN(0.5*X)                                                            ! compute chord
+
+      END FUNCTION SCRD
+
+
+!
+!     Double-precision version.
+!
+
+      FUNCTION DCRD (X) RESULT (Y)
+
+      REAL(DBL)               :: Y                                                  ! result: chord
+      REAL(DBL), INTENT (IN)  :: X                                                  ! angle argument (rad)
+
+      Y = 2.0D0*SIN(0.5D0*X)                                                        ! compute chord
+
+      END FUNCTION DCRD
+
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+!  ASEC
+!
+!  Inverse secant.
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Single-precision version.
+!
+
+      FUNCTION SASEC (Y) RESULT (X)
+
+      REAL(SGL)               :: X                                                  ! result: angle (rad)
+      REAL(SGL), INTENT (IN)  :: Y                                                  ! secant
+
+      X = ACOS(1.0/Y)                                                               ! compute inverse secant (rad)
+
+      END FUNCTION SASEC
+
+
+!
+!     Double-precision version.
+!
+
+      FUNCTION DASEC (Y) RESULT (X)
+
+      REAL(DBL)               :: X                                                  ! result: angle (rad)
+      REAL(DBL), INTENT (IN)  :: Y                                                  ! secant
+
+      X = ACOS(1.0D0/Y)                                                             ! compute inverse secant (rad)
+
+      END FUNCTION DASEC
+
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+!  ACSC
+!
+!  Inverse cosecant.
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Single-precision version.
+!
+
+      FUNCTION SACSC (Y) RESULT (X)
+
+      REAL(SGL)               :: X                                                  ! result: angle (rad)
+      REAL(SGL), INTENT (IN)  :: Y                                                  ! cosecant
+
+      X = ASIN(1.0/Y)                                                               ! compute inverse cosecant (rad)
+
+      END FUNCTION SACSC
+
+
+!
+!     Double-precision version.
+!
+
+      FUNCTION DACSC (Y) RESULT (X)
+
+      REAL(DBL)               :: X                                                  ! result: angle (rad)
+      REAL(DBL), INTENT (IN)  :: Y                                                  ! cosecant
+
+      X = ASIN(1.0D0/Y)                                                             ! compute inverse cosecant (rad)
+
+      END FUNCTION DACSC
+
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+!  ACOT
+!
+!  Inverse cotangent.
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Single-precision version.
+!
+
+      FUNCTION SACOT (Y) RESULT (X)
+
+      REAL(SGL)               :: X                                                  ! result: angle (rad)
+      REAL(SGL), INTENT (IN)  :: Y                                                  ! cotangent
+
+      X = ATAN(1.0/Y)                                                               ! compute inverse cotangent (rad)
+
+      END FUNCTION SACOT
+
+
+!
+!     Double-precision version.
+!
+
+      FUNCTION DACOT (Y) RESULT (X)
+
+      REAL(DBL)               :: X                                                  ! result: angle (rad)
+      REAL(DBL), INTENT (IN)  :: Y                                                  ! cotangent
+
+      X = ATAN(1.0D0/Y)                                                             ! compute inverse cotangent (rad)
+
+      END FUNCTION DACOT
+
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+!  ACOT2
+!
+!  Inverse cotangent (two arguments).
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Single-precision version.
+!
+
+      FUNCTION SACOT2 (Y,Z) RESULT (X)
+
+      REAL(SGL)               :: X                                                  ! result: angle (rad)
+      REAL(SGL), INTENT (IN)  :: Y                                                  ! cotangent numerator
+      REAL(SGL), INTENT (IN)  :: Z                                                  ! cotangent denominator
+
+      X = ATAN2(Z,Y)                                                                ! compute inverse cotangent of y/z (rad)
+
+      END FUNCTION SACOT2
+
+
+!
+!     Double-precision version.
+!
+
+      FUNCTION DACOT2 (Y,Z) RESULT (X)
+
+      REAL(DBL)               :: X                                                  ! result: angle (rad)
+      REAL(DBL), INTENT (IN)  :: Y                                                  ! cotangent numerator
+      REAL(DBL), INTENT (IN)  :: Z                                                  ! cotangent denominator
+
+      X = ATAN2(Z,Y)                                                                ! compute inverse cotangent of y/z (rad)
+
+      END FUNCTION DACOT2
+
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+!  AEXSEC
+!
+!  Inverse exsecant.
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Single-precision version.
+!
+
+      FUNCTION SAEXSEC (Y) RESULT (X)
+
+      REAL(SGL)               :: X                                                  ! result: angle (rad)
+      REAL(SGL), INTENT (IN)  :: Y                                                  ! exsecant
+
+      X = ACOS(1.0 / (Y + 1.0))                                                     ! compute inverse exsecant (rad)
+
+      END FUNCTION SAEXSEC
+
+
+!
+!     Double-precision version.
+!
+
+      FUNCTION DAEXSEC (Y) RESULT (X)
+
+      REAL(DBL)               :: X                                                  ! result: angle (rad)
+      REAL(DBL), INTENT (IN)  :: Y                                                  ! exsecant
+
+      X = ACOS(1.0D0 / (Y + 1.0D0))                                                 ! compute inverse exsecant (rad)
+
+      END FUNCTION DAEXSEC
+
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+!  AVERS
+!
+!  Inverse versine.
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Single-precision version.
+!
+
+      FUNCTION SAVERS (Y) RESULT (X)
+
+      REAL(SGL)               :: X                                                  ! result: angle (rad)
+      REAL(SGL), INTENT (IN)  :: Y                                                  ! versine
+
+      X = ACOS(1.0 - Y)                                                             ! compute inverse versine (rad)
+
+      END FUNCTION SAVERS
+
+
+!
+!     Double-precision version.
+!
+
+      FUNCTION DAVERS (Y) RESULT (X)
+
+      REAL(DBL)               :: X                                                  ! result: angle (rad)
+      REAL(DBL), INTENT (IN)  :: Y                                                  ! versine
+
+      X = ACOS(1.0D0 - Y)                                                           ! compute inverse versine (rad)
+
+      END FUNCTION DAVERS
+
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+!  ACOVERS
+!
+!  Inverse coversine.
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Single-precision version.
+!
+
+      FUNCTION SACOVERS (Y) RESULT (X)
+
+      REAL(SGL)               :: X                                                  ! result: angle (rad)
+      REAL(SGL), INTENT (IN)  :: Y                                                  ! coversine
+
+      X = ASIN(1.0 - Y)                                                             ! compute inverse coversine (rad)
+
+      END FUNCTION SACOVERS
+
+
+!
+!     Double-precision version.
+!
+
+      FUNCTION DACOVERS (Y) RESULT (X)
+
+      REAL(DBL)               :: X                                                  ! result: angle (rad)
+      REAL(DBL), INTENT (IN)  :: Y                                                  ! coversine
+
+      X = ASIN(1.0D0 - Y)                                                           ! compute inverse coversine (rad)
+
+      END FUNCTION DACOVERS
+
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+!  AHAV
+!
+!  Inverse haversine.
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Single-precision version.
+!
+
+      FUNCTION SAHAV (Y) RESULT (X)
+
+      REAL(SGL)               :: X                                                  ! result: angle (rad)
+      REAL(SGL), INTENT (IN)  :: Y                                                  ! haversine
+
+      X = 2.0*ASIN(SQRT(Y))                                                         ! compute inverse haversine (rad)
+
+      END FUNCTION SAHAV
+
+
+!
+!     Double-precision version.
+!
+
+      FUNCTION DAHAV (Y) RESULT (X)
+
+      REAL(DBL)               :: X                                                  ! result: angle (rad)
+      REAL(DBL), INTENT (IN)  :: Y                                                  ! haversine
+
+      X = 2.0D0*ASIN(SQRT(Y))                                                       ! compute inverse haversine (rad)
+
+      END FUNCTION DAHAV
+
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+!  ACRD
+!
+!  Inverse chord (of Ptolemy).
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Single-precision version.
+!
+
+      FUNCTION SACRD (Y) RESULT (X)
+
+      REAL(SGL)               :: X                                                  ! result: angle (rad)
+      REAL(SGL), INTENT (IN)  :: Y                                                  ! chord
+
+      X = 2.0*ASIN(0.5*Y)                                                           ! compute inverse chord (rad)
+
+      END FUNCTION SACRD
+
+
+!
+!     Double-precision version.
+!
+
+      FUNCTION DACRD (Y) RESULT (X)
+
+      REAL(DBL)               :: X                                                  ! result: angle (rad)
+      REAL(DBL), INTENT (IN)  :: Y                                                  ! chord
+
+      X = 2.0D0*ASIN(0.5D0*Y)                                                       ! compute inverse chord (rad)
+
+      END FUNCTION DACRD
+
+
+      END MODULE AUXTRIG                                                            ! end of auxtrig module
+

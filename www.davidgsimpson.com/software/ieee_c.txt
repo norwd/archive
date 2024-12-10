@@ -1,0 +1,73 @@
+/******************************************************************************/
+/*                                                                            */
+/*                                I E E E                                     */
+/*                                                                            */
+/*  Program:      IEEE                                                        */
+/*                                                                            */
+/*  Programmer:   David G. Simpson                                            */
+/*                NASA Goddard Space Flight Center                            */
+/*                Greenbelt, Maryland  20771                                  */
+/*                                                                            */
+/*  Date:         September 25, 2002                                          */
+/*                                                                            */
+/*  Language:     C                                                           */
+/*                                                                            */
+/*  Version:      1.00a                                                       */
+/*                                                                            */
+/*  Description:  Converts a single-precision (32-bit) floating-point number  */
+/*                to or from its IEEE binary representation.  This program    */
+/*                must be run on a computer that stores floating-point        */
+/*                numbers in IEEE format.                                     */
+/*                                                                            */
+/******************************************************************************/
+
+
+/******************************************************************************/
+/*  #include                                                                  */
+/******************************************************************************/
+
+#include <stdio.h>                          /* standard i/o                   */
+
+
+
+/******************************************************************************/
+/*  global variables                                                          */
+/******************************************************************************/
+
+union {                                     /* float-integer union definition */
+   float f;
+   long  l;
+   } u;
+
+int ans;                                    /* user response                  */
+
+
+
+/******************************************************************************/
+/*  main()                                                                    */
+/******************************************************************************/
+
+int main(void)
+{
+printf("Convert which way?\n");
+printf("  1.  Float to bytes\n");
+printf("  2.  Bytes to float\n");
+
+scanf("%d", &ans);
+
+switch (ans)
+   {
+   case 1:
+      printf("Enter float:  ");
+      scanf("%f", &u.f);
+      printf("%08lx\n", u.l);
+      break;
+
+   case 2:
+      printf("Enter 32-bit hex integer: ");
+      scanf("%lx", &u.l);
+      printf("%16.8e\n", u.f);
+      break;
+   }
+return 0;
+}

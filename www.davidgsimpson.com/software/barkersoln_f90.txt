@@ -1,0 +1,182 @@
+!***********************************************************************************************************************************
+!
+!                                                        B A R K E R S O L N
+!
+!  Program:      BARKERSOLN
+!
+!  Programmer:   David G. Simpson
+!                NASA Goddard Space Flight Center
+!                Greenbelt, Maryland
+!
+!  Date:         July 4, 2012
+!
+!  Language:     Fortran-90
+!
+!  Version:      1.00b  (July 5, 2012)
+!
+!  Description:  Solves Barker's equation by the direct method.
+!
+!  Files:        Source files:
+!
+!                   barkersoln.f90                Main program
+!
+!  Note:         This program solves Barker's equation by the direct method.  The solution
+!                here assumes the Sun as the central body.  For a different central body,
+!                change the value of parameter GM.
+!
+!  Syntax:       The program prompts for the time since perihelion and the perihelion distance.
+!                At each prompt, you should include both a number and appropriate units.  For example:
+!
+!                   Enter time from perihelion and units:  3 years
+!                   Enter perihelion distance and units:   1.102 au
+!
+!                   f =     142.565387029 deg   =    142 deg  33'  55.393"
+!
+!***********************************************************************************************************************************
+
+      PROGRAM BARKERSOLN
+
+      IMPLICIT NONE
+
+      DOUBLE PRECISION, PARAMETER :: PI = 3.14159265358979323846264338327950288419716939937510582097494459230781640628620899862803D0
+      DOUBLE PRECISION, PARAMETER :: GM = 1.3271240041D20                           ! m^3/s^2
+      DOUBLE PRECISION, PARAMETER :: THIRD = 0.33333333333333333333333333333333333333333333333333333333333333333333333333333333333D0
+
+      INTEGER :: I, IDX, DEL, FD_D, FD_M
+
+      DOUBLE PRECISION :: T, Q, COTS, COTS2, COTW, COT2W, TANF2, F, FD, FD_S
+
+      CHARACTER(LEN=80) :: TLINE, QLINE, TUNIT, QUNIT
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!  Read in time and convert to SI units (seconds).
+!
+
+      WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' Enter time from perihelion and units:  '
+      READ (UNIT=*, FMT='(A)') TLINE
+      IDX = INDEX(TLINE,' ')
+      READ(UNIT=TLINE(1:IDX-1),FMT=*) T                                             ! read time
+      READ(UNIT=TLINE(IDX+1:),FMT='(A)') TUNIT                                      ! read time units
+
+      IF (LEN_TRIM(TUNIT) .EQ. 0) THEN                                              ! check for no units entered
+         WRITE (UNIT=*, FMT='(A)') ' You must include a time AND a time unit.'
+         WRITE (UNIT=*, FMT='(A)') ' Valid units are s, min, hr, day, and year.'
+         STOP
+      END IF
+
+      DO I = 1, LEN_TRIM(TUNIT)                                                     ! if multiple spaces between number and units..
+         IF (TUNIT(1:1) .EQ. ' ') THEN                                              ! ..then reduce to just one space
+            TUNIT = TUNIT(2:)
+         ELSE
+            EXIT
+         END IF
+      END DO
+
+      DEL = IACHAR('a') - IACHAR('A')                                               ! find ASCII position diff between 'A' and 'a'
+      DO I = 1, LEN_TRIM(TUNIT)                                                     ! scan each character in line
+         IF (LGE(TUNIT(I:I),'A') .AND. LLE(TUNIT(I:I),'Z')) THEN                    ! if between 'A' and 'Z'..
+            TUNIT(I:I) = ACHAR(IACHAR(TUNIT(I:I)) + DEL)                            ! ..then convert to lowercase
+         END IF
+      END DO
+
+      SELECT CASE (TRIM(TUNIT))                                                     ! convert given units to SI
+         CASE ('s', 'sec', 'second', 'seconds')
+            CONTINUE
+         CASE ('min', 'minute', 'minutes')
+            T = T * 60.0D0
+         CASE ('hr', 'hour', 'hours')
+            T = T * 3600.0D0
+         CASE ('day', 'days')
+            T = T * 86400.0D0
+         CASE ('year', 'years')
+            T = T * 86400.0D0 * 365.25D0
+         CASE DEFAULT
+            WRITE (UNIT=*, FMT='(A)') ' Time unit not recognized:  '//TRIM(TUNIT)
+            WRITE (UNIT=*, FMT='(A)') ' Valid time units are s, min, hr, day, and year.'
+            STOP
+      END SELECT
+
+!
+!  Read in perihelion distance and convert to SI units (meters).
+!
+
+      WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' Enter perihelion distance and units:   '
+      READ (UNIT=*, FMT='(A)') QLINE
+      IDX = INDEX(QLINE,' ')
+      READ(UNIT=QLINE(1:IDX-1),FMT=*) Q
+      READ(UNIT=QLINE(IDX+1:),FMT='(A)') QUNIT
+
+      IF (LEN_TRIM(QUNIT) .EQ. 0) THEN                                              ! check for no units entered
+         WRITE (UNIT=*, FMT='(A)') ' You must include a distance AND '// &
+            'a distance unit.'
+         WRITE (UNIT=*, FMT='(A)') ' Valid units are m, cm, km, mile, and au.'
+         STOP
+      END IF
+
+      DO I = 1, LEN_TRIM(QUNIT)                                                     ! if multiple spaces between number and units..
+         IF (QUNIT(1:1) .EQ. ' ') THEN                                              ! ..then reduce to just one space
+            QUNIT = QUNIT(2:)
+         ELSE
+            EXIT
+         END IF
+      END DO
+
+      DO I = 1, LEN_TRIM(QUNIT)                                                     ! scan each character in line
+         IF (LGE(QUNIT(I:I),'A') .AND. LLE(QUNIT(I:I),'Z')) THEN                    ! if between 'A' and 'Z'..
+            QUNIT(I:I) = ACHAR(IACHAR(QUNIT(I:I)) + DEL)                            ! ..then convert to lowercase
+         END IF
+      END DO
+
+      SELECT CASE (TRIM(QUNIT))                                                     ! convert given units to SI
+         CASE ('m')
+            CONTINUE
+         CASE ('cm')
+            Q = Q * 1.0D-2
+         CASE ('km')
+            Q = Q * 1.0D3
+         CASE ('mile', 'miles')
+            Q = Q * 1.609344D3
+         CASE ('au')
+            Q = Q * 1.495978707D11
+         CASE DEFAULT
+            WRITE (UNIT=*, FMT='(A)') ' Distance unit not recognized:  '//TRIM(QUNIT)
+            WRITE (UNIT=*, FMT='(A)') ' Valid distance units are m, cm, km, mile, and au.'
+            STOP
+      END SELECT
+
+!
+!  Compute true anomaly f by direct method.
+!
+
+      COTS = 3.0D0*SQRT(GM)*ABS(T)/(2.0D0*Q)**1.5D0
+      COTS2 = SQRT(1.0D0+COTS**2) + COTS
+      COTW = COTS2**THIRD
+      COT2W = (COTW**2-1.0D0)/(2.0D0*COTW)
+      TANF2 = 2.0D0*COT2W
+      F = 2.0D0*ATAN(TANF2)
+      IF (T .LT. 0.0D0) F = -F
+
+!
+!  Compute decimal degrees.
+!
+
+      FD = ABS(F*180.0D0/PI)
+
+      FD_D = INT(FD)
+      FD_M = INT((FD-FD_D)*60.0D0)
+      FD_S = (FD-FD_D-FD_M/60.0D0)*3600.0D0
+      IF (F .LT. 0.0D0) FD_D = -FD_D
+
+!
+!  Print result.
+!
+
+      WRITE (UNIT=*, FMT='(/A,F17.9,A,I5,A,I3,A,F8.3,A)') ' f = ', F*180.0D0/PI, &
+         ' deg   =  ', FD_D, ' deg ', FD_M, "'", FD_S, '"'
+
+      STOP
+
+      END PROGRAM BARKERSOLN
+

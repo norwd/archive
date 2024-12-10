@@ -1,0 +1,88 @@
+!***********************************************************************************************************************************
+!
+!                                                        A N G L E V E C
+!
+!  Program:      ANGLEVEC
+!
+!  Programmer:   David G. Simpson
+!                NASA Goddard Space Flight Center
+!                Greenbelt, Maryland  20771
+!
+!  Date:         December 11, 2007
+!
+!  Language:     Fortran-90
+!
+!  Version:      1.00a
+!
+!  Description:  This program computes the angle between two vectors.  The main program is a short "driver" program
+!                that calls function ANGVEC; this function does the actual calculation.
+!
+!  Files:        Source files:
+!
+!                   anglevec.f90                   Main program
+!
+!  Notes:
+!
+!***********************************************************************************************************************************
+
+      PROGRAM ANGLEVEC
+
+      IMPLICIT NONE
+
+      DOUBLE PRECISION, PARAMETER :: PI = 3.14159265358979323846264338327950288419716939937510582097494459230781640628620899862803D0
+      DOUBLE PRECISION :: ANGLE
+      DOUBLE PRECISION, DIMENSION(3) :: A, B
+
+      DOUBLE PRECISION :: ANGVEC
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+      WRITE (UNIT=*, FMT='(/A/)') ' Enter first vector:'
+      WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' Ax = '
+      READ (UNIT=*, FMT=*) A(1)
+      WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' Ay = '
+      READ (UNIT=*, FMT=*) A(2)
+      WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' Az = '
+      READ (UNIT=*, FMT=*) A(3)
+
+      WRITE (UNIT=*, FMT='(/A/)') ' Enter second vector:'
+      WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' Bx = '
+      READ (UNIT=*, FMT=*) B(1)
+      WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' By = '
+      READ (UNIT=*, FMT=*) B(2)
+      WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' Bz = '
+      READ (UNIT=*, FMT=*) B(3)
+
+      ANGLE = ANGVEC (A, B)
+
+      WRITE (UNIT=*, FMT='(/A,F12.6,A)') ' Separation angle = ', ANGLE*180.0D0/PI, ' deg'
+
+      STOP
+
+      END PROGRAM ANGLEVEC
+
+
+
+
+
+!***********************************************************************************************************************************
+!  ANGVEC
+!
+!  This function calculates the separation angle between two cartesian 3-vectors V1 and V2.  The separation angle THETA is
+!  returned in radians.
+!***********************************************************************************************************************************
+
+      FUNCTION ANGVEC (V1, V2) RESULT (THETA)
+
+      IMPLICIT NONE
+
+      DOUBLE PRECISION, DIMENSION(3), INTENT(IN) :: V1, V2
+      DOUBLE PRECISION :: THETA
+
+
+      THETA = ACOS(DOT_PRODUCT(V1,V2)/(SQRT(DOT_PRODUCT(V1,V1))*SQRT(DOT_PRODUCT(V2,V2))))
+
+      RETURN
+
+      END FUNCTION ANGVEC
+

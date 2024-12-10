@@ -1,0 +1,89 @@
+/*****************************************************************************/
+/*                                                                           */
+/*                                J D                                        */
+/*                                                                           */
+/*  Program:      JD                                                         */
+/*                                                                           */
+/*  Programmer:   David G. Simpson                                           */
+/*                NASA Goddard Space Flight Center                           */
+/*                Greenbelt, Maryland  20771                                 */
+/*                                                                           */
+/*  Date:         June 23, 2004                                              */
+/*                                                                           */
+/*  Language:     C                                                          */
+/*                                                                           */
+/*  Version:      1.00b  (August 24, 2006)                                   */
+/*                                                                           */
+/*  Description:  Print current value of Julian day (based on system clock). */
+/*                                                                           */
+/*****************************************************************************/
+
+#include <stdio.h>
+#include <time.h>
+
+double julian (int year, int month, double day);
+
+
+
+/*****************************************************************************/
+/*  main()                                                                   */
+/*****************************************************************************/
+
+int main(void)
+{
+struct tm *systime;
+time_t t;
+double jd, day, jd_jan0;
+int ut_offset;
+char day_name[7][10] = {
+   "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
+
+
+t = time(NULL);
+systime = localtime(&t);
+
+if (systime->tm_isdst)
+   ut_offset = 4;
+else
+   ut_offset = 5;
+
+day = systime->tm_mday + (systime->tm_hour+ut_offset)/24.0 + systime->tm_min/1440.0 + systime->tm_sec/86400.0;
+jd = julian (systime->tm_year+1900, systime->tm_mon+1, day);
+jd_jan0 = julian (systime->tm_year+1899, 12, 31);
+
+printf("\nDate: %.2d/%.2d/%.4d\n", systime->tm_mon+1, systime->tm_mday, systime->tm_year+1900);
+printf("Day:  %s\n", day_name[systime->tm_wday]);
+printf("Time: %.2d:%.2d:%.2d  UTC\n", systime->tm_hour+ut_offset,  systime->tm_min,  systime->tm_sec);
+printf("DOY:  %3d\n", (int)(jd-jd_jan0));
+printf("JD: %15.5f\n", jd);
+
+return 0;
+}
+
+
+
+/*****************************************************************************/
+/*  julian()                                                                 */
+/*****************************************************************************/
+
+double julian (int year, int month, double day)
+{
+long a, b;
+double jd;
+
+
+if (month <= 2)
+   {
+   year--;
+   month += 12;
+   }
+
+a = year/100;
+b = 2 - a + a/4;
+
+jd = (long)(365.25*(year+4716)) + (long)(30.6001*(month+1))
+     + day + b - 1524.5;
+
+return jd;
+}
+

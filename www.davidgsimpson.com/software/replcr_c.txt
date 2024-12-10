@@ -1,0 +1,276 @@
+/******************************************************************************/
+/*                                                                            */
+/*                                R E P L C R                                 */
+/*                                                                            */
+/*  Program:      REPLCR                                                      */
+/*                                                                            */
+/*  Programmer:   Dr. David G. Simpson                                        */
+/*                NASA Goddard Space Flight Center                            */
+/*                Greenbelt, Maryland  20771                                  */
+/*                                                                            */
+/*  Date:         October 10, 2002                                            */
+/*                                                                            */
+/*  Language:     ANSI Standard C                                             */
+/*                                                                            */
+/*  Description:  This program converts an ASCII text file from any of the    */
+/*                three possible formats to any other format:                 */
+/*                                                                            */
+/*                 1.  Lines end with  CR     (e.g. Macintosh)                */
+/*                 2.  Lines end with  LF     (e.g. UNIX, VAX)                */
+/*                 3.  Lines end with  CR/LF  (e.g. PC)                       */
+/*                                                                            */
+/******************************************************************************/
+
+
+/******************************************************************************/
+/*  #includes                                                                 */
+/******************************************************************************/
+
+#include <stdio.h>                          /* standard i/o                   */
+#include <stdlib.h>                         /* standard library               */
+#include <string.h>                         /* string functions               */
+
+
+
+/******************************************************************************/
+/*  #defines                                                                  */
+/******************************************************************************/
+
+#define  CR  0x0D                           /* carriage return                */
+#define  LF  0x0A                           /* line feed                      */
+
+
+
+/******************************************************************************/
+/*  function prototype                                                        */
+/******************************************************************************/
+
+void chomp (char *str);                     /* remove final \n from string    */
+
+
+
+/******************************************************************************/
+/*  global variables                                                          */
+/******************************************************************************/
+
+char infilename[133];                       /* input file name                */
+char outfilename[133];                      /* output file name               */
+char line[133];                             /* used to read in input line     */
+int  fromfmt;                               /* format to convert from         */
+int  tofmt;                                 /* format to convert to           */
+int  choice;                                /* both "from" and "to" formats   */
+unsigned char b, c, l;                      /* temp storage for bytes         */
+FILE *infp, *outfp;                         /* file pointers                  */
+
+
+
+
+
+/******************************************************************************/
+/*  main()                                                                    */
+/******************************************************************************/
+
+int main (void)
+{
+
+
+/*  Get input file name  */
+
+
+fputs("Enter input file name:  ", stdout);
+fgets(infilename, 132, stdin);
+chomp(infilename);
+
+
+/*  Get output file name  */
+
+
+fputs("\nEnter output file name:  ", stdout);
+fgets(outfilename, 132, stdin);
+chomp(outfilename);
+
+
+/*  Get "from" format  */
+
+
+fputs("\nConvert FROM format:\n", stdout);
+fputs("  1.  CR     (e.g. Macintosh)\n", stdout);
+fputs("  2.  LF     (e.g. UNIX, VAX)\n", stdout);
+fputs("  3.  CR/LF  (e.g. PC)\n", stdout);
+fputs("?  ", stdout);
+fgets(line, 132, stdin);
+sscanf(line,"%d", &fromfmt);
+
+if ((fromfmt<1) || (fromfmt>3))
+   {
+   fputs("Invalid selection.\n", stdout);
+   exit(1);
+   }
+
+
+/*  Get "to" format  */
+
+
+fputs("\nConvert TO format:\n", stdout);
+fputs("  1.  CR     (e.g. Macintosh)\n", stdout);
+fputs("  2.  LF     (e.g. UNIX, VAX)\n", stdout);
+fputs("  3.  CR/LF  (e.g. PC)\n", stdout);
+fputs("?  ", stdout);
+fgets(line, 132, stdin);
+sscanf(line,"%d", &tofmt);
+
+if ((tofmt<1) || (tofmt>3))
+   {
+   fputs("Invalid selection.\n", stdout);
+   exit(1);
+   }
+
+
+/*  Combine "from" and "to" choices into a single integer  */
+
+
+choice = (fromfmt<<4) | tofmt;
+
+
+/*  Open input and output files  */
+
+
+if ((infp = fopen(infilename, "rb"))==NULL)
+   {
+   printf("Error opening file %s\n", infilename);
+   exit(1);
+   }
+
+if ((outfp = fopen(outfilename, "wb"))==NULL)
+   {
+   printf("Error opening file %s\n", outfilename);
+   exit(1);
+   }
+
+
+/*  Do the conversion  */
+
+
+switch (choice)
+   {
+   case 0x11:                               /* CR -> CR                       */
+   case 0x22:                               /* LF -> LF                       */
+   case 0x33:                               /* CR/LF -> CR/LF                 */
+      for (;;)
+         {
+         fread(&b, 1, 1, infp);
+         if (feof(infp))
+            break;
+         fwrite(&b, 1, 1, outfp);
+         }
+      break;
+
+   case 0x12:                               /* CR -> LF                       */
+      for (;;)
+         {
+         fread(&b, 1, 1, infp);
+         if (feof(infp))
+            break;
+         if (b==CR)
+            b = LF;
+         fwrite(&b, 1, 1, outfp);
+         }
+      break;
+
+   case 0x13:                               /* CR -> CR/LF                    */
+      l = LF;
+      for (;;)
+         {
+         fread(&b, 1, 1, infp);
+         if (feof(infp))
+            break;
+         fwrite(&b, 1, 1, outfp);
+         if (b==CR)
+            fwrite(&l, 1, 1, outfp);
+         }
+      break;
+
+   case 0x21:                               /* LF -> CR                       */
+      for (;;)
+         {
+         fread(&b, 1, 1, infp);
+         if (feof(infp))
+            break;
+         if (b==LF)
+            b = CR;
+         fwrite(&b, 1, 1, outfp);
+         }
+      break;
+
+   case 0x23:                               /* LF -> CR/LF                    */
+      c = CR;
+      for (;;)
+         {
+         fread(&b, 1, 1, infp);
+         if (feof(infp))
+            break;
+         if (b==LF)
+            fwrite(&c, 1, 1, outfp);
+         fwrite(&b, 1, 1, outfp);
+         }
+      break;
+
+   case 0x31:                               /* CR/LF -> CR                    */
+      for (;;)
+         {
+         fread(&b, 1, 1, infp);
+         if (feof(infp))
+            break;
+         if (b==LF)
+            continue;
+         fwrite(&b, 1, 1, outfp);
+         }
+      break;
+
+   case 0x32:                               /* CR/LF -> LF                    */
+      for (;;)
+         {
+         fread(&b, 1, 1, infp);
+         if (feof(infp))
+            break;
+         if (b==CR)
+            continue;
+         fwrite(&b, 1, 1, outfp);
+         }
+      break;
+
+   default:
+      fputs("\nProgram error.\n", stdout);
+      break;
+   }
+
+
+/*  Close files and exit  */
+
+
+fclose (outfp);
+fclose (infp);
+
+fputs("\nDone.\n", stdout);
+
+return 0;
+}
+
+
+
+
+/*****************************************************************************/
+/*  chomp()                                                                  */
+/*                                                                           */
+/*  Remove final \n from end of string.                                      */
+/*****************************************************************************/
+
+void chomp (char *str)
+{
+int  len;                                   /* length of str (incl \n)       */
+
+len = strlen (str);                         /* get length of str incl \n     */
+if (str[len-1] == '\n')                     /* if final char is \n ..        */
+   str[len-1] = '\0';                       /* ..then remove it              */
+}
+

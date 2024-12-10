@@ -1,0 +1,107 @@
+!***********************************************************************************************************************************
+!
+!                                                         T O U P P E R
+!
+!  Program:      TOUPPER
+!
+!  Programmer:   David G. Simpson
+!                NASA Goddard Space Flight Center
+!                Greenbelt, Maryland  20771
+!
+!  Date:         January 4, 2002
+!
+!  Language:     ANSI Standard Fortran-90
+!
+!  Version:      1.00b  (October 25, 2004)
+!
+!  Description:  Converts all lowercase letters in a file to uppercase.
+!
+!***********************************************************************************************************************************
+
+      PROGRAM TOUPPER
+
+      IMPLICIT NONE                                                                 ! no default typing
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+!
+!  Variables
+!
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+      INTEGER, PARAMETER  :: IN_UNIT  = 7                                           ! input file unit number
+      INTEGER, PARAMETER  :: OUT_UNIT = 8                                           ! output file unit number
+
+      CHARACTER (LEN=300) :: INFILE                                                 ! input filename
+      CHARACTER (LEN=300) :: OUTFILE                                                ! output filename
+      CHARACTER (LEN=300) :: LINE                                                   ! input/output string
+      INTEGER             :: IERR                                                   ! i/o error flag
+      INTEGER             :: I                                                      ! loop counter
+      INTEGER             :: DEL                                                    ! position difference between 'A' and 'a'
+
+
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+!
+!  Start of code
+!
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Get user input.
+!
+
+      WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' Enter name of input file: '         ! get input filename
+      READ (UNIT=*, FMT='(A)') INFILE
+
+      WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' Enter name of output file: '        ! get output filename
+      READ (UNIT=*, FMT='(A)') OUTFILE
+
+!
+!     Open files.
+!
+
+      OPEN (UNIT=IN_UNIT, FILE=INFILE, STATUS='OLD', ACCESS='SEQUENTIAL',        &  ! open input file
+            FORM='FORMATTED', POSITION='REWIND', ACTION='READ', IOSTAT=IERR)
+
+      IF (IERR .NE. 0) THEN                                                         ! if file open error..
+         WRITE (UNIT=*, FMT='(A,I6,A)') ' Error ',IERR,' opening file '//INFILE     ! ..then print error message..
+         STOP                                                                       ! ..and return to operating system
+      END IF
+
+
+      OPEN (UNIT=OUT_UNIT, FILE=OUTFILE, STATUS='REPLACE', ACCESS='SEQUENTIAL',  &  ! open output file
+            FORM='FORMATTED', ACTION='WRITE', IOSTAT=IERR)
+
+      IF (IERR .NE. 0) THEN                                                         ! if file open error..
+         WRITE (UNIT=*, FMT='(A,I6,A)') ' Error ',IERR,' opening file '//OUTFILE    ! ..then print error message..
+         STOP                                                                       ! ..and return to operating system
+      END IF
+
+
+!
+!     Convert input file lines to uppercase, and save to output file.
+!
+
+      DEL = IACHAR('a') - IACHAR('A')                                               ! find ASCII position diff between 'A' and 'a'
+
+      DO                                                                            ! do for each line of input file
+         READ (UNIT=IN_UNIT, FMT='(A)', IOSTAT=IERR) LINE                           ! read in line of input file
+
+         IF (IERR < 0) EXIT                                                         ! exit if end of file
+
+         DO I = 1, LEN_TRIM(LINE)                                                   ! scan each character in line
+            IF (LGE(LINE(I:I),'a') .AND. LLE(LINE(I:I),'z')) THEN                   ! if between 'a' and 'z'..
+               LINE(I:I) = ACHAR(IACHAR(LINE(I:I)) - DEL)                           ! ..then convert to uppercase
+            END IF
+         END DO
+
+         WRITE (UNIT=OUT_UNIT, FMT='(A)') TRIM(LINE)                                ! write out uppercased line
+
+      END DO
+
+      CLOSE (UNIT=IN_UNIT, STATUS='KEEP')                                           ! close input file
+      CLOSE (UNIT=OUT_UNIT, STATUS='KEEP')                                          ! close output file
+
+      STOP
+
+      END PROGRAM TOUPPER

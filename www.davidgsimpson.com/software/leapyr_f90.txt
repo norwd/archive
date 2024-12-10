@@ -1,0 +1,64 @@
+!***********************************************************************************************************************************
+!
+!                                                          L E A P Y R
+!
+!  Program:      LEAPYR
+!
+!  Author:       Dr. David G. Simpson
+!                NASA Goddard Space Flight Center
+!                Greenbelt, Maryland  20771
+!
+!  Date:         November 1, 2002
+!
+!  Description:  This program includes the LEAP function, which determines whether a given year on the Gregorian
+!                calendar is a leap year.  A simple driver program is also included.
+!
+!***********************************************************************************************************************************
+
+      PROGRAM LEAPYR
+
+!
+!     Variables
+!
+
+      IMPLICIT NONE
+
+      INTEGER  :: YEAR
+      LOGICAL  :: LEAP
+
+!
+!
+!     Start of code.
+!
+
+      WRITE (UNIT=*, FMT='(A)') ' Enter year:  '
+      READ (UNIT=*, FMT=*) YEAR
+      WRITE (UNIT=*, FMT='(1X,L1)') LEAP(YEAR)
+      STOP
+      END
+
+
+
+!***********************************************************************************************************************************
+!  LEAP
+!
+!  Input:
+!     year  -  Gregorian year (integer)
+!  Output:
+!     Function return value = .true. if year is a leap year, and .false. otherwise.
+!***********************************************************************************************************************************
+
+      FUNCTION LEAP (YEAR) RESULT (LEAPFLAG)
+
+      IMPLICIT NONE
+
+      INTEGER :: YEAR
+      LOGICAL :: LEAPFLAG
+
+      LEAPFLAG = .FALSE.
+      IF (MOD(YEAR,4) .EQ. 0)   LEAPFLAG = .TRUE.
+      IF (MOD(YEAR,100) .EQ. 0) LEAPFLAG = .FALSE.
+      IF (MOD(YEAR,400) .EQ. 0) LEAPFLAG = .TRUE.
+      RETURN
+      END
+

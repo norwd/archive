@@ -1,0 +1,115 @@
+!***********************************************************************************************************************************
+!
+!                                                         P U R S U I T
+!
+!  Program:      PURSUIT
+!
+!  Programmer:   David G. Simpson (based on HP-25 program by Larry L. Simpson)
+!                Laurel, Maryland
+!
+!  Date:         September 24, 2006
+!
+!  Language:     Fortran-90
+!
+!  Version:      1.00a
+!
+!  Description:  This is a Fortran version of the original game "Pursuit" for the HP-25 calculator by
+!                L.L. Simpson, Dec. 1976.
+!
+!  Files:        Source file:
+!
+!                   pursuit.f90                   Main program
+!
+!  Notes:        You are in pursuit of a faster ship that is spotted when 566 m from your ship.  You fire
+!                torpedoes at it but it maneuvers to avoid being hit.  When it is 1000 m from you, it is
+!                out of range of the torpedoes.  When given an indication of the error in your aim, you
+!                correct the angle and fire a torpedo.  If you score a hit (within 5 m of target), the
+!                program displays "Hit!".  If the ship is out of range, "Out of range" is displayed.
+!
+!***********************************************************************************************************************************
+
+      PROGRAM PURSUIT
+
+      IMPLICIT NONE
+
+      DOUBLE PRECISION, PARAMETER :: PI = 3.14159265358979323846264338327950288419716939937510582097494459230781640628620899862803D0
+
+      REAL, PARAMETER :: X0 = 400.0
+      REAL, PARAMETER :: Y0 = X0
+      REAL, PARAMETER :: DIST_ERROR = 5.0
+      REAL, PARAMETER :: DIR_ERROR = DIST_ERROR * 180.0/PI
+      REAL, PARAMETER :: RANGE = 1000.0
+
+      REAL :: RN, R, THETA, X, Y, THETA0, THETA_ERR, CORR
+
+      CHARACTER :: ANS
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Print introductory message.
+!
+
+      WRITE (UNIT=*, FMT='(/A)') ' Welcome to Pursuit.  You are in pursuit of a faster ship that'
+      WRITE (UNIT=*, FMT='(A)')  ' is spotted when 566 m from your ship.  You fire torpedoes at'
+      WRITE (UNIT=*, FMT='(A)')  ' it but it maneuvers to avoid being hit.  When it is 1000 m'
+      WRITE (UNIT=*, FMT='(A)')  ' from you, it is out of range of the torpedoes.  When given an'
+      WRITE (UNIT=*, FMT='(A)')  ' indication of the error in your aim, you correct the angle'
+      WRITE (UNIT=*, FMT='(A)')  ' and fire a torpedo.  If you score a hit (within 5 m of target),'
+      WRITE (UNIT=*, FMT='(A)')  ' the program displays "Hit!".  If the ship is out of range, '
+      WRITE (UNIT=*, FMT='(A)')  ' "Out of range" is displayed.'
+
+!
+!     Initialize data.
+!
+
+      CALL RANDOM_SEED                                                              ! initialize random number seed
+
+   10 X = X0                                                                        ! initialize data
+      Y = Y0
+      THETA0 = 45.0
+
+      DO                                                                            ! begin main loop
+
+         CALL RANDOM_NUMBER (RN)                                                    ! generate random number between 0 and 1
+         X = X + RN*100.0                                                           ! X coordinate of target
+
+         CALL RANDOM_NUMBER (RN)                                                    ! generate random number between 0 and 1
+         Y = Y + RN*100.0                                                           ! Y coordinate of target
+
+         R = SQRT(X**2+Y**2)                                                        ! distance to target
+
+         IF (R .GT. RANGE) THEN                                                     ! check if out of range
+            WRITE (UNIT=*, FMT='(A)') ' Out of range.'
+            EXIT
+         END IF
+
+         THETA = ATAN2(Y,X) * 180.0/PI                                              ! direction to target
+
+         THETA_ERR = THETA0 - THETA                                                 ! direction error
+
+         IF (R*ABS(THETA_ERR) .LE. DIR_ERROR) THEN                                  ! check if hit
+            WRITE (UNIT=*, FMT='(A)') ' Hit!'
+            EXIT
+         END IF
+
+         WRITE (UNIT=*, FMT='(/A,F7.2,A)') ' Range:  ', R, ' meters'                ! print range to target
+         WRITE (UNIT=*, FMT='(A,F7.2,A)') ' Error:  ', THETA_ERR, ' degrees'        ! print direction error
+
+         WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' Enter correction (deg):  '       ! get user input (correction)
+         READ (UNIT=*, FMT=*) CORR
+
+         CALL RANDOM_NUMBER (RN)                                                    ! generate random number between 0 and 1
+         THETA0 = THETA0 + CORR + RN                                                ! compute torpedo direction
+
+      END DO                                                                        ! end main loop
+
+
+      WRITE (UNIT=*, FMT='(/A)', ADVANCE='NO') ' Play again?  (Y/N):  '             ! ask if player wants to play again
+      READ (UNIT=*, FMT=*) ANS
+      IF ((ANS .EQ. 'Y') .OR. (ANS .EQ. 'y')) GO TO 10
+
+      STOP
+
+      END PROGRAM PURSUIT
+

@@ -1,0 +1,59 @@
+!***********************************************************************************************************************************
+!
+!                                                            D I E E E
+!
+!  Program:      DIEEE
+!
+!  Programmer:   Dr. David G. Simpson
+!                NASA Goddard Space Flight Center
+!                Greenbelt, Maryland  20771
+!
+!  Date:         September 26, 2002
+!
+!  Language:     Fortran-90
+!
+!  Version:      1.00a
+!
+!  Description:  Converts a double-precision (64-bit) floating-point number to or from its IEEE binary representation.
+!                This program must be run on a computer that stores floating-point numbers in IEEE format.
+!
+!***********************************************************************************************************************************
+
+      PROGRAM DIEEE
+
+      IMPLICIT NONE
+
+      INTEGER(KIND=8) :: I
+      REAL(KIND=8)    :: F
+      INTEGER         :: ANS
+
+
+      WRITE (UNIT=*, FMT='(A)') ' Convert which way?'
+      WRITE (UNIT=*, FMT='(A)') '   1.  Float to hex bytes'
+      WRITE (UNIT=*, FMT='(A)') '   2.  Hex bytes to float'
+
+      WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' ?  '
+      READ (UNIT=*, FMT=*) ANS
+
+      IF (ANS .EQ. 1) THEN
+
+         WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' Enter float:  '
+         READ (UNIT=*, FMT=*) F
+         I = TRANSFER (F,I)
+         WRITE (UNIT=*, FMT='(Z16.16)') I
+
+      ELSE IF (ANS .EQ. 2) THEN
+
+         WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' Enter hex bytes:  '
+         READ (UNIT=*, FMT='(Z16)') I
+         F = TRANSFER (I,F)
+         WRITE (UNIT=*, FMT='(ES32.16)') F
+
+      ELSE
+
+         WRITE (UNIT=*, FMT='(A)') ' Invalid selection.'
+
+      END IF
+
+      END PROGRAM DIEEE
+

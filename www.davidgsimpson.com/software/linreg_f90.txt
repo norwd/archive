@@ -1,0 +1,64 @@
+!***********************************************************************************************************************************
+!
+!                                                           L I N R E G
+!
+!  Program:      LINREG
+!
+!  Programmer:   David G. Simpson
+!                NASA Goddard Space Flight Center
+!                Greenbelt, Maryland  20771
+!
+!  Date:         February 21, 2022
+!
+!  Language:     Fortran-90
+!
+!  Version:      1.00a
+!
+!  Description:  This Fortran-90 subroutine performs a linear regression analysis.
+!
+!  Notes:        Inputs:
+!                   NPTS     Number of points in input arrays
+!                   XARR     Array of X values
+!                   YARR     Array of Y values
+!
+!                Outputs:
+!                   M        Slope of best-fit straight line
+!                   B        y-intercept of best-fit straight line
+!                   R        Correlation coefficient r
+!
+!***********************************************************************************************************************************
+
+      SUBROUTINE LINREG (NPTS, XARR, YARR, M, B, R)
+
+      IMPLICIT NONE
+
+      INTEGER, INTENT(IN) :: NPTS
+      DOUBLE PRECISION, DIMENSION(NPTS), INTENT(IN) :: XARR, YARR
+      DOUBLE PRECISION, INTENT(OUT) :: M, B, R
+
+      INTEGER :: I
+      DOUBLE PRECISION :: N, SUMX, SUMX2, SUMXY, SUMY, SUMY2, X, Y
+
+      N = DBLE(NPTS)
+      SUMX = 0.0D0
+      SUMX2 = 0.0D0
+      SUMXY = 0.0D0
+      SUMY = 0.0D0
+      SUMY2 = 0.0D0
+
+      DO I = 1, NPTS
+         X = XARR(I)
+         Y = YARR(I)
+         SUMX  = SUMX + X                                                              ! compute sum of x
+         SUMX2 = SUMX2 + X * X                                                         ! compute sum of x**2
+         SUMXY = SUMXY + X * Y                                                         ! compute sum of x * y
+         SUMY  = SUMY + Y                                                              ! compute sum of y
+         SUMY2 = SUMY2 + Y * Y                                                         ! compute sum of y**2
+      END DO
+
+      M = (N * SUMXY  -  SUMX * SUMY) / (N * SUMX2 - SUMX**2)                          ! compute slope
+      B = (SUMY * SUMX2  -  SUMX * SUMXY) / (N * SUMX2  -  SUMX**2)                    ! compute y-intercept
+      R = (SUMXY - SUMX * SUMY / N) /                                     &            ! compute correlation coefficient
+                     SQRT((SUMX2 - SUMX**2/N) * (SUMY2 - SUMY**2/N))
+
+      END SUBROUTINE LINREG

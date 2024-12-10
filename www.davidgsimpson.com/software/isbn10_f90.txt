@@ -1,0 +1,103 @@
+!***********************************************************************************************************************************
+!
+!                                                            I S B N 1 0
+!
+!  Program:      ISBN10
+!
+!  Programmer:   David G. Simpson
+!                Laurel, Maryland
+!
+!  Date:         July 7, 2003
+!
+!  Language:     Fortran-90
+!
+!  Version:      1.00b  (January 7, 2006)
+!
+!  Description:  Computes the check digit for an ISBN-10 number.
+!
+!  Files:        Source file:
+!
+!                   isbn10.f90                   Main program
+!
+!***********************************************************************************************************************************
+
+      PROGRAM ISBN10
+
+      IMPLICIT NONE
+
+      INTEGER :: I, CHECK
+      CHARACTER :: CH, CHECK_CH
+      CHARACTER(LEN=40) :: IN_STR, ISBN_STR
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Ask the user for the ISBN-10 number.
+!
+
+      WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' Enter ISBN-10 number (9 digits, no check digit):  '
+      READ (UNIT=*, FMT='(A)') IN_STR
+
+!
+!     Discard any leading spaces in input.
+!
+
+      IN_STR = ADJUSTL(IN_STR)
+
+!
+!     Discard any dashes or spaces in input.
+!
+
+      ISBN_STR = ' '
+
+      DO I = 1, LEN_TRIM(IN_STR)
+         CH = IN_STR(I:I)
+         IF ((CH.EQ.'-') .OR. (CH.EQ.' ')) CYCLE
+         ISBN_STR = TRIM(ISBN_STR) // CH
+      END DO
+
+!
+!     Check that there are 9 digits.
+!
+
+      IF (LEN_TRIM(ISBN_STR) .NE. 9) THEN
+         WRITE (UNIT=*, FMT='(A)') ' Error:  input must be 9 digits.'
+         STOP
+      END IF
+
+!
+!     Compute the check digit.
+!
+
+      CHECK = 0
+      DO I = 1, 9
+         CH = ISBN_STR(I:I)
+         IF ((CH.LT.'0') .OR. (CH.GT.'9')) THEN
+            WRITE (UNIT=*, FMT='(A)') ' Error:  invalid character found.'
+            STOP
+         END IF
+         CHECK = CHECK + (11-I)*(ICHAR(CH)-ICHAR('0'))
+      END DO
+
+      CHECK = 11 - MOD(CHECK,11)
+
+!
+!     Convert the digit to a character.
+!
+
+      IF (CHECK .LT. 10) THEN
+         CHECK_CH = CHAR(ICHAR('0')+CHECK)
+      ELSE
+         CHECK_CH = 'X'
+      END IF
+
+!
+!     Print the result.
+!
+
+      WRITE (UNIT=*, FMT='(/A)') ' Check digit = ' // CHECK_CH
+
+      STOP
+
+      END PROGRAM ISBN10
+

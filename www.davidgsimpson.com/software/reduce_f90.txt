@@ -1,0 +1,106 @@
+!***********************************************************************************************************************************
+!
+!                                                           R E D U C E
+!
+!  Program:      REDUCE
+!
+!  Programmer:   Dr. David G. Simpson
+!                NASA Goddard Space Flight Center
+!                Greenbelt, Maryland  20771
+!
+!  Date:         October 16, 2002
+!
+!  Language:     ANSI Standard Fortran-90
+!
+!  Version:      1.00a  (October 16, 2002)
+!
+!  Description:  This program reduces an arbitrary angle (in radians) to a specified range, [min, max).
+!
+!***********************************************************************************************************************************
+
+
+      PROGRAM RUN_REDUCE
+
+!
+!     Variables
+!
+
+      IMPLICIT NONE
+
+      DOUBLE PRECISION, PARAMETER :: PI = 3.14159265358979323846264338327950288419716939937510582097494459230781640628620899862803D0
+      DOUBLE PRECISION, PARAMETER :: TWOPI = 6.28318530717958647692528676655900576839433879875021164194988918461563281257241799726D0
+      DOUBLE PRECISION, PARAMETER :: HALFPI = 1.5707963267948966192313216916397514420985846996875529104874722961539082031431044993D0
+
+      DOUBLE PRECISION :: THETA, RHO
+      DOUBLE PRECISION :: REDUCE
+
+
+!
+!     Start of code
+!
+
+      WRITE (UNIT=*, FMT='(/A)', ADVANCE='NO') ' Enter angle (deg):  '
+      READ (UNIT=*, FMT=*) THETA
+      THETA = THETA * PI/180.0D0
+
+      RHO = REDUCE(THETA, 0.0D0)
+      WRITE (UNIT=*, FMT='(/A,F10.6,A)') ' Reduced [0,360)     = ', RHO*180.0/PI, ' deg'
+
+      RHO = REDUCE(THETA, -PI)
+      WRITE (UNIT=*, FMT='(A,F10.6,A)') ' Reduced [-180,+180) = ', RHO*180.0/PI, ' deg'
+
+      RHO = REDUCE(THETA, -HALFPI)
+      WRITE (UNIT=*, FMT='(A,F10.6,A)') ' Reduced [-90,+270)  = ', RHO*180.0/PI, ' deg'
+
+      RHO = REDUCE(THETA, HALFPI)
+      WRITE (UNIT=*, FMT='(A,F10.6,A)') ' Reduced [+90,+450)  = ', RHO*180.0/PI, ' deg'
+
+      STOP
+
+      END PROGRAM RUN_REDUCE
+
+
+
+!***********************************************************************************************************************************
+!  REDUCE
+!
+!  Reduce an angle to the range [angle_min, angle_max).
+!***********************************************************************************************************************************
+
+      FUNCTION REDUCE (THETA, ANGLE_MIN) RESULT (RHO)
+
+      IMPLICIT NONE
+
+      DOUBLE PRECISION, PARAMETER :: TWOPI = 6.28318530717958647692528676655900576839433879875021164194988918461563281257241799726D0
+
+      DOUBLE PRECISION, INTENT(IN) :: THETA
+      DOUBLE PRECISION, INTENT(IN) :: ANGLE_MIN
+      DOUBLE PRECISION :: RHO
+
+      DOUBLE PRECISION :: ANGLE_MAX
+      DOUBLE PRECISION :: REVS
+
+
+!
+!     Start of code
+!
+
+      ANGLE_MAX = ANGLE_MIN + TWOPI
+
+      IF (THETA .LT. ANGLE_MIN) THEN
+         REVS = AINT((ANGLE_MIN-THETA)/TWOPI) + 1
+         RHO = THETA + REVS*TWOPI
+
+      ELSE IF (THETA .GE. ANGLE_MAX) THEN
+         REVS = AINT((THETA-ANGLE_MIN)/TWOPI)
+         RHO = THETA - REVS*TWOPI
+
+      ELSE
+         RHO = THETA
+
+      END IF
+
+      RETURN
+
+      END FUNCTION REDUCE
+

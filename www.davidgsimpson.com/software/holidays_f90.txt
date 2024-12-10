@@ -1,0 +1,756 @@
+!***********************************************************************************************************************************
+!
+!                                                       H O L I D A Y S
+!
+!  Program:      HOLIDAYS
+!
+!  Programmer:   David G. Simpson
+!                Laurel, Maryland
+!
+!  Date:         March 8, 2005
+!
+!  Language:     Fortran-90
+!
+!  Version:      1.01j  (April 16, 2010)
+!
+!  Description:  Computes the dates of various holidays.
+!
+!  Files:        Source files:
+!
+!                   holidays.f90                   Main program
+!
+!  Syntax:            holidays              for current year
+!                or   holidays <year>       for specified year
+!
+!  Note:         This program uses one non-standard subroutine:  GETCL returns the command line string.
+!
+!                This version creates a linked list of holidays, so that it can handle the possibility of more than one holiday
+!                occuring on a given date (e.g. Easter on April 1, or Daylight Saving Time ending on Halloween).  The linked
+!                list is printed in sorted order at the end of the program.
+!
+!                Throughout the program, days of the week are numbered so that 0=Sunday, 1=Monday, 2=Tuesday, ..., 6=Saturday.
+!
+!***********************************************************************************************************************************
+
+      PROGRAM HOLIDAYS
+
+      IMPLICIT NONE
+
+      CHARACTER(LEN=9), DIMENSION(12), PARAMETER :: MONTH_NAME = (/                       &
+         'January  ', 'February ', 'March    ', 'April    ', 'May      ', 'June     ',    &
+         'July     ', 'August   ', 'September', 'October  ', 'November ', 'December '  /)
+
+      CHARACTER(LEN=9), DIMENSION(0:6), PARAMETER :: DOW_NAME = (/                        &
+         'Sunday   ', 'Monday   ', 'Tuesday  ', 'Wednesday', 'Thursday ', 'Friday   ', 'Saturday '  /)
+
+      CHARACTER(LEN=80) :: CL
+      CHARACTER(LEN=10) :: TIME, DATE, ZONE
+      INTEGER :: DT(8)
+
+      INTEGER :: I, IERR, YEAR, MONTH, DOM, DOY, DOW
+      LOGICAL :: LEAP_FLAG
+
+      LOGICAL :: LEAP
+      INTEGER :: GREG2DOW
+
+      TYPE :: HOLIDAY_TYPE
+         CHARACTER(30) :: HNAME
+         INTEGER :: MONTH
+         INTEGER :: DOM
+         INTEGER :: DOW
+         INTEGER :: DOY
+         TYPE (HOLIDAY_TYPE), POINTER :: NEXT
+      END TYPE HOLIDAY_TYPE
+
+      TYPE (HOLIDAY_TYPE), POINTER :: FRONT, REAR, NODE_PTR
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+      CALL GETCL (CL)                                                               ! get command line string
+
+      IF (LEN_TRIM(CL) .GT. 0) THEN                                                 ! if command line parameter length > 0..
+         READ (UNIT=CL, FMT=*, IOSTAT=IERR) YEAR                                    ! ..then assume year only input
+         IF (IERR .NE. 0) THEN                                                      ! check for input error
+            WRITE (UNIT=*, FMT='(A)') ' Input error.'
+            STOP
+         END IF
+      ELSE                                                                          ! if no command line parameter..
+         CALL DATE_AND_TIME (DATE, TIME, ZONE, DT)                                  ! ..then get current date
+         YEAR = DT(1)                                                               ! use current year
+      END IF
+
+      LEAP_FLAG = LEAP (YEAR)
+
+!
+!     Place holiday information into HOLIDAY array.
+!
+
+      CALL GREG2DOY (LEAP_FLAG, YEAR, 1, 1, DOY, DOW)                               ! New Year's Day  (Jan. 1)
+      ALLOCATE (FRONT)
+      REAR => FRONT
+      REAR%HNAME = "New Year's Day .............. "
+      REAR%MONTH = 1
+      REAR%DOM   = 1
+      REAR%DOW   = DOW
+      REAR%DOY   = DOY
+
+      IF (LEAP(YEAR-1)) THEN                                                        ! Inauguration Day  (Jan. 20)
+         CALL GREG2DOY (LEAP_FLAG, YEAR, 1, 20, DOY, DOW)
+         ALLOCATE (REAR%NEXT)
+         REAR => REAR%NEXT
+         REAR%HNAME = "Inauguration Day ............ "
+         REAR%MONTH = 1
+         REAR%DOM   = 20
+         REAR%DOW   = DOW
+         REAR%DOY   = DOY
+      END IF
+
+      CALL DOW2DOY (LEAP_FLAG, YEAR, 1, 1, 3, DOY, DOM)                             ! Martin Luther King Day  (3rd Monday in Jan.)
+      ALLOCATE (REAR%NEXT)
+      REAR => REAR%NEXT
+      REAR%HNAME = "Martin Luther King Day ...... "
+      REAR%MONTH = 1
+      REAR%DOM   = DOM
+      REAR%DOW   = 1
+      REAR%DOY   = DOY
+
+      CALL GREG2DOY (LEAP_FLAG, YEAR, 2, 2, DOY, DOW)                               ! Groundhog Day  (Feb. 2)
+      ALLOCATE (REAR%NEXT)
+      REAR => REAR%NEXT
+      REAR%HNAME = "Groundhog Day ............... "
+      REAR%MONTH = 2
+      REAR%DOM   = 2
+      REAR%DOW   = DOW
+      REAR%DOY   = DOY
+
+      CALL GREG2DOY (LEAP_FLAG, YEAR, 2, 12, DOY, DOW)                              ! Lincoln's Birthday  (Feb. 12)
+      ALLOCATE (REAR%NEXT)
+      REAR => REAR%NEXT
+      REAR%HNAME = "Lincoln's Birthday .......... "
+      REAR%MONTH = 2
+      REAR%DOM   = 12
+      REAR%DOW   = DOW
+      REAR%DOY   = DOY
+
+      CALL DOW2DOY (LEAP_FLAG, YEAR, 2, 1, 3, DOY, DOM)                             ! Washington's Birthday  (3rd Monday in Feb.)
+      ALLOCATE (REAR%NEXT)
+      REAR => REAR%NEXT
+      REAR%HNAME = "Washington's Birthday ....... "
+      REAR%MONTH = 2
+      REAR%DOM   = DOM
+      REAR%DOW   = 1
+      REAR%DOY   = DOY
+
+      CALL GREG2DOY (LEAP_FLAG, YEAR, 2, 14, DOY, DOW)                              ! Valentine's Day  (Feb. 14)
+      ALLOCATE (REAR%NEXT)
+      REAR => REAR%NEXT
+      REAR%HNAME = "Valentine's Day ............. "
+      REAR%MONTH = 2
+      REAR%DOM   = 14
+      REAR%DOW   = DOW
+      REAR%DOY   = DOY
+
+      IF (LEAP_FLAG) THEN                                                           ! Leap Day  (Feb. 29)
+         CALL GREG2DOY (LEAP_FLAG, YEAR, 2, 29, DOY, DOW)
+         ALLOCATE (REAR%NEXT)
+         REAR => REAR%NEXT
+         REAR%HNAME = "Leap Day .................... "
+         REAR%MONTH = 2
+         REAR%DOM   = 29
+         REAR%DOW   = DOW
+         REAR%DOY   = DOY
+      END IF
+
+      CALL EASTER (LEAP_FLAG, YEAR, DOY, MONTH, DOM)                                ! Easter
+      ALLOCATE (REAR%NEXT)
+      REAR => REAR%NEXT
+      REAR%HNAME = "Easter ...................... "
+      REAR%MONTH = MONTH
+      REAR%DOM   = DOM
+      REAR%DOW   = 0
+      REAR%DOY   = DOY
+
+      CALL DOY2GREG (LEAP_FLAG, YEAR, DOY-47, MONTH, DOM, DOW)                      ! Mardi Gras  (47 days before Easter)
+      ALLOCATE (REAR%NEXT)
+      REAR => REAR%NEXT
+      REAR%HNAME = "Mardi Gras .................. "
+      REAR%MONTH = MONTH
+      REAR%DOM   = DOM
+      REAR%DOW   = DOW
+      REAR%DOY   = DOY-47
+
+      CALL DOY2GREG (LEAP_FLAG, YEAR, DOY-46, MONTH, DOM, DOW)                      ! Ash Wednesday  (46 days before Easter)
+      ALLOCATE (REAR%NEXT)
+      REAR => REAR%NEXT
+      REAR%HNAME = "Ash Wednesday ............... "
+      REAR%MONTH = MONTH
+      REAR%DOM   = DOM
+      REAR%DOW   = DOW
+      REAR%DOY   = DOY-46
+
+      CALL DOY2GREG (LEAP_FLAG, YEAR, DOY-7, MONTH, DOM, DOW)                       ! Palm Sunday  (Sunday before Easter)
+      ALLOCATE (REAR%NEXT)
+      REAR => REAR%NEXT
+      REAR%HNAME = "Palm Sunday ................. "
+      REAR%MONTH = MONTH
+      REAR%DOM   = DOM
+      REAR%DOW   = DOW
+      REAR%DOY   = DOY-7
+
+      CALL DOY2GREG (LEAP_FLAG, YEAR, DOY-2, MONTH, DOM, DOW)                       ! Good Friday  (Friday before Easter)
+      ALLOCATE (REAR%NEXT)
+      REAR => REAR%NEXT
+      REAR%HNAME = "Good Friday ................. "
+      REAR%MONTH = MONTH
+      REAR%DOM   = DOM
+      REAR%DOW   = DOW
+      REAR%DOY   = DOY-2
+
+      CALL GREG2DOY (LEAP_FLAG, YEAR, 3, 17, DOY, DOW)                              ! St. Patrick's Day  (Mar. 17)
+      ALLOCATE (REAR%NEXT)
+      REAR => REAR%NEXT
+      REAR%HNAME = "St. Patrick's Day ........... "
+      REAR%MONTH = 3
+      REAR%DOM   = 17
+      REAR%DOW   = DOW
+      REAR%DOY   = DOY
+
+      CALL GREG2DOY (LEAP_FLAG, YEAR, 4, 1, DOY, DOW)                               ! April Fool's Day  (Apr. 1)
+      ALLOCATE (REAR%NEXT)
+      REAR => REAR%NEXT
+      REAR%HNAME = "April Fool's Day ............ "
+      REAR%MONTH = 4
+      REAR%DOM   = 1
+      REAR%DOW   = DOW
+      REAR%DOY   = DOY
+
+      IF (YEAR .GE. 1945) THEN                                                      ! Begin Daylight Saving Time
+         ALLOCATE (REAR%NEXT)
+         REAR => REAR%NEXT
+         REAR%HNAME = "Begin Daylight Saving Time .. "
+         IF (YEAR .GE. 2007) THEN                                                   !   2007-    : 2nd Sun. in March
+            CALL DOW2DOY (LEAP_FLAG, YEAR, 3, 0, 2, DOY, DOM)
+            REAR%MONTH = 3
+            REAR%DOM   = DOM
+            REAR%DOW   = 0
+            REAR%DOY   = DOY
+         ELSE IF (YEAR .GE. 1987) THEN                                              !   1987-2006: 1st Sun. in April
+            CALL DOW2DOY (LEAP_FLAG, YEAR, 4, 0, 1, DOY, DOM)
+            REAR%MONTH = 4
+            REAR%DOM   = DOM
+            REAR%DOW   = 0
+            REAR%DOY   = DOY
+         ELSE IF (YEAR .GE. 1967) THEN                                              !   1967-1986: Last Sun. in April
+            CALL DOW2DOY (LEAP_FLAG, YEAR, 4, 0, 9, DOY, DOM)
+            REAR%MONTH = 4
+            REAR%DOM   = DOM
+            REAR%DOW   = 0
+            REAR%DOY   = DOY
+         ELSE                                                                       !   1945-1966: Last Sun. in April
+            CALL DOW2DOY (LEAP_FLAG, YEAR, 4, 0, 9, DOY, DOM)
+            REAR%MONTH = 4
+            REAR%DOM   = DOM
+            REAR%DOW   = 0
+            REAR%DOY   = DOY
+         END IF
+      END IF
+
+      CALL DOW2DOY (LEAP_FLAG, YEAR, 4, 1, 3, DOY, DOM)                             ! Patriots' Day  (3rd Monday in Apr.)
+      ALLOCATE (REAR%NEXT)
+      REAR => REAR%NEXT
+      REAR%HNAME = "Patriots' Day ............... "
+      REAR%MONTH = 4
+      REAR%DOM   = DOM
+      REAR%DOW   = 1
+      REAR%DOY   = DOY
+
+      CALL GREG2DOY (LEAP_FLAG, YEAR, 4, 22, DOY, DOW)                              ! Earth Day  (Apr. 22)
+      ALLOCATE (REAR%NEXT)
+      REAR => REAR%NEXT
+      REAR%HNAME = "Earth Day ................... "
+      REAR%MONTH = 4
+      REAR%DOM   = 22
+      REAR%DOW   = DOW
+      REAR%DOY   = DOY
+
+      CALL DOW2DOY (LEAP_FLAG, YEAR, 4, 5, 9, DOY, DOM)                             ! Arbor Day  (last Friday in Apr.)
+      ALLOCATE (REAR%NEXT)
+      REAR => REAR%NEXT
+      REAR%HNAME = "Arbor Day ................... "
+      REAR%MONTH = 4
+      REAR%DOM   = DOM
+      REAR%DOW   = 5
+      REAR%DOY   = DOY
+
+      DOW = GREG2DOW (YEAR, 5, 1)                                                   ! National Teacher Day (Tuesday of 1st full week in May)
+      IF (DOW .EQ. 0) THEN
+         DOM = 3
+      ELSE
+         DOM = 10 - DOW
+      END IF
+      CALL GREG2DOY (LEAP_FLAG, YEAR, 5, DOM, DOY, DOW)
+      ALLOCATE (REAR%NEXT)
+      REAR => REAR%NEXT
+      REAR%HNAME = "National Teacher Day ........ "
+      REAR%MONTH = 5
+      REAR%DOM   = DOM
+      REAR%DOW   = DOW
+      REAR%DOY   = DOY
+
+      CALL DOW2DOY (LEAP_FLAG, YEAR, 5, 4, 1, DOY, DOM)                             ! National Day of Prayer  (1st Thursday in May)
+      ALLOCATE (REAR%NEXT)
+      REAR => REAR%NEXT
+      REAR%HNAME = "National Day of Prayer ...... "
+      REAR%MONTH = 5
+      REAR%DOM   = DOM
+      REAR%DOW   = 4
+      REAR%DOY   = DOY
+
+      CALL DOW2DOY (LEAP_FLAG, YEAR, 5, 0, 2, DOY, DOM)                             ! Mother's Day  (2nd Sunday in May)
+      ALLOCATE (REAR%NEXT)
+      REAR => REAR%NEXT
+      REAR%HNAME = "Mother's Day ................ "
+      REAR%MONTH = 5
+      REAR%DOM   = DOM
+      REAR%DOW   = 0
+      REAR%DOY   = DOY
+
+      CALL DOW2DOY (LEAP_FLAG, YEAR, 5, 6, 3, DOY, DOM)                             ! Armed Forces Day  (3rd Saturday in May)
+      ALLOCATE (REAR%NEXT)
+      REAR => REAR%NEXT
+      REAR%HNAME = "Armed Forces Day ............ "
+      REAR%MONTH = 5
+      REAR%DOM   = DOM
+      REAR%DOW   = 6
+      REAR%DOY   = DOY
+
+      CALL DOW2DOY (LEAP_FLAG, YEAR, 5, 1, 9, DOY, DOM)                             ! Memorial Day  (last Monday in May)
+      ALLOCATE (REAR%NEXT)
+      REAR => REAR%NEXT
+      REAR%HNAME = "Memorial Day ................ "
+      REAR%MONTH = 5
+      REAR%DOM   = DOM
+      REAR%DOW   = 1
+      REAR%DOY   = DOY
+
+      CALL GREG2DOY (LEAP_FLAG, YEAR, 6, 14, DOY, DOW)                              ! Flag Day  (June 14)
+      ALLOCATE (REAR%NEXT)
+      REAR => REAR%NEXT
+      REAR%HNAME = "Flag Day .................... "
+      REAR%MONTH = 6
+      REAR%DOM   = 14
+      REAR%DOW   = DOW
+      REAR%DOY   = DOY
+
+      CALL DOW2DOY (LEAP_FLAG, YEAR, 6, 0, 3, DOY, DOM)                             ! Father's Day  (3rd Sunday in June)
+      ALLOCATE (REAR%NEXT)
+      REAR => REAR%NEXT
+      REAR%HNAME = "Father's Day ................ "
+      REAR%MONTH = 6
+      REAR%DOM   = DOM
+      REAR%DOW   = 0
+      REAR%DOY   = DOY
+
+      CALL GREG2DOY (LEAP_FLAG, YEAR, 7, 4, DOY, DOW)                               ! Independence Day  (July 4)
+      ALLOCATE (REAR%NEXT)
+      REAR => REAR%NEXT
+      REAR%HNAME = "Independence Day ............ "
+      REAR%MONTH = 7
+      REAR%DOM   = 4
+      REAR%DOW   = DOW
+      REAR%DOY   = DOY
+
+      CALL DOW2DOY (LEAP_FLAG, YEAR, 9, 1, 1, DOY, DOM)                             ! Labor Day  (1st Monday in Sept.)
+      ALLOCATE (REAR%NEXT)
+      REAR => REAR%NEXT
+      REAR%HNAME = "Labor Day ................... "
+      REAR%MONTH = 9
+      REAR%DOM   = DOM
+      REAR%DOW   = 1
+      REAR%DOY   = DOY
+
+      CALL GREG2DOY (LEAP_FLAG, YEAR, 9, 11, DOY, DOW)                              ! Patriot Day  (Sept. 11)
+      ALLOCATE (REAR%NEXT)
+      REAR => REAR%NEXT
+      REAR%HNAME = "Patriot Day ................. "
+      REAR%MONTH = 9
+      REAR%DOM   = 11
+      REAR%DOW   = DOW
+      REAR%DOY   = DOY
+
+      CALL GREG2DOY (LEAP_FLAG, YEAR, 9, 17, DOY, DOW)                              ! Constitution Day  (Sept. 17)
+      ALLOCATE (REAR%NEXT)
+      REAR => REAR%NEXT
+      REAR%HNAME = "Constitution Day ............ "
+      REAR%MONTH = 9
+      REAR%DOM   = 17
+      REAR%DOW   = DOW
+      REAR%DOY   = DOY
+
+      CALL DOW2DOY (LEAP_FLAG, YEAR, 10, 1, 2, DOY, DOM)                            ! Columbus Day  (2nd Monday in October)
+      ALLOCATE (REAR%NEXT)
+      REAR => REAR%NEXT
+      REAR%HNAME = "Columbus Day ................ "
+      REAR%MONTH = 10
+      REAR%DOM   = DOM
+      REAR%DOW   = 1
+      REAR%DOY   = DOY
+
+      CALL GREG2DOY (LEAP_FLAG, YEAR, 10, 27, DOY, DOW)                             ! Navy Day  (Oct. 27)
+      ALLOCATE (REAR%NEXT)
+      REAR => REAR%NEXT
+      REAR%HNAME = "Navy Day .................... "
+      REAR%MONTH = 10
+      REAR%DOM   = 27
+      REAR%DOW   = DOW
+      REAR%DOY   = DOY
+
+      IF (YEAR .GE. 1945) THEN                                                      ! End Daylight Saving Time
+         ALLOCATE (REAR%NEXT)
+         REAR => REAR%NEXT
+         REAR%HNAME = "End Daylight Saving Time .... "
+         IF (YEAR .GE. 2007) THEN                                                   !   2007-    : 1st Sun. in November
+            CALL DOW2DOY (LEAP_FLAG, YEAR, 11, 0, 1, DOY, DOM)
+            REAR%MONTH = 11
+            REAR%DOM   = DOM
+            REAR%DOW   = 0
+            REAR%DOY   = DOY
+         ELSE IF (YEAR .GE. 1987) THEN                                              !   1987-2006: Last Sun. in October
+            CALL DOW2DOY (LEAP_FLAG, YEAR, 10, 0, 9, DOY, DOM)
+            REAR%MONTH = 10
+            REAR%DOM   = DOM
+            REAR%DOW   = 0
+            REAR%DOY   = DOY
+         ELSE IF (YEAR .GE. 1967) THEN                                              !   1967-1986: Last Sun. in October
+            CALL DOW2DOY (LEAP_FLAG, YEAR, 10, 0, 9, DOY, DOM)
+            REAR%MONTH = 10
+            REAR%DOM   = DOM
+            REAR%DOW   = 0
+            REAR%DOY   = DOY
+         ELSE                                                                       !   1945-1966: Last Sun. in September
+            CALL DOW2DOY (LEAP_FLAG, YEAR, 9, 0, 9, DOY, DOM)
+            REAR%MONTH = 9
+            REAR%DOM   = DOM
+            REAR%DOW   = 0
+            REAR%DOY   = DOY
+         END IF
+      END IF
+
+      CALL GREG2DOY (LEAP_FLAG, YEAR, 10, 31, DOY, DOW)                             ! Halloween  (Oct. 31)
+      ALLOCATE (REAR%NEXT)
+      REAR => REAR%NEXT
+      REAR%HNAME = "Halloween ................... "
+      REAR%MONTH = 10
+      REAR%DOM   = 31
+      REAR%DOW   = DOW
+      REAR%DOY   = DOY
+
+      IF (MOD(YEAR,2) .EQ. 0) THEN                                                  ! Election Day (Tuesday after 1st Monday in Nov)
+         DOW = GREG2DOW (YEAR, 11, 1)
+         IF (DOW .LT. 2) THEN
+            DOM = 3 - DOW
+         ELSE
+            DOM = 10 - DOW
+         END IF
+         CALL GREG2DOY (LEAP_FLAG, YEAR, 11, DOM, DOY, DOW)
+         ALLOCATE (REAR%NEXT)
+         REAR => REAR%NEXT
+         REAR%HNAME = "Election Day ................ "
+         REAR%MONTH = 11
+         REAR%DOM   = DOM
+         REAR%DOW   = DOW
+         REAR%DOY   = DOY
+      END IF
+
+      CALL GREG2DOY (LEAP_FLAG, YEAR, 11, 11, DOY, DOW)                             ! Veteran's Day  (Nov. 11)
+      ALLOCATE (REAR%NEXT)
+      REAR => REAR%NEXT
+      REAR%HNAME = "Veteran's Day ............... "
+      REAR%MONTH = 11
+      REAR%DOM   = 11
+      REAR%DOW   = DOW
+      REAR%DOY   = DOY
+
+      CALL DOW2DOY (LEAP_FLAG, YEAR, 11, 4, 4, DOY, DOM)                            ! Thanksgiving Day  (4th Thursday in Nov.)
+      ALLOCATE (REAR%NEXT)
+      REAR => REAR%NEXT
+      REAR%HNAME = "Thanksgiving Day ............ "
+      REAR%MONTH = 11
+      REAR%DOM   = DOM
+      REAR%DOW   = 4
+      REAR%DOY   = DOY
+
+      CALL GREG2DOY (LEAP_FLAG, YEAR, 12, 25, DOY, DOW)                             ! Christmas  (Dec. 25)
+      ALLOCATE (REAR%NEXT)
+      REAR => REAR%NEXT
+      REAR%HNAME = "Christmas ................... "
+      REAR%MONTH = 12
+      REAR%DOM   = 25
+      REAR%DOW   = DOW
+      REAR%DOY   = DOY
+
+      CALL GREG2DOY (LEAP_FLAG, YEAR, 12, 31, DOY, DOW)                             ! New Year's Eve  (Dec. 31)
+      ALLOCATE (REAR%NEXT)
+      REAR => REAR%NEXT
+      REAR%HNAME = "New Year's Eve .............. "
+      REAR%MONTH = 12
+      REAR%DOM   = 31
+      REAR%DOW   = DOW
+      REAR%DOY   = DOY
+
+      NULLIFY (REAR%NEXT)
+
+!
+!     Print holiday list.
+!
+
+      WRITE (UNIT=*, FMT='()')
+      DO I = 1, 366
+         NODE_PTR => FRONT
+         DO WHILE (ASSOCIATED(NODE_PTR))
+            IF (NODE_PTR%DOY .EQ. I) WRITE (UNIT=*, FMT='(1X,A,I2)') NODE_PTR%HNAME // TRIM(DOW_NAME(NODE_PTR%DOW)) //   &
+               ', ' // TRIM(MONTH_NAME(NODE_PTR%MONTH)) // ' ', NODE_PTR%DOM
+            NODE_PTR => NODE_PTR%NEXT
+         END DO
+      END DO
+
+      STOP
+
+      END PROGRAM HOLIDAYS
+
+
+
+
+
+!***********************************************************************************************************************************
+!  GREG2DOY
+!
+!  Return the day of year and day of week for a given calendar date.
+!***********************************************************************************************************************************
+
+      SUBROUTINE GREG2DOY (LEAP_FLAG, YEAR, MONTH, DOM, DOY, DOW)
+
+      IMPLICIT NONE
+
+      LOGICAL, INTENT(IN) :: LEAP_FLAG
+      INTEGER, INTENT(IN) :: YEAR, MONTH, DOM
+      INTEGER, INTENT(OUT) :: DOY, DOW
+
+      INTEGER :: K
+      INTEGER :: GREG2DOW
+
+
+      IF (LEAP_FLAG) THEN
+         K = 1
+      ELSE
+         K = 2
+      END IF
+
+      DOY = ((275*MONTH)/9) - K*((MONTH+9)/12) + DOM - 30
+
+      DOW = GREG2DOW (YEAR, MONTH, DOM)
+
+      RETURN
+
+      END SUBROUTINE GREG2DOY
+
+
+
+
+
+!***********************************************************************************************************************************
+!  DOW2DOY
+!
+!  Return the day of year and day of month for a given day of week (e.g. third Monday of November).
+!  Set NUM=9 on input for the last day (e.g. last Monday of November).
+!***********************************************************************************************************************************
+
+      SUBROUTINE DOW2DOY (LEAP_FLAG, YEAR, MONTH, DOW, NUM, DOY, DOM)
+
+      IMPLICIT NONE
+
+      LOGICAL, INTENT(IN) :: LEAP_FLAG
+      INTEGER, INTENT(IN) :: YEAR, MONTH, DOW, NUM
+      INTEGER, INTENT(OUT) :: DOY, DOM
+
+!                                                    J   F   M   A   M   J   J   A   S   O   N   D
+      INTEGER, DIMENSION(12) :: DAYS_PER_MONTH = (/ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 /)
+      INTEGER :: CURRENT_DOW, I
+      INTEGER :: GREG2DOW
+
+
+      IF (LEAP_FLAG) DAYS_PER_MONTH(2) = 29
+
+      IF (NUM .EQ. 9) THEN
+         DOM = DAYS_PER_MONTH(MONTH)
+         DO I = 0, 6
+            CURRENT_DOW = GREG2DOW (YEAR, MONTH, DOM)
+            IF (CURRENT_DOW .EQ. DOW) EXIT
+            DOM = DOM - 1
+         END DO
+         CALL GREG2DOY (LEAP_FLAG, YEAR, MONTH, DOM, DOY, CURRENT_DOW)
+      ELSE
+         DOM = 1
+         DO I = 0, 6
+            CURRENT_DOW = GREG2DOW (YEAR, MONTH, DOM)
+            IF (CURRENT_DOW .EQ. DOW) EXIT
+            DOM = DOM + 1
+         END DO
+         DOM = DOM + 7*(NUM-1)
+         CALL GREG2DOY (LEAP_FLAG, YEAR, MONTH, DOM, DOY, CURRENT_DOW)
+      END IF
+
+      RETURN
+
+      END SUBROUTINE DOW2DOY
+
+
+
+
+
+!***********************************************************************************************************************************
+!  EASTER
+!
+!  Return the day of year, month, and day of month of Easter for the specified year.
+!***********************************************************************************************************************************
+
+      SUBROUTINE EASTER (LEAP_FLAG, YEAR, DOY, MONTH, DOM)
+
+      IMPLICIT NONE
+
+      LOGICAL, INTENT(IN) :: LEAP_FLAG
+      INTEGER, INTENT(IN) :: YEAR
+      INTEGER, INTENT(OUT) :: DOY, MONTH, DOM
+
+      INTEGER :: A, B, C, D, E, F, G, H, I, K, L, M, N, P, T, DOW
+
+
+      A = MOD(YEAR,19)
+      B = YEAR/100
+      C = MOD(YEAR,100)
+      D = B/4
+      E = MOD(B,4)
+      F = (B+8)/25
+      G = (B-F+1)/3
+      H = MOD(19*A+B-D-G+15, 30)
+      I = C/4
+      K = MOD(C,4)
+      L = MOD(32+2*E+2*I-H-K, 7)
+      M = (A+11*H+22*L)/451
+      T = H+L-7*M+114
+      N = T/31
+      P = MOD(T,31)
+
+      MONTH = N
+      DOM = P+1
+
+      CALL GREG2DOY (LEAP_FLAG, YEAR, MONTH, DOM, DOY, DOW)
+
+      RETURN
+
+      END SUBROUTINE EASTER
+
+
+
+
+
+!***********************************************************************************************************************************
+!  DOY2GREG
+!
+!  Return the month, day of month, and day of week corresponding to the given day of year.
+!***********************************************************************************************************************************
+
+      SUBROUTINE DOY2GREG (LEAP_FLAG, YEAR, DOY, MONTH, DOM, DOW)
+
+      IMPLICIT NONE
+
+      LOGICAL, INTENT(IN) :: LEAP_FLAG
+      INTEGER, INTENT(IN) :: YEAR, DOY
+      INTEGER, INTENT(OUT) :: MONTH, DOM, DOW
+
+      INTEGER :: K
+      INTEGER :: GREG2DOW
+
+
+      IF (LEAP_FLAG) THEN                                                           ! set K based on calendar type
+         K = 1
+      ELSE
+         K = 2
+      END IF
+
+      MONTH = INT(9.0D0*(K+DOY)/275.0D0 + 0.98D0)                                   ! compute month
+      IF (DOY .LT. 32) MONTH = 1
+
+      DOM = DOY - ((275*MONTH)/9) + K*((MONTH+9)/12) + 30                           ! compute day of month
+
+      DOW = GREG2DOW (YEAR, MONTH, DOM)
+
+      RETURN
+
+      END SUBROUTINE DOY2GREG
+
+
+
+
+
+!***********************************************************************************************************************************
+!  GREG2DOW
+!
+!  Return the day of week corresponding to a Gregorian calendar date.
+!***********************************************************************************************************************************
+
+      FUNCTION GREG2DOW (YEAR, MONTH, DOM) RESULT (DOW)
+
+      IMPLICIT NONE
+
+      INTEGER, INTENT(IN) :: YEAR, MONTH, DOM
+      INTEGER :: DOW
+
+      INTEGER :: Y, M, A, B
+      DOUBLE PRECISION :: JD
+
+
+      Y = YEAR
+      M = MONTH
+
+      IF (M .LE. 2) THEN
+         Y = Y - 1
+         M = M + 12
+      END IF
+
+      A = Y/100
+      B = 2 - A + A/4
+
+      JD = INT(365.25D0*(Y+4716)) + INT(30.6001D0*(M+1)) + DOM + B - 1524.5D0
+
+      DOW = MOD(NINT(JD+1.5D0), 7)
+
+      RETURN
+
+      END FUNCTION GREG2DOW
+
+
+
+
+
+!***********************************************************************************************************************************
+!  LEAP - Determine whether a given year is a leap year.
+!***********************************************************************************************************************************
+
+      FUNCTION LEAP (YEAR) RESULT (LEAP_FLAG)
+
+      IMPLICIT NONE
+
+      INTEGER, INTENT(IN) :: YEAR
+      LOGICAL :: LEAP_FLAG
+
+
+      LEAP_FLAG = .FALSE.
+      IF (MOD(YEAR,4) .EQ. 0)   LEAP_FLAG = .TRUE.
+      IF (MOD(YEAR,100) .EQ. 0) LEAP_FLAG = .FALSE.
+      IF (MOD(YEAR,400) .EQ. 0) LEAP_FLAG = .TRUE.
+
+      RETURN
+
+      END FUNCTION LEAP
+

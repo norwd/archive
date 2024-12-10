@@ -1,0 +1,76 @@
+/******************************************************************************/
+/*                                                                            */
+/*                            E N D I A N                                     */
+/*                                                                            */
+/*  Program:      ENDIAN                                                      */
+/*                                                                            */
+/*  Programmer:   David G. Simpson                                            */
+/*                NASA Goddard Space Flight Center                            */
+/*                Greenbelt, Maryland  20771                                  */
+/*                                                                            */
+/*  Date:         December 4, 2004                                            */
+/*                                                                            */
+/*  Language:     C                                                           */
+/*                                                                            */
+/*  Version:      1.00a                                                       */
+/*                                                                            */
+/*  Description:  Print whether the computer on which this program is run     */
+/*                stores numbers in little-endian or big-endian order.        */
+/*                                                                            */
+/******************************************************************************/
+
+/******************************************************************************/
+/*  #include                                                                  */
+/******************************************************************************/
+
+#include <stdio.h>
+
+
+
+/******************************************************************************/
+/*  function prototype                                                        */
+/******************************************************************************/
+
+int little_endian (void);
+
+
+
+
+
+/******************************************************************************/
+/*  main()                                                                    */
+/******************************************************************************/
+
+int main(void)
+{
+if (little_endian())
+   printf("\nLittle endian.\n\n");
+else
+   printf("\nBig endian.\n\n");
+
+return 0;
+}
+
+
+
+
+/******************************************************************************/
+/*  little_endian()                                                           */
+/*                                                                            */
+/*  Return 1 for a little-endian computer, 0 for big-endian.                  */
+/******************************************************************************/
+
+int little_endian (void)
+{
+union {
+   unsigned char iarr[2];
+   short s;
+   } u;
+
+u.s = 0x1234;
+if (u.iarr[0] == 0x34)
+   return 1;
+else
+   return 0;
+}
+

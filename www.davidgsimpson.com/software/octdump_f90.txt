@@ -1,0 +1,251 @@
+!***********************************************************************************************************************************
+!
+!                                                          O C T D U M P
+!
+!  Program:      OCTDUMP
+!
+!  Programmer:   David G. Simpson
+!                NASA Goddard Space Flight Center
+!                Greenbelt, Maryland  20771
+!
+!  Date:         February 25, 2017
+!
+!  Language:     Fortran-90
+!
+!  Version:      1.00a  (February 25, 2017)
+!
+!  Description:  Dump the contents of a binary file, in octal.
+!                Contents are printed 16 bytes per line; the ASCII equivalent characters
+!                for each byte are also printed for characters 040 through 176 octal (space to ~).
+!
+!                Inputs: You will be asked to enter the name of the file, and the number of bytes to read.
+!                        For the number of bytes to read, just hit <CR> to read the whole file.  Entering
+!                        a positive integer N will read just the first N bytes.  Entering a negative
+!                        integer -N will read just the last N bytes.
+!
+!                Output: Output will be a file with the same name as the input file, but with a file extension
+!                        of .dmp.  (If the input file happens to have a file extension of .dmp, the input file
+!                        will be overwritten by the output file.
+!
+!***********************************************************************************************************************************
+
+      PROGRAM OCTDUMP
+
+      IMPLICIT NONE
+
+      CHARACTER(LEN=132) :: INFILE, OUTFILE, BYTESANS
+      CHARACTER(LEN=3) :: CBYTE
+      CHARACTER(LEN=100) :: LINE
+
+      INTEGER, PARAMETER :: INUNIT  = 11
+      INTEGER, PARAMETER :: OUTUNIT = 12
+
+      INTEGER(KIND=1) :: BYTE
+      INTEGER :: I, IERR, IBYTE, ADDR, IDX, BYTEPOS, CHARPOS, BYTES2READ
+
+      INTEGER(KIND=8) :: RECNUM, INFILESZ, STARTBYTE, STOPBYTE
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!  Input binary file name and number of bytes to read.
+!
+
+      WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' Enter binary file name:  '
+      READ (UNIT=*, FMT='(A)') INFILE
+
+      WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' Enter number of bytes to read (neg=last bytes, CR=all):  '
+      READ (UNIT=*, FMT='(A)') BYTESANS
+      IF (LEN_TRIM(BYTESANS) .EQ. 0) THEN
+         BYTES2READ = 0
+      ELSE
+         READ(UNIT=BYTESANS, FMT=*, IOSTAT=IERR) BYTES2READ
+         IF (IERR .NE. 0) THEN
+            WRITE (UNIT=*, FMT='(A)') ' Error reading response.'
+            STOP
+         END IF
+      END IF
+
+!
+!  Construct output file name.
+!
+
+      IDX = INDEX(INFILE,'.',BACK=.TRUE.)
+      IF (IDX .GT. 0) THEN
+         OUTFILE = INFILE(1:IDX)//'dmp'
+      ELSE
+         OUTFILE = TRIM(INFILE)//'.dmp'
+      END IF
+
+!
+!  Open input file.
+!
+
+      OPEN (UNIT=INUNIT, FILE=INFILE, STATUS='OLD', ACCESS='DIRECT',       &        ! open file
+            FORM='UNFORMATTED', ACTION='READ', RECL=1, IOSTAT=IERR)
+
+      IF (IERR .NE. 0) THEN                                                         ! if file open error..
+         WRITE (UNIT=*, FMT='(A,I6,A)') ' Error ',IERR,' opening file '//INFILE     ! ..then print error message..
+         STOP                                                                       ! ..and return to operating system
+      END IF
+
+      IF (BYTES2READ .GT. 0) THEN
+         STARTBYTE = 0
+         STOPBYTE = BYTES2READ-1
+      ELSE IF (BYTES2READ .EQ. 0) THEN
+         CALL FILESIZE (INFILE, INFILESZ)
+         STARTBYTE = 0
+         STOPBYTE = INFILESZ-1
+      ELSE
+         CALL FILESIZE (INFILE, INFILESZ)
+         STARTBYTE = INFILESZ + BYTES2READ
+         STARTBYTE = STARTBYTE - MOD(STARTBYTE,16)
+         STOPBYTE = INFILESZ-1
+      END IF
+
+!
+!  Open output file.
+!
+
+      OPEN (UNIT=OUTUNIT, FILE=OUTFILE, STATUS='REPLACE', ACCESS='SEQUENTIAL',  &   ! open file
+            FORM='FORMATTED', ACTION='WRITE', POSITION='REWIND', IOSTAT=IERR)
+
+      IF (IERR .NE. 0) THEN                                                         ! if file open error..
+         WRITE (UNIT=*, FMT='(A,I6,A)') ' Error ',IERR,' opening file '//OUTFILE    ! ..then print error message..
+         STOP                                                                       ! ..and return to operating system
+      END IF
+
+!
+!  Dump data.  We loop through one byte at a time.  For each byte read in, the hex
+!  digits are written to the string LINE; any corresponding ASCII character is
+!  written there as well.  When a line is full (16 bytes), we print the line to the
+!  output file and begin a new line.
+!    Printing to a string, then sending the string to output, makes it easier to
+!  handle a partial line at the end, in case the binary file does not contain an
+!  exact multiple of 16 bytes.
+!
+
+      RECNUM = STARTBYTE+1                                                          ! initialize variables
+      ADDR = STARTBYTE
+      IDX = 0
+
+      WRITE (UNIT=LINE,FMT='(100X)')                                                ! clear line
+
+      DO                                                                            ! loop once for each byte
+
+         READ (UNIT=INUNIT, REC=RECNUM, IOSTAT=IERR) BYTE                           ! read one byte from binary file
+
+         IF ((IERR.LT.0) .OR. (RECNUM.GT.(STOPBYTE+1))) THEN                        ! if end of file..
+            IF (IDX .GT. 0) WRITE (UNIT=OUTUNIT, FMT='(A)') LINE                    ! ..print any remaining partial lines
+            EXIT                                                                    ! ..and exit loop
+         END IF
+
+         IBYTE = BYTE                                                               ! convert byte to integer
+         IBYTE = IAND(IBYTE, 255)                                                   ! delete any sign extension
+         WRITE (UNIT=CBYTE,FMT='(O3.3)') IBYTE                                      ! write byte as two hex chars
+
+         IDX = IDX + 1                                                              ! increment byte index
+         BYTEPOS = 4*IDX + 11                                                       ! position of hex digits in line
+         CHARPOS = 81+IDX                                                           ! position of ascii char in line
+
+         IF (IDX.EQ.1) WRITE (UNIT=LINE(1:12),FMT='(O11.11,1H:)') ADDR              ! if 1st byte, then print address
+
+         LINE(BYTEPOS:BYTEPOS+2) = CBYTE                                            ! put oct digits in LINE string
+
+         IF ((IBYTE.GE.32).AND.(IBYTE.LE.126)) THEN                                 ! if printable ascii char..
+            LINE(CHARPOS:CHARPOS) = CHAR(IBYTE)                                     ! ..put ascii char in LINE string
+         ELSE
+            LINE(CHARPOS:CHARPOS) = '.'                                             ! if not, just print "."
+         END IF
+
+         IF (IDX .EQ. 16) THEN                                                      ! if a line is now filled..
+            WRITE (UNIT=OUTUNIT, FMT='(A)') LINE                                    ! ..then print to output
+            IDX = 0                                                                 ! reset index
+            WRITE (UNIT=LINE,FMT='(100X)')                                          ! clear line
+            ADDR = ADDR + 16                                                        ! increment address
+         END IF
+
+         RECNUM = RECNUM + 1
+
+      END DO
+
+!
+!  Close files and exit.
+!
+
+      CLOSE (UNIT=OUTUNIT, STATUS='KEEP')                                           ! close file
+      CLOSE (UNIT=INUNIT, STATUS='KEEP')                                            ! close file
+
+      WRITE (UNIT=*, FMT='(A)') ' Done. Output sent to file:  '//TRIM(OUTFILE)
+
+      STOP
+
+      END PROGRAM OCTDUMP
+
+
+
+
+
+!***********************************************************************************************************************************
+!  FILESIZE
+!
+!  Determine the size of a file, in bytes.
+!
+!  Input:  FILENAME is a 132-character string containing the name of the file whose size is to be found.
+!  Output: FILESZ is an integer giving the file size, in bytes.
+!***********************************************************************************************************************************
+
+      SUBROUTINE FILESIZE (FILENAME, FILESZ)
+
+      IMPLICIT NONE
+
+      CHARACTER(LEN=132), INTENT(IN) :: FILENAME                                    ! input: file name
+      INTEGER, INTENT(OUT) :: FILESZ                                                ! output: size in bytes
+
+      INTEGER, PARAMETER :: INUNIT = 100
+      INTEGER :: IERR
+      INTEGER(KIND=8) :: RECNUM, PTR1, PTR2
+      CHARACTER :: A
+
+!
+!     Open input binary file.
+!
+
+      OPEN (UNIT=INUNIT, FILE=FILENAME, STATUS='OLD', ACCESS='DIRECT',  &           ! open file
+            FORM='UNFORMATTED', ACTION='READ', RECL=1, IOSTAT=IERR)
+
+      IF (IERR .NE. 0) THEN                                                         ! if file open error..
+         WRITE (UNIT=*, FMT='(A,I6,A)') ' Error ',IERR,' opening file '//FILENAME   ! ..then print error message..
+         STOP                                                                       ! ..and return to operating system
+      END IF
+
+      PTR1 = 1                                                                      ! initialize data
+      PTR2 = HUGE(PTR2)-16
+      RECNUM = PTR2/2
+
+      DO                                                                            ! binary search to find end of file
+         READ (UNIT=INUNIT, REC=RECNUM, IOSTAT=IERR) A
+         IF (IERR .NE. 0) THEN
+            PTR2 = RECNUM
+         ELSE
+            PTR1 = RECNUM
+         END IF
+         RECNUM = (PTR1+PTR2)/2
+         IF ((PTR2-PTR1) .LT. 6) EXIT                                               ! exit when we've almost found end of file
+      END DO
+
+      DO RECNUM = PTR1, PTR2                                                        ! almost found end of file - now check..
+         READ (UNIT=INUNIT, REC=RECNUM, IOSTAT=IERR) A                              ! ..byte by byte until precise end is found
+         IF (IERR .NE. 0) EXIT
+      END DO
+
+      FILESZ = RECNUM - 1                                                           ! file size (bytes)
+
+      CLOSE (UNIT=INUNIT, STATUS='KEEP')                                            ! close file
+
+      RETURN
+
+      END SUBROUTINE FILESIZE
+
+
+

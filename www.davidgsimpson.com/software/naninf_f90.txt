@@ -1,0 +1,285 @@
+!***********************************************************************************************************************************
+!
+!                                                           N A N I N F
+!
+!  Program:      NANINF
+!
+!  Programmer:   David G. Simpson
+!                NASA Goddard Space Flight Center
+!                Greenbelt, Maryland  20771
+!
+!  Date:         July 10, 2018
+!
+!  Language:     Fortran-90
+!
+!  Version:      1.00a
+!
+!  Description:  Functions to test for NaN, +Inf, -Inf
+!
+!                The main program is a simple test program to test the four included funtions.
+!                The functions are:
+!
+!                   FP_REP      Returns whether a single-precision floating-point number is normal, Inf, or NaN.
+!                   DFP_REP     Returns whether a double-precision floating-point number is normal, Inf, or NaN.
+!                   ISNORMAL    Returns .TRUE. if a single-precision floating-point number is normal (i.e. not Inf or NaN).
+!                   DISNORMAL   Returns .TRUE. if a double-precision floating-point number is normal (i.e. not Inf or NaN).
+!
+!***********************************************************************************************************************************
+
+      PROGRAM NANINF
+
+      IMPLICIT NONE
+
+      INTEGER :: RESLT
+      REAL :: X
+      DOUBLE PRECISION :: DX
+
+      INTEGER :: FP_REP, DFP_REP
+      LOGICAL :: ISNORMAL, DISNORMAL
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!  Single-precision tests.
+!
+
+      WRITE (UNIT=*, FMT='(/A/)') ' SINGLE PRECISION (REAL*4):'
+      WRITE (UNIT=*, FMT='(A)') '     TEST               RESULT TYPE NORMAL? '
+
+      X = 1.0
+      RESLT = FP_REP(X)
+      WRITE (UNIT=*, FMT='(A,F8.4,I3,3X,L3)') ' 1.0 :                 ', X, RESLT, ISNORMAL(X)
+
+      X = 0.0
+      RESLT = FP_REP(X)
+      WRITE (UNIT=*, FMT='(A,F8.4,I3,3X,L3)') ' 0.0 :                 ', X, RESLT, ISNORMAL(X)
+
+      X = 1.0 / 0.0
+      RESLT = FP_REP(X)
+      WRITE (UNIT=*, FMT='(A,F8.4,I3,3X,L3)') ' 1.0/0.0 :             ', X, RESLT, ISNORMAL(X)
+
+      X = -1.0 / 0.0
+      RESLT = FP_REP(X)
+      WRITE (UNIT=*, FMT='(A,F8.4,I3,3X,L3)') ' -1.0/0.0 :            ', X, RESLT, ISNORMAL(X)
+
+      X = 0.0 / 0.0
+      RESLT = FP_REP(X)
+      WRITE (UNIT=*, FMT='(A,F8.4,I3,3X,L3)') ' 0.0/0.0 :             ', X, RESLT, ISNORMAL(X)
+
+      X = SQRT(-1.0)
+      RESLT = FP_REP(X)
+      WRITE (UNIT=*, FMT='(A,F8.4,I3,3X,L3)') ' SQRT(-1.0) :          ', X, RESLT, ISNORMAL(X)
+
+      X = LOG(0.0)
+      RESLT = FP_REP(X)
+      WRITE (UNIT=*, FMT='(A,F8.4,I3,3X,L3)') ' LOG(0.0) :            ', X, RESLT, ISNORMAL(X)
+
+      X = HUGE(0.0)
+      X = X * 10.0
+      RESLT = FP_REP(X)
+      WRITE (UNIT=*, FMT='(A,F8.4,I3,3X,L3)') ' HUGE(0.0)*10.0 :      ', X, RESLT, ISNORMAL(X)
+
+!
+!  Double-precision tests.
+!
+
+      WRITE (UNIT=*, FMT='(/A/)') ' DOUBLE PRECISION (REAL*8):'
+      WRITE (UNIT=*, FMT='(A)') '     TEST               RESULT TYPE NORMAL? '
+
+      DX = 1.0D0
+      RESLT = DFP_REP(DX)
+      WRITE (UNIT=*, FMT='(A,F8.4,I3,3X,L3)') ' 1.0D0 :               ', DX, RESLT, DISNORMAL(DX)
+
+      DX = 0.0D0
+      RESLT = DFP_REP(DX)
+      WRITE (UNIT=*, FMT='(A,F8.4,I3,3X,L3)') ' 0.0D0 :               ', DX, RESLT, DISNORMAL(DX)
+
+      DX = 1.0D0 / 0.0D0
+      RESLT = DFP_REP(DX)
+      WRITE (UNIT=*, FMT='(A,F8.4,I3,3X,L3)') ' 1.0D0/0.0D0 :         ', DX, RESLT, DISNORMAL(DX)
+
+      DX = -1.0D0 / 0.0D0
+      RESLT = DFP_REP(DX)
+      WRITE (UNIT=*, FMT='(A,F8.4,I3,3X,L3)') ' -1.0D0/0.0D0 :        ', DX, RESLT, DISNORMAL(DX)
+
+      DX = 0.0D0 / 0.0D0
+      RESLT = DFP_REP(DX)
+      WRITE (UNIT=*, FMT='(A,F8.4,I3,3X,L3)') ' 0.0D0/0.0D0 :         ', DX, RESLT, DISNORMAL(DX)
+
+      DX = DSQRT(-1.0D0)
+      RESLT = DFP_REP(DX)
+      WRITE (UNIT=*, FMT='(A,F8.4,I3,3X,L3)') ' DSQRT(-1.0D0) :       ', DX, RESLT, DISNORMAL(DX)
+
+      DX = DLOG(0.0D0)
+      RESLT = DFP_REP(DX)
+      WRITE (UNIT=*, FMT='(A,F8.4,I3,3X,L3)') ' DLOG(0.0D0) :         ', DX, RESLT, DISNORMAL(DX)
+
+      DX = HUGE(0.0D0)
+      DX = DX * 10.0D0
+      RESLT = DFP_REP(DX)
+      WRITE (UNIT=*, FMT='(A,F8.4,I3,3X,L3)') ' HUGE(0.0D0)*10.0D0 :  ', DX, RESLT, DISNORMAL(DX)
+
+      STOP
+
+      END PROGRAM NANINF
+
+
+
+
+
+!***********************************************************************************************************************************
+!  FP_REP
+!
+!  Result returned indicates the type of single-precision floating-point representation:
+!
+!    0  normal number
+!    1  Inf
+!    2  -Inf
+!    3  qNaN
+!    4  sNaN
+!
+!***********************************************************************************************************************************
+
+      FUNCTION FP_REP (F) RESULT (R)
+
+      IMPLICIT NONE
+
+      REAL(KIND=4), INTENT(IN) :: F
+      INTEGER(KIND=4) :: R, I, SN, EX, FR, D1
+
+      I = TRANSFER (F,I)
+
+      SN = IAND(ISHFT(I,-31),1_4)
+      EX = IAND(ISHFT(I,-23),255_4)
+      FR = IAND(I,8388607_4)
+      D1 = IAND(ISHFT(I,-22),1_4)
+
+      IF ((EX .EQ. 255) .AND. (FR .EQ. 0)) THEN             ! Infinities
+         IF (SN .EQ. 0) THEN
+            R = 1                                           !  Inf
+         ELSE
+            R = 2                                           !  -Inf
+         END IF
+      ELSE IF ((EX .EQ. 255) .AND. (FR .NE. 0)) THEN        ! NaNs
+         IF (D1 .EQ. 1_4) THEN
+            R = 3                                           !  qNaN
+         ELSE
+            R = 4                                           !  sNaN
+         END IF
+      ELSE
+         R = 0                                              ! normal
+      END IF
+
+      RETURN
+
+      END FUNCTION FP_REP
+
+
+
+
+
+!***********************************************************************************************************************************
+!  ISNORMAL
+!
+!  Returns .TRUE. if a single-precision floating-point number is normal (i.e. not Inf or NaN).
+!
+!***********************************************************************************************************************************
+
+      FUNCTION ISNORMAL (F) RESULT (L)
+
+      IMPLICIT NONE
+
+      REAL(KIND=4), INTENT(IN) :: F
+      LOGICAL :: L
+      INTEGER(KIND=4) :: I, EX
+
+      I = TRANSFER (F,I)
+
+      EX = IAND(ISHFT(I,-23),255_4)
+
+      L = EX .NE. 255_4
+
+      RETURN
+
+      END FUNCTION ISNORMAL
+
+
+
+
+
+!***********************************************************************************************************************************
+!  DFP_REP
+!
+!  Result returned indicates the type of double-precision floating-point representation:
+!
+!    0  normal number
+!    1  Inf
+!    2  -Inf
+!    3  qNaN
+!    4  sNaN
+!
+!***********************************************************************************************************************************
+
+      FUNCTION DFP_REP (F) RESULT (R)
+
+      IMPLICIT NONE
+
+      REAL(KIND=8), INTENT(IN) :: F
+      INTEGER(KIND=8) :: R, I, SN, EX, FR, D1
+
+      I = TRANSFER (F,I)
+
+      SN = IAND(ISHFT(I,-63),1_8)
+      EX = IAND(ISHFT(I,-52),2047_8)
+      FR = IAND(I,4503599627370495_8)
+      D1 = IAND(ISHFT(I,-51),1_8)
+
+      IF ((EX .EQ. 2047_8) .AND. (FR .EQ. 0_8)) THEN        ! Infinities
+         IF (SN .EQ. 0_8) THEN
+            R = 1                                           !  Inf
+         ELSE
+            R = 2                                           !  -Inf
+         END IF
+      ELSE IF ((EX .EQ. 2047_8) .AND. (FR .NE. 0_8)) THEN   ! NaN
+         IF (D1 .EQ. 1_8) THEN
+            R = 3                                           !  qNaN
+         ELSE
+            R = 4                                           !  sNaN
+         END IF
+      ELSE
+         R = 0
+      END IF
+
+      RETURN
+
+      END FUNCTION DFP_REP
+
+
+
+
+
+!***********************************************************************************************************************************
+!  DISNORMAL
+!
+!  Returns .TRUE. if a double-precision floating-point number is normal (i.e. not Inf or NaN).
+!
+!***********************************************************************************************************************************
+
+      FUNCTION DISNORMAL (F) RESULT (L)
+
+      IMPLICIT NONE
+
+      REAL(KIND=8), INTENT(IN) :: F
+      LOGICAL :: L
+      INTEGER(KIND=8) :: I, EX
+
+      I = TRANSFER (F,I)
+
+      EX = IAND(ISHFT(I,-52),2047_8)
+
+      L = EX .NE. 2047_8
+
+      RETURN
+
+      END FUNCTION DISNORMAL
+

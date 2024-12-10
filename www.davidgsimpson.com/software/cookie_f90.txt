@@ -1,0 +1,75 @@
+!***********************************************************************************************************************************
+!
+!                                                          C O O K I E
+!
+!  Program:      COOKIE
+!
+!  Programmer:   Original programmer unknown.
+!
+!                Converted from VAX Fortran-77 to standard Fortran-90 by:
+!                   David G. Simpson
+!                   Laurel, Maryland
+!
+!  Date:         November 4, 2004
+!
+!  Language:     Fortran-90
+!
+!  Version:      1.00a
+!
+!  Description:  This program presents the user (sometimes, therefore, an unwilling victim) with a fortune or otherwise
+!                rather weird tidbit of wisdom.
+!
+!  Files:        Source files:
+!
+!                   cookie.f90                   Main program
+!                   cookie.dat                   Data file
+!
+!  Notes:        Originally found at Lockheed among flight software tools for the Hubble Space Telescope.
+!
+!***********************************************************************************************************************************
+
+      PROGRAM FORTUNE_COOKIE
+
+      IMPLICIT NONE
+
+      CHARACTER(LEN=*), PARAMETER :: INFILE = 'cookie.dat'                          ! data file name
+      INTEGER, PARAMETER :: INUNIT = 11                                             ! data file unit number
+      INTEGER, PARAMETER :: NUM_FORTUNES = 397                                      ! number of lines in data file
+
+      CHARACTER(LEN=132) :: FORTUNE                                                 ! fortune string
+      INTEGER :: FORTUNE_NUMBER                                                     ! fortune number
+      INTEGER :: IERR                                                               ! I/O error flag
+      INTEGER :: I                                                                  ! used as an index
+      REAL :: RN                                                                    ! random number between 0 and 1
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+      CALL RANDOM_SEED                                                              ! initialize random number seed
+      CALL RANDOM_NUMBER (RN)                                                       ! generate random number between 0 and 1
+      FORTUNE_NUMBER = RN*NUM_FORTUNES + 1                                          ! calculate fortune number
+
+      OPEN (UNIT=INUNIT, FILE=INFILE, STATUS='OLD', ACCESS='SEQUENTIAL',     &      ! open input data file
+            FORM='FORMATTED', ACTION='READ', POSITION='REWIND', IOSTAT=IERR)
+
+      DO I = 1, FORTUNE_NUMBER                                                      ! read file until fortune found
+         READ (UNIT=INUNIT, FMT='(A132)', IOSTAT=IERR) FORTUNE
+         IF (IERR .LT. 0) REWIND (UNIT=INUNIT)
+      ENDDO
+
+      CLOSE (UNIT=INUNIT, STATUS='KEEP')                                            ! close data file
+
+      I = LEN_TRIM(FORTUNE)                                                         ! get length of fortune
+
+      IF (I .LE. 60) THEN                                                           ! if small enough for one line..
+         PRINT '(/1X,A,49X)', FORTUNE                                               ! ..then print to terminal
+      ELSE                                                                          ! if a long fortune..
+         I = 60
+         DO WHILE ((I .GT. 50) .AND. (FORTUNE(I:I) .NE. ' '))                       ! ..then break into two lines at a space
+            I = I - 1
+         ENDDO
+
+         PRINT '(/1X,A,49X)', FORTUNE(1:I)                                          ! print first line
+         PRINT '(1X,A,49X)', FORTUNE(I+1:132)                                       ! print second line
+      ENDIF
+
+      END PROGRAM FORTUNE_COOKIE

@@ -1,0 +1,431 @@
+!***********************************************************************************************************************************
+!
+!                                                           B I G C A L
+!
+!  Program:      BIGCAL
+!
+!  Programmer:   David G. Simpson
+!                Laurel, Maryland
+!
+!  Date:         October 12, 2013
+!
+!  Language:     Fortran-90
+!
+!  Version:      1.00a
+!
+!  Description:  Print big 1-month calendars in the style of the COMSAT calendar program.
+!                The user is asked for the beginning and ending years; calendars are
+!                printed for every year in the specified range.
+!
+!***********************************************************************************************************************************
+
+      PROGRAM BIGCAL
+
+      IMPLICIT NONE
+
+      INTEGER :: I, J, M, Y, A, B, DOW, DOW1, ENDLINE, DPM, ROW, COL, DOY,  &
+         MONTH_NUM, YEAR_NUM1, YEAR_NUM2, YEAR_NUM, IERR
+
+      INTEGER, DIMENSION(12) :: DAYS_PER_MONTH
+
+      DOUBLE PRECISION :: JD, JD1, JD11
+
+      INTEGER, DIMENSION(4) :: YDIGIT
+
+      CHARACTER(LEN=4) :: YEARSTR
+      CHARACTER(LEN=113) :: HLINE, VLINE, BLINE
+      CHARACTER(LEN=113), DIMENSION(59) :: MONTHIMG
+
+      CHARACTER(LEN=*), PARAMETER :: OUTFILE = 'bigcal-out.txt'
+
+      INTEGER, PARAMETER :: OUTUNIT = 11
+
+      CHARACTER(LEN=113), PARAMETER :: WEEKDAYS =  &
+         '      SUNDAY          MONDAY         TUESDAY        WEDNESDAY        THURSDAY         FRIDAY         SATURDAY    '
+
+      CHARACTER(LEN=61), DIMENSION(12,7) :: MONTH
+      CHARACTER(LEN=5), DIMENSION(0:9,7) :: DIGIT
+
+      LOGICAL :: LEAP
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!  Prompt for range of years.
+!
+
+      WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' Start year:  '
+      READ (UNIT=*, FMT=*) YEAR_NUM1
+
+      WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' End year:    '
+      READ (UNIT=*, FMT=*) YEAR_NUM2
+      WRITE (UNIT=*, FMT='(A)') ' '
+
+!
+!  Do error checking of input.
+!
+
+      IF (YEAR_NUM1 .GT. YEAR_NUM2) THEN
+         WRITE (UNIT=*, FMT='(A)') ' Error: Start year > end year.'
+         STOP
+      END IF
+
+      IF (YEAR_NUM1 .LT. 1753) THEN
+         WRITE (UNIT=*, FMT='(A)') ' Error: Years before 1753 are on the Julian calendar.'
+         STOP
+      END IF
+
+      IF (YEAR_NUM2 .GT. 9999) THEN
+         WRITE (UNIT=*, FMT='(A)') ' Error: Program is not designed to handle years after 9999.'
+         STOP
+      END IF
+
+!
+!  Intialize data.
+!
+
+      MONTH(1,1)  = '           J   AAA   N   N  U   U   AAA   RRRR   Y   Y       '
+      MONTH(1,2)  = '           J  A   A  N   N  U   U  A   A  R   R  Y   Y       '
+      MONTH(1,3)  = '           J  A   A  NN  N  U   U  A   A  R   R  Y   Y       '
+      MONTH(1,4)  = '           J  AAAAA  N N N  U   U  AAAAA  RRRR    Y Y        '
+      MONTH(1,5)  = '       J   J  A   A  N  NN  U   U  A   A  R R      Y         '
+      MONTH(1,6)  = '       J   J  A   A  N   N  U   U  A   A  R  R     Y         '
+      MONTH(1,7)  = '        JJJ   A   A  N   N   UUU   A   A  R   R    Y         '
+
+      MONTH(2,1)  = '       FFFFF  EEEEE  BBBB   RRRR   U   U   AAA   RRRR   Y   Y'
+      MONTH(2,2)  = '       F      E      B   B  R   R  U   U  A   A  R   R  Y   Y'
+      MONTH(2,3)  = '       F      E      B   B  R   R  U   U  A   A  R   R  Y   Y'
+      MONTH(2,4)  = '       FFFF   EEEE   BBBB   RRRR   U   U  AAAAA  RRRR    Y Y '
+      MONTH(2,5)  = '       F      E      B   B  R R    U   U  A   A  R R      Y  '
+      MONTH(2,6)  = '       F      E      B   B  R  R   U   U  A   A  R  R     Y  '
+      MONTH(2,7)  = '       F      EEEEE  BBBB   R   R   UUU   A   A  R   R    Y  '
+
+      MONTH(3,1)  = '              M   M   AAA   RRRR    CCC   H   H              '
+      MONTH(3,2)  = '              MM MM  A   A  R   R  C   C  H   H              '
+      MONTH(3,3)  = '              M M M  A   A  R   R  C      H   H              '
+      MONTH(3,4)  = '              M M M  AAAAA  RRRR   C      HHHHH              '
+      MONTH(3,5)  = '              M   M  A   A  R R    C      H   H              '
+      MONTH(3,6)  = '              M   M  A   A  R  R   C   C  H   H              '
+      MONTH(3,7)  = '              M   M  A   A  R   R   CCC   H   H              '
+
+      MONTH(4,1)  = '               AAA   PPPP   RRRR    III   L                  '
+      MONTH(4,2)  = '              A   A  P   P  R   R    I    L                  '
+      MONTH(4,3)  = '              A   A  P   P  R   R    I    L                  '
+      MONTH(4,4)  = '              AAAAA  PPPP   RRRR     I    L                  '
+      MONTH(4,5)  = '              A   A  P      R R      I    L                  '
+      MONTH(4,6)  = '              A   A  P      R  R     I    L                  '
+      MONTH(4,7)  = '              A   A  P      R   R   III   LLLLL              '
+
+      MONTH(5,1)  = '                     M   M   AAA   Y   Y                     '
+      MONTH(5,2)  = '                     MM MM  A   A  Y   Y                     '
+      MONTH(5,3)  = '                     M M M  A   A  Y   Y                     '
+      MONTH(5,4)  = '                     M M M  AAAAA   Y Y                      '
+      MONTH(5,5)  = '                     M   M  A   A    Y                       '
+      MONTH(5,6)  = '                     M   M  A   A    Y                       '
+      MONTH(5,7)  = '                     M   M  A   A    Y                       '
+
+      MONTH(6,1)  = '                         J  U   U  N   N  EEEEE              '
+      MONTH(6,2)  = '                         J  U   U  N   N  E                  '
+      MONTH(6,3)  = '                         J  U   U  NN  N  E                  '
+      MONTH(6,4)  = '                         J  U   U  N N N  EEEE               '
+      MONTH(6,5)  = '                     J   J  U   U  N  NN  E                  '
+      MONTH(6,6)  = '                     J   J  U   U  N   N  E                  '
+      MONTH(6,7)  = '                      JJJ    UUU   N   N  EEEEE              '
+
+      MONTH(7,1)  = '                         J  U   U  L      Y   Y              '
+      MONTH(7,2)  = '                         J  U   U  L      Y   Y              '
+      MONTH(7,3)  = '                         J  U   U  L      Y   Y              '
+      MONTH(7,4)  = '                         J  U   U  L       Y Y               '
+      MONTH(7,5)  = '                     J   J  U   U  L        Y                '
+      MONTH(7,6)  = '                     J   J  U   U  L        Y                '
+      MONTH(7,7)  = '                      JJJ    UUU   LLLLL    Y                '
+
+      MONTH(8,1)  = '               AAA   U   U   GGG   U   U   SSS   TTTTT       '
+      MONTH(8,2)  = '              A   A  U   U  G   G  U   U  S   S    T         '
+      MONTH(8,3)  = '              A   A  U   U  G      U   U  S        T         '
+      MONTH(8,4)  = '              AAAAA  U   U  G GGG  U   U   SSS     T         '
+      MONTH(8,5)  = '              A   A  U   U  G   G  U   U      S    T         '
+      MONTH(8,6)  = '              A   A  U   U  G   G  U   U  S   S    T         '
+      MONTH(8,7)  = '              A   A   UUU    GGGG   UUU    SSS     T         '
+
+      MONTH(9,1)  = ' SSS   EEEEE  PPPP   TTTTT  EEEEE  M   M  BBBB   EEEEE  RRRR '
+      MONTH(9,2)  = 'S   S  E      P   P    T    E      MM MM  B   B  E      R   R'
+      MONTH(9,3)  = 'S      E      P   P    T    E      M M M  B   B  E      R   R'
+      MONTH(9,4)  = ' SSS   EEEE   PPPP     T    EEEE   M M M  BBBB   EEEE   RRRR '
+      MONTH(9,5)  = '    S  E      P        T    E      M   M  B   B  E      R R  '
+      MONTH(9,6)  = 'S   S  E      P        T    E      M   M  B   B  E      R  R '
+      MONTH(9,7)  = ' SSS   EEEEE  P        T    EEEEE  M   M  BBBB   EEEEE  R   R'
+
+      MONTH(10,1) = '        OOO    CCC   TTTTT   OOO   BBBB   EEEEE  RRRR        '
+      MONTH(10,2) = '       O   O  C   C    T    O   O  B   B  E      R   R       '
+      MONTH(10,3) = '       O   O  C        T    O   O  B   B  E      R   R       '
+      MONTH(10,4) = '       O   O  C        T    O   O  BBBB   EEEE   RRRR        '
+      MONTH(10,5) = '       O   O  C        T    O   O  B   B  E      R R         '
+      MONTH(10,6) = '       O   O  C   C    T    O   O  B   B  E      R  R        '
+      MONTH(10,7) = '        OOO    CCC     T     OOO   BBBB   EEEEE  R   R       '
+
+      MONTH(11,1) = '       N   N   OOO   V   V  EEEEE  M   M  BBBB   EEEEE  RRRR '
+      MONTH(11,2) = '       N   N  O   O  V   V  E      MM MM  B   B  E      R   R'
+      MONTH(11,3) = '       NN  N  O   O  V   V  E      M M M  B   B  E      R   R'
+      MONTH(11,4) = '       N N N  O   O  V   V  EEEE   M M M  BBBB   EEEE   RRRR '
+      MONTH(11,5) = '       N  NN  O   O  V   V  E      M   M  B   B  E      R R  '
+      MONTH(11,6) = '       N   N  O   O   V V   E      M   M  B   B  E      R  R '
+      MONTH(11,7) = '       N   N   OOO     V    EEEEE  M   M  BBBB   EEEEE  R   R'
+
+      MONTH(12,1) = '       DDDD   EEEEE   CCC   EEEEE  M   M  BBBB   EEEEE  RRRR '
+      MONTH(12,2) = '       D   D  E      C   C  E      MM MM  B   B  E      R   R'
+      MONTH(12,3) = '       D   D  E      C      E      M M M  B   B  E      R   R'
+      MONTH(12,4) = '       D   D  EEEE   C      EEEE   M M M  BBBB   EEEE   RRRR '
+      MONTH(12,5) = '       D   D  E      C      E      M   M  B   B  E      R R  '
+      MONTH(12,6) = '       D   D  E      C   C  E      M   M  B   B  E      R  R '
+      MONTH(12,7) = '       DDDD   EEEEE   CCC   EEEEE  M   M  BBBB   EEEEE  R   R'
+
+      DIGIT(0,1) = ' 000 '
+      DIGIT(0,2) = '0   0'
+      DIGIT(0,3) = '0   0'
+      DIGIT(0,4) = '0   0'
+      DIGIT(0,5) = '0   0'
+      DIGIT(0,6) = '0   0'
+      DIGIT(0,7) = ' 000 '
+
+      DIGIT(1,1) = '  1  '
+      DIGIT(1,2) = ' 11  '
+      DIGIT(1,3) = '  1  '
+      DIGIT(1,4) = '  1  '
+      DIGIT(1,5) = '  1  '
+      DIGIT(1,6) = '  1  '
+      DIGIT(1,7) = '  1  '
+
+      DIGIT(2,1) = ' 222 '
+      DIGIT(2,2) = '2   2'
+      DIGIT(2,3) = '   2 '
+      DIGIT(2,4) = '  2  '
+      DIGIT(2,5) = ' 2   '
+      DIGIT(2,6) = '2    '
+      DIGIT(2,7) = '22222'
+
+      DIGIT(3,1) = ' 333 '
+      DIGIT(3,2) = '3   3'
+      DIGIT(3,3) = '    3'
+      DIGIT(3,4) = ' 333 '
+      DIGIT(3,5) = '    3'
+      DIGIT(3,6) = '3   3'
+      DIGIT(3,7) = ' 333 '
+
+      DIGIT(4,1) = '   4 '
+      DIGIT(4,2) = '  44 '
+      DIGIT(4,3) = ' 4 4 '
+      DIGIT(4,4) = '4  4 '
+      DIGIT(4,5) = '44444'
+      DIGIT(4,6) = '   4 '
+      DIGIT(4,7) = '   4 '
+
+      DIGIT(5,1) = '55555'
+      DIGIT(5,2) = '5    '
+      DIGIT(5,3) = '5555 '
+      DIGIT(5,4) = '    5'
+      DIGIT(5,5) = '    5'
+      DIGIT(5,6) = '    5'
+      DIGIT(5,7) = '5555 '
+
+      DIGIT(6,1) = '  66 '
+      DIGIT(6,2) = ' 6   '
+      DIGIT(6,3) = '6    '
+      DIGIT(6,4) = '6666 '
+      DIGIT(6,5) = '6   6'
+      DIGIT(6,6) = '6   6'
+      DIGIT(6,7) = ' 666 '
+
+      DIGIT(7,1) = '77777'
+      DIGIT(7,2) = '    7'
+      DIGIT(7,3) = '   7 '
+      DIGIT(7,4) = '  7  '
+      DIGIT(7,5) = '  7  '
+      DIGIT(7,6) = '  7  '
+      DIGIT(7,7) = '  7  '
+
+      DIGIT(8,1) = ' 888 '
+      DIGIT(8,2) = '8   8'
+      DIGIT(8,3) = '8   8'
+      DIGIT(8,4) = ' 888 '
+      DIGIT(8,5) = '8   8'
+      DIGIT(8,6) = '8   8'
+      DIGIT(8,7) = ' 888 '
+
+      DIGIT(9,1) = ' 999 '
+      DIGIT(9,2) = '9   9'
+      DIGIT(9,3) = '9   9'
+      DIGIT(9,4) = ' 9999'
+      DIGIT(9,5) = '    9'
+      DIGIT(9,6) = '   9 '
+      DIGIT(9,7) = ' 99  '
+
+      HLINE = '. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .'
+      VLINE = '.               .               .               .               .               .               .               .'
+      BLINE = '                                                                                                                 '
+
+!
+!  Open output file.
+!
+
+      OPEN (UNIT=OUTUNIT, FILE=OUTFILE, STATUS='REPLACE', ACCESS='SEQUENTIAL',  &   ! open file
+            FORM='FORMATTED', ACTION='WRITE', POSITION='REWIND', IOSTAT=IERR)
+
+      IF (IERR .NE. 0) THEN                                                         ! if file open error..
+         WRITE (UNIT=*, FMT='(A,I6,A)') ' Error ',IERR,' opening file '//OUTFILE    ! ..then print error message..
+         STOP                                                                       ! ..and return to operating system
+      END IF
+
+!
+!  Loop for each year.
+!
+
+      DO YEAR_NUM = YEAR_NUM1, YEAR_NUM2                                            ! loop for all years in range
+
+!
+!  Compute leap year flag.
+!
+
+         LEAP = .FALSE.
+         IF (MOD(YEAR_NUM,4) .EQ. 0)   LEAP = .TRUE.
+         IF (MOD(YEAR_NUM,100) .EQ. 0) LEAP = .FALSE.
+         IF (MOD(YEAR_NUM,400) .EQ. 0) LEAP = .TRUE.
+
+!
+!  Compute days per month.
+!
+
+         DAYS_PER_MONTH = (/ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 /)
+         IF (LEAP) DAYS_PER_MONTH(2) = 29
+
+!
+!  Loop for each month.
+!
+
+         DO MONTH_NUM = 1, 12                                                       ! loop for all 12 months of year
+
+!
+!  Initialize month image to all blanks.
+!
+
+            MONTHIMG = BLINE                                                        ! set image to all blanks
+
+!
+!  Print month name.
+!
+
+            DPM = DAYS_PER_MONTH(MONTH_NUM)                                         ! days per month
+
+            DO I = 1, 7                                                             ! for each row of month name
+               MONTHIMG(I) = '       '//MONTH(MONTH_NUM,I)                          ! place month name in image
+            END DO
+
+!
+!  Print line of weekdays.
+!
+
+            MONTHIMG(10) = WEEKDAYS                                                 ! place weekdays in image
+
+!
+!  Find day of week of 1st of the month.
+!
+
+            M = MONTH_NUM                                                           ! begin Julian day algorithm
+            Y = YEAR_NUM
+
+            IF (M .LE. 2) THEN
+               Y = Y - 1
+               M = M + 12
+            END IF
+
+            A = Y/100
+            B = 2 - A + A/4
+
+            JD1 = INT(365.25D0*(Y+4716)) + INT(30.6001D0*(M+1)) + 1 + B - 1524.5D0  ! JD of 1st of month
+
+            DOW1 = MOD(NINT(JD1+1.5D0), 7)                                          ! day of week of 1st of month (0-6)
+
+!
+!  Print 4, 5, or 6 weeks.
+!
+
+            IF ((MONTH_NUM.EQ.2).AND.(.NOT.LEAP).AND.(DOW1.EQ.0)) THEN              ! 4 weeks
+               ENDLINE = 43
+            ELSE IF (((DPM.EQ.30).AND.(DOW1.EQ.6)).OR.  &                           ! 6 weeks
+               ((DPM.EQ.31).AND.(DOW1.GE.5))) THEN
+               ENDLINE = 59
+            ELSE                                                                    ! 5 weeks
+               ENDLINE = 51
+            END IF
+
+            DO I = 11, ENDLINE                                                      ! loop to print month matrix
+               IF (MOD(I-11,8) .EQ. 0) THEN                                         ! print horiz line
+                  MONTHIMG(I) = HLINE
+               ELSE
+                  MONTHIMG(I) = VLINE                                               ! print vert line
+               END IF
+            END DO
+
+!
+!  Print year digits.
+!
+
+            WRITE (UNIT=YEARSTR,FMT='(I4.4)') YEAR_NUM                              ! convert year from int to string
+            DO I = 1, 4                                                             ! create array of year digits
+               YDIGIT(I) = ICHAR(YEARSTR(I:I))-ICHAR('0')
+            END DO
+
+            DO I = 1, 4                                                             ! for each year digit
+               DO J = 1, 7                                                          ! for each row of digit
+                  MONTHIMG(J)(78+7*(I-1):82+7*(I-1)) = DIGIT(YDIGIT(I),J)           ! place digit in image
+               END DO
+            END DO
+
+!
+!  Fill in dates.
+!
+
+            DOW = DOW1                                                              ! day of week of 1st of month
+            JD11 = INT(365.25D0*(YEAR_NUM+4715))+INT(30.6001D0*(14))+1+B-1524.5D0   ! JD of Jan 1
+
+            ROW = 12
+            COL = 2+DOW*16
+            DO I = 1, DPM                                                           ! loop for each day in month
+               DOY = NINT(JD1-JD11)+I                                               ! day of year
+               WRITE(UNIT=MONTHIMG(ROW)(COL:COL+13),FMT='(I2,7X,1H(,I3,1H))') I,DOY ! print date & doy to image
+               DOW = DOW + 1                                                        ! increment day of week
+               IF (DOW .GT. 6) THEN                                                 ! if end of week
+                  DOW = 0                                                           ! reset to Sunday
+                  ROW = ROW + 8                                                     ! move to next row
+               END IF
+               COL = 2+DOW*16                                                       ! compute column
+            END DO
+
+!
+!  Print calendar.
+!
+
+            WRITE (UNIT=OUTUNIT, FMT='(/)')                                         ! blank line
+
+            DO I = 1, 59                                                            ! loop for each row of month image
+               WRITE (UNIT=OUTUNIT, FMT='(1X,A)') MONTHIMG(I)
+            END DO
+
+            WRITE (UNIT=OUTUNIT, FMT='(1X,A)') CHAR(12)                             ! form feed
+
+         END DO                                                                     ! end month loop
+
+      END DO                                                                        ! end year loop
+
+!
+!  All done.
+!
+
+      CLOSE (UNIT=OUTUNIT, STATUS='KEEP')                                           ! close file
+
+      WRITE (UNIT=*, FMT='(A)') ' Done.  Output file:  '//OUTFILE
+
+      STOP
+
+      END PROGRAM BIGCAL
+

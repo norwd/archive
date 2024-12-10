@@ -1,0 +1,215 @@
+!***********************************************************************************************************************************
+!
+!                                                       M A R A T H O N
+!
+!  Program:      MARATHON
+!
+!  Programmer:   David G. Simpson
+!                Laurel, Maryland
+!
+!  Date:         October 29, 2006
+!
+!  Language:     Fortran-90
+!
+!  Version:      1.00c  (July 11, 2014)
+!
+!  Description:  Computes a marathon training schedule.
+!
+!  Files:        Source files:
+!
+!                   marathon.f90                   Main program
+!
+!  Notes:        Set the parameters under the "User input" section.  Then compile and run the program to generate
+!                a marathon training schedule.
+!
+!***********************************************************************************************************************************
+
+      PROGRAM MARATHON
+
+      IMPLICIT NONE
+
+!
+!     User input.
+!
+
+      LOGICAL, PARAMETER :: HALF_MARATHON = .TRUE.                                  ! .TRUE. for half, .FALSE. for full marathon
+
+      INTEGER, PARAMETER :: RACE_MONTH =  8                                         ! enter the race date here (a Sunday)
+      INTEGER, PARAMETER :: RACE_DAY   = 31
+      INTEGER, PARAMETER :: RACE_YEAR  = 2014
+
+      INTEGER, PARAMETER :: MARATHON_TRAINING_WEEKS = 18                            ! # weeks in marathon training schedule
+      INTEGER, PARAMETER :: HALF_MARATHON_TRAINING_WEEKS = 8                        !            half-marathon
+
+      INTEGER, DIMENSION(MARATHON_TRAINING_WEEKS*7), PARAMETER :: SCHEDULE = (/  &  ! training schedule (miles)
+!         M   Tu  W   Th  F   Sa  Su
+          0,  3,  3,  3,  0,  6,  0,  &
+          0,  3,  3,  3,  0,  7,  0,  &
+          0,  3,  4,  3,  0,  5,  0,  &
+          0,  3,  4,  3,  0,  9,  0,  &
+          0,  3,  5,  3,  0, 10,  0,  &
+          0,  3,  5,  3,  0,  7,  0,  &
+          0,  3,  6,  3,  0, 12,  0,  &
+          0,  3,  6,  3,  0, 13,  0,  &
+          0,  3,  7,  4,  0, 10,  0,  &
+          0,  3,  7,  4,  0, 15,  0,  &
+          0,  4,  8,  4,  0, 16,  0,  &
+          0,  4,  8,  5,  0, 12,  0,  &
+          0,  4,  9,  5,  0, 18,  0,  &
+          0,  5,  9,  5,  0, 14,  0,  &
+          0,  5, 10,  5,  0, 20,  0,  &
+          0,  5,  8,  4,  0, 12,  0,  &
+          0,  4,  6,  3,  0,  8,  0,  &
+          0,  3,  4,  2,  0,  0, 26   &
+          /)
+
+!
+!     Constants and variables.
+!
+
+      CHARACTER(LEN=3), DIMENSION(12), PARAMETER :: MONTH_NAME = (/  &
+         'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',    &
+         'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'  /)
+
+      CHARACTER(LEN=3), DIMENSION(7), PARAMETER :: DOW_NAME = (/   &
+         'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'  /)
+
+      INTEGER :: I, J, MILES, DOW, TRAINING_WEEKS
+      INTEGER :: TRAIN_MONTH, TRAIN_DAY, TRAIN_YEAR, TRAIN_DOW
+      DOUBLE PRECISION :: RACE_JD, START_JD, TRAIN_JD
+
+      DOUBLE PRECISION :: GREG2JD
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Start of code.
+!
+
+      IF (HALF_MARATHON) THEN                                                       ! print header lines & set training weeks
+         WRITE (UNIT=*, FMT='(A/)') ' HALF MARATHON TRAINING SCHEDULE'
+         TRAINING_WEEKS = HALF_MARATHON_TRAINING_WEEKS
+      ELSE
+         WRITE (UNIT=*, FMT='(A/)') ' MARATHON TRAINING SCHEDULE'
+         TRAINING_WEEKS = MARATHON_TRAINING_WEEKS
+      END IF
+      WRITE (UNIT=*, FMT='(A)') '     Date     Miles'
+      WRITE (UNIT=*, FMT='(A)') ' -----------  -----'
+
+      RACE_JD = GREG2JD(RACE_MONTH, RACE_DAY, RACE_YEAR)                            ! Julian day of race
+      START_JD = RACE_JD - (TRAINING_WEEKS*7-1)                                     ! Julian day of start of training
+
+      DO I = 1, TRAINING_WEEKS                                                      ! loop for each training week
+         DO J = 1, 7                                                                ! loop for each day of week
+            TRAIN_JD = START_JD + (I-1)*7+J-1                                       ! Julian day of training day
+            CALL JD2GREG(TRAIN_JD, TRAIN_MONTH, TRAIN_DAY, TRAIN_YEAR, TRAIN_DOW)   ! convert to Gregorian date
+            DOW = TRAIN_DOW                                                         ! save day of week
+            IF (TRAIN_DOW .EQ. 0) DOW = 7                                           ! make Sunday 7 instead of 0
+            MILES = SCHEDULE((I-1)*7+J)                                             ! look up number of miles to run
+            WRITE (UNIT=*, FMT='(1X,A3,2X,A3,1X,I2,3X,I2)') DOW_NAME(DOW),  &       ! print line for this day
+               MONTH_NAME(TRAIN_MONTH), TRAIN_DAY, MILES
+         END DO
+         WRITE (UNIT=*, FMT='(1H )')
+      END DO
+
+      STOP
+
+      END PROGRAM MARATHON
+
+
+
+
+
+!***********************************************************************************************************************************
+!  GREG2JD
+!
+!  Convert a Gregorian date to the corresponding Julian day.
+!***********************************************************************************************************************************
+
+      FUNCTION GREG2JD (MONTH, DAY, YEAR) RESULT (JD)
+
+      IMPLICIT NONE
+
+      INTEGER, INTENT(IN) :: MONTH, DAY, YEAR
+      DOUBLE PRECISION :: JD
+
+      INTEGER :: Y, M, A, B
+
+
+      Y = YEAR
+      M = MONTH
+
+      IF (M .LE. 2) THEN
+         Y = Y - 1
+         M = M + 12
+      END IF
+
+      A = Y/100
+      B = 2 - A + A/4
+
+      JD = INT(365.25D0*(Y+4716)) + INT(30.6001D0*(M+1)) + DAY + B - 1524.5D0
+
+      RETURN
+
+      END FUNCTION GREG2JD
+
+
+
+
+
+!***********************************************************************************************************************************
+!  JD2GREG
+!
+!  Convert a Julian day to the corresponding Gregorian date.
+!***********************************************************************************************************************************
+
+      SUBROUTINE JD2GREG (JD0, MONTH, DAY, YEAR, DOW)
+
+      IMPLICIT NONE
+
+      DOUBLE PRECISION, INTENT(IN) :: JD0
+      INTEGER, INTENT(OUT) :: MONTH, DAY, YEAR, DOW
+
+      INTEGER :: A, B, C, D, E, Z, ALPHA, M, Y
+      DOUBLE PRECISION :: JD, F
+
+
+      JD = JD0 + 0.5D0
+
+      Z = INT(JD)
+      F = JD - Z
+
+      IF (Z .LT. 2299161) THEN
+         A = Z
+      ELSE
+         ALPHA = INT((Z-1867216.25D0)/36524.25D0)
+         A = Z + 1 + ALPHA - ALPHA/4
+      END IF
+
+      B = A + 1524
+      C = INT((B-122.1D0)/365.25D0)
+      D = INT(365.25D0*C)
+      E = INT((B-D)/30.6001D0)
+
+      DAY = B - D - INT(30.6001D0*E) + F
+
+      IF (E .LT. 14) THEN
+         M = E - 1
+      ELSE
+         M = E - 13
+      END IF
+
+      IF (M .GT. 2) THEN
+         Y = C - 4716
+      ELSE
+         Y = C - 4715
+      END IF
+
+      MONTH = M
+      YEAR = Y
+      DOW = MOD(NINT(JD0+1.5D0), 7)
+
+      RETURN
+
+      END SUBROUTINE JD2GREG
+

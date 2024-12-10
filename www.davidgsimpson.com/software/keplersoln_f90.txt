@@ -1,0 +1,182 @@
+!***********************************************************************************************************************************
+!
+!                                                        K E P L E R S O L N
+!
+!  Program:      KEPLERSOLN
+!
+!  Programmer:   David G. Simpson
+!                NASA Goddard Space Flight Center
+!                Greenbelt, Maryland
+!
+!  Date:         July 6, 2012
+!
+!  Language:     Fortran-90
+!
+!  Version:      1.00a  (July 6, 2012)
+!
+!  Description:  Solves Kepler's equation for both elliptical and hyperbolic orbits.
+!
+!  Files:        Source files:
+!
+!                   keplersoln.f90                Main program
+!
+!  Notes:        The program prompts for the mean anomaly M and the eccentricity e.  If the eccentricity is between 0 and 1,
+!                it solves the elliptical Kepler's equation for the eccentric anomaly E using Sinnott's method.  If the
+!                eccentricity is greater than 1, it solves the hyperbolic Kepler's equation for the auxiliary variable F using
+!                Newton's method.
+!
+!***********************************************************************************************************************************
+
+      PROGRAM KEPLERSOLN
+
+      IMPLICIT NONE
+
+      DOUBLE PRECISION, PARAMETER :: PI = 3.14159265358979323846264338327950288419716939937510582097494459230781640628620899862803D0
+      DOUBLE PRECISION, PARAMETER :: TWOPI = 6.28318530717958647692528676655900576839433879875021164194988918461563281257241799726D0
+      DOUBLE PRECISION, PARAMETER :: HALFPI = 1.5707963267948966192313216916397514420985846996875529104874722961539082031431044993D0
+      DOUBLE PRECISION, PARAMETER :: QUARTERPI = 0.7853981633974483096156608458198757210492923498437764552437361480769541015715522D0
+
+      INTEGER :: F, J, NLOOPS, EAD_D, EAD_M
+
+      DOUBLE PRECISION :: MA, ECC, EA, D, M1, FA, FA0, EAD, EAD_S
+
+      CHARACTER(LEN=80) :: TLINE, QLINE, TUNIT, QUNIT
+
+      INTEGER :: SGN
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!  Read in time and convert to SI units (seconds).
+!
+
+      WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' Enter mean anomaly M (deg):  '
+      READ (UNIT=*, FMT=*) MA
+      MA = MA * PI/180.0D0
+
+      WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' Enter eccentricity:          '
+      READ (UNIT=*, FMT=*) ECC
+
+!
+!  Check eccentricity.  If e<=1, solve the elliptical problem; if e>1, solve the hyperbolic problem.
+!
+
+      IF (ECC .LT. 0.0D0) THEN
+         WRITE (UNIT=*, FMT='(A)') ' Error: eccentricity cannot be negative.'
+         STOP
+      END IF
+
+      IF (ECC .GT. 1.0D0) GO TO 100                                                 ! branch if hyperbolic orbit
+
+!
+!  ELLIPTICAL ORBIT
+!
+!  Solve Kepler's equation
+!
+!     M = E - e sin E
+!
+!  for E by Sinnott's method (Sky & Telescope, August 1985, p. 158; and Meeus, Astronomical Algorithms, 2nd ed, p. 206).
+!
+
+      F = SGN(MA)
+      MA = ABS(MA)/TWOPI
+      MA = (MA - INT(MA))*TWOPI*F
+      IF (MA .LT. 0.0D0) MA = MA + TWOPI
+      F = 1
+      IF (MA .GT. PI) THEN
+         F = -1
+         MA = TWOPI - MA
+      END IF
+      EA = HALFPI
+      D = QUARTERPI
+      NLOOPS = CEILING(DBLE(PRECISION(EA))/LOG10(2.0D0))
+      DO J = 1, NLOOPS
+         M1 = EA - ECC*SIN(EA)
+         EA = EA + D*SGN(MA-M1)
+         D = 0.5D0*D
+      END DO
+      EA = EA * F
+
+!
+!  Compute decimal degrees.
+!
+
+      EAD = ABS(EA*180.0D0/PI)
+
+      EAD_D = INT(EAD)
+      EAD_M = INT((EAD-EAD_D)*60.0D0)
+      EAD_S = (EAD-EAD_D-EAD_M/60.0D0)*3600.0D0
+      IF (EA .LT. 0.0D0) EAD_D = -EAD_D
+
+!
+!  Print result.
+!
+
+      WRITE (UNIT=*, FMT='(/A,F17.9,A,I5,A,I3,A,F8.3,A)') ' E  =  ', EA*180.0D0/PI, &
+         ' deg   =  ', EAD_D, ' deg ', EAD_M, "'", EAD_S, '"'
+
+      STOP
+
+!
+!  HYPERBOLIC ORBIT
+!
+!  Solve the hyperbolic Kepler's equation
+!
+!     M = e sinh F - F
+!
+!  for F by Newton's method.
+!
+
+  100 FA = MA
+      FA0 = FA
+      DO J = 1, 1000
+         FA = FA - (MA-ECC*SINH(FA)+FA)/(1.0D0-ECC*COSH(FA))
+         IF (ABS(FA-FA0) .LE. 1.0D-16) EXIT
+         FA0 = FA
+      END DO
+      IF (J .EQ. 1000) THEN
+         WRITE (UNIT=*, FMT='(A)') ' Warning: solution may not have converged.'
+      END IF
+
+!
+!  Print result.
+!
+
+      WRITE (UNIT=*, FMT='(/A,F15.7)') ' F = ', FA
+
+      STOP
+
+      END PROGRAM KEPLERSOLN
+
+
+
+
+
+
+!***********************************************************************************************************************************
+!  SGN - Signum function.
+!***********************************************************************************************************************************
+
+      FUNCTION SGN(X) RESULT (Y)
+
+      IMPLICIT NONE
+
+      DOUBLE PRECISION, INTENT(IN) :: X
+      INTEGER :: Y
+
+
+      IF (X .EQ. 0.0D0) THEN
+         Y = 0
+         RETURN
+      END IF
+
+      IF (X .GT. 0.0D0) THEN
+         Y = +1
+      ELSE
+         Y = -1
+      END IF
+
+      RETURN
+
+      END FUNCTION SGN
+

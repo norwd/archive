@@ -1,0 +1,64 @@
+!***********************************************************************************************************************************
+!
+!                                                             U T F 8
+!
+!  Program:      UTF8
+!
+!  Programmer:   David G. Simpson
+!                Laurel, Maryland
+!
+!  Date:         July 9, 2007
+!
+!  Language:     Fortran-90
+!
+!  Version:      1.00a
+!
+!  Description:  This program finds the UTF-8 encoding of a given Unicode character.
+!
+!***********************************************************************************************************************************
+
+      PROGRAM UTF8
+
+      IMPLICIT NONE
+
+      INTEGER :: I, UNICODE, W, X, Y, Z, BYTES(4)
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+      WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' Enter Unicode code (hex):  '
+      READ (UNIT=*, FMT='(Z8)') UNICODE
+
+      IF (UNICODE .LE. 127) THEN
+         WRITE (UNIT=*, FMT='(1X,Z2.2)') UNICODE
+      ELSE IF (UNICODE .LE. 2047) THEN
+         Y = ISHFT (IAND (UNICODE,1984), -6)
+         Z = IAND (UNICODE,63)
+         BYTES(1) = IOR (192,Y)
+         BYTES(2) = IOR (128,Z)
+         WRITE (UNIT=*, FMT='(1X,2(Z2.2,1X))') (BYTES(I), I=1,2)
+      ELSE IF (UNICODE .LE. 65535) THEN
+         X = ISHFT (IAND (UNICODE,61440), -12)
+         Y = ISHFT (IAND (UNICODE,4032), -6)
+         Z = IAND (UNICODE,63)
+         BYTES(1) = IOR (224,X)
+         BYTES(2) = IOR (128,Y)
+         BYTES(3) = IOR (128,Z)
+         WRITE (UNIT=*, FMT='(1X,3(Z2.2,1X))') (BYTES(I), I=1,3)
+      ELSE IF (UNICODE .LE. 1114111) THEN
+         W = ISHFT (IAND (UNICODE,1835008), -18)
+         X = ISHFT (IAND (UNICODE,258048), -12)
+         Y = ISHFT (IAND (UNICODE,4032), -6)
+         Z = IAND (UNICODE,63)
+         BYTES(1) = IOR (240,W)
+         BYTES(2) = IOR (128,X)
+         BYTES(3) = IOR (128,Y)
+         BYTES(4) = IOR (128,Z)
+         WRITE (UNIT=*, FMT='(1X,4(Z2.2,1X))') (BYTES(I), I=1,4)
+      ELSE
+         WRITE (UNIT=*, FMT='(A)') ' Out of range.'
+      END IF
+
+      STOP
+
+      END PROGRAM UTF8
+

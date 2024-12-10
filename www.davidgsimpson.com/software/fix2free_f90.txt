@@ -1,0 +1,160 @@
+!***********************************************************************************************************************************
+!
+!                                                         F I X 2 F R E E
+!
+!  Program:      FIX2FREE
+!
+!  Programmer:   Dr. David G. Simpson
+!                NASA Goddard Space Flight Center
+!                Greenbelt, Maryland  20771
+!
+!  Date:         December 11, 2001
+!
+!  Language:     ANSI Standard Fortran-90
+!
+!  Version:      1.00a (December 11, 2001)
+!
+!  Description:  This program converts a Fortran source file from the old fixed format to the new free format.
+!
+!  Notes:        The program asks whether to include a 'beginning & in column 6'.  Answer 'y' if your fixed source file may have,
+!                for example, strings or numbers that are split across multiple lines; e.g.
+!
+!                               WRITE (UNIT=*, FMT='(A)') 'THIS IS A STR
+!                              $ING SPLIT ACROSS TWO LINES'
+!
+!                This program will then insert two '&' characters to properly continue the line.  If your fixed source file has
+!                no such lines, you may answer 'n' to avoid the clutter of extra continuation characters.  If you're not sure,
+!                answering 'y' to this prompt is always safe.
+!
+!                Potential sources of trouble:
+!
+!                1.  If the original source code contains tab characters, this program will not work properly.  Before running
+!                    this program, replace any tab characters (ASCII 009) with the appropriate number of spaces.
+!
+!                2.  This program is intended to convert ANSI standard FORTRAN-77 to free-format Fortran-90.  Some odd behavior
+!                    may be noticed if the original FORTRAN-77 source contains non-standard extensions.  For example, it has been
+!                    noticed that if the FORTRAN-77 input file has '! to end of line'-style comments, this program will insert
+!                    a '!' comment character into the line in column 73.
+!
+!***********************************************************************************************************************************
+
+      PROGRAM FIX2FREE
+
+      IMPLICIT NONE
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+!
+!  Variables
+!
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+      INTEGER, PARAMETER  :: IN_UNIT  = 7                                           ! input file unit number
+      INTEGER, PARAMETER  :: OUT_UNIT = 8                                           ! output file unit number
+
+      CHARACTER (LEN=132) :: INFILE                                                 ! input filename
+      CHARACTER (LEN=132) :: OUTFILE                                                ! output filename
+      CHARACTER (LEN=132) :: LINE, LINE2                                            ! input current line and next line
+      CHARACTER (LEN=132) :: OUTLINE                                                ! output string
+      CHARACTER (LEN=3)   :: ANS                                                    ! answer to 'beginning &' prompt
+      INTEGER             :: IERR                                                   ! i/o error flag
+      LOGICAL             :: BEGINNING_CONT = .FALSE.                               ! set to .true. for column 6 continuation char
+
+
+
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+!
+!  Start of code
+!
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Get user input.
+!
+
+      WRITE (UNIT=*, FMT='(A)', ADVANCE='NO')               &                       ! get input filename
+             ' Enter name of input fixed-format file: '
+      READ (UNIT=*, FMT='(A)') INFILE
+
+      WRITE (UNIT=*, FMT='(A)', ADVANCE='NO')               &                       ! get output filename
+             ' Enter name of output free-format file: '
+      READ (UNIT=*, FMT='(A)') OUTFILE
+
+      WRITE (UNIT=*, FMT='(A)', ADVANCE='NO')               &                       ! ask whether beginning '&' is needed
+             ' Include a beginning & in column 6 (Y/N)? '
+      READ (UNIT=*, FMT='(A)') ANS
+
+      IF (ANS(1:1) .EQ. 'Y' .OR. ANS(1:1) .EQ. 'y') BEGINNING_CONT = .TRUE.         ! set flag if beginning '&' is needed
+
+!
+!     Open files.
+!
+
+      OPEN (UNIT=IN_UNIT, FILE=INFILE, STATUS='OLD', ACCESS='SEQUENTIAL',       &   ! open input file
+            FORM='FORMATTED', POSITION='REWIND', ACTION='READ', IOSTAT=IERR)
+
+      IF (IERR .NE. 0) THEN                                                         ! if file open error..
+         WRITE (UNIT=*, FMT='(A,I6,A)') ' Error ',IERR,' opening file '//INFILE     ! ..then print error message..
+         STOP                                                                       ! ..and return to operating system
+      END IF
+
+
+      OPEN (UNIT=OUT_UNIT, FILE=OUTFILE, STATUS='REPLACE', ACCESS='SEQUENTIAL', &   ! open output file
+            FORM='FORMATTED', ACTION='WRITE', IOSTAT=IERR)
+
+      IF (IERR .NE. 0) THEN                                                         ! if file open error..
+         WRITE (UNIT=*, FMT='(A,I6,A)') ' Error ',IERR,' opening file '//OUTFILE    ! ..then print error message..
+         STOP                                                                       ! ..and return to operating system
+      END IF
+
+!
+!     Process input fixed-format file and create output free-format file.
+!
+
+      READ (UNIT=IN_UNIT, FMT='(A)') LINE2                                          ! read in first line as 'next' line
+
+      DO                                                                            ! do for each line of input file
+
+         LINE = LINE2                                                               ! save 'next' line as current line
+
+         READ (UNIT=IN_UNIT, FMT='(A)', IOSTAT=IERR) LINE2                          ! read in new 'next' line
+         IF (IERR .LT. 0) EXIT                                                      ! exit if end of file
+
+         OUTLINE = LINE                                                             ! init output string to current line
+
+         IF (LINE(1:1).EQ.'C' .OR. LINE(1:1).EQ.'c' .OR. LINE(1:1).EQ.'*') THEN     ! if comment line (C, c, or * in column 1)..
+            OUTLINE(1:1) = '!'                                                      ! ..then replace with '!'
+         END IF
+
+         IF (OUTLINE(1:1) .NE. '!' .AND. LINE(73:80) .NE. '        ') THEN          ! if not comment and chars in columns 73-80..
+            OUTLINE(74:81) = LINE(73:80)                                            ! ..then shift them right one space..
+            OUTLINE(73:73) = '!'                                                    ! ..and put a '!' in column 73
+         END IF
+
+         IF (LINE2(1:1).NE.'C' .AND. LINE2(1:1).NE.'c' .AND. LINE2(1:1).NE.'*'  &   ! if not a comment line..
+             .AND. LINE2(6:6) .NE. ' ' .AND. LINE2(6:6) .NE. '0') THEN              ! ..and a nonzero character in column 6..
+            OUTLINE(73:80) = '&       '                                             ! ..then end this line with an '&'
+
+            IF (BEGINNING_CONT) THEN                                                ! if user asked for a beginning '&'..
+               LINE2(6:6) = '&'                                                     ! ..then put it in column 6 of the 'next' line
+            ELSE
+               LINE2(6:6) = ' '                                                     ! otherwise use a space to erase cont character
+            END IF
+
+         END IF
+
+         WRITE (UNIT=OUT_UNIT, FMT='(A)') TRIM(OUTLINE)                             ! write output string to output file
+
+      END DO
+
+      OUTLINE = LINE2                                                               ! copy final line
+      WRITE (UNIT=OUT_UNIT, FMT='(A)') TRIM(OUTLINE)                                ! write it to output file
+
+!
+!     Close files and return to operating system.
+!
+
+      CLOSE (UNIT=IN_UNIT, STATUS='KEEP')                                           ! close input file
+      CLOSE (UNIT=OUT_UNIT, STATUS='KEEP')                                          ! close output file
+
+      END PROGRAM FIX2FREE

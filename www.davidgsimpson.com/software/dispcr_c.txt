@@ -1,0 +1,156 @@
+/******************************************************************************/
+/*                                                                            */
+/*                                D I S P C R                                 */
+/*                                                                            */
+/*  Program:      DISPCR                                                      */
+/*                                                                            */
+/*  Programmer:   Dr. David G. Simpson                                        */
+/*                NASA Goddard Space Flight Center                            */
+/*                Greenbelt, Maryland  20771                                  */
+/*                                                                            */
+/*  Date:         October 10, 2002                                            */
+/*                                                                            */
+/*  Language:     ANSI Standard C                                             */
+/*                                                                            */
+/*  Description:  This program displays the first few end-of-line characters  */
+/*                in an ASCII text file.  The results will be:                */
+/*                                                                            */
+/*                <CR>      if the lines end in a CR     (e.g. Macintosh);    */
+/*                <LF>      if the lines end in a LF     (e.g. UNIX, VAX);    */
+/*                <CR><LF>  if the lines end in a CR/LF  (e.g. PC).           */
+/*                                                                            */
+/*                The file name may be entered as an argument on the command  */
+/*                line.  If no file name is given, the user will be prompted  */
+/*                for the file name.                                          */
+/*                                                                            */
+/******************************************************************************/
+
+
+/******************************************************************************/
+/*  #includes                                                                 */
+/******************************************************************************/
+
+#include <stdio.h>                          /* standard i/o                   */
+#include <stdlib.h>                         /* standard library               */
+#include <string.h>                         /* string functions               */
+
+
+
+/******************************************************************************/
+/*  #defines                                                                  */
+/******************************************************************************/
+
+#define  CR      0x0D                       /* carriage return                */
+#define  LF      0x0A                       /* line feed                      */
+#define  MAXCTR  10                         /* max number of lines to display */
+
+
+
+/******************************************************************************/
+/*  function prototype                                                        */
+/******************************************************************************/
+
+void chomp (char *str);                     /* remove trailing \n from string */
+
+
+
+/******************************************************************************/
+/*  global variables                                                          */
+/******************************************************************************/
+
+char filename[133];                         /* input file name                */
+FILE *fp;                                   /* file pointer                   */
+unsigned char b;                            /* storage for one byte           */
+int ctr;                                    /* counter of num lines diplayed  */
+int crflag;                                 /* flag: 1=CR just diplayed       */
+
+
+
+
+
+/******************************************************************************/
+/*  main()                                                                    */
+/******************************************************************************/
+
+int main (int argc, char *argv[])
+{
+
+if (argc==1)                                /* if no file name on command line*/
+   {                                        /* then prompt for file name      */
+   fputs("Enter file name:  ", stdout);
+   fgets(filename, 132, stdin);
+   chomp(filename);
+   }
+else
+   strcpy(filename, argv[1]);               /* else get filename from cmd line*/
+
+if ((fp = fopen(filename, "rb"))==NULL)     /* open file                      */
+   {
+   printf("Error opening file %s\n",
+           filename);
+   exit(1);
+   }
+
+ctr = 0;                                    /* init counter and flag          */
+crflag = 0;
+
+for (;;)                                    /* loop for all bytes in file     */
+   {
+   fread(&b, 1, 1, fp);                     /* read one byte                  */
+
+   if (feof(fp))                            /* exit loop if end of file       */
+      break;
+
+   if (b==CR)                               /* if <CR>                        */
+      {
+      if (crflag)
+         fputs("\n", stdout);
+      fputs("<CR>", stdout);
+      ctr++;
+      crflag = 1;
+      }
+
+   else if (b==LF)                          /* if <LF>                        */
+      {
+      fputs("<LF>\n", stdout);
+      ctr++;
+      crflag = 0;
+      }
+
+   else                                     /* if other byte                  */
+      {
+      if (crflag)
+         fputs("\n", stdout);
+      crflag = 0;
+      }
+
+   if (ctr >= MAXCTR)                       /* exit if max lines displayed    */
+      break;
+   }
+
+if (crflag)                                 /* put final \n if needed         */
+   fputs("\n", stdout);
+
+fclose (fp);                                /* close file                     */
+
+return 0;                                   /* return to operating system     */
+}
+
+
+
+
+/*****************************************************************************/
+/*  chomp()                                                                  */
+/*                                                                           */
+/*  Remove final \n from end of string.                                      */
+/*****************************************************************************/
+
+void chomp (char *str)
+{
+int  len;                                   /* length of str (incl \n)       */
+
+len = strlen (str);                         /* get length of str incl \n     */
+if (str[len-1] == '\n')                     /* if final char is \n ..        */
+   str[len-1] = '\0';                       /* ..then remove it              */
+}
+

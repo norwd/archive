@@ -1,0 +1,305 @@
+!***********************************************************************************************************************************
+!
+!                                                           I N V H Y P
+!
+!  Module:       INVHYP
+!
+!  Programmer:   Dr. David G. Simpson
+!                NASA Goddard Space Flight Center
+!                Greenbelt, Maryland  20771
+!
+!  Date:         October 24, 2002
+!
+!  Language:     Fortran-90
+!
+!  Description:  This module includes functions for computing inverse hyperbolic functions:
+!
+!                  ACOSH  Inverse hyperbolic cosine
+!                  ASINH  Inverse hyperbolic sine
+!                  ATANH  Inverse hyperbolic tangent
+!
+!                The algorithms are taken from the GNU Scientific Library (q.v.).
+!
+!***********************************************************************************************************************************
+
+      MODULE INVHYP                                                                 ! start of invhyp module
+
+      INTERFACE LOG1P                                                               ! interface for log(1+x)
+      MODULE PROCEDURE SLOG1P, DLOG1P
+      END INTERFACE
+
+      INTERFACE ASINH                                                               ! interface for asinh
+      MODULE PROCEDURE SASINH, DASINH
+      END INTERFACE
+
+      INTERFACE ACOSH                                                               ! interface for acosh
+      MODULE PROCEDURE SACOSH, DACOSH
+      END INTERFACE
+
+      INTERFACE ATANH                                                               ! interface for atanh
+      MODULE PROCEDURE SATANH, DATANH
+      END INTERFACE
+
+      PRIVATE                                                                       ! everything private unless made public
+
+      PUBLIC :: ACOSH, ASINH, ATANH                                                 ! public interfaces
+
+      INTEGER, PARAMETER, PRIVATE :: SGL = KIND (0.0)                               ! single-precision real kind
+      INTEGER, PARAMETER, PRIVATE :: DBL = KIND (0.0D0)                             ! double-precision real kind
+
+!
+!     Global constants.
+!
+
+      REAL(SGL), PARAMETER, PRIVATE :: SPI = 3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280
+      REAL(DBL), PARAMETER, PRIVATE :: DPI = 3.14159265358979323846264338327950288419716939937510582097494459230781640628620899863D0
+
+      REAL(SGL), PARAMETER, PRIVATE :: SLN2 = 0.693147180559945309417232121458176568075500134360255254120680009493393621969694715606
+      REAL(DBL), PARAMETER, PRIVATE :: DLN2 = 0.6931471805599453094172321214581765680755001343602552541206800094933936219696947156D0
+
+
+      CONTAINS
+
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+!  ACOSH
+!
+!  Inverse hyperbolic cosine.
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Single-precision version.
+!
+
+      FUNCTION SACOSH (X) RESULT (Y)
+
+      REAL(SGL), INTENT(IN) :: X
+      REAL(SGL) :: Y
+      REAL(SGL) :: T
+
+      IF (X .GT. (1.0 / SQRT(EPSILON(1.0)))) THEN
+         Y = LOG (X) + SLN2
+      ELSE IF (X .GT. 2.0) THEN
+         Y = LOG (2.0 * X - 1.0 / (SQRT (X * X - 1.0) + X))
+      ELSE IF (X .GT. 1.0) THEN
+         T = X - 1.0
+         Y = LOG1P (T + SQRT (2.0 * T + T * T))
+      ELSE IF (X .EQ. 1.0) THEN
+         Y = 0.0
+      ELSE
+         Y = 0.0
+         WRITE (UNIT=*, FMT='(A)') ' ACOSH ERROR.'
+      END IF
+
+      RETURN
+
+      END FUNCTION SACOSH
+
+
+!
+!     Double-precision version.
+!
+
+      FUNCTION DACOSH (X) RESULT (Y)
+
+      REAL(DBL), INTENT(IN) :: X
+      REAL(DBL) :: Y
+      REAL(DBL) :: T
+
+      IF (X .GT. (1.0D0 / SQRT(EPSILON(1.0D0)))) THEN
+         Y = LOG (X) + DLN2
+      ELSE IF (X .GT. 2.0D0) THEN
+         Y = LOG (2.0D0 * X - 1.0D0 / (SQRT (X * X - 1.0D0) + X))
+      ELSE IF (X .GT. 1.0D0) THEN
+         T = X - 1.0D0
+         Y = LOG1P (T + SQRT (2.0D0 * T + T * T))
+      ELSE IF (X .EQ. 1.0D0) THEN
+         Y = 0.0D0
+      ELSE
+         Y = 0.0D0
+         WRITE (UNIT=*, FMT='(A)') ' ACOSH ERROR.'
+      END IF
+
+      RETURN
+
+      END FUNCTION DACOSH
+
+
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+!  ASINH
+!
+!  Inverse hyperbolic sine.
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Single-precision version.
+!
+
+      FUNCTION SASINH (X) RESULT (Y)
+
+      REAL(SGL), INTENT(IN) :: X
+      REAL(SGL) :: Y
+      REAL(SGL) :: A, S, SEPS, A2
+
+      A = ABS(X)
+      S = SIGN(1.0,X)
+      SEPS = SQRT(EPSILON(1.0))
+
+      IF (A .GT. (1.0 / SEPS)) THEN
+         Y = S * (LOG (A) + SLN2)
+      ELSE IF (A .GT. 2.0) THEN
+         Y = S * LOG (2 * A + 1.0 / (A + SQRT (A * A + 1.0)))
+      ELSE IF (A .GT. SEPS) THEN
+         A2 = A * A
+         Y = S * LOG1P (A + A2 / (1.0 + SQRT (1.0 + A2)))
+      ELSE
+         Y = X
+      END IF
+
+      RETURN
+
+      END FUNCTION SASINH
+
+
+!
+!     Double-precision version.
+!
+
+      FUNCTION DASINH (X) RESULT (Y)
+
+      REAL(DBL), INTENT(IN) :: X
+      REAL(DBL) :: Y
+      REAL(DBL) :: A, S, SEPS, A2
+
+      A = ABS(X)
+      S = SIGN(1.0,X)
+      SEPS = SQRT(EPSILON(1.0D0))
+
+      IF (A .GT. (1.0D0 / SEPS)) THEN
+         Y = S * (LOG (A) + DLN2)
+      ELSE IF (A .GT. 2.0D0) THEN
+         Y = S * LOG (2 * A + 1.0D0 / (A + SQRT (A * A + 1.0D0)))
+      ELSE IF (A .GT. SEPS) THEN
+         A2 = A * A
+         Y = S * LOG1P (A + A2 / (1.0D0 + SQRT (1.0D0 + A2)))
+      ELSE
+         Y = X
+      END IF
+
+      RETURN
+
+      END FUNCTION DASINH
+
+
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+!  ATANH
+!
+!  Inverse hyperbolic tangent.
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Single-precision version.
+!
+
+      FUNCTION SATANH (X) RESULT (Y)
+
+      REAL(SGL), INTENT(IN) :: X
+      REAL(SGL) :: Y
+      REAL(SGL) :: A, S
+
+      A = ABS(X)
+      S = SIGN(1.0,X)
+
+      IF (A .GE. 1.0) THEN
+         Y = 0.0
+         WRITE (UNIT=*, FMT='(A)') ' ATANH ERROR.'
+      ELSE IF (A .GE. 0.5) THEN
+         Y = S * 0.5 * LOG1P (2.0 * A / (1.0 - A))
+      ELSE IF (A .GT. EPSILON(1.0)) THEN
+         Y = S * 0.5 * LOG1P (2.0 * A + 2.0 * A * A / (1.0 - A))
+      ELSE
+         Y = X
+      END IF
+
+      RETURN
+
+      END FUNCTION SATANH
+
+
+!
+!     Double-precision version.
+!
+
+      FUNCTION DATANH (X) RESULT (Y)
+
+      REAL(DBL), INTENT(IN) :: X
+      REAL(DBL) :: Y
+      REAL(DBL) :: A, S
+
+      A = ABS(X)
+      S = SIGN(1.0D0,X)
+
+      IF (A .GE. 1.0D0) THEN
+         Y = 0.0D0
+         WRITE (UNIT=*, FMT='(A)') ' ATANH ERROR.'
+      ELSE IF (A .GE. 0.5D0) THEN
+         Y = S * 0.5D0 * LOG1P (2.0D0 * A / (1.0D0 - A))
+      ELSE IF (A .GT. EPSILON(1.0D0)) THEN
+         Y = S * 0.5D0 * LOG1P (2.0D0 * A + 2.0D0 * A * A / (1.0D0 - A))
+      ELSE
+         Y = X
+      END IF
+
+      RETURN
+
+      END FUNCTION DATANH
+
+
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+!  LOG1P
+!
+!  Compute log(1+x).
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Single-precision version.
+!
+
+      FUNCTION SLOG1P (X) RESULT (Y)
+
+      REAL(SGL), INTENT(IN) :: X
+      REAL(SGL) :: Y
+      REAL(SGL) :: Z
+
+      Z = 1.0 + X
+      Y = LOG(Z) - ((Z-1.0)-X)/Z                                                    ! cancels errors with IEEE arithmetic
+
+      RETURN
+
+      END FUNCTION SLOG1P
+
+
+!
+!     Double-precision version.
+!
+
+      FUNCTION DLOG1P (X) RESULT (Y)
+
+      REAL(DBL), INTENT(IN) :: X
+      REAL(DBL) :: Y
+      REAL(DBL) :: Z
+
+      Z = 1.0D0 + X
+      Y = LOG(Z) - ((Z-1.0D0)-X)/Z                                                  ! cancels errors with IEEE arithmetic
+
+      RETURN
+
+      END FUNCTION DLOG1P
+
+
+
+      END MODULE INVHYP
+
