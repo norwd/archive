@@ -1,0 +1,325 @@
+!***********************************************************************************************************************************
+!
+!                                                 E O L E T T E R S
+!
+!  Program:      EOLETTERS
+!
+!  Programmer:   David G. Simpson
+!                Laurel, Maryland
+!
+!  Date:         January 29, 2006
+!
+!  Language:     Fortran-90
+!
+!  Version:      1.00c  (June 19, 2009)
+!
+!  Description:  Converts accented letters in an Esperanto text file from one convention to another.
+!
+!  Files:        eoletters.f90         Main program
+!
+!  Notes:        A file cannot always be converted from the h-convention to another convention reliably, since the
+!                character 'u' represents both accented and unaccented u.  Nevertheless, this program handles most cases
+!                correctly.  It will look for the combinations 'au' and 'eu' and replace them with an accented u appropriately.
+!                Other occurences of u are left as is.
+!
+!                Also note that there are other circumstances in which one cannot reliably convert from the h-convention to
+!                another convention.  For example, 'flughaveno' will be interpreted as having an accented 'g'.
+!
+!                Other conventions may easily be added to the program; just follow the examples for the given conventions.
+!
+!***********************************************************************************************************************************
+
+      PROGRAM EOLETTERS
+
+      IMPLICIT NONE
+
+      CHARACTER(LEN=6), DIMENSION(24), TARGET :: H_CONVENTION = (/     &
+         'ch    ', 'gh    ', 'hh    ', 'jh    ', 'sh    ', 'u     ',   &
+         'Ch    ', 'Gh    ', 'Hh    ', 'Jh    ', 'Sh    ', 'U     ',   &
+         'CH    ', 'GH    ', 'HH    ', 'JH    ', 'SH    ', 'U     ',   &
+         'cH    ', 'gH    ', 'hH    ', 'jH    ', 'sH    ', 'u     '    &
+         /)
+
+      CHARACTER(LEN=6), DIMENSION(24), TARGET :: X_CONVENTION = (/     &
+         'cx    ', 'gx    ', 'hx    ', 'jx    ', 'sx    ', 'ux    ',   &
+         'Cx    ', 'Gx    ', 'Hx    ', 'Jx    ', 'Sx    ', 'Ux    ',   &
+         'CX    ', 'GX    ', 'HX    ', 'JX    ', 'SX    ', 'UX    ',   &
+         'cX    ', 'gX    ', 'hX    ', 'jX    ', 'sX    ', 'uX    '    &
+         /)
+
+      CHARACTER(LEN=6), DIMENSION(24), TARGET :: HTML_CONVENTION = (/  &
+         '&#265;', '&#285;', '&#293;', '&#309;', '&#349;', '&#365;',   &
+         '&#264;', '&#284;', '&#292;', '&#308;', '&#348;', '&#364;',   &
+         '&#264;', '&#284;', '&#292;', '&#308;', '&#348;', '&#364;',   &
+         '&#265;', '&#285;', '&#293;', '&#309;', '&#349;', '&#365;'    &
+         /)
+
+      CHARACTER(LEN=6), DIMENSION(24), TARGET :: LATEX_CONVENTION = (/ &
+         '^c    ', '^g    ', '^h    ', '^j    ', '^s    ', '^u    ',   &
+         '^C    ', '^G    ', '^H    ', '^J    ', '^S    ', '^U    ',   &
+         '^C    ', '^G    ', '^H    ', '^J    ', '^S    ', '^U    ',   &
+         '^c    ', '^g    ', '^h    ', '^j    ', '^s    ', '^u    '    &
+         /)
+
+      CHARACTER(LEN=6), DIMENSION(24), TARGET :: ISO8859_3_ENCODING = (/ &
+         '      ', '      ', '      ', '      ', '      ', '      ',   &
+         '      ', '      ', '      ', '      ', '      ', '      ',   &
+         '      ', '      ', '      ', '      ', '      ', '      ',   &
+         '      ', '      ', '      ', '      ', '      ', '      '    &
+         /)
+
+      CHARACTER(LEN=6), DIMENSION(24), TARGET :: UTF8_ENCODING = (/    &
+         '      ', '      ', '      ', '      ', '      ', '      ',   &
+         '      ', '      ', '      ', '      ', '      ', '      ',   &
+         '      ', '      ', '      ', '      ', '      ', '      ',   &
+         '      ', '      ', '      ', '      ', '      ', '      '    &
+         /)
+
+      INTEGER, DIMENSION(24), PARAMETER :: ISO8859_3_VALUES = (/ &
+         230, 248, 182, 188, 254, 253,  &
+         198, 216, 166, 172, 222, 221,  &
+         198, 216, 166, 172, 222, 221,  &
+         230, 248, 182, 188, 254, 253   &
+         /)
+
+      INTEGER, DIMENSION(48), PARAMETER :: UTF8_VALUES = (/ &
+         196, 137,   196, 157,   196, 165,   196, 181,   197, 157,   197, 173,  &
+         196, 136,   196, 156,   196, 164,   196, 180,   197, 156,   197, 172,  &
+         196, 136,   196, 156,   196, 164,   196, 180,   197, 156,   197, 172,  &
+         196, 137,   196, 157,   196, 165,   196, 181,   197, 157,   197, 173   &
+         /)
+
+      INTEGER, PARAMETER :: INUNIT  = 11
+      INTEGER, PARAMETER :: OUTUNIT = 12
+
+      CHARACTER, PARAMETER :: SPACE_CHAR = '~'                                      ! to replace spaces (an otherwise unused char)
+
+      INTEGER :: INPUT_CONV, OUTPUT_CONV, I, J, IERR, INLEN, OUTLEN
+
+      CHARACTER :: CH
+      CHARACTER(LEN=6), DIMENSION(:), POINTER :: INPTR, OUTPTR, PTR
+      CHARACTER(LEN=80) :: INPUT_FILENAME, OUTPUT_FILENAME
+      CHARACTER(LEN=1024) :: INLINE, OUTLINE
+
+      LOGICAL :: FOUND
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Load encoding arrays.
+!
+
+      PTR => ISO8859_3_ENCODING
+
+      DO I = 1, 24
+         PTR(I) = CHAR(ISO8859_3_VALUES(I)) // '     '
+      END DO
+
+      PTR => UTF8_ENCODING
+
+      DO I = 0, 23
+         PTR(I+1) = CHAR(UTF8_VALUES(2*I+1)) // CHAR(UTF8_VALUES(2*I+2)) // '    '
+      END DO
+
+!
+!     Get input file name.
+!
+
+      WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' Enter input file name: '
+      READ (UNIT=*, FMT=*) INPUT_FILENAME
+
+!
+!     Open input file.
+!
+
+      OPEN (UNIT=INUNIT, FILE=INPUT_FILENAME, STATUS='OLD', ACCESS='SEQUENTIAL', &
+         FORM='FORMATTED', POSITION='REWIND', ACTION='READ', IOSTAT=IERR)
+
+      IF (IERR .NE. 0) THEN
+         WRITE (UNIT=*, FMT='(A,I6,A)') ' Error ',IERR,' opening file '//INPUT_FILENAME
+         STOP
+      END IF
+
+!
+!     Get input file convention.
+!
+
+      WRITE (UNIT=*, FMT='(A)') ' Enter input file convention:'
+      WRITE (UNIT=*, FMT='(A)') '   (1) H-convention (ch, gh, hh, jh, sh, u)'
+      WRITE (UNIT=*, FMT='(A)') '   (2) X-convention (cx, gx, hx, jx, sx, ux)'
+      WRITE (UNIT=*, FMT='(A)') '   (3) HTML Unicode'
+      WRITE (UNIT=*, FMT='(A)') '   (4) LaTeX convention (^c, ^g, ^h, ^j, ^s, ^u)'
+      WRITE (UNIT=*, FMT='(A)') '   (5) ISO-8859-3 (Latin-3) encoding'
+      WRITE (UNIT=*, FMT='(A)') '   (6) UTF-8 encoding'
+      WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' ?  '
+      READ (UNIT=*, FMT=*) INPUT_CONV
+
+!
+!     Get output file name.
+!
+
+      WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' Enter output file name: '
+      READ (UNIT=*, FMT=*) OUTPUT_FILENAME
+
+      IF (OUTPUT_FILENAME .EQ. INPUT_FILENAME) THEN
+         WRITE (UNIT=*, FMT='(A)') ' Error: input and output file names cannot be the same.'
+         STOP
+      END IF
+
+!
+!     Open output file.
+!
+
+      OPEN (UNIT=OUTUNIT, FILE=OUTPUT_FILENAME, STATUS='REPLACE', ACCESS='SEQUENTIAL', &
+         FORM='FORMATTED', POSITION='REWIND', ACTION='WRITE', IOSTAT=IERR)
+
+      IF (IERR .NE. 0) THEN
+         WRITE (UNIT=*, FMT='(A,I6,A)') ' Error ',IERR,' opening file '//OUTPUT_FILENAME
+         STOP
+      END IF
+
+!
+!     Get output file convention.
+!
+
+      WRITE (UNIT=*, FMT='(A)') ' Enter output file convention:'
+      WRITE (UNIT=*, FMT='(A)') '   (1) H-convention (ch, gh, hh, jh, sh, u)'
+      WRITE (UNIT=*, FMT='(A)') '   (2) X-convention (cx, gx, hx, jx, sx, ux)'
+      WRITE (UNIT=*, FMT='(A)') '   (3) HTML Unicode'
+      WRITE (UNIT=*, FMT='(A)') '   (4) LaTeX convention (^c, ^g, ^h, ^j, ^s, ^u)'
+      WRITE (UNIT=*, FMT='(A)') '   (5) ISO-8859-3 (Latin-3) encoding'
+      WRITE (UNIT=*, FMT='(A)') '   (6) UTF-8 encoding'
+      WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' ?  '
+      READ (UNIT=*, FMT=*) OUTPUT_CONV
+
+!
+!     Set pointers.
+!
+
+      SELECT CASE (INPUT_CONV)
+         CASE(1)
+            INPTR => H_CONVENTION
+         CASE(2)
+            INPTR => X_CONVENTION
+         CASE(3)
+            INPTR => HTML_CONVENTION
+         CASE(4)
+            INPTR => LATEX_CONVENTION
+         CASE(5)
+            INPTR => ISO8859_3_ENCODING
+         CASE(6)
+            INPTR => UTF8_ENCODING
+         CASE DEFAULT
+            WRITE (UNIT=*, FMT='(A,I6)') ' Error: invalid input convention:  ', INPUT_CONV
+            STOP
+      END SELECT
+
+      SELECT CASE (OUTPUT_CONV)
+         CASE(1)
+            OUTPTR => H_CONVENTION
+         CASE(2)
+            OUTPTR => X_CONVENTION
+         CASE(3)
+            OUTPTR => HTML_CONVENTION
+         CASE(4)
+            OUTPTR => LATEX_CONVENTION
+         CASE(5)
+            OUTPTR => ISO8859_3_ENCODING
+         CASE(6)
+            OUTPTR => UTF8_ENCODING
+         CASE DEFAULT
+            WRITE (UNIT=*, FMT='(A,I6)') ' Error: invalid output convention:  ', OUTPUT_CONV
+            STOP
+      END SELECT
+
+      INLEN = LEN_TRIM(INPTR(1))                                                    ! length of input accented strings
+      OUTLEN = LEN_TRIM(OUTPTR(1))                                                  ! lenght of output accented strings
+
+!
+!     Convert input file and send to output file.
+!
+
+      DO
+
+         READ (UNIT=INUNIT, FMT='(A)', IOSTAT=IERR) INLINE                          ! read one input line
+         IF (IERR .LT. 0) EXIT                                                      ! exit loop if end of input file
+         OUTLINE = ' '                                                              ! initialize output line
+         I = 1                                                                      ! initialize loop counter
+
+         DO                                                                         ! loop for each character in input line
+            FOUND = .FALSE.                                                         ! initialize accented character FOUND flag
+            IF (INLINE(I:I) .EQ. ' ') INLINE(I:I) = SPACE_CHAR                      ! replace space with character (because of TRIM)
+            CH = INLINE(I:I)                                                        ! CH = current character
+
+            IF ((INPUT_CONV .EQ. 1) .AND. ((CH.EQ.'u').OR.(CH.EQ.'U'))) THEN        ! if input h-convention and letter 'u'..
+               IF (I .EQ. 1) GO TO 100                                              ! if u at beginning of line, don't change it
+               IF (INLINE(I-1:I).EQ.'au') THEN                                      ! if 'au'
+                  OUTLINE = TRIM(OUTLINE) // TRIM(OUTPTR(6))                        ! ..replace it using output convention
+                  FOUND = .TRUE.                                                    ! set accented character FOUND flag
+                  GO TO 110
+               ELSE IF (INLINE(I-1:I) .EQ. 'eu') THEN                               ! if 'eu'
+                  OUTLINE = TRIM(OUTLINE) // TRIM(OUTPTR(6))                        ! ..replace it using output convention
+                  FOUND = .TRUE.                                                    ! set accented character FOUND flag
+                  GO TO 110
+               ELSE IF (INLINE(I-1:I) .EQ. 'Au') THEN                               ! if 'Au'
+                  OUTLINE = TRIM(OUTLINE) // TRIM(OUTPTR(6))                        ! ..replace it using output convention
+                  FOUND = .TRUE.                                                    ! set accented character FOUND flag
+                  GO TO 110
+               ELSE IF (INLINE(I-1:I) .EQ. 'Eu') THEN                               ! if 'Eu'
+                  OUTLINE = TRIM(OUTLINE) // TRIM(OUTPTR(6))                        ! ..replace it using output convention
+                  FOUND = .TRUE.                                                    ! set accented character FOUND flag
+                  GO TO 110
+               ELSE IF (INLINE(I-1:I) .EQ. 'AU') THEN                               ! if 'AU'
+                  OUTLINE = TRIM(OUTLINE) // TRIM(OUTPTR(12))                       ! ..replace it using output convention
+                  FOUND = .TRUE.                                                    ! set accented character FOUND flag
+                  GO TO 110
+               ELSE IF (INLINE(I-1:I) .EQ. 'EU') THEN                               ! if 'EU'
+                  OUTLINE = TRIM(OUTLINE) // TRIM(OUTPTR(12))                       ! ..replace it using output convention
+                  FOUND = .TRUE.                                                    ! set accented character FOUND flag
+                  GO TO 110
+               ELSE IF (INLINE(I-1:I) .EQ. 'aU') THEN                               ! if 'aU'
+                  OUTLINE = TRIM(OUTLINE) // TRIM(OUTPTR(6))                        ! ..replace it using output convention
+                  FOUND = .TRUE.                                                    ! set accented character FOUND flag
+                  GO TO 110
+               ELSE IF (INLINE(I-1:I) .EQ. 'eU') THEN                               ! if 'eU'
+                  OUTLINE = TRIM(OUTLINE) // TRIM(OUTPTR(6))                        ! ..replace it using output convention
+                  FOUND = .TRUE.                                                    ! set accented character FOUND flag
+                  GO TO 110
+               ELSE                                                                 ! in other cases..
+                  GO TO 100                                                         ! ..just leave 'u' as is
+               END IF
+            END IF
+
+            DO J = 1, 24                                                            ! loop for all 24 accented character combinations
+               IF (INLINE(I:I+INLEN-1) .EQ. INPTR(J)) THEN                          ! if accented character found..
+                  OUTLINE = TRIM(OUTLINE) // TRIM(OUTPTR(J))                        ! ..replace it using output convention
+                  FOUND = .TRUE.                                                    ! set accented character FOUND flag
+                  I = I + INLEN-1                                                   ! skip pointer ahead
+                  EXIT                                                              ! don't check other combinations
+               END IF
+            END DO
+
+  100       IF (.NOT. FOUND) OUTLINE = TRIM(OUTLINE) // CH                          ! if accented char not found, just copy char
+  110       I = I + 1                                                               ! increment loop counter
+            IF (I .GT. LEN_TRIM(INLINE)) EXIT                                       ! exit if end of line
+         END DO
+
+         DO I = 1, LEN_TRIM(OUTLINE)                                                ! scan output line..
+            IF (OUTLINE(I:I) .EQ. SPACE_CHAR) OUTLINE(I:I) = ' '                    ! restore spaces
+         END DO
+
+         WRITE (UNIT=OUTUNIT, FMT='(A)') TRIM(OUTLINE)                              ! output line to output file
+
+      END DO
+
+!
+!     Close files and stop.
+!
+
+      CLOSE (UNIT=OUTUNIT, STATUS='KEEP')
+      CLOSE (UNIT=INUNIT, STATUS='KEEP')
+
+      STOP
+
+      END PROGRAM EOLETTERS
+

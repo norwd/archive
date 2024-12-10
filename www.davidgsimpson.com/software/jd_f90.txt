@@ -1,0 +1,98 @@
+!***********************************************************************************************************************************
+!
+!                                                                  J D
+!
+!  Program:      JD
+!
+!  Programmer:   David G. Simpson
+!                NASA Goddard Space Flight Center
+!                Greenbelt, Maryland  20771
+!
+!  Date:         December 29, 2005
+!
+!  Language:     Fortran-90
+!
+!  Version:      1.00b  (August 24, 2006)
+!
+!  Description:  Print current value of Julian day (based on system clock).
+!
+!***********************************************************************************************************************************
+
+      PROGRAM JD
+
+      IMPLICIT NONE
+
+      CHARACTER(9), DIMENSION(0:6), PARAMETER :: DAY_NAME =                    &    ! weekday names
+         (/ 'Sunday   ', 'Monday   ', 'Tuesday  ', 'Wednesday', 'Thursday ',   &
+            'Friday   ', 'Saturday ' /)
+
+      CHARACTER(LEN=10) :: TIME, DATE, ZONE
+      INTEGER :: DT(8)
+      INTEGER :: YEAR, MONTH, DAY, HOUR, MINUTE, SECOND, UTCCOR, DOW
+      DOUBLE PRECISION :: JD0, JD1, JD_JAN0
+
+      DOUBLE PRECISION :: GREG2JD
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+      CALL DATE_AND_TIME (DATE, TIME, ZONE, DT)
+
+      YEAR = DT(1)
+      MONTH = DT(2)
+      DAY = DT(3)
+      UTCCOR = DT(4)
+      IF (UTCCOR .EQ. -HUGE(0)) UTCCOR = 0
+      HOUR = DT(5)
+      MINUTE = DT(6)
+      SECOND = DT(7)
+
+      JD0 = GREG2JD (YEAR, MONTH, DAY, 0, 0, 0)
+      JD1 = GREG2JD (YEAR, MONTH, DAY, HOUR, MINUTE-UTCCOR, SECOND)
+      JD_JAN0 = GREG2JD (YEAR, 1, 0, 0, 0, 0)
+      DOW = MOD(NINT(JD0+1.5D0), 7)
+
+      WRITE (UNIT=*, FMT='(/A,I2.2,1H/,I2.2,1H/,I4)') ' Date:  ', MONTH, DAY, YEAR
+      WRITE (UNIT=*, FMT='(A)') ' Day:   '//DAY_NAME(DOW)
+      WRITE (UNIT=*, FMT='(A,I2.2,1H:,I2.2,1H:,I2.2)') ' Time:  ', HOUR, MINUTE, SECOND
+      WRITE (UNIT=*, FMT='(A,I3)') ' DOY:   ', INT(JD1-JD_JAN0)
+      WRITE (UNIT=*, FMT='(A,F15.5)') ' JD:  ', JD1
+
+      STOP
+
+      END PROGRAM JD
+
+
+!***********************************************************************************************************************************
+!  GREG2JD - Compute Julian day from Gregorian date.
+!***********************************************************************************************************************************
+
+      FUNCTION GREG2JD (YEAR, MONTH, DAY, HOUR, MINUTE, SECOND) RESULT (JD)
+
+      IMPLICIT NONE
+
+      INTEGER, INTENT(IN) :: YEAR, MONTH, DAY, HOUR, MINUTE, SECOND
+      DOUBLE PRECISION :: JD
+
+      DOUBLE PRECISION :: DAYFRAC
+      INTEGER :: Y, M, A, B
+
+
+      DAYFRAC = DBLE(DAY) + HOUR/24.0D0 + MINUTE/1440.0D0 + SECOND/86400.0D0
+
+      IF (MONTH .GT. 2) THEN
+         Y = YEAR
+         M = MONTH
+      ELSE
+         Y = YEAR - 1
+         M = MONTH + 12
+      END IF
+
+      A = Y/100
+      B = 2 - A + A/4
+
+      JD = INT(365.25D0*(Y+4716)) + INT(30.6001D0*(M+1)) + DAYFRAC + B - 1524.5D0
+
+      RETURN
+
+      END FUNCTION GREG2JD
+

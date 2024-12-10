@@ -1,0 +1,1000 @@
+!***********************************************************************************************************************************
+!
+!                                                         J U L I A N D A Y
+!
+!  Program:      JULIANDAY
+!
+!  Programmer:   David G. Simpson
+!                NASA Goddard Space Flight Center
+!                Greenbelt, Maryland  20771
+!
+!  Date:         November 21, 2005
+!
+!  Language:     Fortran-90
+!
+!  Version:      1.00b  (December 13, 2005)
+!
+!  Description:  Generates LaTeX code to create a table of Julian days.
+!
+!  Files:        Source files:
+!
+!                   julianday.f90                   Main program
+!
+!  Notes:        The first three digits of the Julian day are shown as headers at the top of each column.  These will need to
+!                adjusted manually in the final TeX code for years in which those digits change (e.g. 1749, 1776, 1804, 1831,
+!                1858, 1886, 1913, 1941, 1968, 1995, 2023, 2050, 2077, 2105, 2132, 2160, 2187, 2214, 2242, 2269, 2296, 2324, etc.)
+!
+!***********************************************************************************************************************************
+
+      PROGRAM JULIANDAY
+
+      IMPLICIT NONE
+
+      CHARACTER(LEN=*), PARAMETER :: OUTFILE = 'jd.tex'
+      INTEGER, PARAMETER :: OUTUNIT = 11
+
+      INTEGER :: IERR, DAY, JAN0, YEAR, JD_UPPER3
+      DOUBLE PRECISION :: JD_JAN0
+      CHARACTER(LEN=4) :: YEARSTR
+      CHARACTER(LEN=3) :: JD_UPPER3_STR
+
+      LOGICAL :: LEAP
+      DOUBLE PRECISION :: GREG2JD
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Get user input.
+!
+
+      WRITE (UNIT=*, FMT='(/A)', ADVANCE='NO') ' Enter year:  '
+      READ (UNIT=*, FMT=*) YEAR
+
+!
+!     Initialize data.
+!
+
+      WRITE (UNIT=YEARSTR, FMT='(I4.4)') YEAR
+
+      JD_JAN0 = GREG2JD(YEAR,1,0,12,0,0)
+      JAN0 = MOD(NINT(JD_JAN0-1),10000)
+      JD_UPPER3 = INT(JD_JAN0)/10000
+      WRITE (UNIT=JD_UPPER3_STR, FMT='(I3)') JD_UPPER3
+
+!
+!     Open output file.
+!
+
+      OPEN (UNIT=OUTUNIT, FILE=OUTFILE, STATUS='REPLACE', ACCESS='SEQUENTIAL',  &   ! open file
+            FORM='FORMATTED', ACTION='WRITE', POSITION='REWIND', IOSTAT=IERR)
+
+      IF (IERR .NE. 0) THEN                                                         ! if file open error..
+         WRITE (UNIT=*, FMT='(A,I6,A)') ' Error ',IERR,' opening file '//OUTFILE    ! ..then print error message..
+         STOP                                                                       ! ..and return to operating system
+      END IF
+
+!
+!     Beginning of LaTeX document.
+!
+
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '% Generates a calendar of Julian days'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '% David G. Simpson - NASA/GSFC'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '% Nov. 21, 2005'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' '
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\documentclass{article}'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' '
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\usepackage{times}'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\pagestyle{empty}'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' '
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\setlength{\oddsidemargin}{-0.5in}'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\setlength{\textwidth}{6in}'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\setlength{\topmargin}{-0.5in}'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\setlength{\textheight}{9in}'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' '
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\begin{document}'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' '
+
+      IF (LEAP(YEAR)) GOTO 100
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Common year.
+!
+
+      DAY = JAN0
+
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\begin{tabular}{lrc@{\hspace{10ex}}lrc@{\hspace{10ex}}lrc@{\hspace{10ex}}lrc}'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\multicolumn{12}{c}{\Large JULIAN DAYS, '//YEARSTR//'}\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' & & & & & & & & & & &\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' & & & & & & & & & & &\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\multicolumn{2}{c}{Date} & \multicolumn{1}{l}{\hspace{0.5ex}Julian} & '&
+         //'\multicolumn{2}{c}{Date} & \multicolumn{1}{l}{\hspace{0.5ex}Julian} &'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\multicolumn{2}{c}{Date} & \multicolumn{1}{l}{\hspace{0.5ex}Julian} & '&
+         //'\multicolumn{2}{c}{Date} & \multicolumn{1}{l}{\hspace{0.5ex}Julian}\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\multicolumn{2}{c}{$0^{\mathrm{h}}$ UT} & Day & \multicolumn{2}{c}{$0^{\mathrm{h}}$ UT} &'&
+         //' Day & \multicolumn{2}{c}{$0^{\mathrm{h}}$ UT} & Day & \multicolumn{2}{c}{$0^{\mathrm{h}}$ UT} & Day\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' & & & & & & & & & & &\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' & & \textbf{'//JD_UPPER3_STR//'} & & & \textbf{'//JD_UPPER3_STR//'} & & & \textbf{'// &
+         JD_UPPER3_STR//'} & & & \textbf{'//JD_UPPER3_STR//'}\\'
+
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') 'Jan. & 0 & \textbf{',MOD(DAY,10000),'.5} & Feb. & 15 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & Apr. & 2 & '&
+         //'\textbf{',MOD(DAY+92,10000),'.5} & May & 18 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 1 & \textbf{',MOD(DAY,10000),'.5} & & 16 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 3 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 19 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 2 & \textbf{',MOD(DAY,10000),'.5} & & 17 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 4 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 20 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 3 & \textbf{',MOD(DAY,10000),'.5} & & 18 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 5 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 21 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 4 & \textbf{',MOD(DAY,10000),'.5} & & 19 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 6 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 22 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 5 & \textbf{',MOD(DAY,10000),'.5} & & 20 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 7 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 23 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 6 & \textbf{',MOD(DAY,10000),'.5} & & 21 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 8 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 24 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 7 & \textbf{',MOD(DAY,10000),'.5} & & 22 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 9 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 25 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 8 & \textbf{',MOD(DAY,10000),'.5} & & 23 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 10 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 26 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 9 & \textbf{',MOD(DAY,10000),'.5} & & 24 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 11 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 27 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 10 & \textbf{',MOD(DAY,10000),'.5} & & 25 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 12 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 28 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 11 & \textbf{',MOD(DAY,10000),'.5} & & 26 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 13 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 29 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 12 & \textbf{',MOD(DAY,10000),'.5} & & 27 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 14 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 30 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 13 & \textbf{',MOD(DAY,10000),'.5} & & 28 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 15 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 31 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 14 & \textbf{',MOD(DAY,10000),'.5} & Mar. & 1 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 16 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & June & 1 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 15 & \textbf{',MOD(DAY,10000),'.5} & & 2 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 17 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 2 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 16 & \textbf{',MOD(DAY,10000),'.5} & & 3 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 18 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 3 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 17 & \textbf{',MOD(DAY,10000),'.5} & & 4 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 19 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 4 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 18 & \textbf{',MOD(DAY,10000),'.5} & & 5 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 20 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 5 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 19 & \textbf{',MOD(DAY,10000),'.5} & & 6 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 21 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 6 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 20 & \textbf{',MOD(DAY,10000),'.5} & & 7 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 22 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 7 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 21 & \textbf{',MOD(DAY,10000),'.5} & & 8 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 23 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 8 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 22 & \textbf{',MOD(DAY,10000),'.5} & & 9 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 24 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 9 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 23 & \textbf{',MOD(DAY,10000),'.5} & & 10 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 25 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 10 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 24 & \textbf{',MOD(DAY,10000),'.5} & & 11 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 26 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 11 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 25 & \textbf{',MOD(DAY,10000),'.5} & & 12 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 27 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 12 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 26 & \textbf{',MOD(DAY,10000),'.5} & & 13 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 28 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 13 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 27 & \textbf{',MOD(DAY,10000),'.5} & & 14 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 29 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 14 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 28 & \textbf{',MOD(DAY,10000),'.5} & & 15 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 30 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 15 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 29 & \textbf{',MOD(DAY,10000),'.5} & & 16 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & May & 1 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 16 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 30 & \textbf{',MOD(DAY,10000),'.5} & & 17 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 2 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 17 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 31 & \textbf{',MOD(DAY,10000),'.5} & & 18 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 3 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 18 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') 'Feb. & 1 & \textbf{',MOD(DAY,10000),'.5} & & 19 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 4 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 19 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 2 & \textbf{',MOD(DAY,10000),'.5} & & 20 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 5 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 20 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 3 & \textbf{',MOD(DAY,10000),'.5} & & 21 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 6 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 21 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 4 & \textbf{',MOD(DAY,10000),'.5} & & 22 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 7 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 22 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 5 & \textbf{',MOD(DAY,10000),'.5} & & 23 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 8 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 23 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 6 & \textbf{',MOD(DAY,10000),'.5} & & 24 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 9 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 24 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 7 & \textbf{',MOD(DAY,10000),'.5} & & 25 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 10 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 25 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 8 & \textbf{',MOD(DAY,10000),'.5} & & 26 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 11 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 26 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 9 & \textbf{',MOD(DAY,10000),'.5} & & 27 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 12 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 27 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 10 & \textbf{',MOD(DAY,10000),'.5} & & 28 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 13 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 28 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 11 & \textbf{',MOD(DAY,10000),'.5} & & 29 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 14 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 29 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 12 & \textbf{',MOD(DAY,10000),'.5} & & 30 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 15 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 30 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 13 & \textbf{',MOD(DAY,10000),'.5} & & 31 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 16 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & July & 1 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 14 & \textbf{',MOD(DAY,10000),'.5} & Apr. & 1 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 17 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 2 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') '\end{tabular}'
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ''
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') '\pagebreak'
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ''
+
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\begin{tabular}{lrc@{\hspace{10ex}}lrc@{\hspace{10ex}}lrc@{\hspace{10ex}}lrc}'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\multicolumn{12}{c}{\Large JULIAN DAYS, '//YEARSTR//'}\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' & & & & & & & & & & &\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' & & & & & & & & & & &\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\multicolumn{2}{c}{Date} & \multicolumn{1}{l}{\hspace{0.5ex}Julian} & '&
+         //'\multicolumn{2}{c}{Date} & \multicolumn{1}{l}{\hspace{0.5ex}Julian} &'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\multicolumn{2}{c}{Date} & \multicolumn{1}{l}{\hspace{0.5ex}Julian} & '&
+         //'\multicolumn{2}{c}{Date} & \multicolumn{1}{l}{\hspace{0.5ex}Julian}\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\multicolumn{2}{c}{$0^{\mathrm{h}}$ UT} & Day & \multicolumn{2}{c}{$0^{\mathrm{h}}$ UT} &'&
+         //' Day & \multicolumn{2}{c}{$0^{\mathrm{h}}$ UT} & Day & \multicolumn{2}{c}{$0^{\mathrm{h}}$ UT} & Day\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' & & & & & & & & & & &\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' & & \textbf{'//JD_UPPER3_STR//'} & & & \textbf{'//JD_UPPER3_STR//'} & & & \textbf{'// &
+         JD_UPPER3_STR//'} & & & \textbf{'//JD_UPPER3_STR//'}\\'
+
+      DAY = JAN0 + 182
+
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') 'July & 1 & \textbf{',MOD(DAY,10000),'.5} & Aug. & 16 & \textbf{', &
+         MOD(DAY+46,10000),&
+         '.5} & Oct. & 1 & \textbf{',MOD(DAY+92,10000),'.5} & Nov. & 16 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 2 & \textbf{',MOD(DAY,10000),'.5} & & 17 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 2 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 17 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 3 & \textbf{',MOD(DAY,10000),'.5} & & 18 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 3 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 18 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 4 & \textbf{',MOD(DAY,10000),'.5} & & 19 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 4 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 19 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 5 & \textbf{',MOD(DAY,10000),'.5} & & 20 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 5 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 20 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 6 & \textbf{',MOD(DAY,10000),'.5} & & 21 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 6 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 21 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 7 & \textbf{',MOD(DAY,10000),'.5} & & 22 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 7 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 22 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 8 & \textbf{',MOD(DAY,10000),'.5} & & 23 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 8 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 23 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 9 & \textbf{',MOD(DAY,10000),'.5} & & 24 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 9 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 24 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 10 & \textbf{',MOD(DAY,10000),'.5} & & 25 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 10 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 25 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 11 & \textbf{',MOD(DAY,10000),'.5} & & 26 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 11 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 26 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 12 & \textbf{',MOD(DAY,10000),'.5} & & 27 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 12 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 27 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 13 & \textbf{',MOD(DAY,10000),'.5} & & 28 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 13 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 28 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 14 & \textbf{',MOD(DAY,10000),'.5} & & 29 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 14 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 29 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 15 & \textbf{',MOD(DAY,10000),'.5} & & 30 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 15 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 30 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 16 & \textbf{',MOD(DAY,10000),'.5} & & 31 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 16 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & Dec. & 1 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 17 & \textbf{',MOD(DAY,10000),'.5} & Sept. & 1 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 17 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 2 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 18 & \textbf{',MOD(DAY,10000),'.5} & & 2 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 18 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 3 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 19 & \textbf{',MOD(DAY,10000),'.5} & & 3 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 19 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 4 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 20 & \textbf{',MOD(DAY,10000),'.5} & & 4 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 20 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 5 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 21 & \textbf{',MOD(DAY,10000),'.5} & & 5 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 21 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 6 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 22 & \textbf{',MOD(DAY,10000),'.5} & & 6 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 22 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 7 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 23 & \textbf{',MOD(DAY,10000),'.5} & & 7 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 23 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 8 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 24 & \textbf{',MOD(DAY,10000),'.5} & & 8 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 24 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 9 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 25 & \textbf{',MOD(DAY,10000),'.5} & & 9 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 25 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 10 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 26 & \textbf{',MOD(DAY,10000),'.5} & & 10 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 26 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 11 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 27 & \textbf{',MOD(DAY,10000),'.5} & & 11 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 27 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 12 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 28 & \textbf{',MOD(DAY,10000),'.5} & & 12 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 28 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 13 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 29 & \textbf{',MOD(DAY,10000),'.5} & & 13 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 29 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 14 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 30 & \textbf{',MOD(DAY,10000),'.5} & & 14 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 30 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 15 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 31 & \textbf{',MOD(DAY,10000),'.5} & & 15 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 31 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 16 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') 'Aug. & 1 & \textbf{',MOD(DAY,10000),'.5} & & 16 & \textbf{', &
+         MOD(DAY+46,10000),&
+         '.5} & Nov. & 1 & \textbf{',MOD(DAY+92,10000),'.5} & & 17 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 2 & \textbf{',MOD(DAY,10000),'.5} & & 17 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 2 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 18 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 3 & \textbf{',MOD(DAY,10000),'.5} & & 18 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 3 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 19 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 4 & \textbf{',MOD(DAY,10000),'.5} & & 19 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 4 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 20 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 5 & \textbf{',MOD(DAY,10000),'.5} & & 20 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 5 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 21 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 6 & \textbf{',MOD(DAY,10000),'.5} & & 21 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 6 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 22 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 7 & \textbf{',MOD(DAY,10000),'.5} & & 22 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 7 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 23 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 8 & \textbf{',MOD(DAY,10000),'.5} & & 23 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 8 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 24 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 9 & \textbf{',MOD(DAY,10000),'.5} & & 24 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 9 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 25 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 10 & \textbf{',MOD(DAY,10000),'.5} & & 25 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 10 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 26 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 11 & \textbf{',MOD(DAY,10000),'.5} & & 26 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 11 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 27 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 12 & \textbf{',MOD(DAY,10000),'.5} & & 27 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 12 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 28 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 13 & \textbf{',MOD(DAY,10000),'.5} & & 28 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 13 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 29 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 14 & \textbf{',MOD(DAY,10000),'.5} & & 29 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 14 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 30 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 15 & \textbf{',MOD(DAY,10000),'.5} & & 30 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 15 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 31 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') '\end{tabular}'
+
+      GO TO 900
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Leap year.
+!
+
+  100 DAY = JAN0
+
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\begin{tabular}{lrc@{\hspace{10ex}}lrc@{\hspace{10ex}}lrc@{\hspace{10ex}}lrc}'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\multicolumn{12}{c}{\Large JULIAN DAYS, '//YEARSTR//'}\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' & & & & & & & & & & &\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' & & & & & & & & & & &\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\multicolumn{2}{c}{Date} & \multicolumn{1}{l}{\hspace{0.5ex}Julian} & '&
+         //'\multicolumn{2}{c}{Date} & \multicolumn{1}{l}{\hspace{0.5ex}Julian} &'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\multicolumn{2}{c}{Date} & \multicolumn{1}{l}{\hspace{0.5ex}Julian} & '&
+         //'\multicolumn{2}{c}{Date} & \multicolumn{1}{l}{\hspace{0.5ex}Julian}\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\multicolumn{2}{c}{$0^{\mathrm{h}}$ UT} & Day & \multicolumn{2}{c}{$0^{\mathrm{h}}$ UT} &'&
+         //' Day & \multicolumn{2}{c}{$0^{\mathrm{h}}$ UT} & Day & \multicolumn{2}{c}{$0^{\mathrm{h}}$ UT} & Day\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' & & & & & & & & & & &\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' & & \textbf{'//JD_UPPER3_STR//'} & & & \textbf{'//JD_UPPER3_STR//'} & & & \textbf{'// &
+         JD_UPPER3_STR//'} & & & \textbf{'//JD_UPPER3_STR//'}\\'
+
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') 'Jan. & 0 & \textbf{',MOD(DAY,10000),'.5} & Feb. & 15 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & Apr. & 1 & '&
+         //'\textbf{',MOD(DAY+92,10000),'.5} & May & 17 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 1 & \textbf{',MOD(DAY,10000),'.5} & & 16 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 2 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 18 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 2 & \textbf{',MOD(DAY,10000),'.5} & & 17 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 3 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 10 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 3 & \textbf{',MOD(DAY,10000),'.5} & & 18 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 4 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 20 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 4 & \textbf{',MOD(DAY,10000),'.5} & & 19 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 5 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 21 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 5 & \textbf{',MOD(DAY,10000),'.5} & & 20 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 6 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 22 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 6 & \textbf{',MOD(DAY,10000),'.5} & & 21 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 7 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 23 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 7 & \textbf{',MOD(DAY,10000),'.5} & & 22 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 8 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 24 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 8 & \textbf{',MOD(DAY,10000),'.5} & & 23 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 9 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 25 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 9 & \textbf{',MOD(DAY,10000),'.5} & & 24 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 10 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 26 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 10 & \textbf{',MOD(DAY,10000),'.5} & & 25 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 11 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 27 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 11 & \textbf{',MOD(DAY,10000),'.5} & & 26 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 12 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 28 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 12 & \textbf{',MOD(DAY,10000),'.5} & & 27 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 13 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 29 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 13 & \textbf{',MOD(DAY,10000),'.5} & & 28 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 14 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 30 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 14 & \textbf{',MOD(DAY,10000),'.5} & & 29 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 15 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 31 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 15 & \textbf{',MOD(DAY,10000),'.5} & Mar. & 1 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 16 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & June & 1 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 16 & \textbf{',MOD(DAY,10000),'.5} & & 2 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 17 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 2 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 17 & \textbf{',MOD(DAY,10000),'.5} & & 3 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 18 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 3 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 18 & \textbf{',MOD(DAY,10000),'.5} & & 4 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 19 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 4 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 19 & \textbf{',MOD(DAY,10000),'.5} & & 5 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 20 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 5 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 20 & \textbf{',MOD(DAY,10000),'.5} & & 6 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 21 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 6 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 21 & \textbf{',MOD(DAY,10000),'.5} & & 7 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 22 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 7 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 22 & \textbf{',MOD(DAY,10000),'.5} & & 8 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 23 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 8 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 23 & \textbf{',MOD(DAY,10000),'.5} & & 9 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 24 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 9 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 24 & \textbf{',MOD(DAY,10000),'.5} & & 10 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 25 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 10 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 25 & \textbf{',MOD(DAY,10000),'.5} & & 11 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 26 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 11 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 26 & \textbf{',MOD(DAY,10000),'.5} & & 12 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 27 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 12 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 27 & \textbf{',MOD(DAY,10000),'.5} & & 13 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 28 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 13 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 28 & \textbf{',MOD(DAY,10000),'.5} & & 14 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 29 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 14 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 29 & \textbf{',MOD(DAY,10000),'.5} & & 15 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 30 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 15 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 30 & \textbf{',MOD(DAY,10000),'.5} & & 16 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & May & 1 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 16 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 31 & \textbf{',MOD(DAY,10000),'.5} & & 17 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 2 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 17 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') 'Feb. & 1 & \textbf{',MOD(DAY,10000),'.5} & & 18 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 3 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 18 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 2 & \textbf{',MOD(DAY,10000),'.5} & & 19 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 4 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 19 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 3 & \textbf{',MOD(DAY,10000),'.5} & & 20 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 5 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 20 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 4 & \textbf{',MOD(DAY,10000),'.5} & & 21 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 6 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 21 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 5 & \textbf{',MOD(DAY,10000),'.5} & & 22 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 7 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 22 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 6 & \textbf{',MOD(DAY,10000),'.5} & & 23 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 8 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 23 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 7 & \textbf{',MOD(DAY,10000),'.5} & & 24 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 9 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 24 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 8 & \textbf{',MOD(DAY,10000),'.5} & & 25 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 10 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 25 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 9 & \textbf{',MOD(DAY,10000),'.5} & & 26 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 11 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 26 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 10 & \textbf{',MOD(DAY,10000),'.5} & & 27 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 12 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 27 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 11 & \textbf{',MOD(DAY,10000),'.5} & & 28 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 13 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 28 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 12 & \textbf{',MOD(DAY,10000),'.5} & & 29 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 14 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 29 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 13 & \textbf{',MOD(DAY,10000),'.5} & & 30 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 15 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 30 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 14 & \textbf{',MOD(DAY,10000),'.5} & & 31 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 16 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & July & 1 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') '\end{tabular}'
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ''
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') '\pagebreak'
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ''
+
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\begin{tabular}{lrc@{\hspace{10ex}}lrc@{\hspace{10ex}}lrc@{\hspace{10ex}}lrc}'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\multicolumn{12}{c}{\Large JULIAN DAYS, '//YEARSTR//'}\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' & & & & & & & & & & &\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' & & & & & & & & & & &\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\multicolumn{2}{c}{Date} & \multicolumn{1}{l}{\hspace{0.5ex}Julian} & '&
+         //'\multicolumn{2}{c}{Date} & \multicolumn{1}{l}{\hspace{0.5ex}Julian} &'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\multicolumn{2}{c}{Date} & \multicolumn{1}{l}{\hspace{0.5ex}Julian} & '&
+         //'\multicolumn{2}{c}{Date} & \multicolumn{1}{l}{\hspace{0.5ex}Julian}\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\multicolumn{2}{c}{$0^{\mathrm{h}}$ UT} & Day & \multicolumn{2}{c}{$0^{\mathrm{h}}$ UT} &'&
+         //' Day & \multicolumn{2}{c}{$0^{\mathrm{h}}$ UT} & Day & \multicolumn{2}{c}{$0^{\mathrm{h}}$ UT} & Day\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' & & & & & & & & & & &\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' & & \textbf{'//JD_UPPER3_STR//'} & & & \textbf{'//JD_UPPER3_STR//'} & & & \textbf{'// &
+         JD_UPPER3_STR//'} & & & \textbf{'//JD_UPPER3_STR//'}\\'
+
+      DAY = JAN0 + 183
+
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') 'July & 1 & \textbf{',MOD(DAY,10000),'.5} & Aug. & 16 & \textbf{', &
+         MOD(DAY+46,10000),&
+         '.5} & Oct. & 1 & \textbf{',MOD(DAY+92,10000),'.5} & Nov. & 16 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 2 & \textbf{',MOD(DAY,10000),'.5} & & 17 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 2 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 17 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 3 & \textbf{',MOD(DAY,10000),'.5} & & 18 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 3 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 18 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 4 & \textbf{',MOD(DAY,10000),'.5} & & 19 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 4 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 19 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 5 & \textbf{',MOD(DAY,10000),'.5} & & 20 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 5 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 20 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 6 & \textbf{',MOD(DAY,10000),'.5} & & 21 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 6 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 21 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 7 & \textbf{',MOD(DAY,10000),'.5} & & 22 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 7 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 22 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 8 & \textbf{',MOD(DAY,10000),'.5} & & 23 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 8 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 23 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 9 & \textbf{',MOD(DAY,10000),'.5} & & 24 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 9 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 24 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 10 & \textbf{',MOD(DAY,10000),'.5} & & 25 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 10 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 25 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 11 & \textbf{',MOD(DAY,10000),'.5} & & 26 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 11 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 26 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 12 & \textbf{',MOD(DAY,10000),'.5} & & 27 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 12 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 27 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 13 & \textbf{',MOD(DAY,10000),'.5} & & 28 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 13 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 28 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 14 & \textbf{',MOD(DAY,10000),'.5} & & 29 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 14 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 29 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 15 & \textbf{',MOD(DAY,10000),'.5} & & 30 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 15 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 30 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 16 & \textbf{',MOD(DAY,10000),'.5} & & 31 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 16 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & Dec. & 1 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 17 & \textbf{',MOD(DAY,10000),'.5} & Sept. & 1 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 17 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 2 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 18 & \textbf{',MOD(DAY,10000),'.5} & & 2 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 18 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 3 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 19 & \textbf{',MOD(DAY,10000),'.5} & & 3 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 19 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 4 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 20 & \textbf{',MOD(DAY,10000),'.5} & & 4 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 20 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 5 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 21 & \textbf{',MOD(DAY,10000),'.5} & & 5 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 21 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 6 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 22 & \textbf{',MOD(DAY,10000),'.5} & & 6 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 22 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 7 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 23 & \textbf{',MOD(DAY,10000),'.5} & & 7 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 23 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 8 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 24 & \textbf{',MOD(DAY,10000),'.5} & & 8 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 24 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 9 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 25 & \textbf{',MOD(DAY,10000),'.5} & & 9 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 25 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 10 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 26 & \textbf{',MOD(DAY,10000),'.5} & & 10 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 26 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 11 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 27 & \textbf{',MOD(DAY,10000),'.5} & & 11 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 27 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 12 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 28 & \textbf{',MOD(DAY,10000),'.5} & & 12 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 28 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 13 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 29 & \textbf{',MOD(DAY,10000),'.5} & & 13 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 29 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 14 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 30 & \textbf{',MOD(DAY,10000),'.5} & & 14 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 30 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 15 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 31 & \textbf{',MOD(DAY,10000),'.5} & & 15 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 31 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 16 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') 'Aug. & 1 & \textbf{',MOD(DAY,10000),'.5} & & 16 & \textbf{', &
+         MOD(DAY+46,10000),&
+         '.5} & Nov. & 1 & \textbf{',MOD(DAY+92,10000),'.5} & & 17 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 2 & \textbf{',MOD(DAY,10000),'.5} & & 17 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 2 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 18 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 3 & \textbf{',MOD(DAY,10000),'.5} & & 18 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 3 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 19 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 4 & \textbf{',MOD(DAY,10000),'.5} & & 19 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 4 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 20 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 5 & \textbf{',MOD(DAY,10000),'.5} & & 20 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 5 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 21 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 6 & \textbf{',MOD(DAY,10000),'.5} & & 21 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 6 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 22 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 7 & \textbf{',MOD(DAY,10000),'.5} & & 22 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 7 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 23 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 8 & \textbf{',MOD(DAY,10000),'.5} & & 23 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 8 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 24 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 9 & \textbf{',MOD(DAY,10000),'.5} & & 24 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 9 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 25 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 10 & \textbf{',MOD(DAY,10000),'.5} & & 25 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 10 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 26 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 11 & \textbf{',MOD(DAY,10000),'.5} & & 26 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 11 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 27 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 12 & \textbf{',MOD(DAY,10000),'.5} & & 27 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 12 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 28 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 13 & \textbf{',MOD(DAY,10000),'.5} & & 28 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 13 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 29 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 14 & \textbf{',MOD(DAY,10000),'.5} & & 29 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 14 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 30 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') ' & 15 & \textbf{',MOD(DAY,10000),'.5} & & 30 & \textbf{', &
+         MOD(DAY+46,10000),'.5} & & 15 & \textbf{',&
+         MOD(DAY+92,10000),'.5} & & 31 & \textbf{',MOD(DAY+138,10000),'.5}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I4.4),A)') '\end{tabular}'
+
+      GO TO 900
+
+
+  900 WRITE (UNIT=OUTUNIT, FMT='(/A)') '\end{document}'
+
+      CLOSE (UNIT=OUTUNIT, STATUS='KEEP')                                           ! close file
+
+      WRITE (UNIT=*, FMT='(A)') ' Done.  Output sent to file '//OUTFILE
+
+      STOP
+
+      END PROGRAM JULIANDAY
+
+
+
+
+
+!***********************************************************************************************************************************
+!  LEAP - Determine whether a given year is a leap year.
+!***********************************************************************************************************************************
+
+      FUNCTION LEAP (YEAR) RESULT (LEAP_FLAG)
+
+      IMPLICIT NONE
+
+      INTEGER, INTENT(IN) :: YEAR
+      LOGICAL :: LEAP_FLAG
+
+
+      LEAP_FLAG = .FALSE.
+      IF (MOD(YEAR,4) .EQ. 0)   LEAP_FLAG = .TRUE.
+      IF (MOD(YEAR,100) .EQ. 0) LEAP_FLAG = .FALSE.
+      IF (MOD(YEAR,400) .EQ. 0) LEAP_FLAG = .TRUE.
+
+      RETURN
+
+      END FUNCTION LEAP
+
+
+
+
+
+!***********************************************************************************************************************************
+!  GREG2JD - Compute Julian day from Gregorian date.
+!***********************************************************************************************************************************
+
+      FUNCTION GREG2JD (YEAR, MONTH, DAY, HOUR, MINUTE, SECOND) RESULT (JD)
+
+      IMPLICIT NONE
+
+      INTEGER, INTENT(IN) :: YEAR, MONTH, DAY, HOUR, MINUTE, SECOND
+      DOUBLE PRECISION :: JD
+
+      DOUBLE PRECISION :: DAYFRAC
+      INTEGER :: Y, M, A, B
+
+
+      DAYFRAC = DBLE(DAY) + HOUR/24.0D0 + MINUTE/1440.0D0 + SECOND/86400.0D0
+
+      IF (MONTH .GT. 2) THEN
+         Y = YEAR
+         M = MONTH
+      ELSE
+         Y = YEAR - 1
+         M = MONTH + 12
+      END IF
+
+      A = Y/100
+      B = 2 - A + A/4
+
+      JD = INT(365.25D0*(Y+4716)) + INT(30.6001D0*(M+1)) + DAYFRAC + B - 1524.5D0
+
+      RETURN
+
+      END FUNCTION GREG2JD
+

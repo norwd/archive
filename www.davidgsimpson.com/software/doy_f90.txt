@@ -1,0 +1,717 @@
+!***********************************************************************************************************************************
+!
+!                                                              D O Y
+!
+!  Program:      DOY
+!
+!  Programmer:   David G. Simpson
+!                NASA Goddard Space Flight Center
+!                Greenbelt, Maryland  20771
+!
+!  Date:         November 21, 2005
+!
+!  Language:     Fortran-90
+!
+!  Version:      1.00a
+!
+!  Description:  Generates LaTeX code to create a tables of days of year (DOY).
+!
+!  Files:        Source files:
+!
+!                   julianday.f90                   Main program
+!
+!  Notes:
+!
+!***********************************************************************************************************************************
+
+      PROGRAM DOY
+
+      IMPLICIT NONE
+
+      CHARACTER(LEN=*), PARAMETER :: OUTFILE = 'doy.tex'
+      INTEGER, PARAMETER :: OUTUNIT = 11
+
+      INTEGER :: IERR, DAY, JAN0
+      CHARACTER(LEN=4) :: YEARSTR
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Initialize data.
+!
+
+      JAN0 = 0
+
+!
+!     Open output file.
+!
+
+      OPEN (UNIT=OUTUNIT, FILE=OUTFILE, STATUS='REPLACE', ACCESS='SEQUENTIAL',  &   ! open file
+            FORM='FORMATTED', ACTION='WRITE', POSITION='REWIND', IOSTAT=IERR)
+
+      IF (IERR .NE. 0) THEN                                                         ! if file open error..
+         WRITE (UNIT=*, FMT='(A,I6,A)') ' Error ',IERR,' opening file '//OUTFILE    ! ..then print error message..
+         STOP                                                                       ! ..and return to operating system
+      END IF
+
+!
+!     Beginning of LaTeX document.
+!
+
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '% Generates a calendar of days of year'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '% David G. Simpson - NASA/GSFC'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '% Nov. 21, 2005'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' '
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\documentclass{article}'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' '
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\usepackage{times}'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\pagestyle{empty}'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' '
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\setlength{\oddsidemargin}{-0.5in}'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\setlength{\textwidth}{6in}'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\setlength{\topmargin}{-0.5in}'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\setlength{\textheight}{9in}'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' '
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\begin{document}'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' '
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Common year.
+!
+
+      DAY = JAN0
+
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\begin{tabular}{lrc@{\hspace{10ex}}lrc@{\hspace{10ex}}lrc@{\hspace{10ex}}lrc}'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\multicolumn{12}{c}{\Large DAYS OF YEAR (COMMON YEAR)}\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' & & & & & & & & & & &\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' & & & & & & & & & & &\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\multicolumn{2}{c}{Date} & \multicolumn{1}{l}{DOY} & '&
+         //'\multicolumn{2}{c}{Date} & \multicolumn{1}{l}{DOY} &'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\multicolumn{2}{c}{Date} & \multicolumn{1}{l}{DOY} & '&
+         //'\multicolumn{2}{c}{Date} & \multicolumn{1}{l}{DOY}\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' & & & & & & & & & & &\\'
+
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') 'Jan. & 0 & \textbf{',DAY,'} & Feb. & 15 & \textbf{',DAY+46,'} & Apr. & 2 & '&
+         //'\textbf{',DAY+92,'} & May & 18 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 1 & \textbf{',DAY,'} & & 16 & \textbf{',DAY+46,'} & & 3 & \textbf{',&
+         DAY+92,'} & & 19 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 2 & \textbf{',DAY,'} & & 17 & \textbf{',DAY+46,'} & & 4 & \textbf{',&
+         DAY+92,'} & & 20 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 3 & \textbf{',DAY,'} & & 18 & \textbf{',DAY+46,'} & & 5 & \textbf{',&
+         DAY+92,'} & & 21 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 4 & \textbf{',DAY,'} & & 19 & \textbf{',DAY+46,'} & & 6 & \textbf{',&
+         DAY+92,'} & & 22 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 5 & \textbf{',DAY,'} & & 20 & \textbf{',DAY+46,'} & & 7 & \textbf{',&
+         DAY+92,'} & & 23 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 6 & \textbf{',DAY,'} & & 21 & \textbf{',DAY+46,'} & & 8 & \textbf{',&
+         DAY+92,'} & & 24 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 7 & \textbf{',DAY,'} & & 22 & \textbf{',DAY+46,'} & & 9 & \textbf{',&
+         DAY+92,'} & & 25 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 8 & \textbf{',DAY,'} & & 23 & \textbf{',DAY+46,'} & & 10 & \textbf{',&
+         DAY+92,'} & & 26 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 9 & \textbf{',DAY,'} & & 24 & \textbf{',DAY+46,'} & & 11 & \textbf{',&
+         DAY+92,'} & & 27 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 10 & \textbf{',DAY,'} & & 25 & \textbf{',DAY+46,'} & & 12 & \textbf{',&
+         DAY+92,'} & & 28 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 11 & \textbf{',DAY,'} & & 26 & \textbf{',DAY+46,'} & & 13 & \textbf{',&
+         DAY+92,'} & & 29 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 12 & \textbf{',DAY,'} & & 27 & \textbf{',DAY+46,'} & & 14 & \textbf{',&
+         DAY+92,'} & & 30 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 13 & \textbf{',DAY,'} & & 28 & \textbf{',DAY+46,'} & & 15 & \textbf{',&
+         DAY+92,'} & & 31 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 14 & \textbf{',DAY,'} & Mar. & 1 & \textbf{',DAY+46,'} & & 16 & \textbf{',&
+         DAY+92,'} & June & 1 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 15 & \textbf{',DAY,'} & & 2 & \textbf{',DAY+46,'} & & 17 & \textbf{',&
+         DAY+92,'} & & 2 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 16 & \textbf{',DAY,'} & & 3 & \textbf{',DAY+46,'} & & 18 & \textbf{',&
+         DAY+92,'} & & 3 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 17 & \textbf{',DAY,'} & & 4 & \textbf{',DAY+46,'} & & 19 & \textbf{',&
+         DAY+92,'} & & 4 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 18 & \textbf{',DAY,'} & & 5 & \textbf{',DAY+46,'} & & 20 & \textbf{',&
+         DAY+92,'} & & 5 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 19 & \textbf{',DAY,'} & & 6 & \textbf{',DAY+46,'} & & 21 & \textbf{',&
+         DAY+92,'} & & 6 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 20 & \textbf{',DAY,'} & & 7 & \textbf{',DAY+46,'} & & 22 & \textbf{',&
+         DAY+92,'} & & 7 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 21 & \textbf{',DAY,'} & & 8 & \textbf{',DAY+46,'} & & 23 & \textbf{',&
+         DAY+92,'} & & 8 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 22 & \textbf{',DAY,'} & & 9 & \textbf{',DAY+46,'} & & 24 & \textbf{',&
+         DAY+92,'} & & 9 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 23 & \textbf{',DAY,'} & & 10 & \textbf{',DAY+46,'} & & 25 & \textbf{',&
+         DAY+92,'} & & 10 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 24 & \textbf{',DAY,'} & & 11 & \textbf{',DAY+46,'} & & 26 & \textbf{',&
+         DAY+92,'} & & 11 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 25 & \textbf{',DAY,'} & & 12 & \textbf{',DAY+46,'} & & 27 & \textbf{',&
+         DAY+92,'} & & 12 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 26 & \textbf{',DAY,'} & & 13 & \textbf{',DAY+46,'} & & 28 & \textbf{',&
+         DAY+92,'} & & 13 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 27 & \textbf{',DAY,'} & & 14 & \textbf{',DAY+46,'} & & 29 & \textbf{',&
+         DAY+92,'} & & 14 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 28 & \textbf{',DAY,'} & & 15 & \textbf{',DAY+46,'} & & 30 & \textbf{',&
+         DAY+92,'} & & 15 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 29 & \textbf{',DAY,'} & & 16 & \textbf{',DAY+46,'} & May & 1 & \textbf{',&
+         DAY+92,'} & & 16 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 30 & \textbf{',DAY,'} & & 17 & \textbf{',DAY+46,'} & & 2 & \textbf{',&
+         DAY+92,'} & & 17 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 31 & \textbf{',DAY,'} & & 18 & \textbf{',DAY+46,'} & & 3 & \textbf{',&
+         DAY+92,'} & & 18 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') 'Feb. & 1 & \textbf{',DAY,'} & & 19 & \textbf{',DAY+46,'} & & 4 & \textbf{',&
+         DAY+92,'} & & 19 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 2 & \textbf{',DAY,'} & & 20 & \textbf{',DAY+46,'} & & 5 & \textbf{',&
+         DAY+92,'} & & 20 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 3 & \textbf{',DAY,'} & & 21 & \textbf{',DAY+46,'} & & 6 & \textbf{',&
+         DAY+92,'} & & 21 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 4 & \textbf{',DAY,'} & & 22 & \textbf{',DAY+46,'} & & 7 & \textbf{',&
+         DAY+92,'} & & 22 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 5 & \textbf{',DAY,'} & & 23 & \textbf{',DAY+46,'} & & 8 & \textbf{',&
+         DAY+92,'} & & 23 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 6 & \textbf{',DAY,'} & & 24 & \textbf{',DAY+46,'} & & 9 & \textbf{',&
+         DAY+92,'} & & 24 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 7 & \textbf{',DAY,'} & & 25 & \textbf{',DAY+46,'} & & 10 & \textbf{',&
+         DAY+92,'} & & 25 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 8 & \textbf{',DAY,'} & & 26 & \textbf{',DAY+46,'} & & 11 & \textbf{',&
+         DAY+92,'} & & 26 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 9 & \textbf{',DAY,'} & & 27 & \textbf{',DAY+46,'} & & 12 & \textbf{',&
+         DAY+92,'} & & 27 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 10 & \textbf{',DAY,'} & & 28 & \textbf{',DAY+46,'} & & 13 & \textbf{',&
+         DAY+92,'} & & 28 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 11 & \textbf{',DAY,'} & & 29 & \textbf{',DAY+46,'} & & 14 & \textbf{',&
+         DAY+92,'} & & 29 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 12 & \textbf{',DAY,'} & & 30 & \textbf{',DAY+46,'} & & 15 & \textbf{',&
+         DAY+92,'} & & 30 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 13 & \textbf{',DAY,'} & & 31 & \textbf{',DAY+46,'} & & 16 & \textbf{',&
+         DAY+92,'} & July & 1 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 14 & \textbf{',DAY,'} & Apr. & 1 & \textbf{',DAY+46,'} & & 17 & \textbf{',&
+         DAY+92,'} & & 2 & \textbf{',DAY+138,'}\\'
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') '\end{tabular}'
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ''
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') '\pagebreak'
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ''
+
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\begin{tabular}{lrc@{\hspace{10ex}}lrc@{\hspace{10ex}}lrc@{\hspace{10ex}}lrc}'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\multicolumn{12}{c}{\Large DAYS OF YEAR (COMMON YEAR)}\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' & & & & & & & & & & &\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' & & & & & & & & & & &\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\multicolumn{2}{c}{Date} & \multicolumn{1}{l}{DOY} & '&
+         //'\multicolumn{2}{c}{Date} & \multicolumn{1}{l}{DOY} &'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\multicolumn{2}{c}{Date} & \multicolumn{1}{l}{DOY} & '&
+         //'\multicolumn{2}{c}{Date} & \multicolumn{1}{l}{DOY}\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' & & & & & & & & & & &\\'
+
+      DAY = JAN0 + 182
+
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') 'July & 1 & \textbf{',DAY,'} & Aug. & 16 & \textbf{',DAY+46,&
+         '} & Oct. & 1 & \textbf{',DAY+92,'} & Nov. & 16 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 2 & \textbf{',DAY,'} & & 17 & \textbf{',DAY+46,'} & & 2 & \textbf{',&
+         DAY+92,'} & & 17 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 3 & \textbf{',DAY,'} & & 18 & \textbf{',DAY+46,'} & & 3 & \textbf{',&
+         DAY+92,'} & & 18 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 4 & \textbf{',DAY,'} & & 19 & \textbf{',DAY+46,'} & & 4 & \textbf{',&
+         DAY+92,'} & & 19 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 5 & \textbf{',DAY,'} & & 20 & \textbf{',DAY+46,'} & & 5 & \textbf{',&
+         DAY+92,'} & & 20 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 6 & \textbf{',DAY,'} & & 21 & \textbf{',DAY+46,'} & & 6 & \textbf{',&
+         DAY+92,'} & & 21 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 7 & \textbf{',DAY,'} & & 22 & \textbf{',DAY+46,'} & & 7 & \textbf{',&
+         DAY+92,'} & & 22 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 8 & \textbf{',DAY,'} & & 23 & \textbf{',DAY+46,'} & & 8 & \textbf{',&
+         DAY+92,'} & & 23 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 9 & \textbf{',DAY,'} & & 24 & \textbf{',DAY+46,'} & & 9 & \textbf{',&
+         DAY+92,'} & & 24 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 10 & \textbf{',DAY,'} & & 25 & \textbf{',DAY+46,'} & & 10 & \textbf{',&
+         DAY+92,'} & & 25 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 11 & \textbf{',DAY,'} & & 26 & \textbf{',DAY+46,'} & & 11 & \textbf{',&
+         DAY+92,'} & & 26 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 12 & \textbf{',DAY,'} & & 27 & \textbf{',DAY+46,'} & & 12 & \textbf{',&
+         DAY+92,'} & & 27 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 13 & \textbf{',DAY,'} & & 28 & \textbf{',DAY+46,'} & & 13 & \textbf{',&
+         DAY+92,'} & & 28 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 14 & \textbf{',DAY,'} & & 29 & \textbf{',DAY+46,'} & & 14 & \textbf{',&
+         DAY+92,'} & & 29 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 15 & \textbf{',DAY,'} & & 30 & \textbf{',DAY+46,'} & & 15 & \textbf{',&
+         DAY+92,'} & & 30 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 16 & \textbf{',DAY,'} & & 31 & \textbf{',DAY+46,'} & & 16 & \textbf{',&
+         DAY+92,'} & Dec. & 1 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 17 & \textbf{',DAY,'} & Sept. & 1 & \textbf{',DAY+46,'} & & 17 & \textbf{',&
+         DAY+92,'} & & 2 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 18 & \textbf{',DAY,'} & & 2 & \textbf{',DAY+46,'} & & 18 & \textbf{',&
+         DAY+92,'} & & 3 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 19 & \textbf{',DAY,'} & & 3 & \textbf{',DAY+46,'} & & 19 & \textbf{',&
+         DAY+92,'} & & 4 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 20 & \textbf{',DAY,'} & & 4 & \textbf{',DAY+46,'} & & 20 & \textbf{',&
+         DAY+92,'} & & 5 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 21 & \textbf{',DAY,'} & & 5 & \textbf{',DAY+46,'} & & 21 & \textbf{',&
+         DAY+92,'} & & 6 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 22 & \textbf{',DAY,'} & & 6 & \textbf{',DAY+46,'} & & 22 & \textbf{',&
+         DAY+92,'} & & 7 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 23 & \textbf{',DAY,'} & & 7 & \textbf{',DAY+46,'} & & 23 & \textbf{',&
+         DAY+92,'} & & 8 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 24 & \textbf{',DAY,'} & & 8 & \textbf{',DAY+46,'} & & 24 & \textbf{',&
+         DAY+92,'} & & 9 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 25 & \textbf{',DAY,'} & & 9 & \textbf{',DAY+46,'} & & 25 & \textbf{',&
+         DAY+92,'} & & 10 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 26 & \textbf{',DAY,'} & & 10 & \textbf{',DAY+46,'} & & 26 & \textbf{',&
+         DAY+92,'} & & 11 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 27 & \textbf{',DAY,'} & & 11 & \textbf{',DAY+46,'} & & 27 & \textbf{',&
+         DAY+92,'} & & 12 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 28 & \textbf{',DAY,'} & & 12 & \textbf{',DAY+46,'} & & 28 & \textbf{',&
+         DAY+92,'} & & 13 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 29 & \textbf{',DAY,'} & & 13 & \textbf{',DAY+46,'} & & 29 & \textbf{',&
+         DAY+92,'} & & 14 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 30 & \textbf{',DAY,'} & & 14 & \textbf{',DAY+46,'} & & 30 & \textbf{',&
+         DAY+92,'} & & 15 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 31 & \textbf{',DAY,'} & & 15 & \textbf{',DAY+46,'} & & 31 & \textbf{',&
+         DAY+92,'} & & 16 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') 'Aug. & 1 & \textbf{',DAY,'} & & 16 & \textbf{',DAY+46,&
+         '} & Nov. & 1 & \textbf{',DAY+92,'} & & 17 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 2 & \textbf{',DAY,'} & & 17 & \textbf{',DAY+46,'} & & 2 & \textbf{',&
+         DAY+92,'} & & 18 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 3 & \textbf{',DAY,'} & & 18 & \textbf{',DAY+46,'} & & 3 & \textbf{',&
+         DAY+92,'} & & 19 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 4 & \textbf{',DAY,'} & & 19 & \textbf{',DAY+46,'} & & 4 & \textbf{',&
+         DAY+92,'} & & 20 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 5 & \textbf{',DAY,'} & & 20 & \textbf{',DAY+46,'} & & 5 & \textbf{',&
+         DAY+92,'} & & 21 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 6 & \textbf{',DAY,'} & & 21 & \textbf{',DAY+46,'} & & 6 & \textbf{',&
+         DAY+92,'} & & 22 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 7 & \textbf{',DAY,'} & & 22 & \textbf{',DAY+46,'} & & 7 & \textbf{',&
+         DAY+92,'} & & 23 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 8 & \textbf{',DAY,'} & & 23 & \textbf{',DAY+46,'} & & 8 & \textbf{',&
+         DAY+92,'} & & 24 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 9 & \textbf{',DAY,'} & & 24 & \textbf{',DAY+46,'} & & 9 & \textbf{',&
+         DAY+92,'} & & 25 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 10 & \textbf{',DAY,'} & & 25 & \textbf{',DAY+46,'} & & 10 & \textbf{',&
+         DAY+92,'} & & 26 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 11 & \textbf{',DAY,'} & & 26 & \textbf{',DAY+46,'} & & 11 & \textbf{',&
+         DAY+92,'} & & 27 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 12 & \textbf{',DAY,'} & & 27 & \textbf{',DAY+46,'} & & 12 & \textbf{',&
+         DAY+92,'} & & 28 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 13 & \textbf{',DAY,'} & & 28 & \textbf{',DAY+46,'} & & 13 & \textbf{',&
+         DAY+92,'} & & 29 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 14 & \textbf{',DAY,'} & & 29 & \textbf{',DAY+46,'} & & 14 & \textbf{',&
+         DAY+92,'} & & 30 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 15 & \textbf{',DAY,'} & & 30 & \textbf{',DAY+46,'} & & 15 & \textbf{',&
+         DAY+92,'} & & 31 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') '\end{tabular}'
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ''
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') '\pagebreak'
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ''
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Leap year.
+!
+
+  100 DAY = JAN0
+
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\begin{tabular}{lrc@{\hspace{10ex}}lrc@{\hspace{10ex}}lrc@{\hspace{10ex}}lrc}'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\multicolumn{12}{c}{\Large DAYS OF YEAR (LEAP YEAR)}\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' & & & & & & & & & & &\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' & & & & & & & & & & &\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\multicolumn{2}{c}{Date} & \multicolumn{1}{l}{DOY} & '&
+         //'\multicolumn{2}{c}{Date} & \multicolumn{1}{l}{DOY} &'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\multicolumn{2}{c}{Date} & \multicolumn{1}{l}{DOY} & '&
+         //'\multicolumn{2}{c}{Date} & \multicolumn{1}{l}{DOY}\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' & & & & & & & & & & &\\'
+
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') 'Jan. & 0 & \textbf{',DAY,'} & Feb. & 15 & \textbf{',DAY+46,'} & Apr. & 1 & '&
+         //'\textbf{',DAY+92,'} & May & 17 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 1 & \textbf{',DAY,'} & & 16 & \textbf{',DAY+46,'} & & 2 & \textbf{',&
+         DAY+92,'} & & 18 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 2 & \textbf{',DAY,'} & & 17 & \textbf{',DAY+46,'} & & 3 & \textbf{',&
+         DAY+92,'} & & 10 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 3 & \textbf{',DAY,'} & & 18 & \textbf{',DAY+46,'} & & 4 & \textbf{',&
+         DAY+92,'} & & 20 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 4 & \textbf{',DAY,'} & & 19 & \textbf{',DAY+46,'} & & 5 & \textbf{',&
+         DAY+92,'} & & 21 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 5 & \textbf{',DAY,'} & & 20 & \textbf{',DAY+46,'} & & 6 & \textbf{',&
+         DAY+92,'} & & 22 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 6 & \textbf{',DAY,'} & & 21 & \textbf{',DAY+46,'} & & 7 & \textbf{',&
+         DAY+92,'} & & 23 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 7 & \textbf{',DAY,'} & & 22 & \textbf{',DAY+46,'} & & 8 & \textbf{',&
+         DAY+92,'} & & 24 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 8 & \textbf{',DAY,'} & & 23 & \textbf{',DAY+46,'} & & 9 & \textbf{',&
+         DAY+92,'} & & 25 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 9 & \textbf{',DAY,'} & & 24 & \textbf{',DAY+46,'} & & 10 & \textbf{',&
+         DAY+92,'} & & 26 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 10 & \textbf{',DAY,'} & & 25 & \textbf{',DAY+46,'} & & 11 & \textbf{',&
+         DAY+92,'} & & 27 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 11 & \textbf{',DAY,'} & & 26 & \textbf{',DAY+46,'} & & 12 & \textbf{',&
+         DAY+92,'} & & 28 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 12 & \textbf{',DAY,'} & & 27 & \textbf{',DAY+46,'} & & 13 & \textbf{',&
+         DAY+92,'} & & 29 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 13 & \textbf{',DAY,'} & & 28 & \textbf{',DAY+46,'} & & 14 & \textbf{',&
+         DAY+92,'} & & 30 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 14 & \textbf{',DAY,'} & & 29 & \textbf{',DAY+46,'} & & 15 & \textbf{',&
+         DAY+92,'} & & 31 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 15 & \textbf{',DAY,'} & Mar. & 1 & \textbf{',DAY+46,'} & & 16 & \textbf{',&
+         DAY+92,'} & June & 1 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 16 & \textbf{',DAY,'} & & 2 & \textbf{',DAY+46,'} & & 17 & \textbf{',&
+         DAY+92,'} & & 2 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 17 & \textbf{',DAY,'} & & 3 & \textbf{',DAY+46,'} & & 18 & \textbf{',&
+         DAY+92,'} & & 3 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 18 & \textbf{',DAY,'} & & 4 & \textbf{',DAY+46,'} & & 19 & \textbf{',&
+         DAY+92,'} & & 4 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 19 & \textbf{',DAY,'} & & 5 & \textbf{',DAY+46,'} & & 20 & \textbf{',&
+         DAY+92,'} & & 5 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 20 & \textbf{',DAY,'} & & 6 & \textbf{',DAY+46,'} & & 21 & \textbf{',&
+         DAY+92,'} & & 6 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 21 & \textbf{',DAY,'} & & 7 & \textbf{',DAY+46,'} & & 22 & \textbf{',&
+         DAY+92,'} & & 7 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 22 & \textbf{',DAY,'} & & 8 & \textbf{',DAY+46,'} & & 23 & \textbf{',&
+         DAY+92,'} & & 8 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 23 & \textbf{',DAY,'} & & 9 & \textbf{',DAY+46,'} & & 24 & \textbf{',&
+         DAY+92,'} & & 9 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 24 & \textbf{',DAY,'} & & 10 & \textbf{',DAY+46,'} & & 25 & \textbf{',&
+         DAY+92,'} & & 10 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 25 & \textbf{',DAY,'} & & 11 & \textbf{',DAY+46,'} & & 26 & \textbf{',&
+         DAY+92,'} & & 11 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 26 & \textbf{',DAY,'} & & 12 & \textbf{',DAY+46,'} & & 27 & \textbf{',&
+         DAY+92,'} & & 12 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 27 & \textbf{',DAY,'} & & 13 & \textbf{',DAY+46,'} & & 28 & \textbf{',&
+         DAY+92,'} & & 13 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 28 & \textbf{',DAY,'} & & 14 & \textbf{',DAY+46,'} & & 29 & \textbf{',&
+         DAY+92,'} & & 14 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 29 & \textbf{',DAY,'} & & 15 & \textbf{',DAY+46,'} & & 30 & \textbf{',&
+         DAY+92,'} & & 15 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 30 & \textbf{',DAY,'} & & 16 & \textbf{',DAY+46,'} & May & 1 & \textbf{',&
+         DAY+92,'} & & 16 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 31 & \textbf{',DAY,'} & & 17 & \textbf{',DAY+46,'} & & 2 & \textbf{',&
+         DAY+92,'} & & 17 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') 'Feb. & 1 & \textbf{',DAY,'} & & 18 & \textbf{',DAY+46,'} & & 3 & \textbf{',&
+         DAY+92,'} & & 18 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 2 & \textbf{',DAY,'} & & 19 & \textbf{',DAY+46,'} & & 4 & \textbf{',&
+         DAY+92,'} & & 19 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 3 & \textbf{',DAY,'} & & 20 & \textbf{',DAY+46,'} & & 5 & \textbf{',&
+         DAY+92,'} & & 20 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 4 & \textbf{',DAY,'} & & 21 & \textbf{',DAY+46,'} & & 6 & \textbf{',&
+         DAY+92,'} & & 21 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 5 & \textbf{',DAY,'} & & 22 & \textbf{',DAY+46,'} & & 7 & \textbf{',&
+         DAY+92,'} & & 22 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 6 & \textbf{',DAY,'} & & 23 & \textbf{',DAY+46,'} & & 8 & \textbf{',&
+         DAY+92,'} & & 23 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 7 & \textbf{',DAY,'} & & 24 & \textbf{',DAY+46,'} & & 9 & \textbf{',&
+         DAY+92,'} & & 24 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 8 & \textbf{',DAY,'} & & 25 & \textbf{',DAY+46,'} & & 10 & \textbf{',&
+         DAY+92,'} & & 25 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 9 & \textbf{',DAY,'} & & 26 & \textbf{',DAY+46,'} & & 11 & \textbf{',&
+         DAY+92,'} & & 26 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 10 & \textbf{',DAY,'} & & 27 & \textbf{',DAY+46,'} & & 12 & \textbf{',&
+         DAY+92,'} & & 27 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 11 & \textbf{',DAY,'} & & 28 & \textbf{',DAY+46,'} & & 13 & \textbf{',&
+         DAY+92,'} & & 28 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 12 & \textbf{',DAY,'} & & 29 & \textbf{',DAY+46,'} & & 14 & \textbf{',&
+         DAY+92,'} & & 29 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 13 & \textbf{',DAY,'} & & 30 & \textbf{',DAY+46,'} & & 15 & \textbf{',&
+         DAY+92,'} & & 30 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 14 & \textbf{',DAY,'} & & 31 & \textbf{',DAY+46,'} & & 16 & \textbf{',&
+         DAY+92,'} & July & 1 & \textbf{',DAY+138,'}\\'
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') '\end{tabular}'
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ''
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') '\pagebreak'
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ''
+
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\begin{tabular}{lrc@{\hspace{10ex}}lrc@{\hspace{10ex}}lrc@{\hspace{10ex}}lrc}'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\multicolumn{12}{c}{\Large DAYS OF YEAR (LEAP YEAR)}\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' & & & & & & & & & & &\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' & & & & & & & & & & &\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\multicolumn{2}{c}{Date} & \multicolumn{1}{l}{DOY} & '&
+         //'\multicolumn{2}{c}{Date} & \multicolumn{1}{l}{DOY} &'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') '\multicolumn{2}{c}{Date} & \multicolumn{1}{l}{DOY} & '&
+         //'\multicolumn{2}{c}{Date} & \multicolumn{1}{l}{DOY}\\'
+      WRITE (UNIT=OUTUNIT, FMT='(A)') ' & & & & & & & & & & &\\'
+
+      DAY = JAN0 + 183
+
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') 'July & 1 & \textbf{',DAY,'} & Aug. & 16 & \textbf{',DAY+46,&
+         '} & Oct. & 1 & \textbf{',DAY+92,'} & Nov. & 16 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 2 & \textbf{',DAY,'} & & 17 & \textbf{',DAY+46,'} & & 2 & \textbf{',&
+         DAY+92,'} & & 17 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 3 & \textbf{',DAY,'} & & 18 & \textbf{',DAY+46,'} & & 3 & \textbf{',&
+         DAY+92,'} & & 18 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 4 & \textbf{',DAY,'} & & 19 & \textbf{',DAY+46,'} & & 4 & \textbf{',&
+         DAY+92,'} & & 19 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 5 & \textbf{',DAY,'} & & 20 & \textbf{',DAY+46,'} & & 5 & \textbf{',&
+         DAY+92,'} & & 20 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 6 & \textbf{',DAY,'} & & 21 & \textbf{',DAY+46,'} & & 6 & \textbf{',&
+         DAY+92,'} & & 21 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 7 & \textbf{',DAY,'} & & 22 & \textbf{',DAY+46,'} & & 7 & \textbf{',&
+         DAY+92,'} & & 22 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 8 & \textbf{',DAY,'} & & 23 & \textbf{',DAY+46,'} & & 8 & \textbf{',&
+         DAY+92,'} & & 23 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 9 & \textbf{',DAY,'} & & 24 & \textbf{',DAY+46,'} & & 9 & \textbf{',&
+         DAY+92,'} & & 24 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 10 & \textbf{',DAY,'} & & 25 & \textbf{',DAY+46,'} & & 10 & \textbf{',&
+         DAY+92,'} & & 25 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 11 & \textbf{',DAY,'} & & 26 & \textbf{',DAY+46,'} & & 11 & \textbf{',&
+         DAY+92,'} & & 26 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 12 & \textbf{',DAY,'} & & 27 & \textbf{',DAY+46,'} & & 12 & \textbf{',&
+         DAY+92,'} & & 27 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 13 & \textbf{',DAY,'} & & 28 & \textbf{',DAY+46,'} & & 13 & \textbf{',&
+         DAY+92,'} & & 28 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 14 & \textbf{',DAY,'} & & 29 & \textbf{',DAY+46,'} & & 14 & \textbf{',&
+         DAY+92,'} & & 29 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 15 & \textbf{',DAY,'} & & 30 & \textbf{',DAY+46,'} & & 15 & \textbf{',&
+         DAY+92,'} & & 30 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 16 & \textbf{',DAY,'} & & 31 & \textbf{',DAY+46,'} & & 16 & \textbf{',&
+         DAY+92,'} & Dec. & 1 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 17 & \textbf{',DAY,'} & Sept. & 1 & \textbf{',DAY+46,'} & & 17 & \textbf{',&
+         DAY+92,'} & & 2 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 18 & \textbf{',DAY,'} & & 2 & \textbf{',DAY+46,'} & & 18 & \textbf{',&
+         DAY+92,'} & & 3 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 19 & \textbf{',DAY,'} & & 3 & \textbf{',DAY+46,'} & & 19 & \textbf{',&
+         DAY+92,'} & & 4 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 20 & \textbf{',DAY,'} & & 4 & \textbf{',DAY+46,'} & & 20 & \textbf{',&
+         DAY+92,'} & & 5 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 21 & \textbf{',DAY,'} & & 5 & \textbf{',DAY+46,'} & & 21 & \textbf{',&
+         DAY+92,'} & & 6 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 22 & \textbf{',DAY,'} & & 6 & \textbf{',DAY+46,'} & & 22 & \textbf{',&
+         DAY+92,'} & & 7 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 23 & \textbf{',DAY,'} & & 7 & \textbf{',DAY+46,'} & & 23 & \textbf{',&
+         DAY+92,'} & & 8 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 24 & \textbf{',DAY,'} & & 8 & \textbf{',DAY+46,'} & & 24 & \textbf{',&
+         DAY+92,'} & & 9 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 25 & \textbf{',DAY,'} & & 9 & \textbf{',DAY+46,'} & & 25 & \textbf{',&
+         DAY+92,'} & & 10 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 26 & \textbf{',DAY,'} & & 10 & \textbf{',DAY+46,'} & & 26 & \textbf{',&
+         DAY+92,'} & & 11 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 27 & \textbf{',DAY,'} & & 11 & \textbf{',DAY+46,'} & & 27 & \textbf{',&
+         DAY+92,'} & & 12 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 28 & \textbf{',DAY,'} & & 12 & \textbf{',DAY+46,'} & & 28 & \textbf{',&
+         DAY+92,'} & & 13 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 29 & \textbf{',DAY,'} & & 13 & \textbf{',DAY+46,'} & & 29 & \textbf{',&
+         DAY+92,'} & & 14 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 30 & \textbf{',DAY,'} & & 14 & \textbf{',DAY+46,'} & & 30 & \textbf{',&
+         DAY+92,'} & & 15 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 31 & \textbf{',DAY,'} & & 15 & \textbf{',DAY+46,'} & & 31 & \textbf{',&
+         DAY+92,'} & & 16 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') 'Aug. & 1 & \textbf{',DAY,'} & & 16 & \textbf{',DAY+46,&
+         '} & Nov. & 1 & \textbf{',DAY+92,'} & & 17 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 2 & \textbf{',DAY,'} & & 17 & \textbf{',DAY+46,'} & & 2 & \textbf{',&
+         DAY+92,'} & & 18 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 3 & \textbf{',DAY,'} & & 18 & \textbf{',DAY+46,'} & & 3 & \textbf{',&
+         DAY+92,'} & & 19 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 4 & \textbf{',DAY,'} & & 19 & \textbf{',DAY+46,'} & & 4 & \textbf{',&
+         DAY+92,'} & & 20 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 5 & \textbf{',DAY,'} & & 20 & \textbf{',DAY+46,'} & & 5 & \textbf{',&
+         DAY+92,'} & & 21 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 6 & \textbf{',DAY,'} & & 21 & \textbf{',DAY+46,'} & & 6 & \textbf{',&
+         DAY+92,'} & & 22 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 7 & \textbf{',DAY,'} & & 22 & \textbf{',DAY+46,'} & & 7 & \textbf{',&
+         DAY+92,'} & & 23 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 8 & \textbf{',DAY,'} & & 23 & \textbf{',DAY+46,'} & & 8 & \textbf{',&
+         DAY+92,'} & & 24 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 9 & \textbf{',DAY,'} & & 24 & \textbf{',DAY+46,'} & & 9 & \textbf{',&
+         DAY+92,'} & & 25 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 10 & \textbf{',DAY,'} & & 25 & \textbf{',DAY+46,'} & & 10 & \textbf{',&
+         DAY+92,'} & & 26 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 11 & \textbf{',DAY,'} & & 26 & \textbf{',DAY+46,'} & & 11 & \textbf{',&
+         DAY+92,'} & & 27 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 12 & \textbf{',DAY,'} & & 27 & \textbf{',DAY+46,'} & & 12 & \textbf{',&
+         DAY+92,'} & & 28 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 13 & \textbf{',DAY,'} & & 28 & \textbf{',DAY+46,'} & & 13 & \textbf{',&
+         DAY+92,'} & & 29 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 14 & \textbf{',DAY,'} & & 29 & \textbf{',DAY+46,'} & & 14 & \textbf{',&
+         DAY+92,'} & & 30 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') ' & 15 & \textbf{',DAY,'} & & 30 & \textbf{',DAY+46,'} & & 15 & \textbf{',&
+         DAY+92,'} & & 31 & \textbf{',DAY+138,'}\\'
+      DAY = DAY + 1
+      WRITE (UNIT=OUTUNIT, FMT='(4(A,I3.3),A)') '\end{tabular}'
+
+      GO TO 900
+
+
+  900 WRITE (UNIT=OUTUNIT, FMT='(/A)') '\end{document}'
+
+      CLOSE (UNIT=OUTUNIT, STATUS='KEEP')                                           ! close file
+
+      WRITE (UNIT=*, FMT='(A)') ' Done.  Output sent to file '//OUTFILE
+
+      STOP
+
+      END PROGRAM DOY
+

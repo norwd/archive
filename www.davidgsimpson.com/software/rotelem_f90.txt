@@ -1,0 +1,181 @@
+!***********************************************************************************************************************************
+!
+!                                                          R O T E L E M
+!
+!  Program:      ROTELEM
+!
+!  Programmer:   Dr. David G. Simpson
+!                NASA Goddard Space Flight Center
+!                Greenbelt, Maryland  20771
+!
+!  Date:         November 22, 2002
+!
+!  Language:     Fortran-90
+!
+!  Version:      1.00a  (November 22, 2002)
+!
+!  Description:  This program rotates orbital elements between the ecliptic and equatorial frames.
+!                The elements affected are the longitude of the ascending node, the inclination of the orbit, and the argument of
+!                pericenter.  All other elements are the same in both coordinate systems.
+!
+!***********************************************************************************************************************************
+
+      PROGRAM ROTELEM
+
+      IMPLICIT NONE
+
+!
+!     Parameters
+!
+
+      DOUBLE PRECISION, PARAMETER :: PI = 3.14159265358979323846264338327950288419716939937510582097494459230781640628620899862803D0
+      DOUBLE PRECISION, PARAMETER :: TWOPI = 6.28318530717958647692528676655900576839433879875021164194988918461563281257241799726D0
+
+      DOUBLE PRECISION, PARAMETER :: ECL_J2000 = 23.4392911D0 * PI/180.0D0          ! obliquity of ecliptic (J2000) (rad)
+
+!
+!     Variables
+!
+
+      DOUBLE PRECISION :: OE                                                        ! ecliptic longitude of ascending node
+      DOUBLE PRECISION :: IE                                                        ! ecliptic inclination of orbit
+      DOUBLE PRECISION :: WE                                                        ! ecliptic argument of pericenter
+      DOUBLE PRECISION :: OQ                                                        ! equatorial longitude of ascending node
+      DOUBLE PRECISION :: IQ                                                        ! equatorial inclination of orbit
+      DOUBLE PRECISION :: WQ                                                        ! equatorial argument of pericenter
+      DOUBLE PRECISION :: E                                                         ! obliquity of ecliptic
+      DOUBLE PRECISION :: SINOQ                                                     ! sin(OQ), to find correct quadrant for OQ
+      DOUBLE PRECISION :: A, B                                                      ! intermediate constants
+      DOUBLE PRECISION :: BETA                                                      ! angle between lines of nodes (rad)
+      DOUBLE PRECISION :: JD, U                                                     ! epoch date (JD and 100 jcy from J2000)
+      INTEGER :: CONVANS, OBLANS                                                    ! user input answers
+
+
+!
+!     Start of code.
+!
+!     Prompt for user inputs.
+!
+
+      WRITE (UNIT=*, FMT='(A)') ' ROTELEM - Rotate J2000 orbital elements '//  &
+                                'between ecliptic and equator.'
+
+      WRITE (UNIT=*, FMT='(/A)') ' Convert which way?'
+      WRITE (UNIT=*, FMT='(A)') ' 1.  Ecliptic to equator '
+      WRITE (UNIT=*, FMT='(A)') ' 2.  Equator to ecliptic '
+      READ (UNIT=*, FMT=*) CONVANS
+
+
+      WRITE (UNIT=*, FMT='(/A)') ' Which epoch?'
+      WRITE (UNIT=*, FMT='(A)') ' 1.  J2000 '
+      WRITE (UNIT=*, FMT='(A)') ' 2.  Mean of date '
+      READ (UNIT=*, FMT=*) OBLANS
+
+!
+!     If converting from the equator to the ecliptic, change the sign of the
+!     obliquity of the ecliptic.
+!
+
+      IF (CONVANS .EQ. 1) THEN
+         E = ECL_J2000
+      ELSE
+         E = -ECL_J2000
+      END IF
+
+!
+!     If using mean-of-date elements, prompt for the date and compute the
+!     obliquity of the ecliptic of date.
+!
+
+      IF (OBLANS .EQ. 2) THEN
+         WRITE (UNIT=*, FMT='(/A)', ADVANCE='NO') ' Enter time (JD):  '
+         READ (UNIT=*, FMT=*) JD
+         U = (JD-2451545.0D0)/36525.0D2                                             ! convert to units of 100 jcy from J2000
+
+         E = E + (((((((((6.80556D-4*U + 1.608333D-3)*U + 7.741667D-3)*U +      &   ! find obiquity of ecliptic of date (deg)
+              1.977778D-3)*U - 1.0847222D-2)*U - 6.9352778D-2)*U -              &
+              1.4272222D-2)*U + 5.55347222D-1)*U - 4.30556D-4)*U -              &
+              1.300258333D0)*U
+      END IF
+
+!
+!     Prompt for orbital elements.
+!
+
+      IF (CONVANS .EQ. 1) THEN
+         WRITE (UNIT=*, FMT='(/A/)') ' Enter J2000 ecliptic elements (deg):'
+      ELSE
+         WRITE (UNIT=*, FMT='(/A/)') ' Enter J2000 equatorial elements (deg):'
+      END IF
+
+      WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' Longitude of ascending node:  '
+      READ (UNIT=*, FMT=*) OE
+
+      WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' Inclination of orbit:  '
+      READ (UNIT=*, FMT=*) IE
+
+      WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' Argument of pericenter:  '
+      READ (UNIT=*, FMT=*) WE
+
+!
+!     Convert inputs from degrees to radians.
+!
+
+      OE = OE * PI/180.0D0
+      IE = IE * PI/180.0D0
+      WE = WE * PI/180.0D0
+
+!
+!     Compute rotated elements.
+!
+
+      IQ = ACOS(-SIN(E)*SIN(IE)*COS(OE) + COS(E)*COS(IE))
+
+      A = SQRT(SIN(E)*SIN(E)*(COS(IE)*COS(IE)+SIN(IE)*SIN(IE)*SIN(OE)*SIN(OE)) +   &
+            0.5D0*SIN(2.0*E)*SIN(2.0*IE)*COS(OE) + COS(E)*COS(E)*SIN(IE)*SIN(IE))
+
+      OQ = ACOS((SIN(E)*COS(IE) + COS(E)*SIN(IE)*COS(OE))/A)
+
+      BETA = ACOS((SIN(E)*COS(IE)*COS(OE) + COS(E)*SIN(IE))/A)
+
+      B = SIN(E)*SIN(IE)*SIN(OE)
+      BETA = SIGN (BETA, B)
+
+      WQ = WE + BETA
+
+!
+!     Put angles into the correct quadrants.
+!
+
+      SINOQ = SIN(IE)*SIN(OE)/A
+      IF ((SINOQ) .LT. 0.0D0) OQ = TWOPI - OQ
+
+      IF (WQ .LT. 0.0) WQ = WQ + TWOPI
+      IF (WQ .GT. TWOPI) WQ = WQ - TWOPI
+
+!
+!     Convert results from radians to degrees.
+!
+
+      OQ = OQ * 180.0D0/PI
+      IQ = IQ * 180.0D0/PI
+      WQ = WQ * 180.0D0/PI
+
+!
+!     Print out the results.
+!
+
+      IF (CONVANS .EQ. 1) THEN
+         WRITE (UNIT=*, FMT='(/A/)') ' Elements referred to the equator:'
+      ELSE
+         WRITE (UNIT=*, FMT='(/A/)') ' Elements referred to the ecliptic:'
+      END IF
+
+      WRITE (UNIT=*, FMT='(A,F18.10,A)') ' Longitude of ascending node  =  ', OQ, ' deg'
+      WRITE (UNIT=*, FMT='(A,F18.10,A)') ' Inclination of orbit         =  ', IQ, ' deg'
+      WRITE (UNIT=*, FMT='(A,F18.10,A)') ' Argument of pericenter       =  ', WQ, ' deg'
+
+      STOP
+
+      END PROGRAM ROTELEM
+

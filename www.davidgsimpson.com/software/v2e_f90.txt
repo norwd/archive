@@ -1,0 +1,97 @@
+!***********************************************************************************************************************************
+!
+!                                                           V 2 E
+!
+!  Program:      V2E
+!
+!  Programmer:   David G. Simpson
+!                NASA Goddard Space Flight Center
+!                Greenbelt, Maryland  20771
+!
+!  Date:         December 8, 2004
+!
+!  Language:     Fortran-90
+!
+!  Version:      1.00a
+!
+!  Description:  Convert particle velocities (km/s) to energies (eV).
+!
+!  Notes:        Input the velocity in km/s, and the mass in amu.
+!                Enter 0 for the mass to get the electron mass.
+!                Enter -1 for either the mass or the energy to print a mass table.
+!
+!***********************************************************************************************************************************
+
+      PROGRAM V2E
+
+      IMPLICIT NONE
+
+      DOUBLE PRECISION, PARAMETER :: ME = 9.1093826D-31                             ! electron mass (kg)
+      DOUBLE PRECISION, PARAMETER :: MP = 1.67262171D-27                            ! proton mass (kg)
+      DOUBLE PRECISION, PARAMETER :: U  = 1.66053886D-27                            ! atomic mass unit (kg)
+      DOUBLE PRECISION, PARAMETER :: E  = 1.60217653D-19                            ! elementary charge (C)
+
+      DOUBLE PRECISION :: MASS, ENERGY, V
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Get user input.
+!
+
+      WRITE (UNIT=*, FMT='(/A)', ADVANCE='NO') ' Enter velocity (km/s):       '
+      READ (UNIT=*, FMT=*) V
+
+      IF (V .EQ. -1.0D0) THEN
+         MASS = -1.0D0
+      ELSE
+         WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' Enter mass (amu; 0 for e-):  '
+         READ (UNIT=*, FMT=*) MASS
+      END IF
+
+!
+!     Convert input to SI units.
+!     If velocity or mass = -1, then print a table of masses.
+!
+
+      V = V * 1.0D3                                                                 ! m/s
+
+      IF (MASS .EQ. 0.0D0) THEN                                                     ! if mass was entered as 0..
+         MASS = ME                                                                  ! ..then use electron mass
+      ELSE IF (MASS .EQ. 1.0D0) THEN                                                ! if mass was entered as 1..
+         MASS = MP                                                                  ! ..then use proton mass
+      ELSE IF (MASS .EQ. -1.0D0) THEN                                               ! if mass was entered as -1..
+         WRITE (UNIT=*, FMT='(/A)') '  1   H'                                       ! ..then print mass table
+         WRITE (UNIT=*, FMT='(A)') '  2   H2'
+         WRITE (UNIT=*, FMT='(A)') '  3   H3'
+         WRITE (UNIT=*, FMT='(A)') '  4   He'
+         WRITE (UNIT=*, FMT='(A)') ' 12   C'
+         WRITE (UNIT=*, FMT='(A)') ' 14   N'
+         WRITE (UNIT=*, FMT='(A)') ' 16   O      CH4'
+         WRITE (UNIT=*, FMT='(A)') ' 17   OH'
+         WRITE (UNIT=*, FMT='(A)') ' 18   H2O'
+         WRITE (UNIT=*, FMT='(A)') ' 19   H3O'
+         WRITE (UNIT=*, FMT='(A)') ' 20   Ne'
+         WRITE (UNIT=*, FMT='(A)') ' 26   C2H2'
+         WRITE (UNIT=*, FMT='(A)') ' 28   C2H4   CO     N2'
+         WRITE (UNIT=*, FMT='(A)') ' 30   C2H6'
+         WRITE (UNIT=*, FMT='(A)') ' 32   O2'
+         WRITE (UNIT=*, FMT='(A)') ' 40   Ar'
+         WRITE (UNIT=*, FMT='(A)') ' 44   CO2'
+         STOP
+      ELSE
+         MASS = MASS * U                                                            ! otherwise, convert mass to kg
+      END IF
+
+!
+!     Compute and print velocity.
+!
+
+      ENERGY = 0.5D0 * MASS * V**2                                                  ! compute energy (J)
+
+      WRITE (UNIT=*, FMT='(/A,F8.2,A/)') ' Energy = ', ENERGY/E, ' eV'              ! print result (in eV)
+
+      STOP
+
+      END PROGRAM V2E
+

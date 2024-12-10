@@ -1,0 +1,49 @@
+!***********************************************************************************************************************************
+!
+!                                              R A N D O M _ N U M B E R _ N O R M A L
+!
+!  Program:      RANDOM_NUMBER_NORMAL
+!
+!  Programmer:   David G. Simpson
+!                NASA Goddard Space Flight Center
+!                Greenbelt, Maryland  20771
+!
+!  Date:         February 18, 2016
+!
+!  Language:     Fortran-90
+!
+!  Version:      1.00a
+!
+!  Description:  This subroutine returns (to its argument) a normally-distributed
+!                random number between 0 and 1, with mean 0 and standard deviation 1.
+!
+!  Notes:        1. Based on Algorithm given in Knuth, "The Art of Computer Programming,"
+!                   Vol. 2 (Seminumerical Algoriths), Chapter 3.
+!                2. Before any calls to this routine, Fortran subroutine RANDOM_SEED
+!                   should be called in the main program.
+!
+!***********************************************************************************************************************************
+
+      SUBROUTINE RANDOM_NUMBER_NORMAL (Z1)
+
+      IMPLICIT NONE
+
+      DOUBLE PRECISION, INTENT(OUT) :: Z1
+
+      DOUBLE PRECISION :: U1, U2, V1, V2, S
+
+  100 CALL RANDOM_NUMBER(U1)
+      CALL RANDOM_NUMBER(U2)
+
+      V1 = 2.0D0*U1 - 1.0D0
+      V2 = 2.0D0*U2 - 1.0D0
+      S = V1**2 + V2**2
+
+      IF (S .GE. 1.0D0) GO TO 100
+
+      Z1 = V1*SQRT(-2.0D0*LOG(S)/S)
+!      Z2 = V2*SQRT(-2.0D0*LOG(S)/S)     ! Z2 is available as a second normal deviate, but is not used
+
+      RETURN
+
+      END SUBROUTINE RANDOM_NUMBER_NORMAL

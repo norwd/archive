@@ -1,0 +1,91 @@
+!***********************************************************************************************************************************
+!
+!                                                         E L E M Q U I Z
+!
+!  Program:      ELEMQUIZ
+!
+!  Programmer:   David G. Simpson
+!                Laurel, Maryland
+!
+!  Date:         September 3, 2013
+!
+!  Language:     Fortran-90
+!
+!  Version:      1.00a  (September 3, 2013)
+!
+!  Description:  Quiz for helping to memorize the atomic numbers of the elements.
+!
+!  Files:        Source files:
+!
+!                   elemquiz.f90            Main program
+!
+!  Notes:        The quiz will repeatedly print an atomic number from 1 to ZMAX, where ZMAX
+!                is entered at the beginning of the program.  At each prompt, enter the
+!                element symbol for the element with that atomic number.
+!
+!                To end the program, type 'q' or 'qu' at any time.  The player's score will
+!                be printed before the program is exited.
+!
+!***********************************************************************************************************************************
+
+      PROGRAM ELEMQUIZ
+
+      IMPLICIT NONE
+
+      INTEGER :: N, TTL, COR, ZMAX
+      REAL :: X
+      CHARACTER(LEN=2) :: A
+
+      INTEGER, PARAMETER :: ZLIM = 116
+      CHARACTER(LEN=2), DIMENSION(ZLIM), PARAMETER :: ANS = (/  &
+         'H ',                                                                                                 'He',  &
+         'Li', 'Be',                                                             'B ', 'C ', 'N ', 'O ', 'F ', 'Ne',  &
+         'Na', 'Mg',                                                             'Al', 'Si', 'P ', 'S ', 'Cl', 'Ar',  &
+         'K ', 'Ca', 'Sc', 'Ti', 'V ', 'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn', 'Ga', 'Ge', 'As', 'Se', 'Br', 'Kr',  &
+         'Rb', 'Sr', 'Y ', 'Zr', 'Nb', 'Mo', 'Tc', 'Ru', 'Rh', 'Pd', 'Ag', 'Cd', 'In', 'Sn', 'Sb', 'Te', 'I ', 'Xe',  &
+         'Cs', 'Ba',  &
+         'La', 'Ce', 'Pr', 'Nd', 'Pm', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb', 'Lu',  &
+                           'Hf', 'Ta', 'W ', 'Re', 'Os', 'Ir', 'Pt', 'Au', 'Hg', 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn',  &
+         'Fr', 'Ra',  &
+         'Ac', 'Th', 'Pa', 'U ', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es', 'Fm', 'Md', 'No', 'Lr',  &
+                           'Rf', 'Db', 'Sg', 'Bh', 'Hs', 'Mt', 'Ds', 'Rg', 'Cn', 'xx', 'Fl', 'xx', 'Lv'  &
+      /)
+
+
+      PRINT '(/A/)', ' Provide the correct element symbol for the given atomic number.'
+
+      PRINT '(A,I3,A)', ' Enter maximum atomic number (1 to ', ZLIM, '):  '
+      READ *, ZMAX
+      IF ((ZMAX.LT.1).OR.(ZMAX.GT.ZLIM)) THEN
+         PRINT *, ' Error: number out of range: ', ZMAX
+         STOP
+      END IF
+
+      PRINT *, ' '
+
+      CALL RANDOM_SEED()
+
+      TTL = 0
+      COR = 0
+
+      DO
+         CALL RANDOM_NUMBER (X)
+         N = INT(ZMAX*X)+1
+         IF ((N.EQ.113).OR.(N.EQ.115)) CYCLE
+         PRINT *, N
+         READ *, A
+         IF ((A.EQ.'qu').OR.(A.EQ.'q')) EXIT
+         TTL = TTL + 1
+         IF (A.EQ.ANS(N)) THEN
+            PRINT *, ' Correct'
+            COR = COR + 1
+         ELSE
+            PRINT '(A,I3,2H: ,A)', ' Wrong; the correct answer is:  ', N, ANS(N)
+         END IF
+      END DO
+
+      IF (TTL .GT. 0) PRINT '(/A,I3,A)', ' Score:  ', NINT(DBLE(COR)/DBLE(TTL)*100.0D0), '%'
+
+      STOP
+
+      END PROGRAM ELEMQUIZ
