@@ -1,0 +1,70 @@
+!***********************************************************************************************************************************
+!
+!                            E N D I A N
+!
+!  Program:      ENDIAN
+!
+!  Programmer:   David G. Simpson
+!                NASA Goddard Space Flight Center
+!                Greenbelt, Maryland  20771
+!
+!  Date:         February 18, 2005
+!
+!  Language:     Fortran-90
+!
+!  Version:      1.00a
+!
+!  Description:  Print whether the computer on which this program is run
+!                stores numbers in little-endian or big-endian order.
+!
+!***********************************************************************************************************************************
+
+      PROGRAM ENDIAN
+
+      IMPLICIT NONE
+
+      LOGICAL :: LITTLE_ENDIAN
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+      IF (LITTLE_ENDIAN()) THEN
+         WRITE (UNIT=*, FMT='(/A)') ' Little endian.'
+      ELSE
+         WRITE (UNIT=*, FMT='(/A)') ' Big endian.'
+      END IF
+
+      STOP
+
+      END PROGRAM ENDIAN
+
+
+
+
+!***********************************************************************************************************************************
+!  LITTLE_ENDIAN
+!
+!  Return .TRUE. for a little-endian computer, .FALSE. for big-endian.
+!***********************************************************************************************************************************
+
+      FUNCTION LITTLE_ENDIAN () RESULT (FLAG)
+
+      IMPLICIT NONE
+
+      LOGICAL :: FLAG
+
+      INTEGER(KIND=1), DIMENSION(2) :: IARR                                         ! array of two 1-byte integers
+      INTEGER(KIND=2) :: S                                                          ! scalar 2-byte integer
+
+      S = 4660                                                                      ! set scalar to hex 1234
+      IARR = TRANSFER (S,IARR)                                                      ! transfer to IARR
+
+      IF (IARR(1) .EQ. 52) THEN                                                     ! if element 1 of IARR is hex 34..
+         FLAG = .TRUE.                                                              ! ..then little endian
+      ELSE
+         FLAG = .FALSE.                                                             ! else big endian
+      END IF
+
+      RETURN
+
+      END FUNCTION LITTLE_ENDIAN
+

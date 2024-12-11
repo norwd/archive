@@ -1,0 +1,114 @@
+!***********************************************************************************************************************************
+!
+!                                                       M 2 2 I N V _ M A I N
+!
+!  Program:      M22INV_MAIN
+!
+!  Programmer:   David G. Simpson
+!                NASA Goddard Space Flight Center
+!                Greenbelt, Maryland  20771
+!
+!  Date:         July 22, 2005
+!
+!  Language:     Fortran-90
+!
+!  Version:      1.00b  (February 7, 2009)
+!
+!  Description:  This program is a short "driver" to call function M22INV, which inverts a 2x2 matrix.
+!
+!  Files:        Source files:
+!
+!                   m22inv.f90                   Main program
+!
+!***********************************************************************************************************************************
+
+      PROGRAM M22INV_MAIN
+
+      IMPLICIT NONE
+
+      INTEGER :: I, J
+      DOUBLE PRECISION, DIMENSION(2,2) :: MAT, MATINV
+      LOGICAL :: OK_FLAG
+
+      LOGICAL :: M22INV
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Get user input.
+!
+
+      WRITE (UNIT=*, FMT='(/A/)') ' Enter matrix:'
+
+      DO I = 1, 2
+         DO J = 1, 2
+            WRITE (UNIT=*, FMT='(A,I1,1H,,I1,A)', ADVANCE='NO') ' A(', I, J, ') = '
+            READ (UNIT=*, FMT=*) MAT(I,J)
+         END DO
+      END DO
+
+!
+!     Invert the input matrix.
+!
+
+      CALL M22INV (MAT, MATINV, OK_FLAG)
+
+!
+!     Print the result.
+!
+
+      IF (OK_FLAG) THEN
+         WRITE (UNIT=*, FMT='(/A/)') ' Inverse:'
+         WRITE (UNIT=*, FMT='(2ES25.15)') ((MATINV(I,J), J=1,2), I=1,2)
+      ELSE
+         WRITE (UNIT=*, FMT='(/A)') ' Singular matrix.'
+      END IF
+
+      STOP
+
+      END PROGRAM M22INV_MAIN
+
+
+
+!***********************************************************************************************************************************
+!  M22INV  -  Compute the inverse of a 2x2 matrix.
+!
+!  A       = input 2x2 matrix to be inverted
+!  AINV    = output 2x2 inverse of matrix A
+!  OK_FLAG = (output) .TRUE. if the input matrix could be inverted, and .FALSE. if the input matrix is singular.
+!***********************************************************************************************************************************
+
+      SUBROUTINE M22INV (A, AINV, OK_FLAG)
+
+      IMPLICIT NONE
+
+      DOUBLE PRECISION, DIMENSION(2,2), INTENT(IN)  :: A
+      DOUBLE PRECISION, DIMENSION(2,2), INTENT(OUT) :: AINV
+      LOGICAL, INTENT(OUT) :: OK_FLAG
+
+      DOUBLE PRECISION, PARAMETER :: EPS = 1.0D-10
+      DOUBLE PRECISION :: DET
+      DOUBLE PRECISION, DIMENSION(2,2) :: COFACTOR
+
+
+      DET =   A(1,1)*A(2,2) - A(1,2)*A(2,1)
+
+      IF (ABS(DET) .LE. EPS) THEN
+         AINV = 0.0D0
+         OK_FLAG = .FALSE.
+         RETURN
+      END IF
+
+      COFACTOR(1,1) = +A(2,2)
+      COFACTOR(1,2) = -A(2,1)
+      COFACTOR(2,1) = -A(1,2)
+      COFACTOR(2,2) = +A(1,1)
+
+      AINV = TRANSPOSE(COFACTOR) / DET
+
+      OK_FLAG = .TRUE.
+
+      RETURN
+
+      END SUBROUTINE M22INV
+

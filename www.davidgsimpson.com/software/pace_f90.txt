@@ -1,0 +1,135 @@
+!***********************************************************************************************************************************
+!
+!                                                            P A C E
+!
+!  Program:      PACE
+!
+!  Programmer:   David G. Simpson
+!                Laurel, Maryland
+!
+!  Date:         January 3, 2010
+!
+!  Language:     Fortran-90
+!
+!  Version:      1.00a
+!
+!  Description:  Computes running pace (mm:ss per mile), given distance and time.
+!
+!  Files:        Source files:
+!
+!                   pace.f90                   Main program
+!
+!  Notes:        Time may be entered in any of the following formats:
+!
+!                   m:ss
+!                   mm:ss
+!                   h:mm:ss
+!                   hh:mm:ss
+!
+!***********************************************************************************************************************************
+
+      PROGRAM PACE
+
+      IMPLICIT NONE
+
+!
+!     Constants and variables.
+!
+
+      DOUBLE PRECISION :: DIST, DMIN, DPACE
+
+      INTEGER :: L, I, HR, MN, SC, PMIN, PSEC
+
+      CHARACTER(LEN=10) :: TIME
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Start of code.
+!
+!     Get user input.
+!
+
+      WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' Distance (miles):  '
+      READ (UNIT=*, FMT=*) DIST
+
+      WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' Time (hh:mm:ss):  '
+      READ (UNIT=*, FMT=*) TIME
+
+!
+!     Read time string.
+!
+
+      L = LEN_TRIM(TIME)                                                            ! find length of time string
+
+      SELECT CASE (L)
+         CASE (4)                                                                   ! m:ss
+            IF (TIME(2:2) .NE. ':') THEN
+               WRITE (UNIT=*, FMT='(A)') ' Error: invalid time'
+               STOP
+            END IF
+            HR = 0
+            READ (UNIT=TIME(1:1), FMT='(I1)') MN
+            READ (UNIT=TIME(3:4), FMT='(I2)') SC
+         CASE (5)                                                                   ! mm:ss
+            IF (TIME(3:3) .NE. ':') THEN
+               WRITE (UNIT=*, FMT='(A)') ' Error: invalid time'
+               STOP
+            END IF
+            HR = 0
+            READ (UNIT=TIME(1:2), FMT='(I2)') MN
+            READ (UNIT=TIME(4:5), FMT='(I2)') SC
+         CASE (7)                                                                   ! h:mm:ss
+            IF (TIME(2:2) .NE. ':') THEN
+               WRITE (UNIT=*, FMT='(A)') ' Error: invalid time'
+               STOP
+            END IF
+            IF (TIME(5:5) .NE. ':') THEN
+               WRITE (UNIT=*, FMT='(A)') ' Error: invalid time'
+               STOP
+            END IF
+            READ (UNIT=TIME(1:1), FMT='(I1)') HR
+            READ (UNIT=TIME(3:4), FMT='(I2)') MN
+            READ (UNIT=TIME(6:7), FMT='(I2)') SC
+         CASE (8)                                                                   ! hh:mm:ss
+            IF (TIME(3:3) .NE. ':') THEN
+               WRITE (UNIT=*, FMT='(A)') ' Error: invalid time'
+               STOP
+            END IF
+            IF (TIME(6:6) .NE. ':') THEN
+               WRITE (UNIT=*, FMT='(A)') ' Error: invalid time'
+               STOP
+            END IF
+            READ (UNIT=TIME(1:2), FMT='(I1)') HR
+            READ (UNIT=TIME(4:5), FMT='(I2)') MN
+            READ (UNIT=TIME(7:8), FMT='(I2)') SC
+         CASE DEFAULT
+            WRITE (UNIT=*, FMT='(A)') ' Error: invalid time'
+            STOP
+      END SELECT
+
+      DMIN = 60.0D0*HR + DBLE(MN) + SC/60.0D0                                       ! convert time to minutes
+
+!
+!     Compute pace (min/mile) and convert to mm:ss per mile.
+!
+
+      DPACE = DMIN/DIST                                                             ! min/mile
+
+      PMIN = INT(DPACE)                                                             ! minutes
+      PSEC = NINT((DPACE-PMIN)*60.0D0)                                              ! seconds (round to nearest second)
+      IF (PSEC .EQ. 60) THEN                                                        ! rollover if sec=60
+         PSEC = 0
+         PMIN = PMIN + 1
+      END IF
+
+!
+!     Print final result and exit.
+!
+
+      WRITE (UNIT=*, FMT='(/A,I2,1H:,I2.2)') ' Pace = ', PMIN, PSEC                 ! print pace (mm:ss per mile)
+
+      STOP
+
+      END PROGRAM PACE
+

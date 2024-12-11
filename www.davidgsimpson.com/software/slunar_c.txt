@@ -1,0 +1,125 @@
+/*****************************************************************************/
+/*                                                                           */
+/*                            S L U N A R                                    */
+/*                                                                           */
+/*  Program:      SLUNAR                                                     */
+/*                                                                           */
+/*  Programmer:   Dr. David G. Simpson                                       */
+/*                NASA Goddard Space Flight Center                           */
+/*                Greenbelt, Maryland  20771                                 */
+/*                                                                           */
+/*  Date:         July 29, 2002                                              */
+/*                                                                           */
+/*  Language:     C                                                          */
+/*                                                                           */
+/*  Version:      1.00c                                                      */
+/*                                                                           */
+/*  Description:  This program implements a simple lunar ephemeris model.    */
+/*                The resulting lunar coordinates are referred to the        */
+/*                mean equator and equinox of epoch J2000.  (See             */
+/*                "An Alternative Lunar Ephemeris Model for On-Board Flight  */
+/*                Software Use", D.G. Simpson, Proceedings of the 1999       */
+/*                NASA/GSFC Flight Mechanics Symposium, pp. 175-184)         */
+/*                                                                           */
+/*****************************************************************************/
+
+/*****************************************************************************/
+/*  #includes                                                                */
+/*****************************************************************************/
+
+#include <stdio.h>                          /* standard i/o                  */
+#include <math.h>                           /* mathematical functions        */
+
+
+
+/*****************************************************************************/
+/*  #define                                                                  */
+/*****************************************************************************/
+
+#ifndef  PI
+#define  PI  3.1415926535897932384626433832795028841971693993751058209749445923
+#endif
+
+
+
+/*****************************************************************************/
+/* Variable declarations                                                     */
+/*****************************************************************************/
+
+double  jde;                                /* input time (ephem Julian day) */
+double  t;                                  /* Julian centuries from J2000   */
+double  x, y, z;                            /* J2000 cartesian coords (km)   */
+double  RA;                                 /* J2000 right ascension (deg)   */
+double  Dec;                                /* J2000 declination (deg)       */
+
+
+
+
+
+
+
+/*****************************************************************************/
+/*  main()                                                                   */
+/*****************************************************************************/
+
+int main(void)
+
+{
+
+   printf (" Enter time (JDE): ");          /* read desired time (jde)       */
+   scanf ("%lf", &jde);
+
+   t = (jde - 2451545.0)/36525.0;           /* conv time to Julian centuries */
+
+
+/*  Compute lunar J2000 cartesian coordinates  */
+
+   x =  383.0e3 * sin( 8399.685 * t + 5.381)
+       + 31.5e3 * sin(   70.990 * t + 6.169)
+       + 10.6e3 * sin(16728.377 * t + 1.453)
+       +  6.2e3 * sin( 1185.622 * t + 0.481)
+       +  3.2e3 * sin( 7143.070 * t + 5.017)
+       +  2.3e3 * sin(15613.745 * t + 0.857)
+       +  0.8e3 * sin( 8467.263 * t + 1.010);
+
+   y =  351.0e3 * sin( 8399.687 * t + 3.811)
+       + 28.9e3 * sin(   70.997 * t + 4.596)
+       + 13.7e3 * sin( 8433.466 * t + 4.766)
+       +  9.7e3 * sin(16728.380 * t + 6.165)
+       +  5.7e3 * sin( 1185.667 * t + 5.164)
+       +  2.9e3 * sin( 7143.058 * t + 0.300)
+       +  2.1e3 * sin(15613.755 * t + 5.565);
+
+   z =  153.2e3 * sin( 8399.672 * t + 3.807)
+       + 31.5e3 * sin( 8433.464 * t + 1.629)
+       + 12.5e3 * sin(   70.996 * t + 4.595)
+       +  4.2e3 * sin(16728.364 * t + 6.162)
+       +  2.5e3 * sin( 1185.645 * t + 5.167)
+       +  3.0e3 * sin(  104.881 * t + 2.555)
+       +  1.8e3 * sin( 8399.116 * t + 6.248);
+
+
+/*  Print results  */
+
+   printf ("\n Lunar J2000 equatorial coordinates:\n");
+   printf (" X = %10.1f km\n", x);
+   printf (" Y = %10.1f km\n", y);
+   printf (" Z = %10.1f km\n", z);
+
+
+/*  Compute right ascension and declination  */
+
+   RA = atan2(y,x) * 180.0/PI;
+   if (RA < 0.0) RA += 360.0;
+
+   Dec = asin(z/sqrt(x*x+y*y+z*z)) * 180.0/PI;
+
+
+/*  Print results  */
+
+   printf (" RA  = %7.1f deg\n", RA);
+   printf (" Dec = %7.1f deg\n", Dec);
+
+   return 0;                                /* return to operating system    */
+
+}

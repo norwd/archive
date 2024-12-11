@@ -1,0 +1,223 @@
+!***********************************************************************************************************************************
+!
+!                                                              C A L
+!
+!  Program:      CAL
+!
+!  Programmer:   David G. Simpson
+!                NASA Goddard Space Flight Center
+!                Greenbelt, Maryland  20771
+!
+!  Date:         January 25, 2005
+!
+!  Language:     Fortran-90
+!
+!  Version:      1.00b  (January 28, 2005)
+!
+!  Description:  Generates a calendar, much like the UNIX "cal" command.  Works only for the Gregorian calendar.
+!
+!  Files:        Source files:
+!
+!                   cal.f90                   Main program
+!
+!  Syntax:
+!                cal                      Prints a calendar for the current month.
+!                cal [month] [year]       Prints a calendar for the specified month and year.  (E.g.:  cal 7 1776  for July 1776.)
+!                cal [year]               Prints a one-year calendar for the specified year.   (E.g.:  cal 1776  for all of 1776.)
+!
+!  Note:         This program uses one non-standard subroutine:  GETCL is used to retrieve the command line argument.
+!
+!***********************************************************************************************************************************
+
+      PROGRAM CAL
+
+      IMPLICIT NONE
+
+      CHARACTER(LEN=80) :: CL
+      CHARACTER(LEN=10) :: TIME, DATE, ZONE
+      INTEGER :: DT(8)
+      INTEGER :: IERR, I, J, K, L, YEAR, MONTH, DOW, DOW3(3), DAY3(3)
+      LOGICAL :: MONTH_CAL
+
+      INTEGER :: GREG2DOW
+      LOGICAL :: LEAP
+
+      INTEGER, DIMENSION(12) :: DAYS_PER_MONTH = (/           &
+         31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31  /)
+
+      CHARACTER(LEN=9), DIMENSION(12), PARAMETER :: MONTH_NAMES = (/  &
+         ' January ', 'February ', '  March  ', '  April  ',          &
+         '   May   ', '  June   ', '  July   ', ' August  ',          &
+         'September', ' October ', 'November ', 'December ' /)
+
+      CHARACTER(LEN=78), DIMENSION(4), PARAMETER :: SHORT_MONTH_NAMES = (/  &
+         '         Jan                    Feb                    Mar',      &
+         '         Apr                    May                    Jun',      &
+         '         Jul                    Aug                    Sep',      &
+         '         Oct                    Nov                    Dec' /)
+
+      CHARACTER(LEN=*), PARAMETER :: WEEKDAYS  = ' S  M Tu  W Th  F  S'
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+      CALL GETCL (CL)                                                               ! get command line string
+
+      MONTH_CAL = .TRUE.                                                            ! initialize month flag
+
+      IF (LEN_TRIM(CL) .GT. 4) THEN                                                 ! if command line parameter length > 4..
+         READ (UNIT=CL, FMT=*, IOSTAT=IERR) MONTH, YEAR                             ! ..then assume month and year input
+         IF (IERR .NE. 0) THEN                                                      ! check for input error
+            WRITE (UNIT=*, FMT='(A)') ' Input error.'
+            STOP
+         END IF
+      ELSE IF (LEN_TRIM(CL) .GT. 0) THEN                                            ! if command line parameter length < 4..
+         READ (UNIT=CL, FMT=*, IOSTAT=IERR) YEAR                                    ! ..then assume year only input
+         IF (IERR .NE. 0) THEN                                                      ! check for input error
+            WRITE (UNIT=*, FMT='(A)') ' Input error.'
+            STOP
+         END IF
+         MONTH_CAL = .FALSE.                                                        ! set flag to produce one-year calendar
+      ELSE                                                                          ! if no command line parameter..
+         CALL DATE_AND_TIME (DATE, TIME, ZONE, DT)                                  ! ..then get current date
+         YEAR = DT(1)                                                               ! use current year
+         MONTH = DT(2)                                                              ! use current month
+      END IF
+
+      IF (LEAP(YEAR)) DAYS_PER_MONTH(2) = 29                                        ! if leap year, then February has 29 days
+
+
+      IF (MONTH_CAL) THEN                                                           ! ---  ONE-MONTH CALENDAR  ---
+
+         DOW = GREG2DOW (YEAR, MONTH, 1)                                            ! find day of week of the 1st of the month
+
+         WRITE (UNIT=*, FMT='(/5X,A,1X,I4.4)')   &                                  ! print month name and year
+            (MONTH_NAMES(MONTH))(1:LEN_TRIM(MONTH_NAMES(MONTH))), YEAR
+         WRITE (UNIT=*, FMT='(1X,A)') WEEKDAYS                                      ! print weekday names
+
+         DO I = 1, DOW                                                              ! indent to place the 1st of the month
+            WRITE (UNIT=*, FMT='(3X)', ADVANCE='NO')
+         END DO
+
+         DO I = 1, DAYS_PER_MONTH(MONTH)                                            ! loop to print each day
+            WRITE (UNIT=*, FMT='(I3)', ADVANCE='NO') I                              ! print day number
+            DOW = DOW + 1                                                           ! increment day of week
+            IF (DOW .EQ. 7) THEN                                                    ! if end of week..
+               DOW = 0                                                              ! ..then wrap around to Sunday
+               WRITE (UNIT=*, FMT='()')                                             ! and start a new line
+            END IF
+         END DO
+
+      ELSE                                                                          ! ---  ONE-YEAR CALENDAR  ---
+
+         WRITE (UNIT=*, FMT='(/33X,I4.4/)') YEAR                                    ! print year
+
+         DO I = 1, 4                                                                ! for each of 4 rows (of 3 months each)
+            WRITE (UNIT=*, FMT='(1X,A)') SHORT_MONTH_NAMES(I)                       ! write line of month names
+            WRITE (UNIT=*, FMT='(1X,3(A,3X))') (WEEKDAYS, J=1,3)                    ! write line of weekday names
+
+            DOW3(1) = GREG2DOW (YEAR, 3*I-2, 1)                                     ! find day of week of 1st of each of the 3 months
+            DOW3(2) = GREG2DOW (YEAR, 3*I-1, 1)
+            DOW3(3) = GREG2DOW (YEAR, 3*I,   1)
+
+            DAY3 = (/ 1, 1, 1 /)                                                    ! initialize day-of-month counters
+
+            DO J = 1, 6                                                             ! for each of 6 lines (weeks) of each month
+
+               DO K = 1, 3                                                          ! for each of the 3 months in this row
+
+                  IF (J .EQ. 1) THEN                                                ! if the first line..
+                     DO L = 1, DOW3(K)                                              ! ..indent to place the 1st of the month
+                        WRITE (UNIT=*, FMT='(3X)', ADVANCE='NO')
+                     END DO                                                         ! end L
+                  END IF
+
+                  DO                                                                ! loop to print one row of dates (one month)
+                     IF (DAY3(K) .LE. DAYS_PER_MONTH(3*(I-1)+K)) THEN               ! if a valid day (not beyond end of month)..
+                        WRITE (UNIT=*, FMT='(I3)', ADVANCE='NO') DAY3(K)            ! ..then print day
+                     ELSE
+                        WRITE (UNIT=*, FMT='(3X)', ADVANCE='NO')                    ! otherwise, fill with spaces
+                     END IF
+                     DAY3(K) = DAY3(K) + 1                                          ! increment day
+                     DOW3(K) = DOW3(K) + 1                                          ! increment day of week
+                     IF (DOW3(K) .EQ. 7) THEN                                       ! if end of week..
+                        DOW3(K) = 0                                                 ! ..then wrap around to Sunday
+                        EXIT                                                        ! and exit loop to start next row
+                     END IF
+                  END DO
+
+                  WRITE (UNIT=*, FMT='(2X)', ADVANCE='NO')                          ! space between months
+
+               END DO                                                               ! end K
+
+               WRITE (UNIT=*, FMT='()')                                             ! start new line
+
+            END DO                                                                  ! end J
+         END DO                                                                     ! end I
+      END IF
+
+      STOP
+
+      END PROGRAM CAL
+
+
+
+
+!***********************************************************************************************************************************
+!  GREG2DOW - Compute day of week for a given Gregorian date.
+!  Returns 0=Sunday, 1=Monday, ..., 6=Saturday.
+!***********************************************************************************************************************************
+
+      FUNCTION GREG2DOW (YEAR, MONTH, DAY) RESULT (DOW)
+
+      IMPLICIT NONE
+
+      INTEGER, INTENT(IN) :: YEAR, MONTH, DAY
+      INTEGER :: DOW
+
+      DOUBLE PRECISION :: JD
+      INTEGER :: Y, M, A, B
+
+
+      IF (MONTH .GT. 2) THEN
+         Y = YEAR
+         M = MONTH
+      ELSE
+         Y = YEAR - 1
+         M = MONTH + 12
+      END IF
+
+      A = Y/100
+      B = 2 - A + A/4
+
+      JD = INT(365.25D0*(Y+4716)) + INT(30.6001D0*(M+1)) + DAY + B - 1524.5D0
+
+      DOW = MOD(JD+1.5D0, 7)
+
+      RETURN
+
+      END FUNCTION GREG2DOW
+
+
+
+
+!***********************************************************************************************************************************
+!  LEAP - Determine whether a given year is a leap year.
+!***********************************************************************************************************************************
+
+      FUNCTION LEAP (YEAR) RESULT (LEAP_FLAG)
+
+      IMPLICIT NONE
+
+      INTEGER, INTENT(IN) :: YEAR
+      LOGICAL :: LEAP_FLAG
+
+
+      LEAP_FLAG = .FALSE.
+      IF (MOD(YEAR,4) .EQ. 0)   LEAP_FLAG = .TRUE.
+      IF (MOD(YEAR,100) .EQ. 0) LEAP_FLAG = .FALSE.
+      IF (MOD(YEAR,400) .EQ. 0) LEAP_FLAG = .TRUE.
+
+      RETURN
+
+      END FUNCTION LEAP
+

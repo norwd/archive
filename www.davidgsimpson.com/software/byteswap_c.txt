@@ -1,0 +1,160 @@
+/*******************************************************************************
+*
+*                                 B Y T E S W A P
+*
+*  File:         BYTESWAP
+*
+*  Programmer:   Dr. David G. Simpson
+*                NASA Goddard Space Flight Center
+*                Greenbelt, Maryland  20771
+*
+*  Date:         March 17, 2017
+*
+*  Language:     C
+*
+*  Description:  This file contains a set of functions to reverse the byte
+*                order of integer and floating-point variables. This is useful
+*                when reading binary data from a file intended for use on a
+*                compute whose byte order is opposite that of the computer on
+*                which the C program is to be run.
+*
+*                   swap_i2()  Swap bytes of a 2-byte short int
+*                   swap_i4()  Swap bytes of a 4-byte long int
+*                   swap_f4()  Swap bytes of a 4-byte float
+*                   swap_f8()  Swap bytes of an 8-byte double
+*
+*******************************************************************************/
+
+
+/*******************************************************************************
+*  swap_i2()
+*
+*  Swap bytes for a two-byte short int.
+*  After calling this subroutine, the input integer will be replaced by the
+*  output integer.
+*
+*  Usage:  swap_i2(&n);     where n is a 2-byte short int
+*******************************************************************************/
+
+void swap_i2 (short int *byte2)
+{
+    unsigned char byte_arr_tmp[2];
+    int i;
+    union {
+        unsigned char byte_arr[2];
+        short int s;
+    } u;
+
+    u.s = *byte2;                           /* copy int into union */
+
+    for (i=0; i<2; i++)                     /* copy u.byte_arr to temp arr */
+        byte_arr_tmp[i] = u.byte_arr[i];
+
+    for (i=0; i<2; i++)                     /* swap bytes */
+        u.byte_arr[i] = byte_arr_tmp[1-i];
+
+    *byte2 = u.s;                           /* copy from union back to byte2 */
+}
+
+
+
+
+
+/*******************************************************************************
+*  swap_i4()
+*
+*  Swap bytes for a four-byte long int.
+*  After calling this subroutine, the input integer will be replaced by the
+*  output integer.
+*
+*  Usage:  swap_i4(&n);     where n is a 4-byte long int
+*******************************************************************************/
+
+void swap_i4 (long int *byte4)
+{
+    unsigned char byte_arr_tmp[4];
+    int i;
+    union {
+        unsigned char byte_arr[4];
+        long int l;
+    } u;
+
+    u.l = *byte4;                           /* copy int into union */
+
+    for (i=0; i<4; i++)                     /* copy u.byte_arr to temp arr */
+        byte_arr_tmp[i] = u.byte_arr[i];
+
+    for (i=0; i<4; i++)                     /* swap bytes */
+        u.byte_arr[i] = byte_arr_tmp[3-i];
+
+    *byte4 = u.l;                           /* copy from union back to byte2 */
+}
+
+
+
+
+
+/*******************************************************************************
+*  swap_f4()
+*
+*  Swap bytes for a four-byte float.
+*  After calling this subroutine, the input number will be replaced by the
+*  output number.
+*
+*  Usage:  swap_f4(&x);     where x is a 4-byte float
+*******************************************************************************/
+
+void swap_f4 (float *byte4)
+{
+    unsigned char byte_arr_tmp[4];
+    int i;
+    union {
+        unsigned char byte_arr[4];
+        float f;
+    } u;
+
+    u.f = *byte4;                           /* copy float into union */
+
+    for (i=0; i<4; i++)                     /* copy u.byte_arr to temp arr */
+        byte_arr_tmp[i] = u.byte_arr[i];
+
+    for (i=0; i<4; i++)                     /* swap bytes */
+        u.byte_arr[i] = byte_arr_tmp[3-i];
+
+    *byte4 = u.f;                           /* copy from union back to byte2 */
+}
+
+
+
+
+
+/*******************************************************************************
+*  swap_f8()
+*
+*  Swap bytes for an eight-byte double.
+*  After calling this subroutine, the input number will be replaced by the
+*  output number.
+*
+*  Usage:  swap_f8(&x);     where x is an 8-byte double
+*******************************************************************************/
+
+void swap_f8 (double *byte8)
+{
+    unsigned char byte_arr_tmp[8];
+    int i;
+    union {
+        unsigned char byte_arr[8];
+        double d;
+    } u;
+
+    u.d = *byte8;                           /* copy double into union */
+
+    for (i=0; i<8; i++)                     /* copy u.byte_arr to temp arr */
+        byte_arr_tmp[i] = u.byte_arr[i];
+
+    for (i=0; i<8; i++)                     /* swap bytes */
+        u.byte_arr[i] = byte_arr_tmp[7-i];
+
+    *byte8 = u.d;                           /* copy from union back to byte2 */
+}
+

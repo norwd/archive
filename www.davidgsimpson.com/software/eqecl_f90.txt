@@ -1,0 +1,132 @@
+!***********************************************************************************************************************************
+!
+!                                                           E Q E C L
+!
+!  Program:      EQECL
+!
+!  Programmer:   Dr. David G. Simpson
+!                NASA Goddard Space Flight Center
+!                Greenbelt, Maryland  20771
+!
+!  Date:         July 16, 2002
+!
+!  Language:     ANSI Standard Fortran-90
+!
+!  Version:      1.00b  (October 27, 2004)
+!
+!  Description:  This program converts between equatorial and ecliptic coordinates, for either mean of date or epoch J2000.
+!
+!***********************************************************************************************************************************
+
+      PROGRAM EQECL
+
+      IMPLICIT NONE
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+!  Global variables
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+      DOUBLE PRECISION, PARAMETER :: PI = 3.14159265358979323846264338327950288419716939937510582097494459230781640628620899862803D0
+
+      INTEGER          :: CONVERT                                                   ! input flag (1=eq->ecl, 2=ecl->eq)
+      INTEGER          :: EPOCH                                                     ! input flag (1=J2000, 2=MOD)
+      DOUBLE PRECISION :: JD                                                        ! Julian day (needed for mean of date)
+      DOUBLE PRECISION :: EPS                                                       ! obliquity of ecliptic
+      DOUBLE PRECISION :: U                                                         ! time (units of 10000 years from J2000)
+      DOUBLE PRECISION :: ALPHA                                                     ! right ascension
+      DOUBLE PRECISION :: DELTA                                                     ! declination
+      DOUBLE PRECISION :: LAMBDA                                                    ! ecliptic longitude
+      DOUBLE PRECISION :: BETA                                                      ! ecliptic latitude
+
+
+
+
+
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+!  Start of code.
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+      EPS = 23.4392911D0                                                            ! init obliquity of ecliptic to J2000 value
+
+      WRITE (UNIT=*, FMT='(/A)') ' Convert which way?'                              ! ask which type of conversion to do
+      WRITE (UNIT=*, FMT='(A)')  '   1. Equatorial to ecliptic'
+      WRITE (UNIT=*, FMT='(A)')  '   2. Ecliptic to equatorial'
+      WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' ?  '
+
+      READ (UNIT=*, FMT=*) CONVERT
+
+      WRITE (UNIT=*, FMT='(/A)') ' Which epoch?'                                    ! ask whether J2000 or mean of date
+      WRITE (UNIT=*, FMT='(A)')  '   1. J2000'
+      WRITE (UNIT=*, FMT='(A)')  '   2. Mean of date'
+      WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' ?  '
+
+      READ (UNIT=*, FMT=*) EPOCH
+
+      IF (EPOCH .EQ. 2) THEN                                                        ! if mean of date, then get date
+         WRITE (UNIT=*, FMT='(A)') ' Enter Julian day:  '
+         READ (UNIT=*, FMT=*) JD
+
+         U = (JD-2451545.0D0)/36525.0D2                                             ! convert to units of 100 jcy from J2000
+
+         EPS = EPS + (((((((((6.80556D-4*U + 1.608333D-3)*U + 7.741667D-3)*U +  &   ! find obiquity of ecliptic of date (deg)
+              1.977778D-3)*U - 1.0847222D-2)*U - 6.9352778D-2)*U -              &
+              1.4272222D-2)*U + 5.55347222D-1)*U - 4.30556D-4)*U -              &
+              1.300258333D0)*U
+      END IF
+
+      EPS = EPS * PI/180.0D0                                                        ! convert obliquity of ecliptic to radians
+
+!
+!     Convert equatorial to ecliptic.
+!
+
+      IF (CONVERT .EQ. 1) THEN
+
+         WRITE (UNIT=*, FMT='(/A)', ADVANCE='NO') ' Right ascension (deg):  '       ! ask for right ascension
+         READ (UNIT=*, FMT=*) ALPHA
+         ALPHA = ALPHA * PI/180.0D0                                                 ! convert to radians
+
+         WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' Declination (deg):  '            ! ask for declination
+         READ (UNIT=*, FMT=*) DELTA
+         DELTA = DELTA * PI/180.0D0                                                 ! convert to radians
+
+         LAMBDA = ATAN2(SIN(ALPHA)*COS(EPS) + TAN(DELTA)*SIN(EPS), COS(ALPHA))      ! compute ecliptic longitude (rad)
+         BETA = ASIN(SIN(DELTA)*COS(EPS) - COS(DELTA)*SIN(EPS)*SIN(ALPHA))          ! compute ecliptic latitude (rad)
+
+         LAMBDA = LAMBDA * 180.0D0/PI                                               ! convert longitude to degrees
+         BETA = BETA * 180.0D0/PI                                                   ! convert latitude to degrees
+
+         IF (LAMBDA .LT. 0.0D0) LAMBDA = LAMBDA + 360.0D0                           ! if longitude is negative, add 360 deg
+
+         WRITE (UNIT=*, FMT='(/A,F16.8,A)') ' Ecliptic longitude = ', LAMBDA,' deg' ! print results
+         WRITE (UNIT=*, FMT='(A,F16.8,A)')  ' Ecliptic latitude  = ', BETA, ' deg'
+
+!
+!     Convert ecliptic to equatorial.
+!
+
+      ELSE
+
+         WRITE (UNIT=*, FMT='(/A)', ADVANCE='NO') ' Ecliptic longitude (deg):  '    ! ask for ecliptic longitude
+         READ (UNIT=*, FMT=*) LAMBDA
+         LAMBDA = LAMBDA * PI/180.0D0                                               ! convert to radians
+
+         WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' Ecliptic latitude (deg):  '      ! ask for ecliptic latitude
+         READ (UNIT=*, FMT=*) BETA
+         BETA = BETA * PI/180.0D0                                                   ! convert to radians
+
+         ALPHA = ATAN2(SIN(LAMBDA)*COS(EPS) - TAN(BETA)*SIN(EPS), COS(LAMBDA))      ! compute right ascension (rad)
+         DELTA = ASIN(SIN(BETA)*COS(EPS) + COS(BETA)*SIN(EPS)*SIN(LAMBDA))          ! compute declination (rad)
+
+         ALPHA = ALPHA * 180.0D0/PI                                                 ! convert right ascension to degrees
+         DELTA = DELTA * 180.0D0/PI                                                 ! convert declination to degrees
+
+         IF (ALPHA .LT. 0.0D0) ALPHA = ALPHA + 360.0D0                              ! if right ascension is negative, add 360 deg
+
+         WRITE (UNIT=*, FMT='(/A,F16.8,A)') ' Right ascension = ', ALPHA, ' deg'    ! print results
+         WRITE (UNIT=*, FMT='(A,F16.8,A)')  ' Declination     = ', DELTA, ' deg'
+
+      END IF
+
+      END PROGRAM EQECL

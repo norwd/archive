@@ -1,0 +1,121 @@
+!***********************************************************************************************************************************
+!
+!                                                         R E V E R S E
+!
+!  Program:      REVERSE
+!
+!  Programmer:   David G. Simpson
+!                Laurel, Maryland
+!
+!  Date:         September 17, 2006
+!
+!  Language:     Fortran-90
+!
+!  Version:      1.00a
+!
+!  Description:  This is a Fortran version of the original game "Reverse" for the HP-25 calculator.
+!
+!  Files:        Source file:
+!
+!                   reverse.f90                   Main program
+!
+!  Notes:        You are given a string containing the digits 1-9 arranged in random order.  The goal is to sort the digits so
+!                that they appear in the order 123456789, using the fewest possible moves.
+!
+!                At each turn, you enter an integer N to reverse the order of the first N digits.
+!
+!  Example:      Begin with:
+!
+!                     345216789
+!
+!                Reverse the first 3 digits:
+!
+!                     543216789
+!
+!                Reverse the first 5 digits to finish the game:
+!
+!                     123456789
+!
+!***********************************************************************************************************************************
+
+      PROGRAM REVERSE
+
+      IMPLICIT NONE
+
+      CHARACTER(LEN=9), PARAMETER :: TARGET_STR = '123456789'
+
+      INTEGER :: I, R, MOVE, IDX, N
+      REAL :: RN
+      CHARACTER :: ANS
+      CHARACTER(LEN=9) :: STR, STR2
+      LOGICAL, DIMENSION(9) :: TAKEN
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Print introductory message.
+!
+
+      WRITE (UNIT=*, FMT='(/A)') ' Welcome to Reverse.  Sort the string of' // &
+         ' digits in numerical'
+      WRITE (UNIT=*, FMT='(A)') ' order by successively reversing the first' // &
+         ' N digits.'
+   10 WRITE (UNIT=*, FMT='(/A)') ' Starting string:'
+
+!
+!     Initialize data.
+!
+
+      CALL RANDOM_SEED                                                              ! initialize random number seed
+
+      TAKEN = .FALSE.                                                               ! initialize all TAKEN flags to .FALSE.
+      IDX = 1                                                                       ! initialize string index to 1
+      MOVE = 1                                                                      ! initialize move number
+
+!
+!     Create a string of 9 random digits.
+!
+
+      DO
+         CALL RANDOM_NUMBER (RN)                                                    ! generate random number between 0 and 1
+         R = INT(RN*10.0)                                                           ! create a random integer between 0 and 9
+         IF (R .EQ. 0) CYCLE                                                        ! reject 0
+         IF (TAKEN(R)) CYCLE                                                        ! reject if this integer already used
+         WRITE(UNIT=STR(IDX:IDX), FMT='(I1)') R                                     ! save new random digit
+         TAKEN(R) = .TRUE.                                                          ! mark this digit as taken
+         IDX = IDX + 1                                                              ! increment index to next string entry
+         IF (IDX .GT. 9) EXIT                                                       ! exit when all 9 digits generated
+      END DO
+
+!
+!     Loop to input moves and reverse digits.
+!
+
+      DO
+         WRITE (UNIT=*, FMT='(5X,A)') STR                                           ! write current string value
+         WRITE (UNIT=*, FMT='(A,I2,A)', ADVANCE='NO') ' Move ', MOVE, ':  '         ! prompt for next move
+         READ (UNIT=*, FMT=*) N                                                     ! read number of digits to reverse
+         IF (N .EQ. 0) STOP                                                         ! 0 will abort the program
+         STR2 = STR                                                                 ! save a copy of the current string
+         DO I = 1, N                                                                ! loop to reverse first N digits
+            STR(I:I) = STR2(N+1-I:N+1-I)
+         END DO
+         IF (STR .EQ. TARGET_STR) EXIT                                              ! exit when digits = 123456789
+         MOVE = MOVE + 1                                                            ! increment number of moves
+      END DO
+
+!
+!     Game finished.
+!
+
+      WRITE (UNIT=*, FMT='(5X,A)') STR                                              ! write current value of string
+      WRITE (UNIT=*, FMT='(A,I2,A)') ' Congratulations!  You finished the ' // &    ! write ending message
+         'game in ', MOVE, ' moves.'
+      WRITE (UNIT=*, FMT='(/A)', ADVANCE='NO') ' Play again?  (Y/N):  '             ! ask if player wants to play again
+      READ (UNIT=*, FMT=*) ANS
+      IF ((ANS .EQ. 'Y') .OR. (ANS .EQ. 'y')) GO TO 10
+
+      STOP
+
+      END PROGRAM REVERSE
+

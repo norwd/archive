@@ -1,0 +1,137 @@
+!***********************************************************************************************************************************
+!
+!                                                          J D 2 G R E G
+!
+!
+!  Program:      JD2GREG
+!
+!  Programmer:   Dr. David G. Simpson
+!                NASA Goddard Space Flight Center
+!                Greenbelt, Maryland  20771
+!
+!  Date:         November 20, 2001
+!
+!  Language:     ANSI Standard Fortran-90
+!
+!  Version:      1.00b  (October 25, 2004)
+!
+!  Description:  This program converts a Julian day to a date on the Gregorian calendar.
+!
+!***********************************************************************************************************************************
+
+!***********************************************************************************************************************************
+!  Main program
+!***********************************************************************************************************************************
+
+      PROGRAM JD2GREG
+
+      IMPLICIT NONE
+
+      INTEGER :: A, B, C, D, E, Z, ALPHA                                            ! intermediate variables
+      DOUBLE PRECISION :: DAY                                                       ! day of month (+ fraction)
+      DOUBLE PRECISION :: F                                                         ! fractional part of jd
+      DOUBLE PRECISION :: JD                                                        ! julian day
+      INTEGER :: M                                                                  ! month (1-12)
+      CHARACTER(LEN=9), DIMENSION(12), PARAMETER :: MONTH_NAME =               &    ! month names
+         (/ 'January  ', 'February ', 'March    ', 'April    ', 'May      ',   &
+            'June     ', 'July     ', 'August   ', 'September', 'October  ',   &
+            'November ', 'December ' /)
+      INTEGER :: Y                                                                  ! year
+      CHARACTER(LEN=8) :: HHMMSS
+
+      CHARACTER(LEN=8) :: FORMAT_TIME
+
+
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+!  Main program code
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+      WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' Enter Julian day:  '                ! get user input
+      READ (UNIT=*, FMT=*) JD
+
+      JD = JD + 0.5D0                                                               ! begin algorithm
+
+      Z = INT(JD)
+      F = JD - Z
+
+      IF (Z .LT. 2299161) THEN
+         A = Z
+      ELSE
+         ALPHA = INT((Z-1867216.25D0)/36524.25D0)
+         A = Z + 1 + ALPHA - ALPHA/4
+      END IF
+
+      B = A + 1524
+      C = INT((B-122.1D0)/365.25D0)
+      D = INT(365.25D0*C)
+      E = INT((B-D)/30.6001D0)
+
+      DAY = B - D - INT(30.6001D0*E) + F
+
+      IF (E .LT. 14) THEN
+         M = E - 1
+      ELSE
+         M = E - 13
+      END IF
+
+      IF (M .GT. 2) THEN
+         Y = C - 4716
+      ELSE
+         Y = C - 4715
+      END IF
+
+      HHMMSS = FORMAT_TIME (DAY)                                                    ! format time string
+
+      IF (Y .GE. 1) THEN                                                            ! print results (AD)
+         WRITE (UNIT=*, FMT="(/,1X,A,1X,F10.6,' (',A,'),',I7, ' AD')")   &
+                TRIM(MONTH_NAME(M)), DAY, HHMMSS, Y
+      ELSE                                                                          ! print results (BC)
+         WRITE (UNIT=*, FMT="(/,1X,A,1X,F10.6,' (',A,'),',I7, ' BC')")   &
+                TRIM(MONTH_NAME(M)), DAY, HHMMSS, -Y+1
+      END IF
+
+      END PROGRAM JD2GREG
+
+
+
+
+
+
+
+
+
+!***********************************************************************************************************************************
+!  FORMAT_TIME
+!***********************************************************************************************************************************
+
+      FUNCTION FORMAT_TIME (DAY) RESULT (HMS_STRING)
+
+      IMPLICIT NONE
+
+      DOUBLE PRECISION, INTENT(IN) :: DAY                                           ! input: day with fraction
+      CHARACTER(LEN=8) :: HMS_STRING                                                ! result: hh:mm:ss string
+
+      DOUBLE PRECISION :: FRAC_DAY                                                  ! fractional part of input day
+      INTEGER :: HRS, MIN, SEC                                                      ! hours, minutes, and seconds for frac_day
+
+
+      FRAC_DAY = DAY - INT(DAY)                                                     ! find fractional day from input day
+      HRS = INT(FRAC_DAY*24.0D0)                                                    ! compute hours
+      MIN = INT((FRAC_DAY - HRS/24.0D0) * 1440.0D0)                                 ! compute minutes
+      SEC = NINT((FRAC_DAY - HRS/24.0D0 - MIN/1440.0D0) * 86400.0D0)                ! compute seconds (rounded to nearest second)
+
+      IF (SEC .EQ. 60) THEN                                                         ! if rounding sec rolled it to 60..
+         SEC = 0                                                                    ! ..then set in back to 0..
+         MIN = MIN + 1                                                              ! ..and increment min
+      END IF
+
+      IF (MIN .EQ. 60) THEN                                                         ! if min is now 60..
+         MIN = 0                                                                    ! ..then set it back to 0..
+         HRS = HRS + 1                                                              ! ..and increment hrs
+      END IF
+
+      WRITE (UNIT=HMS_STRING, FMT='(I2.2,1H:,I2.2,1H:,I2.2)') HRS, MIN, SEC         ! print hh:mm:ss to output string
+
+      END FUNCTION FORMAT_TIME
+

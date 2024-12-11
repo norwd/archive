@@ -1,0 +1,43 @@
+!**********************************************************************************************************************************
+!  SROUND
+!
+!  Statistical rounding function.
+!
+!  Given a positive real number X of the form I.F, where I is the integer part and F is the fractional part,
+!  round the result to integer I with probablility 1-F, or to integer I+1 with probability F.
+!
+!  This version returns a DOUBLE PRECISION result.
+!
+!  The random number generator should be initialized by calling RANDOM_SEED in the main program.
+!**********************************************************************************************************************************
+
+      FUNCTION SROUND (X) RESULT (Y)
+
+      IMPLICIT NONE
+
+      DOUBLE PRECISION, INTENT(IN) :: X
+      DOUBLE PRECISION :: Y
+      REAL :: XRAND
+      DOUBLE PRECISION :: I, X1, F
+      LOGICAL :: NEG
+
+
+      NEG = X .LT. 0.0D0                                                            ! save sign of original X, in case X is negative
+      X1 = ABS(X)                                                                   ! X1 = |X|
+
+      I = AINT(X1)                                                                  ! I = integer part of X1
+      F = X1 - I                                                                    ! F = fractional part of X1
+
+      CALL RANDOM_NUMBER (XRAND)                                                    ! random number between 0 and 1
+
+      IF (XRAND .GT. F) THEN                                                        ! with probability 1-F..
+         Y = I                                                                      ! round down
+      ELSE                                                                          ! with probability F..
+         Y = I+1.0D0                                                                ! round up
+      END IF
+
+      IF (NEG) Y = -Y                                                               ! restore original sign
+
+      RETURN
+
+      END FUNCTION SROUND

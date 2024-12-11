@@ -1,0 +1,322 @@
+!***********************************************************************************************************************************
+!
+!                                                          C G T A B L E
+!
+!  Program:      CGTABLE
+!
+!  Programmer:   David G. Simpson
+!                NASA Goddard Space Flight Center
+!                Greenbelt, Maryland  20771
+!
+!  Date:         April 19, 2005
+!
+!  Language:     Fortran-95
+!
+!  Version:      1.00a
+!
+!  Description:  Generate a table of Clebsch-Gordan coefficients.
+!
+!  Files:        Source files:
+!
+!                   cgtable.f90                   Main program
+!
+!  Notes:        Table is similar to that in Chi, "Numerical Table of Clebsch-Gordan Coefficients" (1962).
+!
+!***********************************************************************************************************************************
+
+!***********************************************************************************************************************************
+!  Global variables
+!***********************************************************************************************************************************
+
+      MODULE GLOBAL
+
+      IMPLICIT NONE
+
+      INTEGER, PARAMETER :: LINES_PER_PAGE = 50
+      INTEGER, PARAMETER :: OUTUNIT = 11
+
+      INTEGER :: LINE, COLIDX, PAGENUM, J1D
+
+      CHARACTER(LEN=35), DIMENSION(LINES_PER_PAGE,2) :: COLUMN
+      CHARACTER(LEN=70), DIMENSION(4) :: HEADER
+      CHARACTER(LEN=70), DIMENSION(2) :: FOOTER
+
+      END MODULE GLOBAL
+
+
+
+
+
+!***********************************************************************************************************************************
+!  Main program
+!***********************************************************************************************************************************
+
+      PROGRAM CGTABLE
+
+      USE GLOBAL
+
+      IMPLICIT NONE
+
+      CHARACTER(LEN=*), PARAMETER :: OUTFILE = 'cgtable.txt'
+      CHARACTER, DIMENSION(2), PARAMETER :: SIGNCHR = (/ '-', '+' /)
+
+      INTEGER :: I, IERR, J2, J3D, M1D, M2, K, S
+      DOUBLE PRECISION :: J1, J3, M1, M3, C, SUMK, TERM
+      DOUBLE PRECISION, DIMENSION(0:99) :: FACT
+
+      CHARACTER(LEN=5) :: J3STR, M1STR
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Open output file.
+!
+
+      OPEN (UNIT=OUTUNIT, FILE=OUTFILE, STATUS='REPLACE', ACCESS='SEQUENTIAL',  &   ! open file
+            FORM='FORMATTED', ACTION='WRITE', POSITION='REWIND', IOSTAT=IERR)
+
+      IF (IERR .NE. 0) THEN                                                         ! if file open error..
+         WRITE (UNIT=*, FMT='(A,I6,A)') ' Error ',IERR,' opening file '//OUTFILE    ! ..then print error message..
+         STOP                                                                       ! ..and return to operating system
+      END IF
+
+!
+!     Compute table of factorials.
+!
+
+      FACT(0) = 1.0D0
+
+      DO I = 1, 99
+         FACT(I) = I * FACT(I-1)
+      END DO
+
+!
+!     Initialize data.
+!
+
+      COLIDX = 1
+      LINE = 1
+      PAGENUM = 1
+
+      HEADER(2) = ' '
+      HEADER(3) = '   J3    M1   M2        C     S       J3    M1   M2        C     S'
+      HEADER(4) = ' '
+
+      FOOTER(1) = ' '
+
+!
+!     Compute Clebsch-Gordan coefficients.
+!
+
+      DO J2 = 1, 6, 1                                                               ! do for each J2 in steps of 1
+
+         IF (PAGENUM .GT. 1) CALL PRINTPAGE                                         ! start new page for new J2
+
+         LINE = 1                                                                   ! a new J2 also sets a new J1, so overwrite..
+                                                                                    ! ..PRINTPAGE's J1 header
+         WRITE (UNIT=HEADER(1), FMT='(30X,A,I1)') ' J2 = ', J2                      ! set page header
+
+         DO J1D = 0, 20, 1                                                          ! do for each J1 in steps of 1/2 (J1D = 2*J1)
+
+            IF ((LINE.EQ.3) .AND. (COLIDX.EQ.1)) LINE = 1                           ! if new page, then print over PRINTPAGE's J1
+
+            IF (MOD(J1D,2) .EQ. 0) THEN                                             ! if integer J1
+
+               IF (LINE .GT. LINES_PER_PAGE-3) THEN                                 ! if not enough lines left to print J1 header
+                  LINE = 1                                                          ! then start a new column
+                  COLIDX = COLIDX + 1
+                  IF (COLIDX .GT. 2) THEN                                           ! if this was column 2, then start a new page
+                     CALL PRINTPAGE
+                     LINE = 1                                                       ! overwrite PRINTPAGE's J1
+                  END IF
+                  WRITE (UNIT=COLUMN(LINE,COLIDX), FMT='(A,I0)') ' J1 = ', J1D/2    ! write J1 header
+                  LINE = LINE + 1
+                  WRITE (UNIT=COLUMN(LINE,COLIDX), FMT='()')
+                  LINE = LINE + 1
+               ELSE                                                                 ! else there are enough lines left
+                  IF (LINE .GT. 1) THEN                                             ! only write initial blank line if not 1st line
+                     WRITE (UNIT=COLUMN(LINE,COLIDX), FMT='()')
+                     LINE = LINE + 1
+                  END IF
+                  WRITE (UNIT=COLUMN(LINE,COLIDX), FMT='(A,I0)') ' J1 = ', J1D/2    ! write J1 header
+                  LINE = LINE + 1
+                  WRITE (UNIT=COLUMN(LINE,COLIDX), FMT='()')
+                  LINE = LINE + 1
+               END IF
+
+            ELSE                                                                    ! if half-integer J1
+
+               IF (LINE .GT. LINES_PER_PAGE-3) THEN                                 ! if not enough lines left to print J1 header
+                  LINE = 1                                                          ! then start a new column
+                  COLIDX = COLIDX + 1
+                  IF (COLIDX .GT. 2) THEN                                           ! if this was column 2, then start a new page
+                     CALL PRINTPAGE
+                     LINE = 1                                                       ! overwrite PRINTPAGE's J1
+                  END IF
+                  WRITE (UNIT=COLUMN(LINE,COLIDX), FMT='(A,I0,A)') ' J1 = ',J1D,'/2' ! write J1 header
+                  LINE = LINE + 1
+                  WRITE (UNIT=COLUMN(LINE,COLIDX), FMT='()')
+                  LINE = LINE + 1
+               ELSE                                                                 ! else there are enough lines left
+                  IF (LINE .GT. 1) THEN
+                     WRITE (UNIT=COLUMN(LINE,COLIDX), FMT='()')                     ! only write initial blank line if not 1st line
+                     LINE = LINE + 1
+                  END IF
+                  WRITE (UNIT=COLUMN(LINE,COLIDX), FMT='(A,I0,A)') ' J1 = ',J1D,'/2' ! write J1 header
+                  LINE = LINE + 1
+                  WRITE (UNIT=COLUMN(LINE,COLIDX), FMT='()')
+                  LINE = LINE + 1
+               END IF
+
+            END IF
+
+            DO J3D = ABS(J1D-J2-J2), MIN(J1D+J2+J2,20) , 2                          ! do for each J3 in steps of 1 (J3D = 2*J3)
+               DO M2 = 0, J2, 1                                                     ! do for each M2 in steps of 1
+                  DO M1D = -J1D, J1D, 2                                             ! do for each M1 in steps of 1 (M1D = 2*M1)
+                     J1 = 0.5D0 * J1D                                               ! compute J1
+                     J3 = 0.5D0 * J3D                                               ! compute J3
+                     M1 = 0.5D0 * M1D                                               ! compute M1
+                     M3 = M1 + M2                                                   ! compute M3
+                     IF (ABS(M1) .GT. J1) CYCLE                                     ! C = 0 if |M1| > J1; don't print
+                     IF (ABS(M2) .GT. J2) CYCLE                                     ! C = 0 if |M2| > J2; don't print
+                     IF (ABS(M3) .GT. J3) CYCLE                                     ! C = 0 if |M3| > J3; don't print
+                     C = SQRT((J3+J3+1)/FACT(NINT(J1+J2+J3+1)))                     ! compute C
+                     C = C * SQRT(FACT(NINT(J1+J2-J3))*FACT(NINT(J2+J3-J1))*FACT(NINT(J3+J1-J2)))
+                     C = C * SQRT(FACT(NINT(J1+M1))*FACT(NINT(J1-M1))*FACT(J2+M2)*FACT(J2-M2)*FACT(NINT(J3+M3))*FACT(NINT(J3-M3)))
+                     SUMK = 0.0D0
+                     DO K = 0, 99
+                        IF (J1+J2-J3-K .LT. 0.0D0) CYCLE
+                        IF (J3-J1-M2+K .LT. 0.0D0) CYCLE
+                        IF (J3-J2+M1+K .LT. 0.0D0) CYCLE
+                        IF (J1-M1-K    .LT. 0.0D0) CYCLE
+                        IF (J2+M2-K    .LT. 0.0D0) CYCLE
+                        TERM = FACT(NINT(J1+J2-J3-K))*FACT(NINT(J3-J1-M2+K))*FACT(NINT(J3-J2+M1+K))*FACT(NINT(J1-M1-K))*  &
+                           FACT(J2+M2-K)*FACT(K)
+                        IF (MOD(K,2) .EQ. 1) TERM = -TERM
+                        SUMK = SUMK + 1.0D0/TERM
+                     END DO
+                     C = C * SUMK
+
+                     IF (MOD(NINT(J1+J2-J3),2) .EQ. 0) THEN                         ! compute S
+                        S = 2  ! +
+                     ELSE
+                        S = 1  ! -
+                     END IF
+
+                     IF (MOD(J3D,2) .EQ. 0) THEN                                    ! print J3
+                        WRITE (UNIT=J3STR, FMT='(I4,1X)') J3D/2
+                     ELSE
+                        WRITE (UNIT=J3STR, FMT='(I3,A)') J3D, '/2'
+                     END IF
+
+                     IF (MOD(M1D,2) .EQ. 0) THEN                                    ! print M1
+                        WRITE (UNIT=M1STR, FMT='(I4,1X)') M1D/2
+                     ELSE
+                        WRITE (UNIT=M1STR, FMT='(I3,A)') M1D, '/2'
+                     END IF
+
+                     WRITE (UNIT=COLUMN(LINE,COLIDX), FMT='(1X,A,1X,A,I4,3X,F10.7,1X,A)') J3STR, M1STR, M2, C, SIGNCHR(S)
+
+                     LINE = LINE + 1
+
+                     IF (LINE .GT. LINES_PER_PAGE) THEN
+                        LINE = 1
+                        COLIDX = COLIDX + 1
+                        IF (COLIDX .GT. 2) THEN
+                           COLIDX = 1
+
+                           CALL PRINTPAGE
+
+                        END IF
+                     END IF
+                  END DO
+               END DO
+            END DO
+         END DO
+      END DO
+
+      CALL PRINTPAGE                                                                ! print last page
+
+!
+!     Close output file and end program.
+!
+      CLOSE (UNIT=OUTUNIT, STATUS='KEEP')                                           ! close output file
+
+      STOP
+
+      END PROGRAM CGTABLE
+
+
+
+
+
+!***********************************************************************************************************************************
+!  PRINTPAGE
+!
+!  Print the current page to the output file, and start a new page.
+!***********************************************************************************************************************************
+
+      SUBROUTINE PRINTPAGE
+
+      USE GLOBAL
+
+      IMPLICIT NONE
+
+      INTEGER :: I, J
+
+
+      WRITE (UNIT=FOOTER(2), FMT='(33X,1H-,I0,1H-)') PAGENUM                        ! write page number to footer
+
+!
+!     Print the current page.
+!
+
+      DO I = 1, 4
+         WRITE (UNIT=OUTUNIT, FMT='(1X,A)') HEADER(I)
+      END DO
+
+      DO I = 1, LINES_PER_PAGE
+         WRITE (UNIT=OUTUNIT, FMT='(1X,A)') COLUMN(I,1) // COLUMN(I,2)
+      END DO
+
+      DO I = 1, 2
+         WRITE (UNIT=OUTUNIT, FMT='(1X,A)') FOOTER(I)
+      END DO
+
+      WRITE (UNIT=OUTUNIT, FMT='(A)') CHAR(12)                                      ! print form feed
+
+!
+!     Re-initialize data for a new page.
+!
+
+      DO I = 1, LINES_PER_PAGE
+         DO J = 1, 2
+            COLUMN(I,J) = ' '
+         END DO
+      END DO
+
+      COLIDX = 1
+      LINE = 1
+
+!
+!     Print J1 header on new page.
+!
+
+      IF (MOD(J1D,2) .EQ. 0) THEN
+         WRITE (UNIT=COLUMN(LINE,COLIDX), FMT='(A,I0)') ' J1 = ', J1D/2
+         LINE = LINE + 1
+         WRITE (UNIT=COLUMN(LINE,COLIDX), FMT='()')
+         LINE = LINE + 1
+      ELSE
+         WRITE (UNIT=COLUMN(LINE,COLIDX), FMT='(A,I0,A)') ' J1 = ', J1D, '/2'
+         LINE = LINE + 1
+         WRITE (UNIT=COLUMN(LINE,COLIDX), FMT='()')
+         LINE = LINE + 1
+      END IF
+
+      PAGENUM = PAGENUM + 1                                                         ! increment page number
+
+      RETURN
+
+      END SUBROUTINE PRINTPAGE
+

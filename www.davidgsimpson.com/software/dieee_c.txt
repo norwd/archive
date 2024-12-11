@@ -1,0 +1,165 @@
+/******************************************************************************/
+/*                                                                            */
+/*                              D I E E E                                     */
+/*                                                                            */
+/*  Program:      DIEEE                                                       */
+/*                                                                            */
+/*  Programmer:   David G. Simpson                                            */
+/*                NASA Goddard Space Flight Center                            */
+/*                Greenbelt, Maryland  20771                                  */
+/*                                                                            */
+/*  Date:         December 4, 2004                                            */
+/*                                                                            */
+/*  Language:     C                                                           */
+/*                                                                            */
+/*  Version:      1.00b                                                       */
+/*                                                                            */
+/*  Description:  Converts a double-precision (64-bit) floating-point number  */
+/*                to or from its IEEE binary representation.  This program    */
+/*                must be run on a computer that stores floating-point        */
+/*                numbers in IEEE format.                                     */
+/*                                                                            */
+/*  Note:         This version automatically detects whether it's being run   */
+/*                on a little-endian or big-endian computer.                  */
+/*                                                                            */
+/*                Try this as a test case.  These two values should be        */
+/*                equivalent:                                                 */
+/*                                                                            */
+/*                  Hex:    41A0E98054BE13C2                                  */
+/*                  Float:  1.4186909837124450E+08                            */
+/*                                                                            */
+/******************************************************************************/
+
+
+/******************************************************************************/
+/*  #include                                                                  */
+/******************************************************************************/
+
+#include <stdio.h>                          /* standard i/o                   */
+
+
+
+/******************************************************************************/
+/*  function prototype                                                        */
+/******************************************************************************/
+
+int little_endian (void);
+
+
+
+/******************************************************************************/
+/*  global variables                                                          */
+/******************************************************************************/
+
+union {                                     /* float-integer union definition */
+   double f;
+   long  l[2];
+   } u;
+
+int ans;                                    /* user response                  */
+char hexstr[18];                            /* 16-digit input hex string      */
+char hexstr0[9], hexstr1[9];                /* 8-digit parts of string (LS,MS)*/
+int  i;                                     /* loop counter                   */
+
+
+
+/******************************************************************************/
+/*  main()                                                                    */
+/******************************************************************************/
+
+int main(void)
+{
+printf("Convert which way?\n");
+printf("  1.  Float to bytes\n");
+printf("  2.  Bytes to float\n");
+
+scanf("%d", &ans);
+
+if (little_endian())                        /* for LITTLE ENDIAN computer     */
+   {
+   switch (ans)
+      {
+      case 1:
+         printf("Enter float:  ");
+         scanf("%lf", &u.f);                /* read in float                 */
+         printf("%08lx%08lx\n",u.l[1],u.l[0]); /* print equiv hex integer    */
+         break;
+
+      case 2:
+         printf("Enter 64-bit hex integer: ");
+         scanf("%s", hexstr);               /* read in 16-digit hex string    */
+
+         for (i=0; i<=7; i++)               /* copy 8-digit parts of string   */
+            {
+            hexstr0[i] = hexstr[i+8];       /* LS 8 digits                    */
+            hexstr1[i] = hexstr[i];         /* MS 8 digits                    */
+            }
+
+         hexstr0[8] = '\0';                 /* terminate strings              */
+         hexstr1[8] = '\0';
+
+         sscanf(hexstr0,"%08lx", &u.l[0]);  /* convert strings to integers    */
+         sscanf(hexstr1,"%08lx", &u.l[1]);
+
+         printf("%32.16e\n", u.f);          /* print equivalent float         */
+         break;
+      }
+   }
+
+else                                        /* for BIG ENDIAN computer        */
+   {
+   switch (ans)
+      {
+      case 1:
+         printf("Enter float:  ");
+         scanf("%lf", &u.f);                /* read in float                 */
+         printf("%08lx%08lx\n", u.l[0],u.l[1]); /* print equiv hex integer   */
+         break;
+
+      case 2:
+         printf("Enter 64-bit hex integer: ");
+         scanf("%s", hexstr);               /* read in 16-digit hex string    */
+
+         for (i=0; i<=7; i++)               /* copy 8-digit parts of string   */
+            {
+            hexstr0[i] = hexstr[i];         /* MS 8 digits                    */
+            hexstr1[i] = hexstr[i+8];       /* LS 8 digits                    */
+            }
+
+         hexstr0[8] = '\0';                 /* terminate strings              */
+         hexstr1[8] = '\0';
+
+         sscanf(hexstr0, "%08lx",&u.l[0]); /* convert strings to integers    */
+         sscanf(hexstr1, "%08lx",&u.l[1]);
+
+         printf("%32.16e\n", u.f);          /* print equivalent float         */
+         break;
+      }
+   }
+
+return 0;
+}
+
+
+
+
+/******************************************************************************/
+/*  little_endian()                                                           */
+/*                                                                            */
+/*  Return 1 for a little-endian computer, 0 for big-endian.                  */
+/******************************************************************************/
+
+int little_endian (void)
+{
+union {
+   unsigned char iarr[2];
+   short s;
+   } u;
+
+u.s = 0x1234;
+if (u.iarr[0] == 0x34)
+   return 1;
+else
+   return 0;
+}
+

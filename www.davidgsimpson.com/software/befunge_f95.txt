@@ -1,0 +1,377 @@
+!***********************************************************************************************************************************
+!
+!                                                           B E F U N G E
+!
+!  Program:      BEFUNGE
+!
+!  Programmer:   David G. Simpson
+!                Laurel, Maryland
+!
+!  Date:         June 28, 2010
+!
+!  Language:     Fortran-95
+!
+!  Version:      1.00a
+!
+!  Description:  Interpreter for the Befunge-93 programming language.
+!
+!  Files:        Source files:
+!
+!                   befunge.f90                   Main program
+!
+!  Notes:        Uses one non-standard subroutine GETCL, which returns the command-line argument string (file name).
+!
+!***********************************************************************************************************************************
+
+!***********************************************************************************************************************************
+!  Global variables.
+!***********************************************************************************************************************************
+
+      MODULE GLOBAL
+
+      IMPLICIT NONE
+
+      INTEGER, PARAMETER :: NUM_ROWS = 25                                           ! number of rows in PGM array
+      INTEGER, PARAMETER :: NUM_COLS = 80                                           ! number of columns in PGM array
+      INTEGER, PARAMETER :: STACK_SIZE = 8192                                       ! stack size
+
+      INTEGER :: SP                                                                 ! stack pointer
+      INTEGER, DIMENSION(STACK_SIZE) :: STACK                                       ! stack
+      CHARACTER, DIMENSION(0:NUM_ROWS-1,0:NUM_COLS-1) :: PGM                        ! program array
+
+      END MODULE GLOBAL
+
+
+
+
+!***********************************************************************************************************************************
+!  Main program
+!***********************************************************************************************************************************
+
+      PROGRAM BEFUNGE
+
+      USE GLOBAL
+
+      IMPLICIT NONE
+
+      INTEGER, PARAMETER :: INUNIT = 11                                             ! input file unit number
+
+      INTEGER :: PC_DIR                                                             ! 0=E, 1=N, 2=W, 3=S
+      INTEGER :: I, J, IERR, M, N, X, Y
+      INTEGER, DIMENSION(2) :: PC                                                   ! program counter (col,row)
+
+      REAL :: R                                                                     ! holds random number
+
+      CHARACTER :: CHR, CHIN
+      CHARACTER(LEN=256) :: INFILE                                                  ! input file name
+      CHARACTER(LEN=NUM_COLS) :: LINE
+
+      LOGICAL :: STRINGMODE, NEWROW
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+!
+!     Get command line.
+!
+
+      CALL GETCL(INFILE)                                                            ! get file name from command line
+
+!
+!     Open program file.
+!
+
+      IF (INDEX(INFILE,'.') .EQ. 0) INFILE = TRIM(INFILE)//'.bf'                    ! if no file type, assume '.bf'
+
+      OPEN (UNIT=INUNIT, FILE=INFILE, STATUS='OLD', ACCESS='SEQUENTIAL',       &    ! open file
+            FORM='FORMATTED', ACTION='READ', POSITION='REWIND', IOSTAT=IERR)
+
+      IF (IERR .NE. 0) THEN                                                         ! if file open error..
+         WRITE (UNIT=*, FMT='(A,I6,A)') ' Error ',IERR,' opening file '//INFILE     ! ..then print error message..
+         STOP                                                                       ! ..and return to operating system
+      END IF
+
+!
+!     Read in program.
+!
+
+      PGM = ' '                                                                     ! init to all spaces
+
+      DO I = 1, NUM_ROWS                                                            ! read file lines into PGM array
+         READ (UNIT=INUNIT, FMT='(A)', IOSTAT=IERR) LINE
+         IF (IERR .LT. 0) EXIT
+         DO J = 1, LEN_TRIM(LINE)
+            PGM(I-1,J-1) = LINE(J:J)
+         END DO
+      END DO
+
+      CLOSE (UNIT=INUNIT, STATUS='KEEP')                                            ! close program file
+
+!
+!     Initialization.
+!
+
+      PC = (/ 0, 0 /)                                                               ! PC in upper left
+      PC_DIR = 0                                                                    ! PC direction E
+      SP = 0                                                                        ! stack pointer
+      STRINGMODE = .FALSE.                                                          ! string mode off
+      NEWROW = .TRUE.                                                               ! new row flag
+
+      CALL RANDOM_SEED                                                              ! init random number generator
+
+!
+!     Main loop.
+!
+
+      DO                                                                            ! loop once to process each command
+
+         CHR = PGM(PC(2),PC(1))                                                     ! get current command
+
+         IF (STRINGMODE .AND. (CHR.NE.'"')) THEN                                    ! if stringmode on..
+            CALL PUSH(ICHAR(CHR))                                                   ! ..push character on stack
+            GO TO 100
+         END IF
+
+         SELECT CASE (CHR)                                                          ! process command
+            CASE (' ')                                                              ! space - do nothing
+               CONTINUE
+            CASE ('>')                                                              ! > - PC E
+               PC_DIR = 0
+            CASE ('^')                                                              ! ^ - PC N
+               PC_DIR = 1
+            CASE ('<')                                                              ! < - PC W
+               PC_DIR = 2
+            CASE ('v')                                                              ! v - PC S
+               PC_DIR = 3
+            CASE ('?')                                                              ! ? - PC in random direction
+               CALL RANDOM_NUMBER(R)
+               PC_DIR = INT(4*R)
+            CASE ('_')                                                              ! _ - PC W if true (E if false)
+               CALL POP(N)
+               IF (N .NE. 0) THEN
+                  PC_DIR = 2
+               ELSE
+                  PC_DIR = 0
+               END IF
+            CASE ('|')                                                              ! | - PC N if true (S if false)
+               CALL POP(N)
+               IF (N .NE. 0) THEN
+                  PC_DIR = 1
+               ELSE
+                  PC_DIR = 3
+               END IF
+            CASE ('!')                                                              ! ! - not
+               CALL POP(N)
+               IF (N .NE. 0) THEN
+                  M = 0
+               ELSE
+                  M = 1
+               END IF
+               CALL PUSH(M)
+            CASE ('&')                                                              ! input integer
+               READ (UNIT=*, FMT=*) N
+               CALL PUSH(N)
+            CASE ('~')                                                              ! input character
+               READ (UNIT=*, FMT=*) CHIN
+               CALL PUSH(ICHAR(CHIN))
+            CASE ('.')                                                              ! print integer
+               CALL POP(N)
+               IF (NEWROW) THEN
+                  WRITE (UNIT=*, FMT='(1X)', ADVANCE='NO')
+                  NEWROW = .FALSE.
+               END IF
+               WRITE (UNIT=*, FMT='(I0,1X)', ADVANCE='NO') N
+            CASE (',')                                                              ! print character
+               CALL POP(N)
+               IF (NEWROW) THEN
+                  WRITE (UNIT=*, FMT='(1X)', ADVANCE='NO')
+                  NEWROW = .FALSE.
+               END IF
+               WRITE (UNIT=*, FMT='(A1)', ADVANCE='NO') CHAR(N)
+               IF (N .EQ. 10) NEWROW = .TRUE.
+            CASE ('#')                                                              ! # - bridge (skip next cmd)
+               SELECT CASE (PC_DIR)
+                  CASE (0)                                                          !   if PC dir is E
+                     PC(1) = PC(1) + 1
+                     IF (PC(1) .GE. NUM_COLS) PC(1) = PC(1) - NUM_COLS
+                  CASE (1)                                                          !   if PC dir is N
+                     PC(2) = PC(2) - 1
+                     IF (PC(2) .LE. 0) PC(2) = PC(2) + NUM_ROWS
+                  CASE (2)                                                          !   if PC dir is W
+                     PC(1) = PC(1) - 1
+                     IF (PC(1) .LE. 0) PC(1) = PC(1) + NUM_COLS
+                  CASE (3)                                                          !   if PC dir is S
+                     PC(2) = PC(2) + 1
+                     IF (PC(2) .GE. NUM_ROWS) PC(2) = PC(2) - NUM_COLS
+               END SELECT
+            CASE (':')                                                              ! : - duplication
+               CALL POP(N)
+               CALL PUSH(N)
+               CALL PUSH(N)
+            CASE ('$')                                                              ! $ - pop and discard
+               CALL POP(N)
+            CASE ('\')                                                              ! \ - swap
+               CALL POP(X)
+               CALL POP(Y)
+               CALL PUSH(X)
+               CALL PUSH(Y)
+            CASE ('`')                                                              ! ` - greater than
+               CALL POP(X)
+               CALL POP(Y)
+               IF (Y .GT. X) THEN
+                  CALL PUSH(1)
+               ELSE
+                  CALL PUSH(0)
+               END IF
+            CASE ('0':'9')                                                          ! 0-9 - push integer
+               N = ICHAR(CHR)-ICHAR('0')
+               CALL PUSH(N)
+            CASE ('+')                                                              ! + - add
+               CALL POP(X)
+               CALL POP(Y)
+               CALL PUSH(Y+X)
+            CASE ('-')                                                              ! - - subtract
+               CALL POP(X)
+               CALL POP(Y)
+               CALL PUSH(Y-X)
+            CASE ('*')                                                              ! * - multiply
+               CALL POP(X)
+               CALL POP(Y)
+               CALL PUSH(Y*X)
+            CASE ('/')                                                              ! / - divide (integer)
+               CALL POP(X)
+               CALL POP(Y)
+               CALL PUSH(Y/X)
+            CASE ('%')                                                              ! % - modulo
+               CALL POP(X)
+               CALL POP(Y)
+               CALL PUSH(MOD(Y,X))
+            CASE ('"')                                                              ! " - toggle stringmode
+               STRINGMODE = .NOT. STRINGMODE
+            CASE ('g')                                                              ! g - get
+               CALL POP(Y)
+               CALL POP(X)
+               CALL PUSH(ICHAR(PGM(Y,X)))
+            CASE ('p')                                                              ! p - put
+               CALL POP(Y)
+               CALL POP(X)
+               CALL POP(N)
+               PGM(Y,X) = CHAR(N)
+            CASE ('@')                                                              ! @ - exit
+               EXIT
+            CASE DEFAULT
+               CONTINUE
+         END SELECT
+
+  100    SELECT CASE (PC_DIR)                                                       ! increment PC
+            CASE (0)                                                                ! if PC dir is E
+               PC(1) = PC(1) + 1
+               IF (PC(1) .GE. NUM_COLS) PC(1) = PC(1) - NUM_COLS
+            CASE (1)                                                                ! if PC dir is N
+               PC(2) = PC(2) - 1
+               IF (PC(2) .LT. 0) PC(2) = PC(2) + NUM_ROWS
+            CASE (2)                                                                ! if PC dir is W
+               PC(1) = PC(1) - 1
+               IF (PC(1) .LT. 0) PC(1) = PC(1) + NUM_COLS
+            CASE (3)                                                                ! if PC dir is S
+               PC(2) = PC(2) + 1
+               IF (PC(2) .GE. NUM_ROWS) PC(2) = PC(2) - NUM_COLS
+         END SELECT
+
+      END DO
+
+      WRITE (UNIT=*, FMT='(/A)') ' Done.'                                           ! all done
+
+      STOP
+
+      END PROGRAM BEFUNGE
+
+
+
+
+!***********************************************************************************************************************************
+!  PUSH
+!
+!  Push integer N onto stack.
+!***********************************************************************************************************************************
+
+      SUBROUTINE PUSH (N)
+
+      USE GLOBAL
+
+      IMPLICIT NONE
+
+      INTEGER, INTENT(IN) :: N
+
+
+      IF (SP .LT. STACK_SIZE) THEN
+         SP = SP + 1
+         STACK(SP) = N
+      ELSE                                                                          ! stack overflow
+         WRITE (UNIT=*, FMT='(A)') ' Error: stack overflow'
+         STOP
+      END IF
+
+      RETURN
+
+      END SUBROUTINE PUSH
+
+
+
+
+
+!***********************************************************************************************************************************
+!  POP
+!
+!  Pop an integer from the stack and store in N.
+!***********************************************************************************************************************************
+
+      SUBROUTINE POP (N)
+
+      USE GLOBAL
+
+      IMPLICIT NONE
+
+      INTEGER, INTENT(OUT) :: N
+
+
+      IF (SP .GT. 0) THEN
+         N = STACK(SP)
+         SP = SP - 1
+      ELSE                                                                          ! if stack empty, then pop 0
+         N = 0
+      END IF
+
+      RETURN
+
+      END SUBROUTINE POP
+
+
+
+
+
+!***********************************************************************************************************************************
+!  DUMP
+!
+!  Dump PGM array contents (for degugging).
+!***********************************************************************************************************************************
+
+      SUBROUTINE DUMP
+
+      USE GLOBAL
+
+      IMPLICIT NONE
+
+      INTEGER :: I, J
+
+      DO I = 0, NUM_ROWS-1
+         WRITE (UNIT=*, FMT='(1X)', ADVANCE='NO')
+         DO J = 0, NUM_COLS-1
+            WRITE (UNIT=*, FMT='(A1)', ADVANCE='NO') PGM(I,J)
+         END DO
+         WRITE (UNIT=*, FMT=*)
+      END DO
+
+      RETURN
+
+      END SUBROUTINE DUMP
+

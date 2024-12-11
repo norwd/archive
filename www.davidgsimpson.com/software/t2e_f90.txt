@@ -1,0 +1,50 @@
+!***********************************************************************************************************************************
+!
+!                                                              T 2 E
+!
+!  Program:      T2E
+!
+!  Programmer:   David G. Simpson
+!                NASA Goddard Space Flight Center
+!                Greenbelt, Maryland  20771
+!
+!  Date:         May 18, 2005
+!
+!  Language:     Fortran-90
+!
+!  Version:      1.00a
+!
+!  Description:  Convert a temperature to energy units.
+!
+!  Files:        Source files:
+!
+!                   t2e.f90                   Main program
+!
+!  Notes:
+!
+!***********************************************************************************************************************************
+
+      PROGRAM T2E
+
+      IMPLICIT NONE
+
+      INTEGER, PARAMETER :: DOF = 1                                                 ! degrees of freedom
+
+      DOUBLE PRECISION, PARAMETER :: ECHARGE = 1.60217653D-19                       ! coulombs
+      DOUBLE PRECISION, PARAMETER :: KBOLTZ  = 1.3806505D-23                        ! J/K
+
+      DOUBLE PRECISION :: ENERGY, TEMP
+
+!-----------------------------------------------------------------------------------------------------------------------------------
+
+      WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' Enter temperature (K):  '
+      READ (UNIT=*, FMT=*) TEMP
+
+      ENERGY = DOF * TEMP * KBOLTZ/ECHARGE
+
+      WRITE (UNIT=*, FMT='(A,EN15.5,A)') ' Energy = ', ENERGY, ' eV'
+
+      STOP
+
+      END PROGRAM T2E
+

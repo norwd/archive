@@ -1,0 +1,54 @@
+!***********************************************************************************************************************************
+!  INQUIRE_BY_UNIT
+!
+!  Diplays the results of all information that can be returned by the Fortran INQUIRE statement,
+!  for a given unit number.
+!***********************************************************************************************************************************
+
+      SUBROUTINE INQUIRE_BY_UNIT (UNIT_NUM)
+
+      IMPLICIT NONE
+
+      INTEGER, INTENT(IN) :: UNIT_NUM
+
+      INTEGER :: IIOSTAT, INUMBER, IRECL, INEXTREC
+      LOGICAL :: LEXIST, LOPENED, LNAMED
+      CHARACTER(LEN=15) :: SACCESS, SSEQ, SDIRECT, SFORM, SFORMATTED, SUNFORMATTED, SBLANK, &
+         SPOSITION, SDELIM, SPAD, SACTION, SREAD, SWRITE, SREADWRITE
+      CHARACTER(LEN=132) :: SNAME
+
+
+      INQUIRE (UNIT=UNIT_NUM, IOSTAT=IIOSTAT, EXIST=LEXIST, OPENED=LOPENED,  &
+         NUMBER=INUMBER, NAME=SNAME, NAMED=LNAMED, ACCESS=SACCESS, SEQUENTIAL=SSEQ,  &
+         DIRECT=SDIRECT, FORM=SFORM, FORMATTED=SFORMATTED, UNFORMATTED=SUNFORMATTED, &
+         RECL=IRECL, NEXTREC=INEXTREC, BLANK=SBLANK,  &
+         POSITION=SPOSITION, DELIM=SDELIM, PAD=SPAD, ACTION=SACTION, READ=SREAD, &
+         WRITE=SWRITE, READWRITE=SREADWRITE)
+
+      WRITE (UNIT=*, FMT=*) ' IOSTAT      = ', IIOSTAT
+      WRITE (UNIT=*, FMT=*) ' EXIST       = ', LEXIST
+      WRITE (UNIT=*, FMT=*) ' OPENED      = ', LOPENED
+      WRITE (UNIT=*, FMT=*) ' NUMBER      = ', INUMBER
+      WRITE (UNIT=*, FMT=*) ' NAME        = ', TRIM(SNAME)
+      WRITE (UNIT=*, FMT=*) ' NAMED       = ', LNAMED
+      WRITE (UNIT=*, FMT=*) ' ACCESS      = ', SACCESS
+      WRITE (UNIT=*, FMT=*) ' SEQUENTIAL  = ', SSEQ
+      WRITE (UNIT=*, FMT=*) ' DIRECT      = ', SDIRECT
+      WRITE (UNIT=*, FMT=*) ' FORM        = ', SFORM
+      WRITE (UNIT=*, FMT=*) ' FORMATTED   = ', SFORMATTED
+      WRITE (UNIT=*, FMT=*) ' UNFORMATTED = ', SUNFORMATTED
+      WRITE (UNIT=*, FMT=*) ' RECL        = ', IRECL
+      WRITE (UNIT=*, FMT=*) ' NEXTREC     = ', INEXTREC
+      WRITE (UNIT=*, FMT=*) ' BLANK       = ', SBLANK
+
+      WRITE (UNIT=*, FMT=*) ' POSITION    = ', SPOSITION                            ! start of Fortran-90 extensions
+      WRITE (UNIT=*, FMT=*) ' DELIM       = ', SDELIM
+      WRITE (UNIT=*, FMT=*) ' PAD         = ', SPAD
+      WRITE (UNIT=*, FMT=*) ' ACTION      = ', SACTION
+      WRITE (UNIT=*, FMT=*) ' READ        = ', SREAD
+      WRITE (UNIT=*, FMT=*) ' WRITE       = ', SWRITE
+      WRITE (UNIT=*, FMT=*) ' READWRITE   = ', SREADWRITE
+
+      RETURN
+
+      END SUBROUTINE INQUIRE_BY_UNIT

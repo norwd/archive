@@ -1,0 +1,110 @@
+!***********************************************************************************************************************************
+!
+!                                                           C H C A S E
+!
+!  Program:      CHCASE
+!
+!  Programmer:   Dr. David G. Simpson
+!                NASA Goddard Space Flight Center
+!                Greenbelt, Maryland  20771
+!
+!  Date:         January 24, 2003
+!
+!  Language:     Fortran-90
+!
+!  Version:      1.00a
+!
+!  Description:  This program includes two subroutines for converting a string to uppercase or lowercase.  The main program is a
+!                short "driver" program to demonstrate the two subroutines.
+!
+!***********************************************************************************************************************************
+
+
+      PROGRAM CHCASE
+
+      IMPLICIT NONE
+
+      CHARACTER(LEN=80) :: LINE
+
+
+!
+!     Get user input
+!
+
+      WRITE (UNIT=*, FMT='(/A)', ADVANCE='NO') ' Enter a string:  '
+      READ (UNIT=*, FMT=*) LINE
+
+!
+!     Convert the string to uppercase
+!
+
+      CALL UPPERCASE(LINE)
+      WRITE(UNIT=*, FMT='(/A)') ' Uppercase:  '//LINE
+
+!
+!     Convert the string to lowercase
+!
+
+      CALL LOWERCASE(LINE)
+      WRITE(UNIT=*, FMT='(A)') ' Lowercase:  '//LINE
+
+      END PROGRAM CHCASE
+
+
+
+
+
+
+!***********************************************************************************************************************************
+!  UPPERCASE
+!***********************************************************************************************************************************
+
+      SUBROUTINE UPPERCASE(STR)
+
+      IMPLICIT NONE
+
+      CHARACTER(LEN=*), INTENT(IN OUT) :: STR
+      INTEGER :: I, DEL
+
+
+      DEL = IACHAR('a') - IACHAR('A')
+
+      DO I = 1, LEN_TRIM(STR)
+         IF (LGE(STR(I:I),'a') .AND. LLE(STR(I:I),'z')) THEN
+            STR(I:I) = ACHAR(IACHAR(STR(I:I)) - DEL)
+         END IF
+      END DO
+
+      RETURN
+
+      END SUBROUTINE UPPERCASE
+
+
+
+
+
+
+!***********************************************************************************************************************************
+!  LOWERCASE
+!***********************************************************************************************************************************
+
+      SUBROUTINE LOWERCASE(STR)
+
+      IMPLICIT NONE
+
+      CHARACTER(LEN=*), INTENT(IN OUT) :: STR
+      INTEGER :: I, DEL
+
+
+      DEL = IACHAR('a') - IACHAR('A')
+
+      DO I = 1, LEN_TRIM(STR)
+         IF (LGE(STR(I:I),'A') .AND. LLE(STR(I:I),'Z')) THEN
+            STR(I:I) = ACHAR(IACHAR(STR(I:I)) + DEL)
+         END IF
+      END DO
+
+      RETURN
+
+      END SUBROUTINE LOWERCASE
+
