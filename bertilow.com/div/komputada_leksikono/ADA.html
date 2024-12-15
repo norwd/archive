@@ -1,0 +1,198 @@
+ <html><head> 
+<title>Komputada Leksikono: Ada</title> 
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"> 
+<link rel="stylesheet" type="text/css" href="BILDOJ/kl.css"> 
+</head><body> 
+<a href="OBERON.html"><img src="BILDOJ/suben.gif" alt="Sekvan paĝon! " 
+align="bottom"></a><a href="PRI&#32;C.html"><img src="BILDOJ/supren.gif" 
+alt="Antaŭan paĝon! " 
+align="bottom"></a><a href="HEJMO.html"><img src="BILDOJ/indekso.gif" 
+alt="Indekson! " 
+align="bottom"></a><a href="KOVRILO.html"><img src="BILDOJ/kovrilo.gif" 
+alt="Instrukcion! " 
+align="bottom"></a> 
+<hr> 
+<h3>Pri <a href="A.html#ADA" name="Pri-Ada">Ada</a></h3> 
+<ol><li><a href="ADA.html#Normoj-pri-Ada">Normoj pri Ada</a> 
+<li><a href="ADA.html#Leksiko-de-Ada">Leksiko de Ada</a> 
+<li><a href="ADA.html#La-arangxo-de-programo-en-Ada">La aranĝo de programo en Ada</a> 
+<li><a href="ADA.html#Duoniga-sercxo-en-Ada">Duoniga serĉo en Ada</a> 
+<li><a href="ADA.html#Enkapsuligo-kaj-abstraktaj-datumtipoj">Enkapsuligo kaj 
+abstraktaj datumtipoj</a> 
+<li><a href="ADA.html#racionoj">racionoj: Ekzemplo pri enkapsuligo kaj abstrakta 
+datumtipo en Ada</a> 
+<li><a href="ADA.html#Paralelado-en-Ada">Paralelado en Ada</a> 
+<li><a href="ADA.html#Esceptoj">Esceptoj</a> </ol><h4><a name="Normoj-pri-Ada">Normoj 
+pri Ada</a></h4> 
+Ada havas internacian normon (ISO 8652), kaj en la mondo ekzistas pli ol 450 
+<a href="T.html#TRADUKILO">tradukiloj</a> por diversaj komputiloj, kies 
+konformeco al la normo estas oficiale atestita. En Usono Ada estas norma 
+lingvo por programado en militaj aplikoj (la normo <a class="fora" 
+target="_top" href="http://wuarchive.wustl.edu/languages/ada/" >ISO/IEC 
+8652:1995(E)</a>). Krome, Ada estas uzata en instruado kiel baza 
+programlingvo aŭ por ilustri kelkajn konceptojn mankantajn en Paskalo — 
+ekz-e <a href="D.html#DEKSESUMA-NOMBROSISTEMO">deksesuma nombrosistemo</a>, 
+<a href="E.html#ESCEPTO">escepto</a>, <a 
+href="G.html#GENERA-PROGRAMPECO">genera programpeco</a>, <a 
+href="L.html#LAUxBITA-OPERACIO">laŭbita operacio</a>, <a 
+href="P.html#PASIGO-PER-VALORREZULTO">pasigo per valorrezulto</a>, <a 
+href="R.html#RENDEVUO">rendevuo</a>, <a 
+href="R.html#REVENORDONO">revenordono</a>, <a 
+href="SX.html#SxLOSILVORTA-PARAMETRO">ŝlosilvorta parametro</a> k.a. (vd 
+sube). <h4><a name="Leksiko-de-Ada">Leksiko de Ada</a></h4> 
+La normoj tre rigore difinas la eksteran <a 
+href="PR.html#PREZENTO">prezenton</a> de la programoj en Ada. La lingvo estas 
+<a href="U.html#USKLECOBLINDA">usklecoblinda</a>, kaj ni uzas <a 
+href="CX.html#CxEFLITERO">ĉefliterojn</a> por neformale apartigi la <a 
+href="AP.html#APRIORA">apriorajn</a> nomojn. La <a 
+href="SX.html#SxLOSILVORTO">ŝlosilvortoj</a> en Ada estas tre multenombraj 
+kaj rezervitaj (ni ilin substrekas). <a href="KO.html#KOMENTO">Komenton</a> 
+komencas du apudaj <a href="ME.html#MINUSO">minusoj</a> <tt>--</tt> kaj 
+fermas la sekva <a href="LI.html#LINIFINO">linifino</a> (kiel en programpeco 
+<a href="ADA.html#racionoj">racionoj</a>). <h4><a 
+name="La-arangxo-de-programo-en-Ada">La aranĝo de programo en Ada</a></h4> 
+Kompleta programo en Ada estas bindata el bibliotekaj pecoj (angle <i>library 
+unit</i>) anticipe tradukitaj. La lingvo kaj ĝiaj tradukaj rimedoj provizas 
+la kontrolon, ĉu la <a href="I.html#INTERFACO">interfacoj</a> de la pecoj 
+koheras. Se ene de iu biblioteka peco oni bezonas atingi objektojn de aliaj 
+pecoj, la nomoj de tiuj aliaj pecoj estas listigendaj en speciala 
+<dfn>kunteksta sekcio</dfn> (angle <i>context clause</i>), kiel montras 
+ekzemplo (<a href="ADA.html#Duoniga-sercxo-en-Ada">Duoniga serĉo en Ada</a>). <h4><a 
+href="DO.html#DUONIGA-SERCxO" name="Duoniga-sercxo-en-Ada">Duoniga serĉo</a> 
+en Ada</h4> 
+<pre>---------    Unua biblioteka peco:    --------- 
+ 
+PACKAGE tabeloj IS                    --------- interfaca pakaĵo: 
+   TYPE sxlosilo IS NEW INTEGER; 
+ 
+   TYPE ano IS RECORD 
+       sxlo: sxlosilo; valoro: STRING(1..20); 
+   END RECORD; 
+ 
+   TYPE vektoro IS ARRAY (POSITIVE RANGE &lt;›) OF sxlosilo; 
+   sercxoeraro: EXCEPTION; 
+END tabeloj; 
+ 
+---------    Dua biblioteka peco:    --------- 
+ 
+WITH tabeloj;   -- la "kunteksta sekcio" ebliganta atingi "tabeloj"n 
+USE tabeloj;    -- de ĉi tie la objektoj de "tabeloj" uzeblas senprefikse 
+ 
+FUNCTION sercxo(v: vektoro; sx: sxlosilo) RETURN POSITIVE; 
+   sube, meze, supre: POSITIVE;                 -- lokaj variabloj 
+   sx_m: sxlosilo; 
+BEGIN sube := v'FIRST; supre := v'LAST;         -- la indiclimoj de v 
+      WHILE sube &lt;= supre LOOP 
+         meze := (sube + supre) / 2; 
+         sx_m := v(meze).sxlo; 
+         IF sx = sx_m THEN RETURN meze;         -- la bona elirejo 
+         ELSIF sx &lt; sx_m THEN supre := meze - 1; 
+         ELSE sube := meze + 1; 
+         END IF; 
+      END LOOP; 
+      RAISE sercxoeraro;    -- escepta elirejo (kun esceptosignalo) 
+END sercxo;</pre> <p><h4><a href="E.html#ENKAPSULIGO" 
+name="Enkapsuligo-kaj-abstraktaj-datumtipoj">Enkapsuligo</a> kaj <a 
+href="A.html#ABSTRAKTA-DATUMTIPO">abstraktaj datumtipoj</a></h4> 
+Pakaĵa tradukpeco povas enkapsuligi ne nur datumojn (kiel estas en la <a 
+href="ADA.html#Duoniga-sercxo-en-Ada">Duoniga serĉo en Ada</a>), sed ankaŭ 
+agojn (<a href="PR.html#PROCEDURO">procedurojn</a>). En tia okazo krom la 
+interfaca pakaĵo (analogia al la <a href="DI.html#DIFINA-MODULO">difina 
+modulo</a> de <a href="ME.html#MODULA">MODULA</a>) oni registras en la 
+biblioteko ankaŭ la respondan <dfn>pakaĵkorpon</dfn> (analogian al la <a 
+href="R.html#REALIGA-MODULO">realiga modulo</a> de MODULA). Tiel en ekzempla 
+programo (<a href="ADA.html#racionoj">racionoj</a>) la interfaca pakaĵo specifas la 
+<a href="R.html#RACIONO">racionojn</a> preskaŭ kiel <a 
+href="A.html#ABSTRAKTA-DATUMTIPO">abstraktan datumtipon</a>, dum la 
+pakaĵkorpo difinas konkretan <a href="R.html#REALIGO">realigon</a> de la 
+operacioj. <h4>Racionoj: <a href="E.html#ENKAPSULIGO" 
+name="racionoj">Enkapsuligo</a> kaj <a 
+href="A.html#ABSTRAKTA-DATUMTIPO">abstrakta datumtipo</a> en <a href="A.html#ADA">Ada</a></h4> 
+<pre>   PACKAGE racionoj IS            --------- la interfaca "difina" pakaĵo 
+      TYPE raciona IS RECORD 
+         supro: INTEGER; subo: POSITIVE;  -- numeratoro kaj denominatoro 
+      END RECORD; 
+      FUNCTION egalas(x,y: raciona) RETURN BOOLEAN; -- ekz-e 1/2=2/4 
+      FUNCTION "/"(x,y: INTEGER) RETURN raciona;    -- racionkonstruilo 
+      FUNCTION "+"(x,y: raciona) RETURN raciona;    -- raciona adicio 
+      FUNCTION "-"(x,y: raciona) RETURN raciona;    -- raciona subtraho 
+      FUNCTION "*"(x,y: raciona) RETURN raciona;    -- raciona multipliko 
+      FUNCTION "/"(x,y: raciona) RETURN raciona;    -- raciona divido 
+   END racionoj; -- la interfaca pakaĵo finiĝis 
+ 
+   PACKAGE BODY racionoj IS       ---------   la realigo (pakaĵkorpo) 
+      PROCEDURE samonigu(x, y: IN OUT raciona) IS  -- kaŝitaĵo 
+          xx: raciona;                             -- loka variablo 
+      BEGIN IF x.subo = y.subo THEN RETURN; END IF; 
+            xx := x; 
+            x.subo := x.subo * y.subo; 
+            x.supro := x.supro * y.subo; 
+            y.subo := y.subo * xx.subo; 
+            y.supro := y.supro * xx.subo; 
+      END samonigu; 
+ 
+      FUNCTION egalas(x, y: raciona) RETURN BOOLEAN; 
+          u:raciona:=x; v:raciona:=y; -- lokaj variabloj, komencvalorizo 
+      BEGIN samonigu(u,v); RETURN u.supro = v.supro; 
+      END egalas; 
+ 
+      FUNCTION "/"(x, y: INTEGER) RETURN raciona IS 
+      BEGIN IF y›0 THEN RETURN (x,y); END IF; -- pozicia racionindiko 
+            RETURN (supro=›-x, subo=›-y);  -- ŝlosila racionindiko 
+      END "/"; 
+ 
+      FUNCTION "+"(x, y: raciona) RETURN raciona IS 
+          u: raciona := x; v: raciona := y; 
+      BEGIN samonigu(u,v); RETURN (u.supro + v.supro, u.subo); 
+      END "+"; 
+ 
+      FUNCTION "-"(x, y: raciona) RETURN raciona IS 
+          u: raciona := x; v: raciona := y; 
+      BEGIN samonigu(u,v); RETURN (u.supro - v.supro, v.subo); 
+      END "-"; 
+ 
+      FUNCTION "*"(x, y: raciona) RETURN raciona IS 
+      BEGIN RETURN (x.supro * y.supro, x.subo * y.subo); 
+      END "*"; 
+ 
+      FUNCTION "/"(x, y: raciona) RETURN raciona IS 
+      BEGIN RETURN (x.supro * y.sube, x.subo * y.supro); 
+      END "/"; 
+   END racionoj;</pre> <p><h4><a name="Paralelado-en-Ada">Paralelado en Ada</a></h4> 
+Ada disponigas rimedojn por <a href="P.html#PARALELADO">paralelado</a>: oni 
+povas deklari programpecon <a href="T.html#TASKO">tasko</a>; interago kaj <a 
+href="SI.html#SINKRONIGO">sinkronigo</a> de la taskoj (t.e. de la de ili 
+priskribataj procezoj) estas farata per <a 
+href="R.html#RENDEVUO">rendevuoj</a>. Ekzemplo pri plurtaskado estas <a 
+href="PR.html#PROBLEMO-PRI-LA-MORTEMAJ-MANGxANTAJ-FILOZOFOJ">problemo pri la 
+mortemaj manĝantaj filozofoj</a> (la programo: <a 
+href="KVINF.html#La-5-filozofoj">La 5 filozofoj</a>). <h4><a 
+href="E.html#ESCEPTO" name="Esceptoj">Esceptoj</a></h4> 
+Komparu esceptotraktadon en <a href="P.html#PASKALO">Paskalo</a> kaj <a 
+href="A.html#ADA">Ada</a>. La ekzemploj uzas nomojn<tt> serĉo, fiasko; 
+tabeloj, sercxoeraro </tt>el funkcioj realigantaj <a 
+href="DO.html#DUONIGA-SERCxO">duonigan serĉon</a> en Paskalo (<a 
+href="KRESTOM.html#Duoniga-sercxo-en-Paskalo">Duoniga serĉo en Paskalo</a>) 
+kaj Ada (<a href="ADA.html#Duoniga-sercxo-en-Ada">Duoniga serĉo en Ada</a>). 
+<pre>MARKO  666;         {mishalto} | WITH INTEGER_IO, tabeloj; 
+VAR    n, x, ind: entjera;     | USE INTEGER_IO, tabeloj;  --  ktp ... 
+                               | 
+{............................} | ------------------------------------- 
+                               | 
+n := 3; {ni toleros 3 erarojn} | FOR n IN 1..3 LOOP 
+RIPETU                         |   DECLARE x:INTEGER; BEGIN 
+   SE n = 0 TIAM AL 666;       |     GET(x); 
+   leguLin(x);                 |     p(sercxo(w, x) - 1); -- eblas escepto 
+   n := n - 1;                 |     EXIT;  --  elirejo: escepto ne okazis 
+   ind := serĉo(w, x);         |   EXCEPTION        --    esceptotraktilo: 
+   SE ind = fiasko TIAM        |     WHEN sercxoeraro =› 
+      skribuLin('bv reklavi'); |        IF n = 3 THEN GOTO halt; 
+ĜIS ind &lt;&gt; fiasko;             |        END IF; 
+                               |        PUT("bv reklavi"); 
+p(ind-1);    {uzo de ind}      |   END; -- finiĝis bloko kaj esc.-traktilo 
+                               | END LOOP; -- fino de la iteracikorpo</pre> 
+<p><hr><a href="OBERON.html"><img src="BILDOJ/suben.gif" alt="Sekvan paĝon " 
+align="top"></a> <a href="HEJMO.html"><img src="BILDOJ/indekso.gif" 
+alt="Indekson " align="top"></a> 
+<a href="KOVRILO.html"><img src="BILDOJ/kovrilo.gif" alt="Instrukcion" align="top"></a> 
+</body></html>

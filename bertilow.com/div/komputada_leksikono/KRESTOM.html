@@ -1,0 +1,231 @@
+<html><head> 
+<title>Komputada Leksikono: KRESTOM</title> 
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"> 
+<link rel="stylesheet" type="text/css" href="BILDOJ/kl.css"> 
+</head><body> 
+<a href="APARATAR.html"><img src="BILDOJ/suben.gif" alt="Sekvan paĝon! " 
+align="bottom"></a><a href="LINGVOJ.html"><img src="BILDOJ/supren.gif" 
+alt="Antaŭan paĝon! " 
+align="bottom"></a><a href="HEJMO.html"><img src="BILDOJ/indekso.gif" 
+alt="Indekson! " 
+align="bottom"></a><a href="KOVRILO.html"><img src="BILDOJ/kovrilo.gif" 
+alt="Instrukcion! " 
+align="bottom"></a> 
+<hr> 
+<h2>Krestomatiaj algoritmoj</h2> 
+<ol><li><a href="KRESTOM.html#La-Eratostena-kribrilo">La Eratostena kribrilo: en Paskalo</a> 
+<li><a href="KRESTOM.html#Ekzempla-senkondicxa-iteracio">Ekzempla senkondiĉa iteracio: 
+funkcio «prima» en MODULA</a> 
+<li><a href="KRESTOM.html#La-Hanojaj-turoj">La Hanojaj turoj: en Paskalo</a> 
+<li><a href="KRESTOM.html#kopiuTekston">kopiuTekston: Programo kun ingita iteracio</a> 
+<li><a href="KRESTOM.html#Faktorialoj">Faktorialoj: rikure iteracia kaj rekursia realigoj</a> 
+<li><a href="KRESTOM.html#Duoniga-sercxo-en-Paskalo">Duoniga serĉo en Paskalo</a> 
+<li><a href="KRESTOM.html#La-bobelmetoda-ordigo">La bobelmetoda ordigo: en Paskalo</a> 
+<li><a href="KRESTOM.html#La-Rapida-ordigo">La Rapida ordigo: en Paskalo</a> 
+<li><a href="KRESTOM.html#Vektora-stako">Vektora stako: Realigo en Paskalo, per vektoro</a> 
+<li><a href="KRESTOM.html#La-Nederlanda-standardo">La Nederlanda standardo: en Paskalo</a> 
+<li><a href="OKDAMOJ.html#La-8-damoj">La 8 damoj: en Paskalo</a> 
+<li><a href="DESCENT.html#Ekzemplo-pri-rekursia-desuprigxo">Ekzemplo pri 
+rekursia desupriĝo: en Paskalo</a> 
+<li><a href="HEAPSORT.html#La-piramida-ordigo">La piramida ordigo: en Paskalo</a> 
+<li><a href="TRAIROJ.html#Largxigxema-trairo-de-grafeo">Larĝiĝema trairo de 
+grafeo: en Paskalo</a> 
+<li><a href="TRAIROJ.html#Profundigxema-trairo-de-grafeo">Profundiĝema 
+trairo de grafeo: en Paskalo</a> 
+<li><a href="STOKASTO.html#Simpla-stokastogenerilo">Simpla stokastogenerilo: 
+en Paskalo</a> 
+<li><a href="STOKASTO.html#Pli-gxenerala-stokastogenerilo">Pli ĝenerala 
+stokastogenerilo: en MODULA</a> 
+<li><a href="M2PROG.html#La-dormema-frizisto">La dormema frizisto: en MODULA</a> 
+<li><a href="KVINF.html#La-5-filozofoj">La 5 filozofoj: en Ada</a> 
+</ol><h3>La <a href="E.html#ERATOSTENA-KRIBRILO" 
+name="La-Eratostena-kribrilo">Eratostena kribrilo</a> en <a href="P.html#PASKALO">Paskalo</a></h3> 
+<pre>VAR prima: TABELO [1 .. n] EL Bulea; 
+    baro, i, j: entjera; 
+STARTO 
+  baro := trunko(rad(n));           {-- supra baro por la analizo} 
+  POR i := 2 SUPRE n FARU prima[i] := vero;    {-- komencvalorizo} 
+  prima[1] := malvero;                          {-- "forstreku" 1} 
+  POR i := 2 SUPRE baro FARU 
+    SE prima[i] TIAM STARTO 
+      j := i + i; 
+      DUM j ≤ n FARU STARTO 
+        prima[j] := malvero; 
+        j := j + i; 
+      FINO; 
+    FINO; 
+  POR i := 2 SUPRE n FARU SE prima[i] TIAM skribu(i); 
+FINO. 
+</pre> <p><hr> <h3>Ekzempla <a href="S.html#SENKONDICxA-ITERACIO" 
+name="Ekzempla-senkondicxa-iteracio">senkondiĉa iteracio</a> kun <a href="R.html#REVENORDONO">revenordonoj</a></h3> 
+Ĉi tiu funkcio testas, ĉu ĝia parametro estas prima. Ĝi aspektas idente 
+em <a href="ME.html#MODULA">MODULA-2</a> kaj en <a href="O.html#OBERONO">Oberono</a>. 
+<p><pre>   PROCEDURO prima(VAR n:entjera): Bulea; (*ĉu n estas primo?*) 
+      VAR divizoro: entjera; 
+   STARTO 
+      SE n MOD 2 = 0 TIAM REEN n = 2 FINO; 
+      divizoro := 3; 
+      MAŜO      (* --- komenciĝas senkondiĉa iteracio --- *) 
+         SE divizoro * divizoro &gt; n TIAM REEN vero FINO; 
+         SE n MOD divizoro = 0 TIAM REEN malvero FINO; 
+         divizoro := divizoro + 2 
+      FINO      (* --- de senkondiĉa iteracio *) 
+   FINO</pre> <p><hr> <h3>La <a href="H.html#HANOJAJ-TUROJ" 
+name="La-Hanojaj-turoj">Hanojaj turoj</a> en <a href="P.html#PASKALO">Paskalo</a></h3> 
+<pre>PROCEDURO Hanojo(n: entjera; fS, cS, hS: signa); 
+   STARTO 
+      SE n &gt; 0 TIAM STARTO 
+         Hanojo(n - 1, fS, hS, cS); 
+         skribuLin('la supran diskon de', fS, 'metu al', cS); 
+         Hanojo(n - 1, hS, cS, fS); 
+      FINO;       {de la SEo} 
+   FINO;          {de Hanojo} 
+ 
+{Ekzempla voko:}      Hanojo(4, 'F', 'C', 'H'); 
+</pre> <p><hr> <h3>Programo entenanta <a href="I.html#INGITA-ITERACIO" 
+name="kopiuTekston">ingitan iteracion</a></h3> 
+<pre>PROGRAMO kopiuTekston(enigo, eligo); 
+STARTO 
+  DUM NE doFin(enigo) FARU STARTO 
+    DUM NE liFin(enigo) FARU STARTO {--- la ingita iteracio:} 
+      eligo↑ := enigo↑; 
+      metu(eligo); 
+      prenu(enigo); 
+    FINO;    {--- de la ingita iteracio} 
+    leguLin(enigo); 
+    skribuLin(eligo); 
+  FINO       {--- de la ekstera iteracio} 
+FINO.</pre> <p><hr> <h3><a href="F.html#FAKTORIALO" 
+name="Faktorialoj">Faktorialoj</a>: rikure iteracia (<tt>f</tt>) kaj rekursia 
+(<tt>F</tt>) realigoj</h3> 
+<pre>FUNKCIO f(n: entjera): entjera; | FUNKCIO F(n: entjera): entjera; 
+  VAR  i, r: entjera;           | STARTO 
+STARTO                          |    SE n &gt; 1 TIAM 
+  r := 1;                       |        F := n * F(n - 1) 
+  POR i:=1 SUPRE n FARU r:=r*i; |    ALIE F := 1 
+  f := r;                       | FINO; { de la rekursia realigo } 
+FINO; { de la rikura realigo }  |</pre> <p><h3><a 
+href="DO.html#DUONIGA-SERCxO" name="Duoniga-sercxo-en-Paskalo">Duoniga 
+serĉo</a> en Paskalo</h3> 
+<pre>KONST fiasko = -1;   {uzota ekstere (<a href="ADA.html#Esceptoj">Esceptoj</a>)} 
+      maks  = 100;   {maksimuma longo de la tabelo} 
+ 
+TIPO  indico = 1..maks; 
+      ĉeno   = PAKITA TABELO [1..20] EL signa; 
+      ano    = RIKORDO ŝlosilo: entjera; valoro: ĉeno FINO; 
+ 
+FUNKCIO serĉo( VAR v: TABELO [sb..sp:indico] EL ano 
+             ; ŝ: entjera 
+             ):  entjera; 
+   { liveras la indicon en n-elementa vektoro v de ano kun ŝlosilo ŝ } 
+   MARKO 9; 
+   VAR   sube, meze, supre: indico; 
+         ŝm: entjera; 
+   STARTO sube := sb; supre := sp; 
+      DUM sube ≤ supre FARU STARTO 
+        meze := (sube + supre) DIV 2; 
+        ŝm := v[meze].ŝlosilo; 
+        SE ŝ = ŝm TIAM STARTO serĉo := meze; AL 9 FINO; 
+        SE ŝ &lt; ŝm TIAM supre := ant(meze) ALIE sube := sek(meze); 
+      FINO; 
+      serĉo := fiasko; 
+9: FINO {de serĉo}</pre> <p><h3>La <a href="B.html#BOBELMETODA-ORDIGO" 
+name="La-bobelmetoda-ordigo">bobelmetoda ordigo</a> en <a href="P.html#PASKALO">Paskalo</a></h3> 
+<pre>   VAR v: TABELO [1 .. n] EL entjera; 
+       i, j: entjera; 
+   POR j := n - 1 SUBE 1 FARU 
+      POR i := 1 SUPRE j FARU 
+         SE v[i] › v[i + 1] TIAM permutu(v[i], v[i + 1]);</pre> <p><h3>La 
+<a href="R.html#RAPIDA-ORDIGO" name="La-Rapida-ordigo">Rapida ordigo</a> en 
+<a href="P.html#PASKALO">Paskalo</a></h3> 
+Ĉi tiu ekzempla realigo estas verkita tiel, ke ĝi ne dependu je la 
+strukturo de la ordigata objekto (ekz-e je la tipo de ties elementoj); tiuj 
+detaloj estas precizendaj per la du lastaj parametroj. 
+<pre>PROCEDURO rapid ( unua,lasta: entjera  {la indiclimoj de subdivido} 
+                ; funkcio ordas(i,j:entjera):Bulea {ĉu x[i]≤x[j]?} 
+                ; proceduro permutu 
+                ); 
+   VAR et {la et-indica fronto}, 
+       eg {la eg-indica fronto}: entjera; 
+   STARTO 
+      et := unua; 
+      eg := lasta; 
+      DUM et &lt; eg FARU STARTO 
+         DUM ordas(et, eg) KAJ (et &lt; eg) FARU eg := ant(eg); 
+         permutu(et, eg); 
+         DUM ordas(et, eg) KAJ (et &lt; eg) FARU et := sek(et); 
+         permutu(et, eg); 
+      FINO; 
+      SE unua &lt; ant(et) TIAM rapid(unua, ant(et), ordas, permutu); 
+      SE sek(et) &lt; lasta TIAM rapid(sek(et), lasta, ordas, permutu); 
+   FINO; 
+ 
+        {--- sekvas deklaroj, necesaj por ordigi vektoron v: ---} 
+ 
+   VAR v: TABELO [0..99] EL reela; 
+ 
+   FUNKCIO kreske(i, j: entjera): Bulea; 
+      STARTO kreske := (v[i] ≤ v[j]); 
+      FINO; 
+ 
+   PROCEDURO aroko(i, j: entjera); 
+      VAR lab: reela; 
+      STARTO lab := v[i]; v[i] := v[j]; v[j] := lab; 
+      FINO; 
+ 
+{Ekzempla voko:}     rapid(0, 99, kreske, aroko);</pre> <p><hr><h3>Vektora 
+realigo de <a href="SO.html#STAKO" name="Vektora-stako">stako</a></h3> 
+<pre>   KONST stakAlto = 1000; {maksimuma nombro de stakigeblaj elementoj} 
+   TIPO  T = reela;       {stakigotaj datumoj} 
+   VAR   pinto: entjera; 
+         stako: TABELO [1 .. stakAlto] EL T; 
+ 
+   PROCEDURO surstakigu(x: T); 
+      STARTO 
+         SE pinto ≤ stakAlto TIAM STARTO 
+            stako[pinto] := x; 
+            pinto := pinto + 1; 
+         FINO ALIE eraro('surstakigo sur plenan stakon'); 
+      FINO; 
+ 
+   PROCEDURO elstakigu(VAR y: T); 
+      STARTO 
+         SE pinto &gt; 1 TIAM STARTO 
+            pinto := pinto - 1; 
+            y := stako[pinto] 
+         FINO ALIE eraro('elstakigo el malplena stako'); 
+      FINO; 
+ 
+STARTO        {de la programo; la komencvalorizo:} 
+   pinto := 1;  { ... }</pre> <p><hr><h3>Solvo de la <a 
+href="PR.html#PROBLEMO-PRI-LA-NEDERLANDA-STANDARDO" 
+name="La-Nederlanda-standardo">problemo pri la Nederlanda standardo</a> en <a href="P.html#PASKALO">Paskalo</a></h3> 
+<pre>VAR ruĝo, blanko, bluo: numero; 
+STARTO 
+  ruĝo := 1; 
+  blanko := n; 
+  bluo := n; 
+  DUM blanko ≥ ruĝo FARU 
+    OKAZO kia(blanko) EL 
+      ruĝa:   STARTO 
+                 permutu(blanko, ruĝo); 
+                 ruĝo := ruĝo + 1; 
+              FINO; 
+      blanka: blanko := blanko - 1; 
+      blua:   STARTO 
+                 permutu(blanko,bluo); 
+                 blanko := ant(blanko); 
+                 bluo := ant(bluo); 
+              FINO 
+    FINO 
+FINO. 
+ 
+ +---+----+----+---+----+--+-----+-----+-----+----+-----+----+ 
+ |ru | ru | ru |???????????| bla | bla | bla |blu | blu | blu| 
+ +---+----+----+---+----+--+-----+-----+-----+----+-----+----+ 
+                ^ru       ^bla            ^blu</pre> <p><hr><a 
+href="OKDAMOJ.html"><img src="BILDOJ/suben.gif" alt="Sekvan paĝon " 
+align="top"></a> <a href="HEJMO.html"><img src="BILDOJ/indekso.gif" 
+alt="Indekson " align="top"></a> 
+<a href="KOVRILO.html"><img src="BILDOJ/kovrilo.gif" alt="Instrukcion" align="top"></a> 
+</body></html>

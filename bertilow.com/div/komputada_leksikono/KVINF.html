@@ -1,0 +1,95 @@
+ <html><head> 
+<title>Komputada Leksikono: La 5 filozofoj</title> 
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"> 
+<link rel="stylesheet" type="text/css" href="BILDOJ/kl.css"> 
+</head><body> 
+<a href="LA&#32;DORMEMA&#32;FRIZISTO.html"><img src="BILDOJ/supren.gif" alt="Antaŭan 
+paĝon! " 
+align="bottom"></a><a href="HEJMO.html"><img src="BILDOJ/indekso.gif" 
+alt="Indekson! " 
+align="bottom"></a><a href="KOVRILO.html"><img src="BILDOJ/kovrilo.gif" 
+alt="Instrukcion! " 
+align="bottom"></a> 
+<hr> 
+<h3><a href="PR.html#PROBLEMO-PRI-LA-MORTEMAJ-MANGxANTAJ-FILOZOFOJ" 
+name="La-5-filozofoj">Problemo pri la mortemaj manĝantaj filozofoj</a></h3> 
+Ni donas ekzemplan solvon de tiu problemo en <a href="A.html#ADA">Ada</a> 
+(laù <i>N. Gehani. Ada: An advanced introduction</i>). Ĉiu pensisto estas 
+mortema kaj forpasas baldaŭ post la centmila manĝado. 
+<pre>   PROCEDURE mangxado IS 
+ 
+     SUBTYPE n_ro IS INTEGER RANGE 1..5; -- identigas pensiston, forkon 
+ 
+     TASK TYPE pensisto IS 
+       ENTRY nomizo(j: n_ro);  --  por sciigi al la pensisto lian n-ron 
+     END pensisto; 
+ 
+     TASK TYPE forko IS 
+       ENTRY prenu; ENTRY remetu; 
+     END forko; 
+ 
+     ilo: ARRAY (n_ro) OF forko; 
+     ulo: ARRAY (n_ro) OF pensisto; 
+ 
+     TASK TYPE pasejo IS 
+       ENTRY enen; ENTRY elen; 
+     END pasejo; 
+ 
+     TASK BODY forko IS 
+     BEGIN 
+       LOOP 
+    SELECT 
+       ACCEPT prenu; ACCEPT remetu; 
+    OR TERMINATE; 
+    END SELECT; 
+       END LOOP; 
+     END forko; 
+ 
+     TASK BODY pasejo IS 
+       n: INTEGER := 0; 
+     BEGIN 
+       LOOP 
+    SELECT 
+       WHEN n&lt;4 =&gt; ACCEPT enen; n:=n+1; 
+    OR ACCEPT elen; n:=n-1; 
+    OR TERMINATE; 
+    END SELECT; 
+       END LOOP; 
+     END pasejo; 
+ 
+     TASK BODY pensisto IS 
+       memo: n_ro;           -- sia nomo; 
+       morta_mangxo: CONSTANT := 100_000; 
+       mangxite: INTEGER := 0; 
+       liva, dekstra: n_ro;   -- forkoj; 
+     BEGIN 
+       ACCEPT nomizo(j: n_ro) DO 
+     memo := j; 
+       END nomizo; 
+ 
+       liva:=memo; 
+       dekstra := memo MOD 5 + 1; 
+ 
+       WHILE 
+     mangxite /= morta_mangxo 
+       LOOP 
+    -- la filozofo pensadu ĝis malsatiĝo 
+    pasejo.enen; 
+    ilo(dekstra).prenu; ilo(liva).prenu;    -- la forkojn; 
+    -- la filozofo iom manĝu 
+    ilo(liva).remetu; ilo(dekstra).remetu;  -- la forkojn; 
+    mangxite := mangxite+1; 
+    pasejo.elen; 
+       END LOOP; 
+ 
+     END pensisto; 
+ 
+   BEGIN --------- komenco de la tuta mangxado: 
+     FOR k IN n_ro LOOP 
+       ulo(k).nomizo(k); 
+     END LOOP; 
+   END mangxado; 
+</pre> <p><hr><a href="HEJMO.html"><img src="BILDOJ/indekso.gif" 
+alt="Indekson " align="top"></a> 
+<a href="KOVRILO.html"><img src="BILDOJ/kovrilo.gif" alt="Instrukcion" align="top"></a> 
+</body></html>

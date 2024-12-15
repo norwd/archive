@@ -1,0 +1,149 @@
+ <html><head> 
+<title>Komputada Leksikono: Ekzemplaj C-programoj</title> 
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"> 
+<link rel="stylesheet" type="text/css" href="BILDOJ/kl.css"> 
+</head><body> 
+<a href="KROMNOMOJ&#32;DE&#32;C++.html"><img src="BILDOJ/supren.gif" alt="Antaŭan 
+paĝon! " 
+align="bottom"></a><a href="HEJMO.html"><img src="BILDOJ/indekso.gif" 
+alt="Indekson! " 
+align="bottom"></a><a href="KOVRILO.html"><img src="BILDOJ/kovrilo.gif" 
+alt="Instrukcion! " 
+align="bottom"></a> 
+<hr> 
+<h4><a name="Ekzemplaj-C-programoj">Ekzemplaj C-programoj</a></h4> 
+<ol><li><a href="CEKZ.html#Duoniga-sercxo-en-C">Duoniga serĉo en C</a> 
+<li><a href="CEKZ.html#Paralelaj-tekstoj-en-C-kaj-Paskalo">Paralelaj tekstoj en C kaj 
+Paskalo</a> </ol><h5><a href="DO.html#DUONIGA-SERCxO" 
+name="Duoniga-sercxo-en-C">Duoniga serĉo</a> en C</h5> 
+Vd ankaŭ Paskalan formon (<a 
+href="KRESTOM.html#Duoniga-sercxo-en-Paskalo">Duoniga serĉo en Paskalo</a>) 
+de la sama algoritmo. 
+<pre>#include &lt;stdio.h› 
+#define fiasko (-1) 
+ 
+typedef struct{int sxlosilo; char *valoro;} ano; 
+ 
+int duonigaSercxo(ano V[], int n, int sx)            /*funkciĉapo*/ 
+  { int sube = 0, supre = n - 1, meze, sx_m;    /*lokaj variabloj*/ 
+    while(sube &lt;= supre){        /*ĉapo de komenckondiĉa iteracio*/ 
+      meze = (sube + supre) / 2; 
+      if((sx_m = V[meze].sxlosilo) == sx) return meze;  /*elirejo*/ 
+      if(sx &lt; sx_m) supre = meze - 1; 
+      else sube = meze + 1; 
+    }                         /*finiĝis la komenckondiĉa iteracio*/ 
+    return fiasko; 
+  }                              /*finiĝis la korpo de la funkcio*/ 
+</pre> <p><hr> <h5><a name="Paralelaj-tekstoj-en-C-kaj-Paskalo">Paralelaj 
+tekstoj en C kaj Paskalo</a></h5> 
+Komparo pri <a href="SI.html#SIGNOCxENO">signoĉenoj</a>, <a 
+href="O.html#OKAZELEKTA-ORDONO">okazelekta ordono</a>, <a 
+href="N.html#NOMBRILA-ITERACIO">nombrila iteracio</a> en C kaj <a href="P.html#PASKALO">Paskalo</a>. 
+<pre>int cxen_al_ent(char *cx)  /* faras el signoĉeno cx entjeron */ 
+  { int i, n, minuso = 0;  /* lokaj variabloj */ 
+ 
+    for(i = 0; ' ' == cx[i] || '\n' == cx[i] || '\t' == cx[i]; i++); 
+    // i := 0; 
+    // DUM (cx[i]=' ') AŬ (cx[i]=nl) AŬ (cx[i]=tab) FARU STARTO 
+    //    STARTO {la vakua iteracikorpo} FINO; 
+    //    i := i + 1 {la nombrilkremento el la iteraciĉapo} 
+    // FINO; 
+ 
+    switch(cx[i]) { case '-': minuso = 1; case '+': i++; } 
+    //     alfo := cx[i]; 
+    //     SE alfo = '-' TIAM AL 1; 
+    //     SE alfo = '+' TIAM AL 2 ALIE AL 3; 
+    //  1: minuso := 1; 
+    //  2: i := i + 1; 
+    //  3: {daŭrigo...}; 
+ 
+    for(n=0; cx[i]›='0'&amp;&amp;cx[i]&lt;='9';) n = 10*n+cx[i++]-'0'; 
+    // n := 0; 
+    // DUM (cx[i] ≥ '0') KAJ (cx[i] &lt;= '9') FARU STARTO 
+    //    n := 10*n + nro(cx[i]) - nro('0'); 
+    //    i := i + 1;                      {postalkremento} 
+    // FINO; 
+ 
+    return (minuso ? -n : n);  /* kondiĉa esprimo en revenordono */ 
+  }</pre> <p><hr><h4><a href="AL.html#ANTAUxTRAKTILO" 
+name="Leksiko-de-C">Antaŭtraktilaj</a> difnoj por esperantigo de C</h4> 
+Por esperantigi la leksikon de C sufiĉas kolekti difinojn por la tradukoj de 
+la <a href="V.html#VORTOSIMBOLO">vortosimboloj</a> en ĉapdosieron, ekz-e en 
+tian<tt> eoc.h </tt>(la difinoj estas ordigitaj laŭ la anglaj vortosimboloj): 
+<pre>#define AVXTO        auto 
+#define ELIRU        break 
+#define OKAZO        case 
+#define SIGNA        char 
+#define SIGNAJ       char 
+#define KOMPLEKSA    complex 
+#define KOMPLEKSAJ   complex 
+#define KONST        const 
+#define PLU          continue 
+#define CETERE       default 
+#define FARU         do 
+#define DUOBLA       double 
+#define DUOBLAJ      double 
+#define ALIE         else 
+#define ENUM         enum 
+#define EKSTERA      extern 
+#define EKSTERAJ     extern 
+#define REELA        float 
+#define REELAJ       float 
+#define POR          for 
+#define AL           goto 
+#define SE           if 
+#define IMAGINARA    imaginary 
+#define MALFERMITA   inline 
+#define ENTJERA      int 
+#define ENTJERAJ     int 
+#define LONGA        long 
+#define LONGAJ       long 
+#define REGXISTRO    register 
+#define REGXISTROJ   register 
+#define EKSKLUZIVA   restrict 
+#define EKSKLUZIVAJ  restrict 
+#define REEN         return 
+#define KURTA        short 
+#define KURTAJ       short 
+#define SIGNUMA      signed 
+#define SIGNUMAJ     signed 
+#define DABAJTOJ     sizeof 
+#define STATIKA      static 
+#define STATIKAJ     static 
+#define RIKORDO      struct 
+#define STRUKTURO    struct 
+#define ELEKTU       switch 
+#define TIPDIFINO    typedef 
+#define UNIO         union 
+#define NATURA       unsigned 
+#define NATURAJ      unsigned 
+#define VAKA         void 
+#define VARIEMA      volatile 
+#define VARIEMAJ     volatile 
+#define DUM          while 
+</pre> <p>La programoj uzantaj tiun dosieron devas ĝin importi, ekz-e kiel 
+en la sekva adaptaĵo de la funkcio<tt> atoi </tt>(<a 
+href="CEKZ.html#Paralelaj-tekstoj-en-C-kaj-Paskalo">Paralelaj tekstoj en C kaj Paskalo</a>): 
+<p><pre>#include &lt;stdio.h› 
+#include "eoc.h" 
+ 
+ENTJERA cxen_al_ent(SIGNA *cx) 
+{ 
+    ENTJERAJ i, n, minuso = 0;    /* lokaj variabloj */ 
+ 
+    POR(i = 0; cx[i] == ' ' || cx[i] == '\n' || cx[i] == '\t'; i++) ; 
+ 
+    ELEKTU(cx[i]) { 
+        OKAZO '-': minuso = 1; 
+        OKAZO '+': i++; 
+    } 
+ 
+    POR(n = 0; cx[i] ≥ '0' &amp;&amp; cx[i] ≤ '9';) 
+        n = 10 * n + cx[i++] - '0'; 
+ 
+    REEN minuso ? -n : n ; 
+}</pre> <p><hr><a href="ADA.html"><img src="BILDOJ/suben.gif" alt="Sekvan 
+paĝon " align="top"></a> <a href="HEJMO.html"><img src="BILDOJ/indekso.gif" 
+alt="Indekson " align="top"></a> 
+<a href="KOVRILO.html"><img src="BILDOJ/kovrilo.gif" alt="Instrukcion" align="top"></a> 
+</body></html>
