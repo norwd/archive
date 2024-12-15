@@ -1,0 +1,131 @@
+<html><head> 
+<title>Komputada Leksikono: Ekranoj</title> 
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"> 
+<link rel="stylesheet" type="text/css" href="BILDOJ/kl.css"> 
+</head><body> 
+<a href="TEKSTADO.html"><img src="BILDOJ/suben.gif" alt="Sekvan paĝon! " 
+align="bottom"></a><a href="KLAVAROJ.html"><img src="BILDOJ/supren.gif" 
+alt="Antaŭan paĝon! " 
+align="bottom"></a><a href="HEJMO.html"><img src="BILDOJ/indekso.gif" 
+alt="Indekson! " 
+align="bottom"></a><a href="KOVRILO.html"><img src="BILDOJ/kovrilo.gif" 
+alt="Instrukcion! " 
+align="bottom"></a> 
+<hr> 
+<h2><a href="E.html#EKRANO">Ekranoj</a></h2> 
+<ol><li><a href="EKRANOJ.html#Pri-ekranoj">Pri ekranoj</a> 
+<li><a href="EKRANOJ.html#Rastrumaj-signobildoj">Rastrumaj signobildoj</a> 
+<li><a href="EKRANOJ.html#Sxargo-de-EGA-signogenerilo">Ŝargo de EGA-signogenerilo</a> 
+<li><a href="EKRANOJ.html#Kiel-instali-tiparojn-por-la-fenestrosistemo-X">Kiel instali 
+tiparojn por la fenestrosistemo X</a> 
+<li><a href="KOSPACOJ.html#Koloroj">Koloroj</a> </ol><h3><a 
+name="Pri-ekranoj">Pri ekranoj</a></h3> 
+Menciindas la sekvaj aparataj karakterizaĵoj de ekrano: <UL> 
+<li> <i>dimensio,</i> normale indikata per la longo de ĝia diagonalo. En la 
+komerce disponeblaj ekranblokoj ĝi plej ofte varias inter 40 kaj 60 cm (kio 
+respondas al 25×25 ĝis 40×30 cm); 
+<li> <a href="DI.html#DISTINGIVO">distingivo</a>: la teĥnika, kiu rilatas al 
+la diametro de la elementa lummakulo; logika, kiu determinas la nombron de 
+adreseblaj punktoj (<a href="R.html#RASTRUMERO">rastrumeroj</a>) — kutime 
+512² ĝis 4096²; 
+<li> <i>precizo</i>: la <a href="E.html#EKARTO">ekarto</a> de la fakte 
+montrata pozicio disde la programita; 
+<li> <i>fidelo</i>, dependa je la precizo, determinas, i.a., la eblon pluigi 
+desegnadon ĝuste de la punkto, kie finiĝas la antaŭa; 
+<li> <a href="H.html#HELDENSO">heldenso</a> kaj <i>kontrasto;</i> 
+<li> maniero de <i>skanado</i> (per <a 
+href="R.html#RASTRUMA-GRAFIKO">rastruma grafiko</a> aŭ <a 
+href="V.html#VEKTORA-GRAFIKO">vektora grafiko</a>); 
+<li> <i>rapido</i> de surekranigo. </UL> <p><h3><a 
+name="Rastrumaj-signobildoj">Rastrumaj signobildoj</a></h3> 
+Jenas rastrumaj signobildoj de la literoj <i>ĝ, ĥ, ŭ</i> en la formato 
+8×8 <a href="R.html#RASTRUMERO">rastrumeroj</a>: 
+<pre>--###--- 00111000b= 38h|###--##- 11100110b=0e6h|##--##-- 11001100b=0cch 
+-##-##-- 01101100b= 6ch|-##-#--# 01101001b= 69h|-####--- 01111000b= 78h 
+-------- 00000000b= 00h|-##----- 01100000b= 60h|-------- 00000000b= 00h 
+-######- 01111110b= 7eh|-##-##-- 01101100b= 6ch|##--##-- 11001100b=0cch 
+##--##-- 11001100b=0cch|-###-##- 01110110b= 76h|##--##-- 11001100b=0cch 
+-#####-- 01111100b= 7ch|-##--##- 01100110b= 66h|##--##-- 11001100b=0cch 
+----##-- 00001100b= 0ch|###--##- 11100110b=0e6h|-###-##- 01110110b= 76h 
+#####--- 11111000b=0f8h|-------- 00000000b= 00h|-------- 00000000b= 00h 
+</pre> <p><hr><h3><a name="Sxargo-de-EGA-signogenerilo">Ŝargo de 
+EGA-signogenerilo je supersignitaj literoj</a></h3> 
+Tiu programeto en asembla lingvo <i>MASM</i> de IBM-PC ŝargas la memoron de 
+EGA-signogenerilo je la ordinara plej malgranda tiparo (8×8), kaj poste 
+ŝutas en la 12 kodlokojn ekde la 242a la supersignitajn <a 
+href="LI.html#LITEROJ-DE-ESPERANTO">literojn de Esperanto</a>. La signobidojn 
+por<tt> ĝ, ĥ, ŭ </tt>vidu sur la ilustraĵo (<a 
+href="EKRANOJ.html#Rastrumaj-signobildoj">Rastrumaj signobildoj</a>). 
+<pre>kodseg  segment para 
+       assume cs:kodseg, ds:kodseg 
+       org    100h         ; oni povas fari .COM-dosieron 
+ek:    push  cs            ; la enirejo 
+       pop   ds            ; ds = cs 
+       push  cs 
+ 
+       mov   ax, 3         ; ^san^gu videore^gimon (al la teksta) 
+       int   10h           ;    per la video-interrompo 
+       mov   ax, 1112h     ; ^sargu la ordinaran 8x8-signaron 
+       xor   bl, bl        ;    el la signara bloko 0 
+       int   10h           ; video-interrompo 
+; ^Sargu la supersignitajn literojn: 
+       mov   bp, offset krom 
+       mov   bh, 8         ; la <a href="SI.html#SIGNOBILDO">signobildoj</a> altas po 8 <a href="R.html#RASTRUMERO">rastrumerojn</a> 
+       mov   dx, 242       ; la unua kodono (eblas aliaj preferoj) 
+       mov   cx, 13        ; la nombro de la ^sargotaj signoj 
+       mov   ax, 1110h     ; funkcio por ^sargi 8x8-signaron 
+       int   10h           ; video-interrompo 
+ 
+       mov   ax, 4c00h     ; finu la programon 
+       int   21h 
+ 
+krom    label  far          ; sekvas la rastrumaj signobildoj: 
+       db  3ch, 42h, 3ch, 66h,0c0h,0ceh, 66h, 3eh; ^G 
+       db  7ch, 82h, 7ch,0c6h,0c0h,0c6h, 7ch, 00h; ^C 
+       db  30h, 48h, 00h,0cch,0fch,0cch,0cch, 00h; ^H 
+       db  1eh, 21h, 1eh, 0ch, 0ch,0cch, 78h, 00h; ^J 
+       db 0c6h, 7ch, 00h,0c6h,0c6h,0c6h, 7ch, 00h; ^U 
+       db  7ch, 38h, 6ch, 60h, 38h,0cch, 78h, 00h; ^S 
+       db  38h, 6ch, 00h, 7eh,0cch, 7ch, 0ch,0f8h; ^g 
+       db  78h, 84h, 78h,0cch,0c0h,0cch, 78h, 00h; ^c 
+       db 0e6h, 69h, 60h, 6ch, 76h, 66h,0e6h, 00h; ^h 
+       db  1ch, 36h, 00h, 0ch, 0ch,0cch,0cch, 78h; ^j 
+       db   6h,  8h, 0cbh,6bh, 68h, 5bh, 58h, 8ch; la rusa numersigno 
+       db 0cch, 78h, 00h,0cch,0cch,0cch, 76h, 00h; ^u 
+       db  78h, 84h, 7ch,0c0h, 78h, 0ch,0f8h, 00h; ^s 
+kodseg  ends 
+       end   ek</pre> <p><h3>Kiel instali <a href="T.html#TIPARO" 
+name="Kiel-instali-tiparojn-por-la-fenestrosistemo-X">tiparojn</a> por la 
+fenestrosistemo <a href="X.html#X-2">X</a></h3> 
+<p>Se via <a href="S.html#SERVILO">servilo</a> ne disponigas al vi <a 
+href="T.html#TIPARO">tiparojn</a> por la <a 
+href="L.html#LATINA-3">Latina-3a</a> kaj vi havas sufiĉe da spaco sur via <a 
+href="F.html#FIKSITA-DISKO">fiksita disko</a>, vi povas instali la tiparojn 
+por vi mem. <p>Normala proceduro por instali tiparojn por unuopa uzulo estas jena: 
+<ol> 
+<li> Kreu dosierujon por la tiparoj; ekz-e <tt>$HOME/lat3x</tt>; kopiu la 
+tiparojn tien. 
+<li> Faru en tiu dosierujo liston da tiparnomoj per 
+<br><tt>mkfontdir $HOME/lat3x</tt> <blockquote> Tiuj du paŝoj estas farataj 
+solfoje, ĉe la unua instalo; male la sekvajn necesas ripeti en ĉiu <a 
+href="S.html#SEANCO">seanco</a> (vi povas meti ilin en <a 
+href="SI.html#SKRIPTO">skripton</a>): </blockquote> 
+<li> Faru vojon al la tiparoj: 
+<br><tt>xset +fp $HOME/lat3x</tt> <blockquote> Nu, la tiparoj iĝas 
+instalitaj, kaj vi povas lanĉi, ekz-e </blockquote> 
+<li> <tt>xterm -fn "-misc-fixed-medium-*-normal-15-140-75-75-c-90-iso8859-3" &amp;</tt> 
+<br>— aŭ 
+<br><tt>emacs -fn "-adobe-courier-medium-*-normal-18-180-75-75-m-110-iso8859-3" &amp;</tt> 
+<br>— aŭ vi povas ekzameni la tutan tiparon per 
+<br><tt>xfd -fn "-adobe-courier-medium-*-normal-18-180-75-75-m-110-iso8859-3" &amp;</tt> 
+<br>Kompreneble vi povas indiki ajnan alian tiparon kiun vi preferas kaj kiun 
+vi povas trovi en la tipara katalogo. Por rapide ekzameni diversajn tiparojn komandu 
+<br> 
+<br><tt>xfontsel \ 
+<br>-sample &quot;e¶oþanøo æiu¼aýde E¦OÞANØO ÆIU¬AÝDE&quot; \ 
+<br>-pattern &quot;-*-*-*-*-*-*-*-*-*-*-*-iso8859-3&quot; &amp; </tt></ol> 
+<p><hr><a href="KOSPACOJ.html"><img src="BILDOJ/suben.gif" alt="Sekvan 
+paĝon " align="top"></a> <a href="HEJMO.html"><img src="BILDOJ/indekso.gif" 
+alt="Indekson " align="top"></a> 
+<a href="KOVRILO.html"><img src="BILDOJ/kovrilo.gif" alt="Instrukcion" align="top"></a> 
+</body></html>

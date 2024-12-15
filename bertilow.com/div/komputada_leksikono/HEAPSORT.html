@@ -1,0 +1,77 @@
+ <html><head> 
+<title>Komputada Leksikono: La piramida ordigo</title> 
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"> 
+<link rel="stylesheet" type="text/css" href="BILDOJ/kl.css"> 
+</head><body> 
+<a href="STOKASTO.html"><img src="BILDOJ/suben.gif" alt="Sekvan paĝon! " 
+align="bottom"></a><a href="DESCENT.html"><img src="BILDOJ/supren.gif" 
+alt="Antaŭan paĝon! " 
+align="bottom"></a><a href="HEJMO.html"><img src="BILDOJ/indekso.gif" 
+alt="Indekson! " 
+align="bottom"></a><a href="KOVRILO.html"><img src="BILDOJ/kovrilo.gif" 
+alt="Instrukcion! " 
+align="bottom"></a> 
+<hr> 
+<h3>La <a href="P.html#PIRAMIDA-ORDIGO" name="La-piramida-ordigo">piramida ordigo</a></h3> 
+<dfn>Piramido</dfn> estas duuma arbo en kiu nenia <a 
+href="N.html#NODO">nodo</a> havas <a href="SX.html#SxLOSILO">ŝlosilon</a> 
+malplian ol tiuj de ĝiaj <a href="I.html#IDO">idoj</a>. Evidente, piramido 
+havas ĉe sia pinto (ĉe la <a href="R.html#RADIKO">radiko</a>) la maksimuman 
+datumanon de la arbo. <p>Eĉ se la du <a href="SO.html#SUBARBO">subarboj</a> 
+de duuma arbo estas piramidoj, la tuta arbo ne nepre estas piramido. Sed fari 
+tian arbon piramido estas afero tre facila: sufiĉas viziti la vicon de la 
+pli grandaj (pra)idoj, farante la necesajn permutojn, do, fari ne pli ol 
+<em>a</em> paŝojn, se <em>a</em> estas la alto de la arbo (t.e. la longo de 
+la plej longa <a href="V.html#VOJO">vojo</a> en la arbo). Tiel, por ekzempla 
+arbo <p><img src="BILDOJ/piramido.gif" alt="bildo de piramida arbo"> 
+<br>sufiĉas fari permutojn de 6 kun 9 kaj 7. Tiun procedon ni nomas 
+<dfn>rearanĝo</dfn> de la arbo, aŭ <dfn>mergo</dfn> de ĝia radiko. 
+<p>Estas sciate (vd <a href="DO.html#DUUMA-ARBO">duuma arbo</a>), ke duuman 
+arbon eblas prezenti per <a href="V.html#VEKTORO">vektoro</a>. Inverse, ĉe 
+la piramida ordigo oni rigardas la ordigendan sekvencon <em>v</em>, 
+apartenantan al (ekz-e) <div align="center"><tt>TIPO vektoro = TABELO [1..n] 
+EL entjera; </tt></div>kiel <a href="PR.html#PREZENTO">prezenton</a> de duuma 
+arbo. La algoritmo de piramida ordigo havas du partojn, ĉiu el kiuj faras 
+rearanĝojn. <p>Unue, ni faru la vektoron piramido — tiun stadion ni nomas 
+<dfn>piramidigo</dfn>; due, tiun piramidon ni finordigos — la 
+<dfn>ordiga</dfn> stadio. <p>Por realigi la piramidigon oni atentu, ke 
+facilas apliki la rearanĝon al tiaj nodoj, kies idoj (se tiuj idoj ekzistas) 
+jam estas piramidoj. Tian econ havas la vektoranoj kun la indicoj 
+<em>i∈[n DIV 2+1..n]</em>, ĉar ili estas senidaj. Do, oni piramidigas 
+rekursie kaj «retropaŝe». <p>Post la piramidigo oni ricevas en 
+<em>v[1]</em> la maksimuman datumanon. Permutante ĝin kun <em>v[n]</em> oni 
+reduktas la problemon al la ordigo de la subvektoro <em>v[1..n−1]</em>, 
+kies du subarboj jam estas piramidoj; oni mergas <em>v[1]</em> en la 
+subarbon, permutas <em>v[1]</em> kun <em>v[n−1]</em>, ktp. <h2>Piramida 
+ordigo: Paskala programo</h2> 
+<pre>PROCEDURO piramidaOrdigo(VAR v:vektoro); 
+   VAR i: entjera; x: reela; 
+ 
+   PROCEDURO mergu(r, f: entjera); {-- radikon r en arbon v[r..f]} 
+      VAR d, l: entjera; 
+   STARTO 
+      d := 2 * i; 
+      l := d + 1; 
+      SE d ≤ f TIAM STARTO    {-- trovu maks(v[r], v[l], v[d]): } 
+         SE v[r] ≥ v[d] TIAM d := r; 
+         SE l ≤ f TIAM SE v[l] &gt; v[d] TIAM d := l; 
+         SE r ≠ d TIAM STARTO          {-- permuto kaj mallevo: } 
+            x := v[r]; v[r] := v[d]; v[d] := x; 
+            mergu(d, f); 
+         FINO 
+      FINO 
+   FINO {de "mergu"}; 
+ 
+STARTO        { la korpo de piramidaOrdigo.  Unue la piramidigo: } 
+   POR i := n DIV 2 SUBE 1 FARU mergu(i,n); 
+   POR i := n SUBE 2 FARU STARTO        { ordigo de la piramido: } 
+      x := v[i]; v[i] := v[1]; v[1] := x; 
+      mergu(1, i - 1); 
+   FINO 
+ 
+FINO  { de "piramidaOrdigo" }</pre> <p><br clear=all><hr><a 
+href="TRAIROJ.html"><img src="BILDOJ/suben.gif" alt="Sekvan paĝon " 
+align="top"></a> <a href="HEJMO.html"><img src="BILDOJ/indekso.gif" 
+alt="Indekson " align="top"></a> 
+<a href="KOVRILO.html"><img src="BILDOJ/kovrilo.gif" alt="Instrukcion" align="top"></a> 
+</body></html>

@@ -1,0 +1,120 @@
+ <html><head> 
+<title>Komputada Leksikono: Aroj</title> 
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"> 
+<link rel="stylesheet" type="text/css" href="BILDOJ/kl.css"> 
+</head><body> 
+<a href="VERTABOJ.html"><img src="BILDOJ/suben.gif" alt="Sekvan paĝon! " 
+align="bottom"></a><a href="HEJMO.html"><img src="BILDOJ/indekso.gif" 
+alt="Indekson! " 
+align="bottom"></a><a href="KOVRILO.html"><img src="BILDOJ/kovrilo.gif" 
+alt="Instrukcion! " 
+align="bottom"></a> 
+<hr> 
+<h4><a href="AP.html#ARO" name="Aroj">Aroj</a></h4> 
+<ol><li><a href="AROJ.html#Aroperacioj">Aroperacioj</a> 
+<li><a href="AROJ.html#Genera-programpeco-en-Ada">Genera programpeco en Ada</a> 
+</ol><h5><a name="Aroperacioj">Aroperacioj</a></h5> 
+Estu <em>VAR A,B,C: ARO EL entjera; n,x: entjera;</em> tiam oni povas 
+fari jenan tabelon: 
+<p><table border=2><th> Nocio <th> Paskale <th> en C<tr><td> <a href="V.html#VAKUO">vakuo</a> 
+<td><tt> A := [] </tt> 
+<td><tt> a = 0 </tt><tr><td> unuelementa aro 
+<td><tt> A := [x + 5] </tt> 
+<td><tt> a = (1 &gt;&gt; x+5) </tt><tr><td> <a href="AP.html#ARKONSTRUILO">arkonstruilo</a> 
+<td><tt>B := [1..n, 15, x-4]</tt> 
+<td><tr><td> <a href="ME.html#MEMBRORILATO">membrorilato</a> 
+<td><tt> x+5 EN A </tt> 
+<td><tt>a &amp; (1 ›› x+5) </tt><tr><td> rigora <a href="SO.html#SUBARO">subaro</a> 
+<td><tt>A &lt; B </tt> 
+<td><tt>(a!=b) &amp;&amp; (a&amp;b)==a </tt><tr><td> nerigora subaro 
+<td><tt> A &lt;= C </tt> 
+<td><tt>(a &amp; b) == a </tt><tr><td>rigora <a href="SO.html#SUPERARO">superaro</a> 
+<td><tt>B &gt; A </tt> 
+<td><tt>(a!=b) &amp;&amp; (a&amp;b)==b </tt><tr><td> <a href="SO.html#SUPERARO">superaro</a> 
+<td><tt> C &gt;= A </tt> 
+<td><tt>(a &amp; b) == b </tt><tr><td> <a href="KO.html#KOMUNAJxO">komunaĵo</a> 
+<td><tt>C := A * B </tt> 
+<td><tt>c = a &amp; b </tt><tr><td> <a href="KR.html#KUNAJxO">kunaĵo</a> 
+<td><tt> C := A + B </tt> 
+<td><tt> c = a | b</tt><tr><td> <a href="AP.html#ARDIFERENCO">ardiferenco</a> 
+<td><tt>C := A - B </tt> 
+<td><tt>c = a &amp; ~(a &amp; b)</tt><tr><td><a 
+href="SI.html#SIMETRIA-DIFERENCO">simetria diferenco</a> 
+<td> 
+<td><tt> c = a ^ b </tt> 
+</table> 
+<p><hr> <h5><a href="G.html#GENERA-PROGRAMPECO" 
+name="Genera-programpeco-en-Ada">Genera programpeco</a> en <a href="A.html#ADA">Ada</a></h5> 
+<pre>GENERIC --komenciĝas la interfaca peco 
+   TYPE universo IS (&lt;&gt;);--formala parametro: numerebla tipo 
+ 
+PACKAGE aroj IS -- sekvas specifoj de la eksportataj objektoj 
+ 
+   TYPE ara IS PRIVATE; -- la uzulo ne atentu la realigon 
+   vakuo: CONSTANT ara; -- eksporto de kostanto artipa 
+ 
+   FUNCTION anas(x: universo; a: ara) RETURN BOOLEAN; -- x EN a 
+   FUNCTION "&lt;="(a,b: ara) RETURN BOOLEAN; -- a partas en b 
+   FUNCTION "&lt;"(a,b: ara) RETURN BOOLEAN;  -- a rigore partas en b 
+   FUNCTION "+"(a,b: ara) RETURN ara; -- kunaĵo de 2 aroj 
+   FUNCTION "-"(a,b: ara) RETURN ara; -- komplemento 
+   FUNCTION "+"(a: ara; x: universo) RETURN ara; -- anigo, arkremento 
+   FUNCTION "-"(a: ara; x: universo) RETURN ara; -- eksigu anon 
+   FUNCTION "*"(a,b: ara) RETURN ara; -- komunaĵo de 2 aroj 
+ 
+   ---- kaj tiel plu ... 
+ 
+PRIVATE        -- sufloro por la tradukilo: -- 
+ 
+   TYPE ara IS ARRAY (universo) OF BOOLEAN;  -- bitvektoro 
+   vakuo: CONSTANT ara := ara'(OTHERS =› FALSE);  -- plena nulo 
+ 
+END aroj; ----------- finiĝis la interfaco 
+ 
+ 
+ 
+PACKAGE aroj IS -- makroa skemo pri realigo de la funkcioj: 
+ 
+   FUNCTION anas(x: universo; a: ara) RETURN BOOLEAN IS 
+      BEGIN RETURN a(x); 
+      END anas; 
+ 
+   FUNCTION "+"(a,b: ara) RETURN ara IS 
+      BEGIN RETURN a OR b; 
+      END "+"; 
+ 
+   FUNCTION "+"(a: ara; x: universo) RETURN ara IS 
+         lab: ara := a; -- loka labora variablo, komencvalorizo 
+      BEGIN lab(x):=TRUE; RETURN lab; 
+      END "+"; 
+ 
+   FUNCTION "-"(a,b: ara) RETURN ara IS 
+      BEGIN RETURN a AND (NOT b); 
+      END "-"; 
+ 
+   FUNCTION "-"(a: ara; x: universo) RETURN ara IS 
+         lab: ara := a; 
+      BEGIN a(x):=FALSE; RETURN lab; 
+      END "-"; 
+ 
+   FUNCTION "*"(a,b: ara) RETURN ara IS 
+      BEGIN RETURN a AND b; 
+      END "*"; 
+ 
+   FUNCTION "&lt;="(a,b: ara) RETURN BOLEAN IS 
+      BEGIN RETURN (a AND b)=a;      -- a&lt;=b SSE a+b=a 
+      END "&lt;="; 
+ 
+   FUNCTION "&lt;"(a,b: ara) RETURN BOOLEAN IS 
+         lab: ara := (a AND b);      --  a&lt;b SSE (a+b=a)&amp;a≠b): 
+      BEGIN RETURN (lab = a) AND (lab /= b); 
+      END "&lt;"; 
+ 
+   ---- kaj tiel plu ... 
+ 
+END aroj;   --  finiĝis la realigo</pre> <p><hr><a 
+href="VERTABOJ.html"><img src="BILDOJ/suben.gif" alt="Sekvan paĝon " 
+align="top"></a> <a href="HEJMO.html"><img src="BILDOJ/indekso.gif" 
+alt="Indekson " align="top"></a> 
+<a href="KOVRILO.html"><img src="BILDOJ/kovrilo.gif" alt="Instrukcion" align="top"></a> 
+</body></html>

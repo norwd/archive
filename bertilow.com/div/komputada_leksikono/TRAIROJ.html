@@ -1,0 +1,91 @@
+ <html><head> 
+<title>Komputada Leksikono: Grafetrairoj</title> 
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"> 
+<link rel="stylesheet" type="text/css" href="BILDOJ/kl.css"> 
+</head><body> 
+<a href="STOKASTO.html"><img src="BILDOJ/suben.gif" alt="Sekvan paĝon! " 
+align="bottom"></a><a href="HEAPSORT.html"><img src="BILDOJ/supren.gif" 
+alt="Antaŭan paĝon! " 
+align="bottom"></a><a href="HEJMO.html"><img src="BILDOJ/indekso.gif" 
+alt="Indekson! " 
+align="bottom"></a><a href="KOVRILO.html"><img src="BILDOJ/kovrilo.gif" 
+alt="Instrukcion! " 
+align="bottom"></a> 
+<hr> 
+<h3><a href="L.html#LARGxIGxEMA-TRAIRO" 
+name="Largxigxema-trairo-de-grafeo">Larĝiĝema trairo</a> de <a href="G.html#GRAFEO">grafeo</a></h3> 
+(La uzataj <a href="D.html#DATUMSTRUKTURO">datumstrukturo</a> kaj la <a 
+href="N.html#NOMO">nomoj</a><tt> vertico, erRef, grafeo </tt> estas tiaj 
+samaj kiel en la ekzemplo <a 
+href="NAJBARL.html#Interna-prezento-de-grafeoj">Interna prezento de grafeoj</a>) 
+<pre>PROCEDURO larĝIro(v: vertico; PROCEDURO vizitu); 
+   KONST maksNro = 6; 
+   VAR ref: erRef; 
+       u, unua, lasta: vertico; 
+       nova: TABELO [vertico] EL Bulea; 
+       vico: TABELO [vertico] EL vertico; 
+ 
+   PROCEDURO envicigu(w: vertico); 
+   STARTO 
+      vico[lasta] := w; 
+      SE lasta &lt; maksNro TIAM lasta := sek(lasta); 
+   FINO; {envicigu} 
+ 
+   PROCEDURO elvicigu(VAR w: vertico); 
+   STARTO 
+      w := vico[unua]; unua := sek(unua); 
+   FINO; {elvicigu} 
+ 
+   FUNKCIO vicoMalplenas: Bulea; 
+   STARTO 
+       vicoMalplenas := (unua = lasta); 
+   FINO; {vicoMalplenas} 
+ 
+STARTO { de larĝIro } 
+ 
+   POR unua := 1 SUPRE maksNro FARU nova[unua] := vero; 
+   unua := 1; lasta := unua; 
+   envicigu(v); nova[v] := malvero; 
+ 
+   RIPETU 
+      elvicigu(u); vizitu(u); ref := grafeo[u]; 
+      DUM ref ≠ NUL FARU STARTO 
+          u := ref↑.nro; 
+          ref := ref↑.plu; 
+          SE nova[u] TIAM STARTO 
+             envicigu(u); 
+             nova[u] := malvero; 
+          FINO; 
+      FINO; 
+   ĜIS vicoMalplenas; 
+ 
+FINO; { larĝIro }</pre> <p><hr><h3><a href="PR.html#PROFUNDIGxEMA-TRAIRO" 
+name="Profundigxema-trairo-de-grafeo">Profundiĝema trairo</a> de <a href="G.html#GRAFEO">grafeo</a></h3> 
+(La uzataj <a href="D.html#DATUMSTRUKTURO">datumstrukturo</a> kaj la <a 
+href="N.html#NOMO">nomoj</a><tt> vertico, erRef, grafeo </tt> estas tiaj 
+samaj kiel en la ekzemplo <a 
+href="NAJBARL.html#Interna-prezento-de-grafeoj">Interna prezento de grafeoj</a>) 
+<pre>PROCEDURO profundIro(komenco: vertico; PROCEDURO vizitu); 
+ 
+   VAR nova: TABELO [vertico] EL Bulea; 
+       w:    vertico; 
+ 
+   PROCEDURO profunden(v: vertico); 
+      VAR ref: erRef; 
+   STARTO 
+      vizitu(v); nova[v]:=malvero; 
+      ref := grafeo[v]; 
+      DUM  ref ≠ NUL  FARU STARTO 
+         SE nova[ref↑.nro] TIAM profunden(ref↑.nro); 
+         ref := ref↑.plu; 
+      FINO; 
+   FINO;     {profunden} 
+ 
+STARTO  {profundIro} 
+   POR w := 1 SUPRE 6 FARU nova[w] := vero; 
+   profunden(komenco)       { --- la radika voko } 
+FINO;   {profundIro}</pre> <p><hr><a href="STOKASTO.html"><img 
+src="BILDOJ/suben.gif" alt="Sekvan paĝon " align="top"></a> <a 
+href="HEJMO.html"><img src="BILDOJ/indekso.gif" alt="Indekson " align="top"></a> 
+<a href="KOVRILO.html"><img src="BILDOJ/kovrilo.gif" alt="Instrukcion" align="top"></a> 
+</body></html>

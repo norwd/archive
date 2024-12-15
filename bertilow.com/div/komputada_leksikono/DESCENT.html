@@ -1,0 +1,76 @@
+ <html><head> 
+<title>Komputada Leksikono: Ekzemplo pri rekursia desuprigxo</title> 
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"> 
+<link rel="stylesheet" type="text/css" href="BILDOJ/kl.css"> 
+</head><body> 
+<a href="HEAPSORT.html"><img src="BILDOJ/suben.gif" alt="Sekvan paĝon! " 
+align="bottom"></a><a href="OKDAMOJ.html"><img src="BILDOJ/supren.gif" 
+alt="Antaŭan paĝon! " 
+align="bottom"></a><a href="HEJMO.html"><img src="BILDOJ/indekso.gif" 
+alt="Indekson! " 
+align="bottom"></a><a href="KOVRILO.html"><img src="BILDOJ/kovrilo.gif" 
+alt="Instrukcion! " 
+align="bottom"></a> 
+<hr> 
+<h3>Ekzemplo pri <a href="R.html#REKURSIA-DESUPRIGxO" 
+name="Ekzemplo-pri-rekursia-desuprigxo">rekursia desupriĝo</a></h3> 
+<h4>Gramatiko de modela lingvo</h4> 
+<pre>   tuto = esprimo "." . 
+   esprimo = termo {("+" | "-") termo}. 
+   termo = faktoro {"*" faktoro}. 
+   faktoro = nomo | "(" esprimo ")". 
+   nomo = litero. 
+ 
+</pre> <p><h4>La programo en <a href="P.html#PASKALO">Paskalo</a></h4> 
+<pre>PROGRAMO postmetu(enigo,eligo); 
+   { traduku la "tuto"n de "esprimo" el la modela lingvo 
+     al <a href="PN.html#POSTMETA-OPERACISKRIBO">postmeta operaciskribo</a> } 
+MARKO   13;          {erarmarko: antaŭtempa <a href="DO.html#DOSIERFINO">dosierfino</a>} 
+VAR     s: signa;    {la kuranta signo ankoraŭ ne fintraktita} 
+ 
+PROCEDURO simbolon;  {legu en s-on la sekvan signifan simbolon} 
+  STARTO 
+     RIPETU 
+        SE doFin(enigo) TIAM AL 13; 
+        legu(s) 
+     ĜIS s ≠ ' '    {preterigu brusignojn: <a href="SO.html#SPACETO">spacetojn</a>, <a href="LI.html#LINIFINO">linifinojn</a>} 
+  FINO;   (*de simbolon*) 
+ 
+PROCEDURO esprimo;  {esprimo havas eningigitajn procedurojn} 
+  VAR op: signa;    {postmetenda operacisigno} 
+ 
+      PROCEDURO termo;   {termo = faktoro*faktoro...} 
+ 
+         PROCEDURO faktoro;  STARTO  {faktoro ne havas lokaĵojn} 
+           SE s = '(' TIAM STARTO 
+              simbolon; esprimo; 
+           FINO ALIE  skribu(s); 
+           simbolon;       {rezignu la fintraktitan s-on, legu freŝan} 
+         FINO; {de faktoro} 
+ 
+      STARTO {--- la korpo de termo} 
+         faktoro; 
+         DUM s = '*' FARU STARTO 
+            simbolon; 
+            faktoro; 
+            skribu('*'); 
+         FINO 
+      FINO;  {--- finiĝis termo} 
+ 
+  STARTO {--- la korpo de esprimo} 
+     termo; 
+     DUM (s = '+') AŬ (s = '-') FARU STARTO 
+        op := s; 
+        simbolon; 
+        termo; 
+        skribu(op); 
+     FINO 
+  FINO;  {--- finiĝis esprimo} 
+ 
+ STARTO 
+    simbolon; esprimo; skribuLin; {--- kontrolendus: s='.'} 
+13:FINO.</pre> <p><hr><a href="HEAPSORT.html"><img src="BILDOJ/suben.gif" 
+alt="Sekvan paĝon " align="top"></a> <a href="HEJMO.html"><img 
+src="BILDOJ/indekso.gif" alt="Indekson " align="top"></a> 
+<a href="KOVRILO.html"><img src="BILDOJ/kovrilo.gif" alt="Instrukcion" align="top"></a> 
+</body></html>

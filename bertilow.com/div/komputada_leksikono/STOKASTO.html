@@ -1,0 +1,49 @@
+ <html><head> 
+<title>Komputada Leksikono: Stokastogeneriloj</title> 
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"> 
+<link rel="stylesheet" type="text/css" href="BILDOJ/kl.css"> 
+</head><body> 
+<a href="M2PROG.html"><img src="BILDOJ/suben.gif" alt="Sekvan paĝon! " 
+align="bottom"></a><a href="TRAIROJ.html"><img src="BILDOJ/supren.gif" 
+alt="Antaŭan paĝon! " 
+align="bottom"></a><a href="HEJMO.html"><img src="BILDOJ/indekso.gif" 
+alt="Indekson! " 
+align="bottom"></a><a href="KOVRILO.html"><img src="BILDOJ/kovrilo.gif" 
+alt="Instrukcion! " 
+align="bottom"></a> 
+<hr> 
+<h3><a name="Simpla-stokastogenerilo">Simpla stokastogenerilo en Paskalo</a></h3> 
+<pre>   FUNKCIO hazardo(VAR h:entjera): reela; 
+      KONST  faktoro = 25173; 
+           deŝovo = 13849; 
+           periodo = 65536 {= 2**16}; 
+      STARTO 
+          hazardo := h / (periodo - 1); 
+        h := (faktoro*h + deŝovo) MOD periodo; 
+      FINO</pre> <p><h3><a name="Pli-gxenerala-stokastogenerilo">Pli 
+ĝenerala stokastogenerilo en MODULA</a></h3> 
+<pre>   MODULO stokastogenerilo; (* laŭ <i>Andrew --- Tolly --- Metropolis</i> *) 
+ 
+     EKSPORTO stokasto; 
+     VAR   a, b, c: reela; 
+     KONST a1 = 30000.0; 
+           b1 = 17000.0; 
+      maks = 32767.0; 
+           Maks = maks + 1.0; 
+ 
+     PROCEDURO stokasto():entjera; STARTO 
+         c:=a+b; 
+    SE c &gt; maks TIAM c := c - Maks FINO; 
+    c := c * 2.0; 
+    SE c &gt; maks TIAM c := c - maks FINO; 
+    a := b; b := c; 
+         REEN trunko(c) 
+     FINO stokasto; 
+ 
+STARTO a := a1; b := b1;    (* la komencvalorizo *) 
+FINO stokastogenerilo 
+</pre> <p><hr><a href="M2PROG.html"><img src="BILDOJ/suben.gif" alt="Sekvan 
+paĝon " align="top"></a> <a href="HEJMO.html"><img src="BILDOJ/indekso.gif" 
+alt="Indekson " align="top"></a> 
+<a href="KOVRILO.html"><img src="BILDOJ/kovrilo.gif" alt="Instrukcion" align="top"></a> 
+</body></html>

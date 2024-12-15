@@ -1,0 +1,90 @@
+ <html><head> 
+<title>Komputada Leksikono: La 8 damoj</title> 
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"> 
+<link rel="stylesheet" type="text/css" href="BILDOJ/kl.css"> 
+</head><body> 
+<a href="DESCENT.html"><img src="BILDOJ/suben.gif" alt="Sekvan paĝon! " 
+align="bottom"></a><a href="KRESTOM.html"><img src="BILDOJ/supren.gif" 
+alt="Antaŭan paĝon! " 
+align="bottom"></a><a href="HEJMO.html"><img src="BILDOJ/indekso.gif" 
+alt="Indekson! " 
+align="bottom"></a><a href="KOVRILO.html"><img src="BILDOJ/kovrilo.gif" 
+alt="Instrukcion! " 
+align="bottom"></a> 
+<hr> 
+<h3><a name="La-8-damoj">La 8 damoj</a></h3> 
+<ol><li><a href="OKDAMOJ.html#Algoritma-solvo-pri-la-8-damoj">Algoritma solvo pri la 8 damoj</a> 
+<li><a href="OKDAMOJ.html#Paskala-programo-pri-la-8-damoj">Paskala programo pri la 8 
+damoj: Ĉiuj solvoj</a> </ol>La <a 
+href="PR.html#PROBLEMO-PRI-OK-DAMOJ">Problemo pri ok damoj</a> estas ŝuldata 
+al Gaŭso (<i>Gauß,</i> 1777–1855). <p>Oni povas peti trovi ajnan unu 
+solvon; aŭ trovi ĉiujn solvojn; aŭ trovi ĉiujn neekvivalentajn solvojn, 
+t.e. kiuj ne estas produkteblaj unuj el aliaj per simplaj rotacioj aŭ 
+simetriaj speguladoj. <p>En komputoscienco tiun problemon detale studis 
+<i>N. <a href="W.html#WIRTH">Wirth</a></i>; ĝi estas interesa kiel ekzemplo 
+pri la metodo de <dfn>provoj kaj malavancoj</dfn> kaj instrua pri maniero 
+prezenti ŝaktabulajn aranĝojn per racie elektitaj datumstrukturoj. 
+<p><h4><a name="Algoritma-solvo-pri-la-8-damoj">Algoritma solvo pri la 8 damoj</a></h4> 
+Entute estas 64!÷(56!×8!), t.e. proks. <em>2∗∗32</em> lokadoj de La 8 
+damoj; do, estus malprudentaĵo ekzameni ĉiujn kombinojn por trovi la 
+solvojn. La ĉi-suba programo <em>damoj</em> serĉos ĉiujn konvenajn 
+aranĝojn per la metodo de provoj kaj malavancoj. Ĝi procedas rekursie: 
+supozu, ke ĉiuj vertikaloj <em>[1..x ]</em>, <em>1≤x&lt;8</em> jam havas 
+po unu bone lokitan damon; oni provu loki ankoraŭ unu damon sur la vertikalo 
+<em>x+1</em> (evidente, en la definitiva aranĝo sur ĉiu vertikalo kaj sur 
+ĉiu horizontalo devas stari po ekzakte unu damo). Se la vertikalo 
+<em>x+1</em> malhavas taŭgan fakon, oni konstatas fiaskon; tiam necesas 
+rekonsideri la decidon pri la lokado de la damo sur la vertikalo <em>x</em> 
+— do, plenumi <dfn>malavancon</dfn>. Por decidi, ĉu koncerna fako estas 
+sekura (taŭga), oportunas teni tri <a href="M.html#MALLOKA">mallokajn</a> 
+vektorojn Buleajn pri la diagonaloj kreskaj (/) kaj sinkaj (\), kaj pri la 
+vakaj horizontaloj, tiel ke fako <em>(x,y)</em> estas sekura SSE veras 
+<p 
+align="center"><em>horVak[y] KAJ sinko[x + y] KAJ kresko[x − y]</em></p><p><h4><a 
+name="Paskala-programo-pri-la-8-damoj">Paskala programo pri la 8 damoj</a></h4> 
+Ĉi-suba programo trovas ĉiujn solvojn. 
+<pre>PROGRAMO damoj(eligo); 
+ 
+VAR horNro: TABELO [1..8] EL entjera; {damoj en la fakoj (x, horNro[x])} 
+    horVak: TABELO [1..8] EL Bulea;   {horVak[y] SSE la vertikalo y vakas} 
+    kresko: TABELO [-7..7] EL Bulea;  {la kreska (/) diag. x-y=i vakas} 
+    sinko:  TABELO [2..16] EL Bulea;  {la sinka (\) diag. x+y=i vakas} 
+    n:      entjera; 
+ 
+PROCEDURO pretaTabulo; 
+    VAR  x: entjera; 
+STARTO 
+    POR x:=1 SUPRE 8 FARU skribu(sgn(nro('a')-1+x):2, horNro[x]:-2); 
+    skribuLin; 
+FINO; 
+ 
+PROCEDURO trovuHorizontalon(x: entjera); 
+  VAR y:entjera; 
+ 
+  PROCEDURO markuVakadon(vakstato: Bulea);      { ingita proceduro } 
+    STARTO 
+       horNro[x] := y; 
+       horVak[y] := vakstato; 
+       sinko[x + y] := vakstato; 
+       kresko[x - y] := vakstato; 
+    FINO; 
+  STARTO                      { la korpo de "trovuHorizontalon": } 
+    POR y := 1 SUPRE 8 FARU 
+    SE horVak[y] KAJ sinko[x + y] KAJ kresko[x - y] TIAM STARTO 
+    markuVakadon(malvero);              { okupu la fakon  (x, y) } 
+    SE x &lt; 8 TIAM trovuHorizontalon(x + 1) ALIE pretaTabulo; 
+    markuVakadon(vero);               { malokupu la fakon (x, y) } 
+  FINO 
+FINO;                 { la proceduro "trovuHorizontalon" finitas } 
+ 
+STARTO  { la korpo de la programo "damoj": } 
+  POR n :=  1 SUPRE  8 FARU horVak[n] := vero;  { komencvalorizo } 
+  POR n := -7 SUPRE  7 FARU kresko[n] := vero; 
+  POR n :=  2 SUPRE 16 FARU sinko[n]  := vero; 
+  trovuHorizontalon(1);                 { la radika procedurvoko } 
+FINO. 
+</pre> <p><a href="DESCENT.html"><img src="BILDOJ/suben.gif" alt="Sekvan 
+paĝon " align="top"></a> <a href="HEJMO.html"><img src="BILDOJ/indekso.gif" 
+alt="Indekson " align="top"></a> 
+<a href="KOVRILO.html"><img src="BILDOJ/kovrilo.gif" alt="Instrukcion" align="top"></a> 
+</body></html>

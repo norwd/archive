@@ -1,0 +1,51 @@
+ <html><head> 
+<title>Komputada Leksikono: La dormema frizisto</title> 
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"> 
+<link rel="stylesheet" type="text/css" href="BILDOJ/kl.css"> 
+</head><body> 
+<a href="KVINF.html"><img src="BILDOJ/suben.gif" alt="Sekvan paĝon! " 
+align="bottom"></a><a href="STOKASTO.html"><img src="BILDOJ/supren.gif" 
+alt="Antaŭan paĝon! " 
+align="bottom"></a><a href="HEJMO.html"><img src="BILDOJ/indekso.gif" 
+alt="Indekson! " 
+align="bottom"></a><a href="KOVRILO.html"><img src="BILDOJ/kovrilo.gif" 
+alt="Instrukcion! " 
+align="bottom"></a> 
+<hr> 
+<h3>La <a href="DO.html#DORMEMA-FRIZISTO" name="La-dormema-frizisto">dormema 
+frizisto</a> en <a href="ME.html#MODULA">MODULA</a></h3> 
+<pre>MODULO Bufro[1]; 
+   EKSPORTO deponu, elprenu; 
+   IMPORTO atendu, evento, okazigu, pretigu, subtipo; 
+   KONST lon = 256;                        (* la bufrolongo *) 
+   VAR n: [0 .. lon];     (* la nombro de deponitaj datumoj *) 
+       neplena, nemalplena: evento; 
+       al, de: [0 .. lon - 1];        (* la pozicimontriloj *) 
+       buf: TABELO [0 .. lon - 1] EL subtipo; 
+ 
+   PROCEDURO deponu(x: subtipo); 
+     STARTO 
+        n := n + 1; 
+        SE n › lon TIAM atendu(neplena) FINO; 
+        buf[en] := x; 
+        en := (en + 1) MOD lon; 
+        SE n ≤ 0 TIAM okazigu(nemalplena) FINO; 
+     FINO deponu; 
+ 
+   PROCEDURO elprenu(VAR x:subtipo); 
+     STARTO 
+        n := n - 1; 
+        SE n &lt; 0 TIAM atendu(nemalplena) FINO; 
+        x := buf[de]; 
+        de := (de + 1) MOD lon; 
+        SE n ≥ lon TIAM okazigu(neplena) FINO; 
+     FINO elprenu; 
+ 
+STARTO (* la komencvalorizoj: *) 
+   n:=0; en:=0; de:=0; 
+   pretigu(neplena); pretigu(nemalplena); 
+FINO Bufro.</pre> <p><hr><a href="KVINF.html"><img src="BILDOJ/suben.gif" 
+alt="Sekvan paĝon " align="top"></a> <a href="HEJMO.html"><img 
+src="BILDOJ/indekso.gif" alt="Indekson " align="top"></a> 
+<a href="KOVRILO.html"><img src="BILDOJ/kovrilo.gif" alt="Instrukcion" align="top"></a> 
+</body></html>
