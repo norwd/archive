@@ -130,7 +130,7 @@ at least the Intel Haswell generation is necessary for AVX2.
   simple and still gives a near linear running time.
 
 - This library reuses some ideas from TachusPI (
-  http://bellard.org/pi/pi2700e9/tpi.html ) . It is about 4 times
+  https://bellard.org/pi/pi2700e9/tpi.html ) . It is about 4 times
   slower to compute Pi but is much smaller and simpler.
 
 5) Known limitations
