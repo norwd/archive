@@ -8,13 +8,13 @@
 <script type="text/javascript" src="wp-includes/js/jquery/jquery-migrate.min.js?ver=3.4.1" id="jquery-migrate-js"></script>
 <script type="text/javascript" src="wp-content/mu-plugins/force-strong-passwords/force-zxcvbn.min.js?ver=1.8.0" id="slt-fsp-force-zxcvbn-js"></script>
 <script type="text/javascript" src="wp-content/mu-plugins/force-strong-passwords/js-admin.min.js?ver=1.8.0" id="slt-fsp-admin-js-js"></script>
-<link rel='stylesheet' id='dashicons-css' href='wp-includes/css/dashicons.min.css?ver=6.6.1' type='text/css' media='all' />
-<link rel='stylesheet' id='buttons-css' href='wp-includes/css/buttons.min.css?ver=6.6.1' type='text/css' media='all' />
-<link rel='stylesheet' id='forms-css' href='wp-admin/css/forms.min.css?ver=6.6.1' type='text/css' media='all' />
-<link rel='stylesheet' id='l10n-css' href='wp-admin/css/l10n.min.css?ver=6.6.1' type='text/css' media='all' />
-<link rel='stylesheet' id='login-css' href='wp-admin/css/login.min.css?ver=6.6.1' type='text/css' media='all' />
+<link rel='stylesheet' id='dashicons-css' href='wp-includes/css/dashicons.min.css?ver=6.7.1' type='text/css' media='all' />
+<link rel='stylesheet' id='buttons-css' href='wp-includes/css/buttons.min.css?ver=6.7.1' type='text/css' media='all' />
+<link rel='stylesheet' id='forms-css' href='wp-admin/css/forms.min.css?ver=6.7.1' type='text/css' media='all' />
+<link rel='stylesheet' id='l10n-css' href='wp-admin/css/l10n.min.css?ver=6.7.1' type='text/css' media='all' />
+<link rel='stylesheet' id='login-css' href='wp-admin/css/login.min.css?ver=6.7.1' type='text/css' media='all' />
 	<meta name='referrer' content='strict-origin-when-cross-origin' />
-		<meta name="viewport" content="width=device-width" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		</head>
 	<body class="login no-js login-action-lostpassword wp-core-ui  locale-en-us">
 	<script type="text/javascript">
@@ -23,8 +23,9 @@ document.body.className = document.body.className.replace('no-js','js');
 /* ]]> */
 </script>
 
-		<div id="login">
-		<h1><a href="https://wordpress.org/">Powered by WordPress</a></h1>
+				<h1 class="screen-reader-text">Lost Password</h1>
+			<div id="login">
+		<h1 role="presentation" class="wp-login-logo"><a href="https://wordpress.org/">Powered by WordPress</a></h1>
 	<div class="notice notice-info message"><p>Please enter your username or email address. You will receive an email message with instructions on how to reset your password.</p></div>
 
 		<form name="lostpasswordform" id="lostpasswordform" action="https://hpmor.com/wp-login.php?action=lostpassword&#038;wpe-login=true" method="post">
@@ -44,7 +45,8 @@ document.body.className = document.body.className.replace('no-js','js');
 				<p id="backtoblog">
 			<a href="index.html">&larr; Go to Harry Potter and the Methods of Rationality</a>		</p>
 			</div>
-			<script type="text/javascript">
+		
+	<script type="text/javascript">
 /* <![CDATA[ */
 
 		try{document.getElementById('user_login').focus();}catch(e){}
