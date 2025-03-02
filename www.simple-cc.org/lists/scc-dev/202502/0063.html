@@ -1,0 +1,516 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII" />
+<meta name="generator" content="hypermail 2.3.0, see http://www.hypermail-project.org/" />
+<title>Re: [scc-dev] [PATCH 3/3] libc: fix wchar unicode handling from Roberto E. Vargas Caballero on 2025-02-26 (scc-dev)</title>
+<meta name="Author" content="Roberto E. Vargas Caballero (k0ga_at_shike2.net)" />
+<meta name="Subject" content="Re: [scc-dev] [PATCH 3/3] libc: fix wchar unicode handling" />
+<meta name="Date" content="2025-02-26" />
+<style type="text/css">
+/*<![CDATA[*/
+/* To be incorporated in the main stylesheet, don't code it in hypermail! */
+body {color: black; background: #ffffff}
+dfn {font-weight: bold;}
+pre { background-color:inherit;}
+.head { border-bottom:1px solid black;}
+.foot { border-top:1px solid black;}
+th {font-style:italic;}
+table { margin-left:2em;}map ul {list-style:none;}
+#mid { font-size:0.9em;}
+#received { float:right;}
+address { font-style:inherit ;}
+/*]]>*/
+.quotelev1 {color : #990099}
+.quotelev2 {color : #ff7700}
+.quotelev3 {color : #007799}
+.quotelev4 {color : #95c500}
+.period {font-weight: bold}
+</style>
+</head>
+<body>
+<div class="head">
+<h1>Re: [scc-dev] [PATCH 3/3] libc: fix wchar unicode handling</h1>
+<!-- received="Wed, 26 Feb 2025 10:28:39 +0100" -->
+<!-- isoreceived="20250226092839" -->
+<!-- sent="Wed, 26 Feb 2025 10:28:39 +0100" -->
+<!-- isosent="20250226092839" -->
+<!-- name="Roberto E. Vargas Caballero" -->
+<!-- email="k0ga_at_shike2.net" -->
+<!-- subject="Re: [scc-dev] [PATCH 3/3] libc: fix wchar unicode handling" -->
+<!-- id="085A069C43444B6ABF696AB784A44D5F_at_shike2.net" -->
+<!-- charset="US-ASCII" -->
+<!-- inreplyto="20250220193221.26322-4-lhr_at_disroot.org" -->
+<!-- expires="-1" -->
+<map id="navbar" name="navbar">
+<ul class="links">
+<li>
+<dfn>This message</dfn>:
+[ <a href="0063.html#start63" name="options1" id="options1" tabindex="1">Message body</a> ]
+ [ More options (<a href="0063.html#options2">top</a>, <a href="0063.html#options3">bottom</a>) ]
+</li>
+<li>
+<dfn>Related messages</dfn>:
+<!-- unext="start" -->
+[ <a href="0064.html" title="Roberto E. Vargas Caballero: &quot;Re: [scc-dev] [PATCH 1/3] make/posix: fix feature test macros&quot;">Next message</a> ]
+[ <a href="0062.html" title="Roberto E. Vargas Caballero: &quot;Re: [scc-dev] [PATCH 2/3] libc/tests: add omitted headers, fix 0037-malloc's output so it passes&quot;">Previous message</a> ]
+[ <a href="0059.html" title="remph: &quot;[scc-dev] [PATCH 3/3] libc: fix wchar unicode handling&quot;">In reply to</a> ]
+[ <a href="0059.html" title="Message to which this message replies: &quot;remph&quot;">[scc-dev] [PATCH 3/3] libc: fix wchar unicode handling</a> ]
+<!-- unextthread="start" -->
+ [ <a href="0066.html" title="lhr_at_disroot.org: &quot;Re: [scc-dev] [PATCH 3/3] libc: fix wchar unicode handling&quot;">Next in thread</a> ]
+ [ <a href="0063.html#replies">Replies</a> ]
+<!-- ureply="end" -->
+</li>
+</ul>
+</map>
+<ul class="links">
+<li><a name="options2" id="options2"></a><dfn>Contemporary messages sorted</dfn>: [ <a href="date.html#msg63" title="Contemporary messages by date">by date</a> ] [ <a href="index.html#msg63" title="Contemporary discussion threads">by thread</a> ] [ <a href="subject.html#msg63" title="Contemporary messages by subject">by subject</a> ] [ <a href="author.html#msg63" title="Contemporary messages by author">by author</a> ] [ <a href="attachment.html" title="Contemporary messages by attachment">by messages with attachments</a> ]</li>
+</ul>
+</div>
+<!-- body="start" -->
+<div class="mail">
+<address class="headers">
+<span id="from">
+<dfn>From</dfn>: Roberto E. Vargas Caballero &lt;<a href="mailto:k0ga_at_shike2.net?Subject=Re%3A%20%5Bscc-dev%5D%20%5BPATCH%203%2F3%5D%20libc%3A%20fix%20wchar%20unicode%20handling">k0ga_at_shike2.net</a>&gt;
+</span><br />
+<span id="date"><dfn>Date</dfn>: Wed, 26 Feb 2025 10:28:39 +0100</span><br />
+</address>
+<br />
+<a name="0066qlink1">Very good job, you catched so many errors that I am ashamed ^^!!!!!!!
+</a><br />
+I put some comments, please fell free to give your opinion.
+<br />
+<br /><br /><a href="0059.html#0063qlink1">&gt; diff --git a/src/libc/wchar/_validutf8.c b/src/libc/wchar/_validutf8.c
+</a><br>
+<em class="quotelev1">&gt; index 45b12fdc..48bc8066 100644
+</em><br><em class="quotelev1">&gt; --- a/src/libc/wchar/_validutf8.c
+</em><br><em class="quotelev1">&gt; +++ b/src/libc/wchar/_validutf8.c
+</em><br><em class="quotelev1">&gt; _at_&#64; -23,7 +23,7 &#64;&#64; _validutf8(wchar_t wc, int *nbytes)
+</em><br><em class="quotelev1">&gt;  	};
+</em><br><em class="quotelev1">&gt;  	struct range *bp;
+</em><br><em class="quotelev1">&gt;  
+</em><br><em class="quotelev1">&gt; -	for (bp = ranges; bp-&gt;begin &lt;= wc &amp;&amp; bp-&gt;end &gt; wc; ++bp)
+</em><br><em class="quotelev1">&gt; +	for (bp = ranges; !(bp-&gt;begin &lt;= wc &amp;&amp; bp-&gt;end &gt; wc); ++bp)
+</em><br><em class="quotelev1">&gt;  		;
+</em><br><br />Good catch. I wrote these functions but I didn't test them :'( .
+<br />
+<a name="0066qlink2">I would use De Morgan rules and avoid the negation:
+<br />
+<br />-	for (bp = ranges; bp-&gt;begin &lt;= wc &amp;&amp; bp-&gt;end &gt; wc; ++bp)
+<br />
++	for (bp = ranges; bp-&gt;begin &gt; wc || bp-&gt;end &lt;= wc; ++bp)
+<br />
+<br /><br />What do you think?
+</a><br />
+<br /><a href="0059.html#0063qlink2">&gt; diff --git a/src/libc/wchar/mbrtowc.c b/src/libc/wchar/mbrtowc.c
+</a><br>
+<em class="quotelev1">&gt; index 6f825f8b..e1b217f0 100644
+</em><br><em class="quotelev1">&gt; --- a/src/libc/wchar/mbrtowc.c
+</em><br><em class="quotelev1">&gt; +++ b/src/libc/wchar/mbrtowc.c
+</em><br><em class="quotelev1">&gt; _at_&#64; -5,10 +7,11 &#64;&#64;
+</em><br><em class="quotelev1">&gt;  #undef mbrtowc
+</em><br><em class="quotelev1">&gt;  
+</em><br><em class="quotelev1">&gt;  size_t
+</em><br><em class="quotelev1">&gt; -mbrtowc(wchar_t *restrict pwc, const char *restrict s, size_t n,
+</em><br><em class="quotelev1">&gt; +mbrtowc(wchar_t *restrict pwc, const char *restrict s, size_t n_,
+</em><br><em class="quotelev1">&gt;          mbstate_t *restrict ps)
+</em><br><em class="quotelev1">&gt;  {
+</em><br><em class="quotelev1">&gt; -	unsigned char *t = (unsigned char *) s;
+</em><br><em class="quotelev1">&gt; +	const unsigned char *t = (const unsigned char *) s;
+</em><br><em class="quotelev1">&gt; +	ptrdiff_t n = n_;
+</em><br><br />I think this conversion is just wrong, because the input parameter is
+<br />
+a size_t for a good reason.  If we recive a really big buffer, where
+<br />
+the size has the msb to 1 then this change will reject it, while it is
+<br />
+well defined that the function should accept such buffer.
+<br />
+<br /><a href="0059.html#0063qlink3">&gt;  	unsigned long wc;
+</a><br>
+<em class="quotelev1">&gt;  	unsigned c;
+</em><br><em class="quotelev1">&gt;  	int i, len, maxlen;
+</em><br><em class="quotelev1">&gt; _at_&#64; -16,24 +19,35 &#64;&#64; mbrtowc(wchar_t *restrict pwc, const char *restrict s, size_t n,
+</em><br><em class="quotelev1">&gt;  	if (s == NULL)
+</em><br><em class="quotelev1">&gt;  		return 0;
+</em><br><em class="quotelev1">&gt;  
+</em><br><em class="quotelev1">&gt; +	if (!(*t &lt; 0x80 || (*t &gt;= 0xC2 &amp;&amp; *t &lt;= 0xF4))) {
+</em><br><em class="quotelev1">&gt; +		errno = EILSEQ;
+</em><br><em class="quotelev1">&gt; +		return -1;
+</em><br><em class="quotelev1">&gt; +	}
+</em><br><em class="quotelev1">&gt; +
+</em><br><br />I think having this if here defeats the purpose of the following loop,
+<br />
+<a name="0066qlink4">which should catch any error following the utf8 rules.  I have
+<br />
+rewritten the function as:
+<br />
+<br />--- a/src/libc/wchar/mbrtowc.c
+</a><br />
++++ b/src/libc/wchar/mbrtowc.c
+<br />
+_at_&#64; -1,3 +1,4 &#64;&#64;
+<br />
++#include &lt;errno.h&gt;
+<br />
+&nbsp;#include &lt;wchar.h&gt;
+<br />
+&nbsp;
+<br />
+&nbsp;#include &quot;../libc.h&quot;
+<br />
+_at_&#64; -8,37 +9,41 &#64;&#64; size_t
+<br />
+&nbsp;mbrtowc(wchar_t *restrict pwc, const char *restrict s, size_t n,
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mbstate_t *restrict ps)
+<br />
+&nbsp;{
+<br />
+-       unsigned char *t = (unsigned char *) s;
+<br />
++       const unsigned char *t = (const unsigned char *) s;
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;unsigned long wc;
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;unsigned c;
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int i, len, maxlen;
+<br />
+&nbsp;
+<br />
+-       if (s == NULL)
+<br />
++       if (s == NULL || *s == '\0')
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return 0;
+<br />
+&nbsp;
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wc = c = *t++;
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (len = 0; n &gt; 0 &amp;&amp; c &amp; 0x80; --n, ++len)
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c &lt;&lt;= 1;
+<br />
+-       if (n == 0 || len == 1 || len == 8)
+<br />
+-               return -1;
+<br />
++       if (n == 0 &amp;&amp; c &amp; 0x80)
+<br />
++               return -2;
+<br />
++       if (len == 1 || len == 8)
+<br />
++               goto return_error;
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (len == 0)
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;goto return_code;
+<br />
+&nbsp;
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wc = (c &amp; 0xFF) &gt;&gt; len;
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (i = 0; i &lt; len-1; i++) {
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (((c = *t++) &amp; 0xC0) != 0x80)
+<br />
+-                       return -1;
+<br />
++                       goto return_error;
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wc &lt;&lt;= 6;
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wc |= c &amp; 0x3F;
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}
+<br />
+&nbsp;
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (!_validutf8(wc, &amp;maxlen) || len != maxlen)
+<br />
+-               return -1;
+<br />
++               goto return_error;
+<br />
+&nbsp;
+<br />
+&nbsp;return_code:
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (pwc)
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*pwc = wc;
+<br />
+-       if (*s == '\0')
+<br />
+-               return 0;
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return t - (unsigned char *) s;
+<br />
++
+<br />
++return_error:
+<br />
++       errno = EILSEQ;
+<br />
++       return -1;
+<br />
+&nbsp;}
+<br />
+<br />This adds a new test case because we can return -2 in case we don't have
+<br />
+enough bytes to get a full utf8 sequence.
+<br />
+<br /><em class="quotelev1">&gt; --- a/src/libc/wchar/wcrtomb.c
+</em><br><em class="quotelev1">&gt; +++ b/src/libc/wchar/wcrtomb.c
+</em><br><a href="0059.html#0063qlink4">&gt; _at_&#64; -14,13 +14,18 &#64;&#64; wcrtomb(char *restrict s, wchar_t wc, mbstate_t *restrict ps)
+</a><br>
+<em class="quotelev1">&gt;  	if (!s)
+</em><br><em class="quotelev1">&gt;  		return 1;
+</em><br><em class="quotelev1">&gt;  
+</em><br><em class="quotelev1">&gt; +	if (wc &lt; 0x80) {
+</em><br><em class="quotelev1">&gt; +		*s = (char)wc;
+</em><br><em class="quotelev1">&gt; +		return 1;
+</em><br><em class="quotelev1">&gt; +	}
+</em><br><em class="quotelev1">&gt; +
+</em><br><em class="quotelev1">&gt;  	if (!_validutf8(wc, &amp;n)) {
+</em><br><em class="quotelev1">&gt;  		errno = EILSEQ;
+</em><br><em class="quotelev1">&gt;  		return -1;
+</em><br><em class="quotelev1">&gt;  	}
+</em><br><em class="quotelev1">&gt;  
+</em><br><em class="quotelev1">&gt;  	n--;
+</em><br><em class="quotelev1">&gt; -	*s = 0;
+</em><br><em class="quotelev1">&gt; +	*s = 0x80;
+</em><br><em class="quotelev1">&gt;  	for (i = 0; i &lt; n; i++) {
+</em><br><em class="quotelev1">&gt;  		*s &gt;&gt;= 1;
+</em><br><em class="quotelev1">&gt;  		*s |= 0x80;
+</em><br><br />I think it is better to transform the special case in a normal case
+<br />
+with something like:
+<br />
+<br />--- a/src/libc/wchar/wcrtomb.c
+<br />
++++ b/src/libc/wchar/wcrtomb.c
+<br />
+_at_&#64; -18,9 +18,9 &#64;&#64; wcrtomb(char *restrict s, wchar_t wc, mbstate_t *restrict ps)
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;errno = EILSEQ;
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return -1;
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}
+<br />
++       n--;
+<br />
+&nbsp;
+<br />
+-       n--;
+<br />
+-       *s = 0;
+<br />
++       *s = (wc &lt; 0x80) ? 0 : 0x80;
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (i = 0; i &lt; n; i++) {
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*s &gt;&gt;= 1;
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*s |= 0x80;
+<br />
+<br /><a href="0059.html#0063qlink5">&gt; --- /dev/null
+</a><br>
+<em class="quotelev1">&gt; +++ b/tests/libc/execute/0038-wchar.c
+</em><br>...
+<br />
+<em class="quotelev1">&gt; +void
+</em><br><em class="quotelev1">&gt; +tests_positive()
+</em><br><em class="quotelev1">&gt; +{
+</em><br><a href="0059.html#0063qlink6">&gt; +	const char *const mb[] = { &quot;!&quot;, &quot;\u00A1&quot;, &quot;\u2014&quot;, &quot;\U0001F4A9&quot; };
+</a><br>
+<a name="0066qlink6"><br />I don't think it is a good idea to use universal character names in strings
+<br />
+because it is not well defined in the standard, in fact the standard seems
+<br />
+even contradictory. Quoting from [1]:
+<br />
+<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;This is in obvious contradiction with the second sentence.  In
+</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;addition, I'm not really clear what is supposed to happen in
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the case where the execution (narrow-)character set is UTF-8.
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Consider the character \u0153 (the oe in the French word
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;oeuvre).  Should '\u0153' be a char, with an &quot;error&quot; value,
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;say '?' (in conformance with the requirement that it be a
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;single char), or an int, with the two char values 0xC5, 0x93,
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;in an implementation defined order (in conformance with the
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;requirement that a character representable in the execution
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;character set be represented).  Supposing the former, should
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\u0153&quot; be the equivalent of &quot;?&quot; (in conformance with the
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;first sentence), or &quot;\xC5\x93&quot; (in conformance with the
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;second).
+<br />
+<br />I don't know if C23 improved the situation, but anyway it does not
+<br />
+seem the correct thing to do in a test for the libc as it depends a
+<br />
+lot of the compiler implementation, and for that reason I think is
+<br />
+better to use directly the \xHH sequences.
+<br />
+<br /><a href="0059.html#0063qlink7">&gt; +	const wchar_t wc[] = { L'!', L'\u00A1', L'\u2014', L'\U0001F4A9' };
+</a><br>
+<br />While I think we can assume safely that there will be a 1 to 1 mapping
+<br />
+from universal character names to unicode entry points, I prefer to
+<br />
+avoid that and use directly the hexadecimal integer constants that
+<br />
+will ensure that the test is independent of the compiler.
+<br />
+<br />For that reason, I think is better to represent these arrays as:
+<br />
+<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;static char *mb[] = {
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;!&quot;,
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\xc2\xa1&quot;,
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\xe2\x80\x94&quot;,
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\xf0\x9f\x92\xa9&quot;
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;static wchar_t wc[] = {
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L'!',
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0x00A1,
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0x2014,
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0x0001F4A9
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};
+<br />
+<br />I removed the consts for a question of style, as const is not commonly
+<br />
+used in the scc code base, and I added the static to avoid the initialization
+<br />
+code.
+<br />
+<br />+	for (i = 0; i &lt; 4; i++) {
+<br />
+<a name="0066qlink7"><br />I  think we can use a typical NELEM macro instead of hardcoding 4 here:
+<br />
+<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#define NELEM(x) (sizeof(x)/sizeof((x)[0]))
+<br />
+<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (i = 0; i &lt; NELEM(mb); i++)
+<br />
+<br />and
+<br />
+<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (i = 0; i &lt; NELEM(wc); i++)
+<br />
+<br />because I expect more cases are going to be added in the future ...
+<br />
+<br /><em class="quotelev1">&gt; +void
+</em><br><em class="quotelev1">&gt; +tests_negative()
+</em><br><em class="quotelev1">&gt; +{
+</em><br><a href="0059.html#0063qlink8">&gt; +	char badutf8[] = { 0xF8 /* 0b11111000 */, 0x80 | 1, 0x80 | 2, 0x80 | 3, 0x80 | 4, 0x80 | 5, '\0' };
+</a><br>
+</a><em class="quotelev1">&gt; +	char overlong[] = { 0xC0, 0x80 | 'a' };
+</em><br><br />Just to be consistent with the other arrays, and to obey the 80 columns rule
+<br />
+I think this should be:
+<br />
+<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;static char badutf8[] = {
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0xF8 /* 0b11111000 */,
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0x80 | 1, 0x80 | 2, 0x80 | 3,
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0x80 | 4, 0x80 | 5,
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'\0'
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;static char overlong[] = {0xC0, 0x80 | 'a'};
+<br />
+<br /><em class="quotelev1">&gt; +
+</em><br><em class="quotelev1">&gt; +int
+</em><br><a href="0059.html#0063qlink9">&gt; +main()
+</a><br>
+<em class="quotelev1">&gt; +{
+</em><br><em class="quotelev1">&gt; +	puts(&quot;testing&quot;);
+</em><br><em class="quotelev1">&gt; +	tests_positive();
+</em><br><em class="quotelev1">&gt; +	tests_negative();
+</em><br><br />While I think this works very well to test only mbtowc() and mbtowc(),
+<br />
+<a name="0066qlink8">I think it can be a problem once we begin to add more functions to be
+<br />
+tested, so I would split the tests per function for example:
+<br />
+<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;test_mbtowc();
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;test_mbtowc();
+<br />
+<br />That would require to have the arrays as global variables, but it shouldn't
+</a><br />
+be a problem. Also, adding the tests for the reentrant versions should be
+<br />
+trivial as they are the same tests, just passing and additional parameter.
+<br />
+I just pushed the implementation of mbsinit() (it is trivial for the case
+<br />
+of utf8), that can be used in the tests for the reentrant versions.
+<br />
+<br />[1] <a href="https://wg21.cmeerw.net/cwg/issue411">https://wg21.cmeerw.net/cwg/issue411</a>
+<br />
+<br />Regards,
+<br />
+<br /><pre>
+--
+To unsubscribe send a mail to scc-dev+unsubscribe_at_simple-cc.org
+</pre>
+<span id="received"><dfn>Received on</dfn> Wed 26 Feb 2025 - 10:28:39 CET</span>
+</div>
+<!-- body="end" -->
+<div class="foot">
+<map id="navbarfoot" name="navbarfoot" title="Related messages">
+<ul class="links">
+<li><dfn>This message</dfn>: [ <a href="0063.html#start63">Message body</a> ]</li>
+<!-- lnext="start" -->
+<li><dfn>Next message</dfn>: <a href="0064.html" title="Next message in the list">Roberto E. Vargas Caballero: "Re: [scc-dev] [PATCH 1/3] make/posix: fix feature test macros"</a></li>
+<li><dfn>Previous message</dfn>: <a href="0062.html" title="Previous message in the list">Roberto E. Vargas Caballero: "Re: [scc-dev] [PATCH 2/3] libc/tests: add omitted headers, fix 0037-malloc's output so it passes"</a></li>
+<li><dfn>In reply to</dfn> <a href="0059.html" title="Message to which this message replies">remph: "[scc-dev] [PATCH 3/3] libc: fix wchar unicode handling"</a></li>
+<!-- lnextthread="start" -->
+<li><dfn>Next in thread</dfn>: <a href="0066.html" title="Next message in this discussion thread">lhr_at_disroot.org: "Re: [scc-dev] [PATCH 3/3] libc: fix wchar unicode handling"</a></li>
+<li><a name="replies" id="replies"></a><dfn>Reply</dfn>:  <a href="0066.html" title="Message sent in reply to this message">lhr_at_disroot.org: "Re: [scc-dev] [PATCH 3/3] libc: fix wchar unicode handling"</a></li>
+<!-- lreply="end" -->
+</ul>
+<ul class="links">
+<li><a name="options3" id="options3"></a><dfn>Contemporary messages sorted</dfn>: [ <a href="date.html#msg63" title="Contemporary messages by date">by date</a> ] [ <a href="index.html#msg63" title="Contemporary discussion threads">by thread</a> ] [ <a href="subject.html#msg63" title="Contemporary messages by subject">by subject</a> ] [ <a href="author.html#msg63" title="Contemporary messages by author">by author</a> ] [ <a href="attachment.html" title="Contemporary messages by attachment">by messages with attachments</a> ]</li>
+</ul>
+</map>
+</div>
+<!-- trailer="footer" -->
+<p><small><em>
+This archive was generated by <a href="http://www.hypermail-project.org/">hypermail 2.3.0</a>
+: Wed 26 Feb 2025 - 10:30:02 CET
+</em></small></p>
+</body>
+</html>
