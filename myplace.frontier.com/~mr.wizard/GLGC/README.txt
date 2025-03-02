@@ -1,6 +1,6 @@
 ﻿Abrasives in Micron Scale: Grand Logarithmic Grit Chart
 
-README revision 15
+README revision 16
 
 http://myplace.frontier.com/~mr.wizard/GLGC/
 
@@ -11,7 +11,7 @@ To purchase prints, or for licensing and customization contact Mr.Wizard@Frontie
 License
 ═════════════════════
 
-Copyright 2013–2024 "Mr.Wizard"
+Copyright 2013–2025 "Mr.Wizard"
 
 Please do not upload these images or files (Media) to any web site or file repository.  If you wish to share the chart you may link to [ http://myplace.frontier.com/~mr.wizard/GLGC/ ] only.  I give limited and revocable permission to hot-link the image for noncommercial use on public forums; any such use MUST include a direct and plainly visible link to this README file.
 
@@ -25,8 +25,6 @@ Acknowledgments
 User "Komitadjie" on bladeforums.com, knifeforums.com, etc. for creating the The Grand Unified Grit Chart which inspired this work.
 
 User "cbwx34" (Curtis) for an even earlier unified grit chart that inspired others.
-
-Billy at Lansky customer service for hunting down Lansky diamond plate values.
 
 Clay Allison, founder of Wicked Edge, for specific support.
 
@@ -104,7 +102,6 @@ SF          Super Fine
 UF          Ultra Fine
 cBN         cubic Boron Nitride
 Ark         Arkansas
-TPI         Teeth Per Inch
 LA          Levigated Alumina
 P           Pumice
 ≅           Congruent to
@@ -138,6 +135,18 @@ Translu.	Translucent
 	SFN         Super Fine
 	ULF         Ultra Fine (Color Prep Scuff.)
 	            Ultra Fine Gold/Copper: Clear Blend Prep Scuff, sometimes marked Extra Fine
+	            
+	DMT®
+	────
+	XX			Extra Extra Coarse
+	X			Extra Coarse
+	C			Coarse
+	F			Fine
+	E			Extra Fine
+	CER			Ceramic
+	ME			Medium Extra-fine
+	EE			Extra Extra Fine
+
 
 
 
@@ -566,6 +575,22 @@ rv.15
 	• Split Fujimi Inc. super-fines into their own section and add #40,000
 
 	• Rename Shapton to Shapton Pro, drop items not in that family, and add physical colors
+
+rv.16
+	• Update Wicked Edge® diamond to values stated 2024; Wicked Edge does not explain this change
+
+	• Update Nano Hone® colors replacing old honeycomb diamond resin with new solid surface line
+
+	• Add Nano Hone 200 micron diamond resin, 30,000 water stone, and NL-10 lapping plate
+
+	• Drop discontinued Nano Hone lapping plates and update NL-6 value
+
+	• Drop Lansky® column as values are in doubt; numbers do not agree between bench stones and guided system
+
+	• Add Norton RazorStar and VSM AK890Y Actirox Belt (replacing Teeth Per Inch in the base chart)
+
+	• Add Norton NORaX® grade X6
+
 
 
 
