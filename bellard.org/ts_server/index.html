@@ -83,6 +83,9 @@ table.sortable th:not([aria-sort]) button:hover span::after {
 <h2>News</h2>
 
 <ul>
+  <li>2025-03-08: Added Parler-TTS text-to-speech model. Added real
+  time WebSocket API for audio transcription and voice chat. Added
+  BERT embeddings.</li>
   <li>2024-09-30: Added Llama 3.2, phi3, Qwen2 and gte_qwen2 models
   support. Added embeddings endpoint. Added cpu offloading.</li>
   <li>2024-08-03: Added Llama 3.1 model support.</li>
@@ -104,12 +107,13 @@ table.sortable th:not([aria-sort]) button:hover span::after {
 <b>ts_server</b> is a web server proposing a REST API to large
 language models. They can be used for example for text completion,
 question answering, classification, chat, translation, image
-generation, ...
+generation, audio transcription, speech synthesis, ...
 <p>It has the following characteristics:
 <ul>
   <li>All is included in a single binary. Very few external dependencies (Python is not needed) so installation is easy.</li>
-  <li>Supports many Transformer variants (<a href="https://github.com/kingoflolz/mesh-transformer-jax">GPT-J</a>, <a href="https://github.com/EleutherAI/gpt-neox">GPT-NeoX</a>, <a href="https://github.com/EleutherAI/gpt-neo">GPT-Neo</a>, <a href="https://github.com/facebookresearch/metaseq">OPT</a>, <a href="https://github.com/pytorch/fairseq/tree/main/examples/moe_lm">Fairseq GPT</a>, <a href="https://arxiv.org/abs/2010.11125">M2M100</a>, <a href="https://github.com/salesforce/CodeGen">CodeGen</a>, <a href="https://github.com/openai/gpt-2">GPT2</a>, <a href="https://arxiv.org/abs/2210.11416">T5</a>, <a href="https://github.com/BlinkDL/RWKV-LM">RWKV</a>, <a href="https://github.com/facebookresearch/llama">LLAMA</a>, <a href="https://falconllm.tii.ae/">Falcon</a>, <a href="https://github.com/mosaicml/llm-foundry">MPT</a>, Llama 3.2, Mistral, Mixtral, Qwen2, Phi3, Whisper) and <a href="https://github.com/CompVis/stable-diffusion">Stable Diffusion</a>.</li>
-  <li>Integrated REST JSON API for text completion, translation, image generation and audio transcription. It is used by <a href="https://textsynth.com/documentation.html">textsynth.com</a>.</li>
+  <li>Supports many Transformer variants (<a href="https://github.com/kingoflolz/mesh-transformer-jax">GPT-J</a>, <a href="https://github.com/EleutherAI/gpt-neox">GPT-NeoX</a>, <a href="https://github.com/EleutherAI/gpt-neo">GPT-Neo</a>, <a href="https://github.com/facebookresearch/metaseq">OPT</a>, <a href="https://github.com/pytorch/fairseq/tree/main/examples/moe_lm">Fairseq GPT</a>, <a href="https://arxiv.org/abs/2010.11125">M2M100</a>, <a href="https://github.com/salesforce/CodeGen">CodeGen</a>, <a href="https://github.com/openai/gpt-2">GPT2</a>, <a href="https://arxiv.org/abs/2210.11416">T5</a>, <a href="https://github.com/BlinkDL/RWKV-LM">RWKV</a>, <a href="https://github.com/facebookresearch/llama">LLAMA</a>, <a href="https://falconllm.tii.ae/">Falcon</a>, <a href="https://github.com/mosaicml/llm-foundry">MPT</a>, Llama 3.2, Mistral, Mixtral, Qwen2, Phi3, Whisper, Parler-TTS) and <a href="https://github.com/CompVis/stable-diffusion">Stable Diffusion</a>.</li>
+  <li>Integrated REST JSON API for text completion, translation, image generation, audio transcription and speech synthesis. It is used by <a href="https://textsynth.com/documentation.html">textsynth.com</a>.</li>
+  <li>Integrated WebSocket API for real time audio transcription and voice chat (experimental).</li>
   <li>Integrated HTML GUI for testing.</li>
   <li>Very high performance for small and large batches on CPU and GPU. Support of dynamic batching to handle a large number of simultaneous requests.</li>
   <li>Efficient custom 8, 4 and 3 bit quantization. Our quantized models are thoroughly evaluated on several <a href="index.html#models">standard tasks</a> to ensure good performance.</li>
@@ -122,8 +126,7 @@ generation, ...
 </ul>
 </p>
 The free version is released as binary code for non-commercial use
-only. It has some <a href="ts_server.html">limitations</a> compared to
-the commercial version. Please contact <a href="../index.html">
+only. Please contact <a href="../index.html">
 <script>
 function f(s)
 {
@@ -134,12 +137,12 @@ function f(s)
     return a;
 }
 document.write(f("gbcsjdf!bu!cfmmbse!epu!psh"));
-</script></a> for the exact terms.
+</script></a> for commercial use.
 
 <h2>Download</h2>
                
 <ul>
-  <li>Linux version <a href="ts_server_free-2024-09-30.tar.gz">ts_server_free-2024-09-30.tar.gz</a> (<a href="Changelog">Changelog</a>).</li>
+  <li>Linux version <a href="ts_server_free-2025-03-09.tar.gz">ts_server_free-2025-03-09.tar.gz</a> (<a href="Changelog">Changelog</a>).</li>
   <li>Windows version <a href="ts_server_free-2024-09-30-win64.zip">ts_server_free-2024-09-30-win64.zip</a> (<a href="Changelog">Changelog</a>).</li>
 </ul>
 
@@ -438,7 +441,7 @@ with the TextSynth server on a single RTX A6000 GPU.
 </table>
   
 <p>
-Additional Models:
+Translation Models:
 
 <table class="sortable">
   <thead>
@@ -453,10 +456,59 @@ Additional Models:
     <tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/nllb200_1.3B_q8.bin">nllb200_1.3B_q8</a><td class="num">2.0<td>Translation between 200 languages</tr>
     <tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/nllb200_3.3B_q8.bin">nllb200_3.3B_q8</a><td class="num">4.6<td>Translation between 200 languages</tr>
     <tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/madlad400_7B_q4.bin">madlad400_7B_q4</a><td class="num">5.7<td>Translation between 400 languages</tr>
+    <tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/madlad400_3B_q4.bin">madlad400_3B_q4</a><td class="num">2.2<td>Translation between 400 languages</tr>
+  </tbody>
+</table>
+</p>
+<p>
+Embeddings Models:
+
+<table class="sortable">
+  <thead>
+    <tr>
+      <th aria-sort="ascending" style="width:15em;"><button>Model<sup>(1)(2)(3)</sup><span aria-hidden="true"></span><br></button>
+      <th class="num" style="width:7em;"><button>Size<sup>(4)</sup><span aria-hidden="true"></span><br>(GB)</button>
+      <th style="width:30em;">Description
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/gte_qwen2_1.5B_instruct_q8.bin">gte_qwen2_1.5B_instruct_q8</a><td class="num">1.9<td>Qwen2 GTE embeddings</tr>
+    <tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/bge_large_en_v1.5_q8.bin">bge_large_en_v1.5_q8</a><td class="num">0.4<td>BGE-Large EN v1.5 embeddings</tr>
+  </tbody>
+</table>
+</p>
+<p>
+Text-to-Image Models:
+
+<table class="sortable">
+  <thead>
+    <tr>
+      <th aria-sort="ascending" style="width:15em;"><button>Model<sup>(1)(2)(3)</sup><span aria-hidden="true"></span><br></button>
+      <th class="num" style="width:7em;"><button>Size<sup>(4)</sup><span aria-hidden="true"></span><br>(GB)</button>
+      <th style="width:30em;">Description
+    </tr>
+  </thead>
+  <tbody>
     <tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/sd_v1.4.bin">sd_v1.4</a><td class="num">2.1<td>Stable Diffusion text-to-image version 1.4</tr>
     <tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/sd_v2.1.bin">sd_v2.1</a><td class="num">2.6<td>Stable Diffusion text-to-image version 2.1</tr>
-    <tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/whisper_large_v3_q8.bin">whisper_large_v3_q8.bin</a><td class="num">1.8<td>Whisper large v3 speech to text transcription</tr>
-    <tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/gte_qwen2_1.5B_instruct_q8.bin">gte_qwen2_1.5B_instruct_q8.bin</a><td class="num">2.1<td>Qwen2 GTE embeddings</tr>
+  </tbody>
+</table>
+</p>
+<p>
+Audio Models:
+
+<table class="sortable">
+  <thead>
+    <tr>
+      <th aria-sort="ascending" style="width:15em;"><button>Model<sup>(1)(2)(3)</sup><span aria-hidden="true"></span><br></button>
+      <th class="num" style="width:7em;"><button>Size<sup>(4)</sup><span aria-hidden="true"></span><br>(GB)</button>
+      <th style="width:30em;">Description
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/whisper_large_v3_q8.bin">whisper_large_v3_q8</a><td class="num">1.8<td>Whisper large v3 speech-to-text transcription</tr>
+    <tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/parler_tts_large_v1_q8.bin">parler_tts_large_v1_q8</a><td class="num">1.1<td>Parler-TTS text-to-speech model</tr>
+    <tr><td><a href="https://huggingface.co/fbellard/ts_server/resolve/main/dac_mono.bin">dac_mono</a><td class="num">0.3<td>Descript Audio Codec (used with Parler-TTS)</tr>
   </tbody>
 </table>
 </p>
