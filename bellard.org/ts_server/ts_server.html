@@ -71,8 +71,7 @@ ul.no-bullet {list-style: none}
   <ul class="no-bullet">
     <li><a name="toc-Text-generation" href="ts_server.html#Text-generation">3.1.1 Text generation</a></li>
     <li><a name="toc-Translation" href="ts_server.html#Translation">3.1.2 Translation</a></li>
-    <li><a name="toc-Short-text-compression-and-decompression" href="ts_server.html#Short-text-compression-and-decompression">3.1.3 Short text compression and decompression</a></li>
-    <li><a name="toc-Perplexity-computation" href="ts_server.html#Perplexity-computation">3.1.4 Perplexity computation</a></li>
+    <li><a name="toc-Perplexity-computation" href="ts_server.html#Perplexity-computation">3.1.3 Perplexity computation</a></li>
   </ul></li>
   <li><a name="toc-Text-to-image-_0028ts_005fsd_0029" href="ts_server.html#Text-to-image-_0028ts_005fsd_0029">3.2 Text to image (<code>ts_sd</code>)</a></li>
   <li><a name="toc-Chat-_0028ts_005fchat_0029" href="ts_server.html#Chat-_0028ts_005fchat_0029">3.3 Chat (<code>ts_chat</code>)</a></li>
@@ -84,7 +83,8 @@ ul.no-bullet {list-style: none}
 <ul class="no-bullet">
   <li><a name="toc-Syntax" href="ts_server.html#Syntax">4.1 Syntax</a></li>
   <li><a name="toc-Configuration-parameters" href="ts_server.html#Configuration-parameters">4.2 Configuration parameters</a></li>
-  <li><a name="toc-JSON-endpoints" href="ts_server.html#JSON-endpoints">4.3 JSON endpoints</a></li>
+  <li><a name="toc-HTTP-JSON-endpoints" href="ts_server.html#HTTP-JSON-endpoints">4.3 HTTP JSON endpoints</a></li>
+  <li><a name="toc-WebSocket-endpoints" href="ts_server.html#WebSocket-endpoints">4.4 WebSocket endpoints</a></li>
 </ul></li>
 
 </ul>
@@ -97,16 +97,18 @@ ul.no-bullet {list-style: none}
 <p>TextSynth Server is a web server proposing a REST API to large
 language models. They can be used for example for text completion,
 question answering, classification, chat, translation, image
-generation, ...
+generation, audio transcription, speech synthesis, ...
 </p>
 <p>It has the following characteristics:
 </p>
 <ul>
 <li> All is included in a single binary. Very few external dependencies (Python is not needed) so installation is easy on Linux and Windows.
 
-</li><li> Supports many Transformer variants (GPT-J, GPT-NeoX, OPT, Fairseq GPT, M2M100, CodeGen, GPT2, T5, RWKV, Llama 2/3, Falcon, MPT, Mistral, Whisper) and Stable Diffusion.
+</li><li> Supports many Transformer variants (GPT-J, GPT-NeoX, OPT, Fairseq GPT, M2M100, CodeGen, GPT2, T5, RWKV, Llama 2/3, Falcon, MPT, Mistral, Whisper, Parler-TTS) and Stable Diffusion.
 
-</li><li> Integrated REST JSON API for text completion, translation, image generation and audio transcription.
+</li><li> Integrated REST JSON API for text completion, chat, embeddings, translation, image generation, audio transcription and speech synthesis.
+
+</li><li> Integrated WebSocket API for real time audio transcription and voice chat (experimental).
 
 </li><li> Integrated HTML GUI for testing.
 
@@ -116,7 +118,7 @@ generation, ...
 
 </li><li> Larger models work optimally on lower cost GPUs (e.g. RTX 3090, RTX A6000) thanks to efficient quantization.
 
-</li><li> Support of speculative sampling for even faster inference.
+</li><li> Support of speculative decoding for even faster inference.
 
 </li><li> Support of grammar based sampling to constraint the model output according to a BNF grammar or a JSON schema.
 
@@ -126,16 +128,8 @@ generation, ...
 </li></ul>
 
 <p>The free version is available only for non commercial use. Commercial
-organizations must buy the commercial version. The commercial version
-adds the following features:
+organizations must buy the commercial version.
 </p>
-<ul>
-<li> High performance handling of simultaneous requests.
-</li><li> Memory usage limitation.
-</li><li> Multiple models can be served at the same time.
-</li><li> SSL/TLS requests.
-</li></ul>
-
 <a name="Quick-Start"></a>
 <h2 class="chapter">2 Quick Start</h2>
 
@@ -400,18 +394,8 @@ economy passengers.&quot;
 </pre></div>
 <p>assuming you downloaded the <samp>m2m100_1_2B_q8.bin</samp> model.
 </p>
-<a name="Short-text-compression-and-decompression"></a>
-<h4 class="subsection">3.1.3 Short text compression and decompression</h4>
-
-<div class="example">
-<pre class="example">./ts_test --cuda -m gpt2_117M.bin cs &quot;Hello, how are you ?&quot;
-
-./ts_test --cuda ds &quot;##msg##&quot;
-</pre></div>
-<p>where <code>##msg##</code> is the compressed message.
-</p>
 <a name="Perplexity-computation"></a>
-<h4 class="subsection">3.1.4 Perplexity computation</h4>
+<h4 class="subsection">3.1.3 Perplexity computation</h4>
 
 <p>The perplexity over a text file can be used to evaluate models. The
 text file is first tokenized, then cut in sequences of tokens. The
@@ -653,12 +637,12 @@ following parameters are defined:
 </dd>
 <dt><code>draft_model</code></dt>
 <dd><p>Optional string. Filename of a smaller model used to accelerate inference
-  (speculative sampling). The draft model must use the same tokenizer
+  (speculative decoding). The draft model must use the same tokenizer
   as the large model.
 </p>
 </dd>
 <dt><code>sps_k_max</code></dt>
-<dd><p>Optional integer. When using speculative sampling, specify the
+<dd><p>Optional integer. When using speculative decoding, specify the
   maximum number of tokens that is predicted by the draft model. The
   optimal value needs to be determined by experimentation. It is
   usually 3 or 4.
@@ -669,6 +653,11 @@ following parameters are defined:
   CPU memory and run on the GPU. This mode is interesting when the
   model does not fit the CPU. Performance is still good for very large
   batch sizes.
+</p>
+</dd>
+<dt><code>n_ctx</code></dt>
+<dd><p>Optional integer. If present, limit the maximum context length of
+  the model.
 </p>
 </dd>
 </dl>
@@ -742,10 +731,10 @@ client when a proxy is used.
 </dd>
 </dl>
 
-<a name="JSON-endpoints"></a>
-<h3 class="section">4.3 JSON endpoints</h3>
+<a name="HTTP-JSON-endpoints"></a>
+<h3 class="section">4.3 HTTP JSON endpoints</h3>
 
-<p>The server provides the following endpoints.
+<p>The server provides the following endpoints:
 </p>
 <dl compact="compact">
 <dt><code>v1/engines/{model_id}/completions</code></dt>
@@ -921,6 +910,14 @@ following properties:
 </dl>
 
 </dd>
+<dt><code>v1/engines/{model_id}/speech</code></dt>
+<dd>
+<p>This endpoint does text to speech output. The output is a MP3 stream
+containing the generated speech. Complete documentation at
+<a href="https://textsynth.com/documentation.html">https://textsynth.com/documentation.html</a>. See
+<samp>api_examples/speech.py</samp> to have an example in Python.
+</p>
+</dd>
 <dt><code>v1/memory_stats</code></dt>
 <dd>
 <p>Return a JSON object with the memory usage statistics. The following
@@ -945,6 +942,38 @@ properties are available:
 <dt><code>v1/models</code></dt>
 <dd>
 <p>Return the list of available models and their capabilities. It is used by the GUI.
+</p>
+</dd>
+</dl>
+
+<a name="WebSocket-endpoints"></a>
+<h3 class="section">4.4 WebSocket endpoints</h3>
+
+<p>The WebSocket endpoints are experimental and may change in the next
+releases. The server provides the following WebSocket endpoints:
+</p>
+<dl compact="compact">
+<dt><code>v1/realtime_transcript</code></dt>
+<dd>
+<p>Realtime audio transcription. An audio transcription model (such as Whisper)
+must be loaded in ts_server.
+</p>
+<p>See <samp>gui/voice_chat.js</samp> for the exact protocol. The binary
+WebSocket messages contain compressed audio using the Opus codec using
+self-delimiting framing (see RFC 6716 Annex B).
+</p>
+</dd>
+<dt><code>v1/realtime_chat?model=/{model_id}</code></dt>
+<dd>
+<p>Realtime voice chat with optional voice synthesis. At least an
+audio transcription model (such as Whisper) and a chat model must be loaded
+in ts_server. For voice synthesis, Parler-TTS must be loaded
+too.
+</p>
+<p>See <samp>gui/voice_chat.js</samp> for the exact protocol. <code>model_id</code>
+is the chat model to use. The binary WebSocket messages contain
+compressed audio using the Opus codec using self-delimiting framing
+(see RFC 6716 Annex B).
 </p>
 </dd>
 </dl>
