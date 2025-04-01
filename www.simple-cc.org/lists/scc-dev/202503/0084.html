@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII" />
+<meta name="generator" content="hypermail 2.3.0, see http://www.hypermail-project.org/" />
+<title>Re: [scc-dev] [PATCH 0/3] Fix unicode handling from Roberto E. Vargas Caballero on 2025-03-11 (scc-dev)</title>
+<meta name="Author" content="Roberto E. Vargas Caballero (k0ga_at_shike2.net)" />
+<meta name="Subject" content="Re: [scc-dev] [PATCH 0/3] Fix unicode handling" />
+<meta name="Date" content="2025-03-11" />
+<style type="text/css">
+/*<![CDATA[*/
+/* To be incorporated in the main stylesheet, don't code it in hypermail! */
+body {color: black; background: #ffffff}
+dfn {font-weight: bold;}
+pre { background-color:inherit;}
+.head { border-bottom:1px solid black;}
+.foot { border-top:1px solid black;}
+th {font-style:italic;}
+table { margin-left:2em;}map ul {list-style:none;}
+#mid { font-size:0.9em;}
+#received { float:right;}
+address { font-style:inherit ;}
+/*]]>*/
+.quotelev1 {color : #990099}
+.quotelev2 {color : #ff7700}
+.quotelev3 {color : #007799}
+.quotelev4 {color : #95c500}
+.period {font-weight: bold}
+</style>
+</head>
+<body>
+<div class="head">
+<h1>Re: [scc-dev] [PATCH 0/3] Fix unicode handling</h1>
+<!-- received="Tue, 11 Mar 2025 14:39:35 +0100" -->
+<!-- isoreceived="20250311133935" -->
+<!-- sent="Tue, 11 Mar 2025 14:39:35 +0100" -->
+<!-- isosent="20250311133935" -->
+<!-- name="Roberto E. Vargas Caballero" -->
+<!-- email="k0ga_at_shike2.net" -->
+<!-- subject="Re: [scc-dev] [PATCH 0/3] Fix unicode handling" -->
+<!-- id="A0316CB1EDA725D71F321C458655A4E3_at_shike2.net" -->
+<!-- charset="US-ASCII" -->
+<!-- inreplyto="20250220193221.26322-1-lhr_at_disroot.org" -->
+<!-- expires="-1" -->
+<map id="navbar" name="navbar">
+<ul class="links">
+<li>
+<dfn>This message</dfn>:
+[ <a href="0084.html#start84" name="options1" id="options1" tabindex="1">Message body</a> ]
+ [ More options (<a href="0084.html#options2">top</a>, <a href="0084.html#options3">bottom</a>) ]
+</li>
+<li>
+<dfn>Related messages</dfn>:
+<!-- unext="start" -->
+[ <a href="0083.html" title="Roberto E. Vargas Caballero: &quot;[scc-dev] [PATCH 3/3] make/posix: Fix feature test macros&quot;">Previous message</a> ]
+[ <a href="../202502/0060.html" title="remph: &quot;[scc-dev] [PATCH 0/3] Fix unicode handling&quot;">In reply to</a> ]
+<!-- unextthread="start" -->
+<!-- ureply="end" -->
+</li>
+</ul>
+</map>
+<ul class="links">
+<li><a name="options2" id="options2"></a><dfn>Contemporary messages sorted</dfn>: [ <a href="date.html#msg84" title="Contemporary messages by date">by date</a> ] [ <a href="index.html#msg84" title="Contemporary discussion threads">by thread</a> ] [ <a href="subject.html#msg84" title="Contemporary messages by subject">by subject</a> ] [ <a href="author.html#msg84" title="Contemporary messages by author">by author</a> ] [ <a href="attachment.html" title="Contemporary messages by attachment">by messages with attachments</a> ]</li>
+</ul>
+</div>
+<!-- body="start" -->
+<div class="mail">
+<address class="headers">
+<span id="from">
+<dfn>From</dfn>: Roberto E. Vargas Caballero &lt;<a href="mailto:k0ga_at_shike2.net?Subject=Re%3A%20%5Bscc-dev%5D%20%5BPATCH%200%2F3%5D%20Fix%20unicode%20handling">k0ga_at_shike2.net</a>&gt;
+</span><br />
+<span id="date"><dfn>Date</dfn>: Tue, 11 Mar 2025 14:39:35 +0100</span><br />
+</address>
+<br />
+Quoth remph &lt;lhr_at_disroot.org&gt;:
+<br />
+<em class="quotelev1">&gt; Nice toolchain! Thanks for the software
+</em><br><em class="quotelev1">&gt; 
+</em><br><em class="quotelev1">&gt; libc wchar conversion functions (and dependents, like printf %lc and %ls)
+</em><br>&gt; had previously produced bogus output. This fixes that, plus a couple patches
+<br>
+&gt; necessary to build on glibc/Linux where I'm testing on
+<br>
+<br />I have pushed the changes with many of the modifications commented in
+<br />
+the thread, and later I have added a full rework of mbrtowc, because
+<br />
+it failed with non complete sequences.  Reading the specs I realized
+<br />
+(and I checked it with the libc from musl, freebsd and Dragonfly bsd)
+<br />
+that mbrtowc is expected to be called many times until you get a full
+<br />
+sequence.  For that reason, you have to accumulate the state in the
+<br />
+mbstate_t variable and a new, totally different algorithm was required
+<br />
+for it.
+<br />
+<br />As the complexity of testing mbrtowc() became big, I decided to split
+<br />
+the tests per function, and I pushed the tests for mbsinit and mbrtowc
+<br />
+(including mbtowc ofc), and I hope I will push the tests for wcrtomb
+<br />
+in the coming days.
+<br />
+<br />Please, take a look to the changes and let me know if I mistook in
+<br />
+something.
+<br />
+<br />Regards,
+<br />
+<br /><pre>
+--
+To unsubscribe send a mail to scc-dev+unsubscribe_at_simple-cc.org
+</pre>
+<span id="received"><dfn>Received on</dfn> Tue 11 Mar 2025 - 14:39:35 CET</span>
+</div>
+<!-- body="end" -->
+<div class="foot">
+<map id="navbarfoot" name="navbarfoot" title="Related messages">
+<ul class="links">
+<li><dfn>This message</dfn>: [ <a href="0084.html#start84">Message body</a> ]</li>
+<!-- lnext="start" -->
+<li><dfn>Previous message</dfn>: <a href="0083.html" title="Previous message in the list">Roberto E. Vargas Caballero: "[scc-dev] [PATCH 3/3] make/posix: Fix feature test macros"</a></li>
+<li><dfn>In reply to</dfn>: <a href="../202502/0060.html" title="Message to which this message replies">remph: "[scc-dev] [PATCH 0/3] Fix unicode handling"</a></li>
+<!-- lnextthread="start" -->
+<!-- lreply="end" -->
+</ul>
+<ul class="links">
+<li><a name="options3" id="options3"></a><dfn>Contemporary messages sorted</dfn>: [ <a href="date.html#msg84" title="Contemporary messages by date">by date</a> ] [ <a href="index.html#msg84" title="Contemporary discussion threads">by thread</a> ] [ <a href="subject.html#msg84" title="Contemporary messages by subject">by subject</a> ] [ <a href="author.html#msg84" title="Contemporary messages by author">by author</a> ] [ <a href="attachment.html" title="Contemporary messages by attachment">by messages with attachments</a> ]</li>
+</ul>
+</map>
+</div>
+<!-- trailer="footer" -->
+<p><small><em>
+This archive was generated by <a href="http://www.hypermail-project.org/">hypermail 2.3.0</a>
+: Tue 11 Mar 2025 - 14:40:01 CET
+</em></small></p>
+</body>
+</html>
