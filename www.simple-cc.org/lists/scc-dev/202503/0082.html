@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<meta name="generator" content="hypermail 2.3.0, see http://www.hypermail-project.org/" />
+<title>[scc-dev] [PATCH 2/3] libc/wchar: Fix unicode handling from Roberto E. Vargas Caballero on 2025-03-10 (scc-dev)</title>
+<meta name="Author" content="Roberto E. Vargas Caballero (k0ga_at_shike2.net)" />
+<meta name="Subject" content="[scc-dev] [PATCH 2/3] libc/wchar: Fix unicode handling" />
+<meta name="Date" content="2025-03-10" />
+<style type="text/css">
+/*<![CDATA[*/
+/* To be incorporated in the main stylesheet, don't code it in hypermail! */
+body {color: black; background: #ffffff}
+dfn {font-weight: bold;}
+pre { background-color:inherit;}
+.head { border-bottom:1px solid black;}
+.foot { border-top:1px solid black;}
+th {font-style:italic;}
+table { margin-left:2em;}map ul {list-style:none;}
+#mid { font-size:0.9em;}
+#received { float:right;}
+address { font-style:inherit ;}
+/*]]>*/
+.quotelev1 {color : #990099}
+.quotelev2 {color : #ff7700}
+.quotelev3 {color : #007799}
+.quotelev4 {color : #95c500}
+.period {font-weight: bold}
+</style>
+</head>
+<body>
+<div class="head">
+<h1>[scc-dev] [PATCH 2/3] libc/wchar: Fix unicode handling</h1>
+<!-- received="Mon, 10 Mar 2025 14:15:44 +0100" -->
+<!-- isoreceived="20250310131544" -->
+<!-- sent="Mon, 10 Mar 2025 14:15:44 +0100" -->
+<!-- isosent="20250310131544" -->
+<!-- name="Roberto E. Vargas Caballero" -->
+<!-- email="k0ga_at_shike2.net" -->
+<!-- subject="[scc-dev] [PATCH 2/3] libc/wchar: Fix unicode handling" -->
+<!-- id="20250310131654.73545-3-k0ga_at_shike2.net" -->
+<!-- inreplyto="20250310131654.73545-1-k0ga_at_shike2.net" -->
+<!-- expires="-1" -->
+<map id="navbar" name="navbar">
+<ul class="links">
+<li>
+<dfn>This message</dfn>:
+[ <a href="0082.html#start82" name="options1" id="options1" tabindex="1">Message body</a> ]
+ [ More options (<a href="0082.html#options2">top</a>, <a href="0082.html#options3">bottom</a>) ]
+</li>
+<li>
+<dfn>Related messages</dfn>:
+<!-- unext="start" -->
+[ <a href="0083.html" title="Roberto E. Vargas Caballero: &quot;[scc-dev] [PATCH 3/3] make/posix: Fix feature test macros&quot;">Next message</a> ]
+[ <a href="0081.html" title="Roberto E. Vargas Caballero: &quot;[scc-dev] [PATCH 1/3] libc/tests: add omitted headers&quot;">Previous message</a> ]
+[ <a href="0080.html" title="Roberto E. Vargas Caballero: &quot;[scc-dev] Fix unicode handling (v4)&quot;">In reply to</a> ]
+<!-- unextthread="start" -->
+ [ <a href="0083.html" title="Roberto E. Vargas Caballero: &quot;[scc-dev] [PATCH 3/3] make/posix: Fix feature test macros&quot;">Next in thread</a> ]
+<!-- ureply="end" -->
+</li>
+</ul>
+</map>
+<ul class="links">
+<li><a name="options2" id="options2"></a><dfn>Contemporary messages sorted</dfn>: [ <a href="date.html#msg82" title="Contemporary messages by date">by date</a> ] [ <a href="index.html#msg82" title="Contemporary discussion threads">by thread</a> ] [ <a href="subject.html#msg82" title="Contemporary messages by subject">by subject</a> ] [ <a href="author.html#msg82" title="Contemporary messages by author">by author</a> ] [ <a href="attachment.html" title="Contemporary messages by attachment">by messages with attachments</a> ]</li>
+</ul>
+</div>
+<!-- body="start" -->
+<div class="mail">
+<address class="headers">
+<span id="from">
+<dfn>From</dfn>: Roberto E. Vargas Caballero &lt;<a href="mailto:k0ga_at_shike2.net?Subject=Re%3A%20%5Bscc-dev%5D%20%5BPATCH%202%2F3%5D%20libc%2Fwchar%3A%20Fix%20unicode%20handling">k0ga_at_shike2.net</a>&gt;
+</span><br />
+<span id="date"><dfn>Date</dfn>: Mon, 10 Mar 2025 14:15:44 +0100</span><br />
+</address>
+<br />
+From: &quot;Roberto E. Vargas Caballero&quot; &lt;k0ga_at_shike2.com&gt;
+<br />
+<br />* mbrtowc: validate input, handle 4-byte UTF-8 code points, set errno
+<br />
+* wcrtomb: if a UTF-8 sequence has N bytes, the leading byte has the first
+<br />
+&nbsp;&nbsp;N bits set (with ASCII characters a special case), not the first N-1 bits
+<br />
+* _validutf8: negate condition
+<br />
+<pre>
+---
+ src/libc/wchar/_validutf8.c |  2 +-
+ src/libc/wchar/mbrtowc.c    | 26 +++++++++++++++++---------
+ src/libc/wchar/wcrtomb.c    |  9 +++++++--
+ 3 files changed, 25 insertions(+), 12 deletions(-)
+diff --git a/src/libc/wchar/_validutf8.c b/src/libc/wchar/_validutf8.c
+index 45b12fdc..c41afe26 100644
+--- a/src/libc/wchar/_validutf8.c
++++ b/src/libc/wchar/_validutf8.c
+_at_&#64; -23,7 +23,7 &#64;&#64; _validutf8(wchar_t wc, int *nbytes)
+ 	};
+ 	struct range *bp;
+ 
+-	for (bp = ranges; bp-&gt;begin &lt;= wc &amp;&amp; bp-&gt;end &gt; wc; ++bp)
++	for (bp = ranges; bp-&gt;begin &gt; wc || bp-&gt;end &lt;= wc; ++bp)
+ 		;
+ 	*nbytes = bp-&gt;nbytes;
+ 
+diff --git a/src/libc/wchar/mbrtowc.c b/src/libc/wchar/mbrtowc.c
+index 6f825f8b..cf4692f8 100644
+--- a/src/libc/wchar/mbrtowc.c
++++ b/src/libc/wchar/mbrtowc.c
+_at_&#64; -1,3 +1,5 &#64;&#64;
++#include &lt;errno.h&gt;
++#include &lt;stdlib.h&gt;
+ #include &lt;wchar.h&gt;
+ 
+ #include &quot;../libc.h&quot;
+_at_&#64; -8,37 +10,43 &#64;&#64; size_t
+ mbrtowc(wchar_t *restrict pwc, const char *restrict s, size_t n,
+         mbstate_t *restrict ps)
+ {
+-	unsigned char *t = (unsigned char *) s;
++	const unsigned char *t = (const unsigned char *) s;
+ 	unsigned long wc;
+ 	unsigned c;
+ 	int i, len, maxlen;
+ 
+-	if (s == NULL)
++	if (t == NULL)
+ 		return 0;
++	if ((wc = *t) == 0)
++		goto return_code;
+ 
+-	wc = c = *t++;
++	c = *t++;
+ 	for (len = 0; n &gt; 0 &amp;&amp; c &amp; 0x80; --n, ++len)
+ 		c &lt;&lt;= 1;
+-	if (n == 0 || len == 1 || len == 8)
+-		return -1;
++	if (n == 0 &amp;&amp; c &amp; 0x80)
++		return -2;
++	if (len == 1 || len &gt; MB_CUR_MAX)
++		goto return_error;
+ 	if (len == 0)
+ 		goto return_code;
+ 
+ 	wc = (c &amp; 0xFF) &gt;&gt; len;
+ 	for (i = 0; i &lt; len-1; i++) {
+ 		if (((c = *t++) &amp; 0xC0) != 0x80)
+-			return -1;
++			goto return_error;
+ 		wc &lt;&lt;= 6;
+ 		wc |= c &amp; 0x3F;
+ 	}
+ 
+ 	if (!_validutf8(wc, &amp;maxlen) || len != maxlen)
+-		return -1;
++		goto return_error;
+ 
+ return_code:
+ 	if (pwc)
+ 		*pwc = wc;
+-	if (*s == '\0')
+-		return 0;
+ 	return t - (unsigned char *) s;
++
++return_error:
++	errno = EILSEQ;
++	return -1;
+ }
+diff --git a/src/libc/wchar/wcrtomb.c b/src/libc/wchar/wcrtomb.c
+index b302266f..4c2a3014 100644
+--- a/src/libc/wchar/wcrtomb.c
++++ b/src/libc/wchar/wcrtomb.c
+_at_&#64; -14,13 +14,18 &#64;&#64; wcrtomb(char *restrict s, wchar_t wc, mbstate_t *restrict ps)
+ 	if (!s)
+ 		return 1;
+ 
++	if (c &lt; 0x80) {
++		*s = wc;
++		return 1;
++	}
++
+ 	if (!_validutf8(wc, &amp;n)) {
+ 		errno = EILSEQ;
+ 		return -1;
+ 	}
+-
+ 	n--;
+-	*s = 0;
++
++	*s = 0x80;
+ 	for (i = 0; i &lt; n; i++) {
+ 		*s &gt;&gt;= 1;
+ 		*s |= 0x80;
+-- 
+2.46.1
+--
+To unsubscribe send a mail to scc-dev+unsubscribe_at_simple-cc.org
+</pre>
+<span id="received"><dfn>Received on</dfn> Mon 10 Mar 2025 - 14:15:44 CET</span>
+</div>
+<!-- body="end" -->
+<div class="foot">
+<map id="navbarfoot" name="navbarfoot" title="Related messages">
+<ul class="links">
+<li><dfn>This message</dfn>: [ <a href="0082.html#start82">Message body</a> ]</li>
+<!-- lnext="start" -->
+<li><dfn>Next message</dfn>: <a href="0083.html" title="Next message in the list">Roberto E. Vargas Caballero: "[scc-dev] [PATCH 3/3] make/posix: Fix feature test macros"</a></li>
+<li><dfn>Previous message</dfn>: <a href="0081.html" title="Previous message in the list">Roberto E. Vargas Caballero: "[scc-dev] [PATCH 1/3] libc/tests: add omitted headers"</a></li>
+<li><dfn>In reply to</dfn>: <a href="0080.html" title="Message to which this message replies">Roberto E. Vargas Caballero: "[scc-dev] Fix unicode handling (v4)"</a></li>
+<!-- lnextthread="start" -->
+<li><dfn>Next in thread</dfn>: <a href="0083.html" title="Next message in this discussion thread">Roberto E. Vargas Caballero: "[scc-dev] [PATCH 3/3] make/posix: Fix feature test macros"</a></li>
+<!-- lreply="end" -->
+</ul>
+<ul class="links">
+<li><a name="options3" id="options3"></a><dfn>Contemporary messages sorted</dfn>: [ <a href="date.html#msg82" title="Contemporary messages by date">by date</a> ] [ <a href="index.html#msg82" title="Contemporary discussion threads">by thread</a> ] [ <a href="subject.html#msg82" title="Contemporary messages by subject">by subject</a> ] [ <a href="author.html#msg82" title="Contemporary messages by author">by author</a> ] [ <a href="attachment.html" title="Contemporary messages by attachment">by messages with attachments</a> ]</li>
+</ul>
+</map>
+</div>
+<!-- trailer="footer" -->
+<p><small><em>
+This archive was generated by <a href="http://www.hypermail-project.org/">hypermail 2.3.0</a>
+: Mon 10 Mar 2025 - 14:20:01 CET
+</em></small></p>
+</body>
+</html>

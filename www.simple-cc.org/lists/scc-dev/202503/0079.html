@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<meta name="generator" content="hypermail 2.3.0, see http://www.hypermail-project.org/" />
+<title>[scc-dev] [PATCH 3/3] make/posix: Fix feature test macros from Roberto E. Vargas Caballero on 2025-03-10 (scc-dev)</title>
+<meta name="Author" content="Roberto E. Vargas Caballero (k0ga_at_shike2.net)" />
+<meta name="Subject" content="[scc-dev] [PATCH 3/3] make/posix: Fix feature test macros" />
+<meta name="Date" content="2025-03-10" />
+<style type="text/css">
+/*<![CDATA[*/
+/* To be incorporated in the main stylesheet, don't code it in hypermail! */
+body {color: black; background: #ffffff}
+dfn {font-weight: bold;}
+pre { background-color:inherit;}
+.head { border-bottom:1px solid black;}
+.foot { border-top:1px solid black;}
+th {font-style:italic;}
+table { margin-left:2em;}map ul {list-style:none;}
+#mid { font-size:0.9em;}
+#received { float:right;}
+address { font-style:inherit ;}
+/*]]>*/
+.quotelev1 {color : #990099}
+.quotelev2 {color : #ff7700}
+.quotelev3 {color : #007799}
+.quotelev4 {color : #95c500}
+.period {font-weight: bold}
+</style>
+</head>
+<body>
+<div class="head">
+<h1>[scc-dev] [PATCH 3/3] make/posix: Fix feature test macros</h1>
+<!-- received="Mon, 10 Mar 2025 11:54:06 +0100" -->
+<!-- isoreceived="20250310105406" -->
+<!-- sent="Mon, 10 Mar 2025 11:54:06 +0100" -->
+<!-- isosent="20250310105406" -->
+<!-- name="Roberto E. Vargas Caballero" -->
+<!-- email="k0ga_at_shike2.net" -->
+<!-- subject="[scc-dev] [PATCH 3/3] make/posix: Fix feature test macros" -->
+<!-- id="20250310105501.85746-4-k0ga_at_shike2.net" -->
+<!-- inreplyto="20250310105501.85746-1-k0ga_at_shike2.net" -->
+<!-- expires="-1" -->
+<map id="navbar" name="navbar">
+<ul class="links">
+<li>
+<dfn>This message</dfn>:
+[ <a href="0079.html#start79" name="options1" id="options1" tabindex="1">Message body</a> ]
+ [ More options (<a href="0079.html#options2">top</a>, <a href="0079.html#options3">bottom</a>) ]
+</li>
+<li>
+<dfn>Related messages</dfn>:
+<!-- unext="start" -->
+[ <a href="0080.html" title="Roberto E. Vargas Caballero: &quot;[scc-dev] Fix unicode handling (v4)&quot;">Next message</a> ]
+[ <a href="0078.html" title="Roberto E. Vargas Caballero: &quot;[scc-dev] [PATCH 2/3] libc/wchar: Fix unicode handling&quot;">Previous message</a> ]
+[ <a href="0076.html" title="Roberto E. Vargas Caballero: &quot;[scc-dev] Fix unicode handling (v3)&quot;">In reply to</a> ]
+[ <a href="0075.html" title="Message to which this message replies: &quot;Roberto E. Vargas Caballero&quot;">[scc-dev] [PATCH 3/3] make/posix: Fix feature test macros</a> ]
+<!-- unextthread="start" -->
+<!-- ureply="end" -->
+</li>
+</ul>
+</map>
+<ul class="links">
+<li><a name="options2" id="options2"></a><dfn>Contemporary messages sorted</dfn>: [ <a href="date.html#msg79" title="Contemporary messages by date">by date</a> ] [ <a href="index.html#msg79" title="Contemporary discussion threads">by thread</a> ] [ <a href="subject.html#msg79" title="Contemporary messages by subject">by subject</a> ] [ <a href="author.html#msg79" title="Contemporary messages by author">by author</a> ] [ <a href="attachment.html" title="Contemporary messages by attachment">by messages with attachments</a> ]</li>
+</ul>
+</div>
+<!-- body="start" -->
+<div class="mail">
+<address class="headers">
+<span id="from">
+<dfn>From</dfn>: Roberto E. Vargas Caballero &lt;<a href="mailto:k0ga_at_shike2.net?Subject=Re%3A%20%5Bscc-dev%5D%20%5BPATCH%203%2F3%5D%20make%2Fposix%3A%20Fix%20feature%20test%20macros">k0ga_at_shike2.net</a>&gt;
+</span><br />
+<span id="date"><dfn>Date</dfn>: Mon, 10 Mar 2025 11:54:06 +0100</span><br />
+</address>
+<br />
+From: remph &lt;lhr_at_disroot.org&gt;
+<br />
+<br /><a href="0075.html#0079qlink1">_POSIX_C_SOURCE must be defined with a value that signals what
+</a><br>
+version of POSIX has to be exposed, and just defining it without
+<br />
+any value is equivalent to define it with 0 that is not a valid
+<br />
+version number.
+<br />
+<br />In the same way, posix.c was using S_IFDIR that is XSI, and
+<br />
+to increase the portability it was changed to S_ISDIR that
+<br />
+is defined in the base specification.
+<br />
+<pre>
+---
+ src/cmd/scc-make/posix.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+diff --git a/src/cmd/scc-make/posix.c b/src/cmd/scc-make/posix.c
+index 1b966f17..e9b94842 100644
+--- a/src/cmd/scc-make/posix.c
++++ b/src/cmd/scc-make/posix.c
+_at_&#64; -1,4 +1,5 &#64;&#64;
+-#define _POSIX_C_SOURCE
++#undef _POSIX_C_SOURCE
++#define _POSIX_C_SOURCE 200809L
+ 
+ #include &lt;signal.h&gt;
+ #include &lt;sys/stat.h&gt;
+_at_&#64; -18,7 +19,7 &#64;&#64; is_dir(char *fname)
+ 
+ 	if (stat(fname, &amp;st) &lt; 0)
+ 		return 0;
+-	return (st.st_mode &amp; S_IFMT) == S_IFDIR;
++	return S_ISDIR(st.st_mode);
+ }
+ 
+ void
+-- 
+2.46.1
+--
+To unsubscribe send a mail to scc-dev+unsubscribe_at_simple-cc.org
+</pre>
+<span id="received"><dfn>Received on</dfn> Mon 10 Mar 2025 - 11:54:06 CET</span>
+</div>
+<!-- body="end" -->
+<div class="foot">
+<map id="navbarfoot" name="navbarfoot" title="Related messages">
+<ul class="links">
+<li><dfn>This message</dfn>: [ <a href="0079.html#start79">Message body</a> ]</li>
+<!-- lnext="start" -->
+<li><dfn>Next message</dfn>: <a href="0080.html" title="Next message in the list">Roberto E. Vargas Caballero: "[scc-dev] Fix unicode handling (v4)"</a></li>
+<li><dfn>Previous message</dfn>: <a href="0078.html" title="Previous message in the list">Roberto E. Vargas Caballero: "[scc-dev] [PATCH 2/3] libc/wchar: Fix unicode handling"</a></li>
+<li><dfn>In reply to</dfn>: <a href="0076.html" title="Message to which this message replies">Roberto E. Vargas Caballero: "[scc-dev] Fix unicode handling (v3)"</a></li>
+<li><dfn>In reply to</dfn> <a href="0075.html" title="Message to which this message replies">Roberto E. Vargas Caballero: "[scc-dev] [PATCH 3/3] make/posix: Fix feature test macros"</a></li>
+<!-- lnextthread="start" -->
+<!-- lreply="end" -->
+</ul>
+<ul class="links">
+<li><a name="options3" id="options3"></a><dfn>Contemporary messages sorted</dfn>: [ <a href="date.html#msg79" title="Contemporary messages by date">by date</a> ] [ <a href="index.html#msg79" title="Contemporary discussion threads">by thread</a> ] [ <a href="subject.html#msg79" title="Contemporary messages by subject">by subject</a> ] [ <a href="author.html#msg79" title="Contemporary messages by author">by author</a> ] [ <a href="attachment.html" title="Contemporary messages by attachment">by messages with attachments</a> ]</li>
+</ul>
+</map>
+</div>
+<!-- trailer="footer" -->
+<p><small><em>
+This archive was generated by <a href="http://www.hypermail-project.org/">hypermail 2.3.0</a>
+: Mon 10 Mar 2025 - 12:00:02 CET
+</em></small></p>
+</body>
+</html>
