@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=us-ascii" />
+<meta name="generator" content="hypermail 2.3.0, see http://www.hypermail-project.org/" />
+<title>Re: [scc-dev] [PATCH 0/3] Fix unicode handling from lhr_at_disroot.org on 2025-04-09 (scc-dev)</title>
+<meta name="Author" content="lhr_at_disroot.org (lhr_at_disroot.org)" />
+<meta name="Subject" content="Re: [scc-dev] [PATCH 0/3] Fix unicode handling" />
+<meta name="Date" content="2025-04-09" />
+<style type="text/css">
+/*<![CDATA[*/
+/* To be incorporated in the main stylesheet, don't code it in hypermail! */
+body {color: black; background: #ffffff}
+dfn {font-weight: bold;}
+pre { background-color:inherit;}
+.head { border-bottom:1px solid black;}
+.foot { border-top:1px solid black;}
+th {font-style:italic;}
+table { margin-left:2em;}map ul {list-style:none;}
+#mid { font-size:0.9em;}
+#received { float:right;}
+address { font-style:inherit ;}
+/*]]>*/
+.quotelev1 {color : #990099}
+.quotelev2 {color : #ff7700}
+.quotelev3 {color : #007799}
+.quotelev4 {color : #95c500}
+.period {font-weight: bold}
+</style>
+</head>
+<body>
+<div class="head">
+<h1>Re: [scc-dev] [PATCH 0/3] Fix unicode handling</h1>
+<!-- received="Wed, 9 Apr 2025 16:10:00 +0100" -->
+<!-- isoreceived="20250409151000" -->
+<!-- sent="Wed, 9 Apr 2025 16:10:00 +0100" -->
+<!-- isosent="20250409151000" -->
+<!-- name="lhr_at_disroot.org" -->
+<!-- email="lhr_at_disroot.org" -->
+<!-- subject="Re: [scc-dev] [PATCH 0/3] Fix unicode handling" -->
+<!-- id="Z_aNyNI41JQJ9AsG_at_pinebook" -->
+<!-- charset="us-ascii" -->
+<!-- inreplyto="A0316CB1EDA725D71F321C458655A4E3_at_shike2.net" -->
+<!-- expires="-1" -->
+<map id="navbar" name="navbar">
+<ul class="links">
+<li>
+<dfn>This message</dfn>:
+[ <a href="0087.html#start87" name="options1" id="options1" tabindex="1">Message body</a> ]
+ [ More options (<a href="0087.html#options2">top</a>, <a href="0087.html#options3">bottom</a>) ]
+</li>
+<li>
+<dfn>Related messages</dfn>:
+<!-- unext="start" -->
+[ <a href="0088.html" title="remph: &quot;[scc-dev] [PATCH] Fix double free in swtch.c&quot;">Next message</a> ]
+[ <a href="0086.html" title="Roberto E. Vargas Caballero: &quot;Re: [scc-dev] libc/openbsd: fix int_fast64_t definition&quot;">Previous message</a> ]
+[ <a href="../202503/0084.html" title="Roberto E. Vargas Caballero: &quot;Re: [scc-dev] [PATCH 0/3] Fix unicode handling&quot;">In reply to</a> ]
+[ <a href="../202503/0084.html" title="Message to which this message replies: &quot;Roberto E. Vargas Caballero&quot;">Re: [scc-dev] [PATCH 0/3] Fix unicode handling</a> ]
+<!-- unextthread="start" -->
+ [ <a href="0089.html" title="Roberto E. Vargas Caballero: &quot;Re: [scc-dev] [PATCH 0/3] Fix unicode handling&quot;">Next in thread</a> ]
+ [ <a href="0087.html#replies">Replies</a> ]
+<!-- ureply="end" -->
+</li>
+</ul>
+</map>
+<ul class="links">
+<li><a name="options2" id="options2"></a><dfn>Contemporary messages sorted</dfn>: [ <a href="date.html#msg87" title="Contemporary messages by date">by date</a> ] [ <a href="index.html#msg87" title="Contemporary discussion threads">by thread</a> ] [ <a href="subject.html#msg87" title="Contemporary messages by subject">by subject</a> ] [ <a href="author.html#msg87" title="Contemporary messages by author">by author</a> ] [ <a href="attachment.html" title="Contemporary messages by attachment">by messages with attachments</a> ]</li>
+</ul>
+</div>
+<!-- body="start" -->
+<div class="mail">
+<address class="headers">
+<span id="from">
+<dfn>From</dfn>: &lt;<a href="mailto:lhr_at_disroot.org?Subject=Re%3A%20%5Bscc-dev%5D%20%5BPATCH%200%2F3%5D%20Fix%20unicode%20handling">lhr_at_disroot.org</a>&gt;
+</span><br />
+<span id="date"><dfn>Date</dfn>: Wed, 9 Apr 2025 16:10:00 +0100</span><br />
+</address>
+<br />
+<a name="0089qlink1">Sorry for my sudden absence, was busy IRL
+</a><br />
+<br /><a href="../202503/0084.html#0087qlink1">&gt; Reading the specs I realized (and I checked it with the libc from musl,
+</a><br>
+<em class="quotelev1">&gt; freebsd and Dragonfly bsd) that mbrtowc is expected to be called many
+</em><br><em class="quotelev1">&gt; times until you get a full sequence.
+</em><br><br />You're right -- what do you know, I've been using it wrong all this time.  I
+<br />
+did wonder what mbstate_t was for in a stateless encoding, I just thought it
+<br />
+for any libc that wants to handle Shift-JIS.
+<br />
+<a name="0089qlink2"><br />The new wchar all works well for me, but the libc tests fail because GCC complains
+<br />
+that &quot;&quot; is char* which is incompatible with wchar_t*.  The patch below makes the
+</a><br />
+<a name="0089qlink3">tests work with GCC (and corrects an include). Is using L&quot;&quot; literals alright? scc-cc
+<br />
+itself doesn't like them, but they are used elsewhere in the libc tests
+</a><br />
+<br /><pre>
+---
+diff --git a/tests/libc/execute/0044-wcslen.c b/tests/libc/execute/0044-wcslen.c
+index 2c4b9c23..d9b2564f 100644
+--- a/tests/libc/execute/0044-wcslen.c
++++ b/tests/libc/execute/0044-wcslen.c
+_at_&#64; -1,6 +1,6 &#64;&#64;
+ #include &lt;assert.h&gt;
+ #include &lt;stdio.h&gt;
+-#include &lt;stdlib.h&gt;
++#include &lt;wchar.h&gt;
+ 
+ /*
+ output:
+diff --git a/tests/libc/execute/0048-wcscpy.c b/tests/libc/execute/0048-wcscpy.c
+index 8194b0a1..98289a39 100644
+--- a/tests/libc/execute/0048-wcscpy.c
++++ b/tests/libc/execute/0048-wcscpy.c
+_at_&#64; -21,9 +21,9 &#64;&#64; main()
+ 	assert(s == buf);
+ 	assert(!wcscmp(s, test));
+ 
+-	s = wcscpy(buf, &quot;&quot;);
++	s = wcscpy(buf, L&quot;&quot;);
+ 	assert(s == buf);
+-	assert(!wcscmp(s, &quot;&quot;));
++	assert(!wcscmp(s, L&quot;&quot;));
+ 
+ 	puts(&quot;done&quot;);
+ 
+diff --git a/tests/libc/execute/0057-wcschr.c b/tests/libc/execute/0057-wcschr.c
+index d26cc032..862fd6ae 100644
+--- a/tests/libc/execute/0057-wcschr.c
++++ b/tests/libc/execute/0057-wcschr.c
+_at_&#64; -35,7 +35,7 &#64;&#64; main()
+ 	p = wcschr(buf, 'h');
+ 	assert(p == NULL);
+ 
+-	p = wcschr(&quot;&quot;, 'a');
++	p = wcschr(L&quot;&quot;, 'a');
+ 	assert(p == NULL);
+ 
+ 	puts(&quot;done&quot;);
+diff --git a/tests/libc/execute/0058-wcsrchr.c b/tests/libc/execute/0058-wcsrchr.c
+index b67db7d1..cfb5f8ab 100644
+--- a/tests/libc/execute/0058-wcsrchr.c
++++ b/tests/libc/execute/0058-wcsrchr.c
+_at_&#64; -18,7 +18,7 &#64;&#64; main()
+ 	assert(wcsrchr(buf, '1') == buf+5);
+ 	assert(wcsrchr(buf, '0') == buf);
+ 	assert(wcsrchr(buf, '3') == buf+3);
+-	assert(wcsrchr(&quot;&quot;,  '0') == NULL);
++	assert(wcsrchr(L&quot;&quot;,  '0') == NULL);
+ 	assert(wcsrchr(buf, 'a')  == NULL);
+ 	assert(wcsrchr(buf, 0) == buf+6);
+ 	puts(&quot;done&quot;);
+-- 
+2.48.1
+--
+To unsubscribe send a mail to scc-dev+unsubscribe_at_simple-cc.org
+</pre>
+<span id="received"><dfn>Received on</dfn> Wed 09 Apr 2025 - 17:10:00 CEST</span>
+</div>
+<!-- body="end" -->
+<div class="foot">
+<map id="navbarfoot" name="navbarfoot" title="Related messages">
+<ul class="links">
+<li><dfn>This message</dfn>: [ <a href="0087.html#start87">Message body</a> ]</li>
+<!-- lnext="start" -->
+<li><dfn>Next message</dfn>: <a href="0088.html" title="Next message in the list">remph: "[scc-dev] [PATCH] Fix double free in swtch.c"</a></li>
+<li><dfn>Previous message</dfn>: <a href="0086.html" title="Previous message in the list">Roberto E. Vargas Caballero: "Re: [scc-dev] libc/openbsd: fix int_fast64_t definition"</a></li>
+<li><dfn>In reply to</dfn>: <a href="../202503/0084.html" title="Message to which this message replies">Roberto E. Vargas Caballero: "Re: [scc-dev] [PATCH 0/3] Fix unicode handling"</a></li>
+<li><dfn>In reply to</dfn> <a href="../202503/0084.html" title="Message to which this message replies">Roberto E. Vargas Caballero: "Re: [scc-dev] [PATCH 0/3] Fix unicode handling"</a></li>
+<!-- lnextthread="start" -->
+<li><dfn>Next in thread</dfn>: <a href="0089.html" title="Next message in this discussion thread">Roberto E. Vargas Caballero: "Re: [scc-dev] [PATCH 0/3] Fix unicode handling"</a></li>
+<li><a name="replies" id="replies"></a><dfn>Reply</dfn>:  <a href="0089.html" title="Message sent in reply to this message">Roberto E. Vargas Caballero: "Re: [scc-dev] [PATCH 0/3] Fix unicode handling"</a></li>
+<!-- lreply="end" -->
+</ul>
+<ul class="links">
+<li><a name="options3" id="options3"></a><dfn>Contemporary messages sorted</dfn>: [ <a href="date.html#msg87" title="Contemporary messages by date">by date</a> ] [ <a href="index.html#msg87" title="Contemporary discussion threads">by thread</a> ] [ <a href="subject.html#msg87" title="Contemporary messages by subject">by subject</a> ] [ <a href="author.html#msg87" title="Contemporary messages by author">by author</a> ] [ <a href="attachment.html" title="Contemporary messages by attachment">by messages with attachments</a> ]</li>
+</ul>
+</map>
+</div>
+<!-- trailer="footer" -->
+<p><small><em>
+This archive was generated by <a href="http://www.hypermail-project.org/">hypermail 2.3.0</a>
+: Wed 09 Apr 2025 - 17:20:01 CEST
+</em></small></p>
+</body>
+</html>
