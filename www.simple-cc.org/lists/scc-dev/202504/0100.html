@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=us-ascii" />
+<meta name="generator" content="hypermail 2.3.0, see http://www.hypermail-project.org/" />
+<title>Re: [scc-dev] Struct initialization with compatible type from Roberto E. Vargas Caballero on 2025-04-28 (scc-dev)</title>
+<meta name="Author" content="Roberto E. Vargas Caballero (k0ga_at_shike2.net)" />
+<meta name="Subject" content="Re: [scc-dev] Struct initialization with compatible type" />
+<meta name="Date" content="2025-04-28" />
+<style type="text/css">
+/*<![CDATA[*/
+/* To be incorporated in the main stylesheet, don't code it in hypermail! */
+body {color: black; background: #ffffff}
+dfn {font-weight: bold;}
+pre { background-color:inherit;}
+.head { border-bottom:1px solid black;}
+.foot { border-top:1px solid black;}
+th {font-style:italic;}
+table { margin-left:2em;}map ul {list-style:none;}
+#mid { font-size:0.9em;}
+#received { float:right;}
+address { font-style:inherit ;}
+/*]]>*/
+.quotelev1 {color : #990099}
+.quotelev2 {color : #ff7700}
+.quotelev3 {color : #007799}
+.quotelev4 {color : #95c500}
+.period {font-weight: bold}
+</style>
+</head>
+<body>
+<div class="head">
+<h1>Re: [scc-dev] Struct initialization with compatible type</h1>
+<!-- received="Mon, 28 Apr 2025 11:06:06 +0200" -->
+<!-- isoreceived="20250428090606" -->
+<!-- sent="Mon, 28 Apr 2025 11:06:06 +0200" -->
+<!-- isosent="20250428090606" -->
+<!-- name="Roberto E. Vargas Caballero" -->
+<!-- email="k0ga_at_shike2.net" -->
+<!-- subject="Re: [scc-dev] Struct initialization with compatible type" -->
+<!-- id="aA9E_nIQi8Iw-UZ1_at_simple-cc.org" -->
+<!-- charset="us-ascii" -->
+<!-- inreplyto="3b54ab60-7567-460e-a88b-f86b69db773f_at_disroot.org" -->
+<!-- expires="-1" -->
+<map id="navbar" name="navbar">
+<ul class="links">
+<li>
+<dfn>This message</dfn>:
+[ <a href="0100.html#start100" name="options1" id="options1" tabindex="1">Message body</a> ]
+ [ More options (<a href="0100.html#options2">top</a>, <a href="0100.html#options3">bottom</a>) ]
+</li>
+<li>
+<dfn>Related messages</dfn>:
+<!-- unext="start" -->
+[ <a href="0099.html" title="Roberto E. Vargas Caballero: &quot;Re: [scc-dev] Struct initialization with union&quot;">Previous message</a> ]
+[ <a href="0097.html" title="Xavier Del Campo Romero: &quot;Struct initialization with compatible type&quot;">In reply to</a> ]
+[ <a href="0097.html" title="Message to which this message replies: &quot;Xavier Del Campo Romero&quot;">Struct initialization with compatible type</a> ]
+<!-- unextthread="start" -->
+<!-- ureply="end" -->
+</li>
+</ul>
+</map>
+<ul class="links">
+<li><a name="options2" id="options2"></a><dfn>Contemporary messages sorted</dfn>: [ <a href="date.html#msg100" title="Contemporary messages by date">by date</a> ] [ <a href="index.html#msg100" title="Contemporary discussion threads">by thread</a> ] [ <a href="subject.html#msg100" title="Contemporary messages by subject">by subject</a> ] [ <a href="author.html#msg100" title="Contemporary messages by author">by author</a> ] [ <a href="attachment.html" title="Contemporary messages by attachment">by messages with attachments</a> ]</li>
+</ul>
+</div>
+<!-- body="start" -->
+<div class="mail">
+<address class="headers">
+<span id="from">
+<dfn>From</dfn>: Roberto E. Vargas Caballero &lt;<a href="mailto:k0ga_at_shike2.net?Subject=Re%3A%20%5Bscc-dev%5D%20Struct%20initialization%20with%20compatible%20type">k0ga_at_shike2.net</a>&gt;
+</span><br />
+<span id="date"><dfn>Date</dfn>: Mon, 28 Apr 2025 11:06:06 +0200</span><br />
+</address>
+<br />
+Hi,
+<br />
+<br />On Thu, Apr 24, 2025 at 11:49:01PM +0200, Xavier Del Campo Romero wrote:
+<br />
+<em class="quotelev1">&gt; Hi,
+</em><br><em class="quotelev1">&gt; 
+</em><br><a href="0097.html#0100qlink1">&gt; scc (commit d0ec99aa) fails to compile the following minimalistic example:
+</a><br>
+<em class="quotelev1">&gt; 
+</em><br><em class="quotelev1">&gt; $ cat struct.c
+</em><br><em class="quotelev1">&gt; struct a {
+</em><br><em class="quotelev1">&gt;     int a;
+</em><br><em class="quotelev1">&gt; };
+</em><br><em class="quotelev1">&gt; 
+</em><br><em class="quotelev1">&gt; int main()
+</em><br><em class="quotelev1">&gt; {
+</em><br><em class="quotelev1">&gt;     struct a a;
+</em><br><em class="quotelev1">&gt;     struct a aa = a;
+</em><br><em class="quotelev1">&gt; 
+</em><br><em class="quotelev1">&gt;     return 0;
+</em><br><em class="quotelev1">&gt; }
+</em><br><em class="quotelev1">&gt; $ scc struct.c
+</em><br><em class="quotelev1">&gt; struct.c:8: error: incorrect initializer
+</em><br><br />This test case was hitting a few problems in the initializer code. First, the
+<br />
+grammar allows things that are disallow using semantic rules, and it was not
+<br />
+done correctly. I added a flag in initialize to know if we come from an initializer
+<br />
+list or from a normal initializer (a bit hacky from my point of view). The
+<br />
+second problem came from the assumption in the code that a struct could be initialized
+<br />
+only with an initilizer list, but in fact it can be initialized with any expression
+<br />
+of the same type.
+<br />
+<br />I pushed the changes to fix both problems.
+<br />
+<br />Kind Regards,
+<br />
+Roberto Vargas
+<br />
+<pre>
+--
+To unsubscribe send a mail to scc-dev+unsubscribe_at_simple-cc.org
+</pre>
+<span id="received"><dfn>Received on</dfn> Mon 28 Apr 2025 - 11:06:06 CEST</span>
+</div>
+<!-- body="end" -->
+<div class="foot">
+<map id="navbarfoot" name="navbarfoot" title="Related messages">
+<ul class="links">
+<li><dfn>This message</dfn>: [ <a href="0100.html#start100">Message body</a> ]</li>
+<!-- lnext="start" -->
+<li><dfn>Previous message</dfn>: <a href="0099.html" title="Previous message in the list">Roberto E. Vargas Caballero: "Re: [scc-dev] Struct initialization with union"</a></li>
+<li><dfn>In reply to</dfn> <a href="0097.html" title="Message to which this message replies">Xavier Del Campo Romero: "Struct initialization with compatible type"</a></li>
+<!-- lnextthread="start" -->
+<!-- lreply="end" -->
+</ul>
+<ul class="links">
+<li><a name="options3" id="options3"></a><dfn>Contemporary messages sorted</dfn>: [ <a href="date.html#msg100" title="Contemporary messages by date">by date</a> ] [ <a href="index.html#msg100" title="Contemporary discussion threads">by thread</a> ] [ <a href="subject.html#msg100" title="Contemporary messages by subject">by subject</a> ] [ <a href="author.html#msg100" title="Contemporary messages by author">by author</a> ] [ <a href="attachment.html" title="Contemporary messages by attachment">by messages with attachments</a> ]</li>
+</ul>
+</map>
+</div>
+<!-- trailer="footer" -->
+<p><small><em>
+This archive was generated by <a href="http://www.hypermail-project.org/">hypermail 2.3.0</a>
+: Mon 28 Apr 2025 - 11:10:01 CEST
+</em></small></p>
+</body>
+</html>
