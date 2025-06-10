@@ -12,15 +12,18 @@
     <nav class="layout-viewport layout-flex-row">
       <h2>SCC toolchain</h2>
       <span class="layout-flex-item-fullsize"><!-- spacer --></span>
-      <a href="index.html">Home</a>
-      <a href="code.html">Code</a>
-      <a href="community.html">Community</a>
-      <a href="logo.html">Logo</a>
+<!--
+      <a href="/index.html">Home</a>
+      <a href="/code.html">Code</a>
+      <a href="/community.html">Community</a>
+      <a href="/logo.html">Logo</a>
+-->
     </nav>
   </header>
   <main class="layout-flex-item-fullsize layout-flex-column">
     <div class="layout-viewport layout-flex-item-fullsize layout-flex-column">
       <table>
+        <tr>
         <td>
           <img class="hero-image" src="scc.png"/>
         </td>
@@ -43,50 +46,100 @@
               equivalent to classical <em>UNIX</em>
               cc, cpp, make, as, ld, ar, nm, ranlib, size and strip,
               and <em>GNU</em> objdump and objcopy.
-              Not all of them have the same madurity level,
+              Not all of them have the same maturity level,
               and some of them are currently just a draft.
               <strong>SCC</strong> also provides a pure C99 libc
               designed to be simple and easily portable.
-        </td>
-      </table>
-<!--
-
-            <p>
-              <strong>SCC</strong> tries to keep full
-              powered system through the use of
-              <a href="//c9x.me/compile">QBE</a>
-              for code generation, the use of
-              <a href="//musl.libc.org">musl</a>
-              libc in the case of Linux, and the native
-              <a href="//openbsd.org">OpenBSD</a>
-              or <a href="//netbsd.org">NetBSD</a> libcs (maybe other
-              libc work too but it is not tested).
-              It can also be used with low powered or legacy system
-              (like for example z80),
-              and that is the reason why
-              it incorporates a portable C99 libc.
             </p>
-
+        </td>
+        </tr>
+      </table>
+      <p>
+        The internal libc is used for bare metal systems
+        (an example of this use case can be found in
+        <a href="https://trustedfirmware-a.readthedocs.io/en/latest/license.html#other-projects">Arm Trusted Firmware</a>)
+        or for systems that lack a system libc
+        (like for example in the case of z80).
+        Retargeting the libc requires implementing less than 10 primivites
+        (usually syscalls).
+        <strong>SCC</strong> can be used with the system libc,
+        providing full POSIX compability
+        in Linux using <a href="https://musl.libc.org/">musl</a>,
+        and the native <a href="https://openbsd.org/">OpenBSD</a>
+        and <a href="https://netbsd.org/">NetBSD</a> libcs.
+      </p>
+      <h3>Get started</h3>
         <p>
-          For pure C99 code that does not depend of any feature
-          defined by
-          <a href="//pubs.opengroup.org/onlinepubs/9799919799/">POSIX</a>
-          you can use the <strong>SCC</strong> libc, that
-          only implements the C99 libc specification, including
-          the semantic (for example it considers a non threaded
-          environment).
-          This libc is suitable for baremetal systems
-          because it has a minimun and delimited set of system dependencies
-          (an example of this use case can be found in
-          <a href="https://trustedfirmware-a.readthedocs.io/en/latest/license.html#other-projects">Arm Trusted Firmware</a>).
+          Browse the <a href="https://git.simple-cc.org/scc">source</a>
+          and clone it at <a
+          href="git://git.simple-cc.org/scc">git://git.simple-cc.org/scc</a>.
+          Compiling the project is as simple like:
         </p>
--->
+    <pre><code>$ make PREFIX=$HOME config
+$ make
+$ make install</code></pre>
+        <br>
+        <p>
+          If the <em>PREFIX</em> macro is not specified in the
+          config step then it will point to <code>/usr/local</code>
+          by default. For more information about how to build SCC,
+          you can look at the
+          <a href="https://git.simple-cc.org/scc/file/README.html">README</a> file.
+        </p>
+        <p>
+	        Some configurations of <strong>SCC</strong> require having the
+	        <a href=https://c9x.me/compile>QBE</a>
+	        executable in the PATH,
+	        whose version must support common storage
+	        which was incorporated after the commit 8ded7a5,
+	        but it is not part of a stable release of
+	        <a href=https://c9x.me/compile>QBE</a>
+	        yet.
+        </p>
+      <h3>Community</h3>
+        <ul>
+          <li> For general discussion and patches submission
+               subscribe to the <a
+               href="mailto:scc-dev+subscribe@simple-cc.org">scc-dev</a>
+               mailing list and browse it <a
+               href="lists/scc-dev/index.html">online</a>.
+          </li>
+          <li> Come talk to us on <code>irc.libera.chat</code> in
+               the <code>#scc</code> channel.
+          </li>
+          <li> If you are interersting in <a href="https://c9x.me/compile">QBE</a>,
+               or compilers in general, you can join and chat on
+               <code>irc.eigenstate.org</code> in the <code>#myrddin</code>
+               channel.
+          </li>
+        </ul>
+      <h3>SCC logo</h3>
+        <p>
+          The <strong>SCC</strong> logo is inspired from
+          <em>The Ingenious Gentleman Don Quixote of La Mancha</em>,
+          more precisely in the Quixote's attack on some windmills
+          which he believes to be ferocious giants. Quoting the
+          <a href="https://en.wikipedia.org/wiki/Quixotism">Wikipedia</a>:
+        </p>
+        <quote>
+          Quixotism is impracticality in pursuit of ideals, especially
+          those ideals manifested by rash, lofty and romantic ideas or
+          extravagantly chivalrous action.
+          Quixotism is usually related to "over-idealism", meaning an
+          idealism that doesn't take consequence or absurdity into account.
+          It is also related to naive romanticism and to utopianism
+        </quote>
+        <br>
+        <p>
+          These paragraphs reasonably illustrate the spirit of the
+          <strong>SCC</strong> project.
+        </p>
     </div>
   </main>
   <footer>
     <p class="layout-viewport text-center">
       See the
-      <a href="http://git.simple-cc.org/scc/file/LICENSE.html">LICENSE</a>
+      <a href="https://git.simple-cc.org/scc/file/LICENSE.html">LICENSE</a>
       for copyright info.
     </p>
   </footer>
