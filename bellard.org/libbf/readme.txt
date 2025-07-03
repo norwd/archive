@@ -12,8 +12,8 @@ have a near linear running time.
 The BFCalc example is a calculator application with a Javascript like
 syntax. It supports arbitrarily large integers, decimal and binary
 arbitrary precision floating point numbers, multi-dimensional arrays
-(matrices and tensors), polynomials, series, unit conversion. Some
-help is available at http://numcalc.com/old/ .
+(matrices and tensors), polynomials, series, plot, unit
+conversion. The help is available at http://numcalc.com .
 
 The BFPI example computes billions of digits of Pi using the
 Chudnovsky formula.
