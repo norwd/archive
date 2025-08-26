@@ -1,0 +1,168 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>software that sucks less | suckless.org software that sucks less</title>
+	<link rel="stylesheet" type="text/css" href="../pub/style.css"/>
+</head>
+
+<div id="header">
+	<a href="../index.html"><img src="../logo.svg" alt=""/></a>&nbsp;
+	<a id="headerLink" href="../index.html">suckless.org</a>
+	<span class="hidden"> - </span>
+	<span id="headerSubtitle">software that sucks less</span>
+</div>
+<hr class="hidden"/>
+<div id="menu">
+	<a href="../index.html"><b>home</b></a>
+	<a href="https://dwm.suckless.org/">dwm</a>
+	<a href="https://st.suckless.org/">st</a>
+	<a href="https://core.suckless.org/">core</a>
+	<a href="https://surf.suckless.org/">surf</a>
+	<a href="https://tools.suckless.org/">tools</a>
+	<a href="https://libs.suckless.org/">libs</a>
+	<a href="https://ev.suckless.org/">e.V.</a>
+	<span class="right">
+		<a href="https://dl.suckless.org/">download</a>
+		<a href="https://git.suckless.org/">source</a>
+	</span>
+</div>
+<hr class="hidden"/>
+<div id="content">
+<div id="nav">
+	<ul>
+	<li><a href="../index.html">about</a></li>
+	<li><a href="../coding_style/index.html">coding style/</a></li>
+	<li><a href="../community/index.html">community/</a></li>
+	<li><a href="../conferences/index.html">conferences/</a></li>
+	<li><a href="../donations/index.html">donations/</a></li>
+	<li><a href="../faq/index.html">faq/</a></li>
+	<li><a href="../hacking/index.html">hacking/</a></li>
+	<li><a href="../other_projects/index.html">other projects/</a></li>
+	<li><a href="../people/index.html">people/</a></li>
+	<li><a href="../philosophy/index.html">philosophy/</a></li>
+	<li><a href="index.html"><b>project ideas/</b></a></li>
+	<li><a href="../rocks/index.html">rocks/</a></li>
+	<li><a href="../sucks/index.html">sucks/</a></li>
+	<li><a href="../wiki/index.html">wiki/</a></li>
+	</ul>
+</div>
+<hr class="hidden"/>
+<div id="main">
+
+<h1>Project ideas</h1>
+<p>Please read our <a href="../philosophy/index.html">philosophy</a> for background information.</p>
+<h2>Peer review</h2>
+<p>The suckless.org community will act as a rigid reviewer of the progress.</p>
+<h2>General ideas</h2>
+<p>Our project ideas in general intend to focus on our innovative development
+environment from bare hardware to the graphical interface.</p>
+<ul>
+<li>Idiomatic interfaces for developers (such as more advanced concepts for mail
+clients, messaging clients, music players, text editors).</li>
+<li>Simple protocol interfaces for developers.</li>
+<li>General userland enhancements to UNIX-like operating systems.</li>
+<li>Foundations of a new windowing system for UNIX-like operating systems.</li>
+<li>Improvements to our existing software projects and infrastructure.</li>
+<li>Replacements of bloated existing software and libraries in a suckless way.</li>
+</ul>
+<h2>Current small tasks</h2>
+<ul>
+<li>Write a gopher back-end using build-page.c:
+<a href="https://git.suckless.org/sites/file/build-page.c.html">https://git.suckless.org/sites/file/build-page.c.html</a>
+This should use the geomyidae gopher server and the gph output format.
+Difficulty: medium-rare.</li>
+<li>Fix broken patches on the wiki. Difficulty: trivial-medium.<br />  
+See: <a href="https://gunther.suckless.org/patches/">https://gunther.suckless.org/patches/</a></li>
+<li>Fix broken links on the wiki. Difficulty: trivial.<br />  
+See: <a href="https://git.suckless.org/sites/file/checklinks.sh.html">https://git.suckless.org/sites/file/checklinks.sh.html</a></li>
+<li>Fix typos and formatting errors on the wiki. Difficulty: trivial.</li>
+</ul>
+<h2>Concrete ideas</h2>
+<p>The listed ideas generally require good knowledge of C and experience with
+UNIX-like operating systems. The difficulty ranges from medium to high.</p>
+<h3>Suckless font rendering library</h3>
+<p>There is libdrw in suckless now, which still uses xft and fontconfig.
+Fontconfig and xft are ugly and require too much internal knowledge to be
+useful. The next logical layer evolved as pango and cairo. Both of course added
+HTML formatting and vector drawing. This is not needed to simply draw some text
+somewhere. And this is what a suckless font rendering library should do: Give
+it a font string and render at some position the given font without having to
+care about font specifics.</p>
+<p><strong><em>Requirements:</em></strong> C knowledge, some X11 knowledge and of course knowledge
+about the font formats and how to handle them.</p>
+<h3>Write ld wrapper or replacement for static linking</h3>
+<p>The GNU autotools such as automake and autoconf are completely unusable in
+non-chroot'ed cross-compile environments and often completely fail to produce
+statically linked libraries or executables. Also they are extremely slow and
+bloated.</p>
+<p>The stali build system is not using autotools for good reason, however many
+UNIX/Linux open source packages do. To create statically linked libraries out
+of the ld arguments we need an ld wrapper or re-implementation that creates
+static libraries or executables. This would enable us to build static libraries
+and executables out of any automake generated makefiles without the need to
+write make replacements or patching the build system of a particular package.</p>
+<p>The ld wrapper needs to be extended to also link against uclibc first and if
+that fails to fallback to glibc, in order to produce smaller executables in the
+general case.</p>
+<p><strong><em>Requirements:</em></strong> Good C/UNIX knowledge is essential, knowledge about
+linking/linker internals are desirable.</p>
+<h3>Write a decent mailing list Web archive system</h3>
+<p>All web archive systems such as hypermail, pipermail, etc. have plenty
+drawbacks and are quite out-dated. This task requires to write a completely new
+web mailing list archiving tool that follows the thread view concepts found in
+the mutt MUA and which is designed with low footprint and efficiency in mind.</p>
+<p>We expect this tool as a stand-alone UNIX tool written in C or shell. To get
+started you could use <a href="http://dovecot.org/">Dovecot</a> to produce a sanitized
+structure:</p>
+<pre><code>printf "1 select inbox\n2 thread references us-ascii all\n3 fetch 1:*
+envelope\n4 logout\n" |
+/usr/local/libexec/dovecot/imap  2&gt;/dev/null
+</code></pre>
+<ul>
+<li><a href="http://www.codinghorror.com/blog/2012/12/web-discussions-flat-by-design.html">http://www.codinghorror.com/blog/2012/12/web-discussions-flat-by-design.html</a></li>
+</ul>
+<p><strong><em>Requirements:</em></strong> Good C/Shell/HTML knowledge would be desirable. Must not
+use JavaScript.</p>
+<h3>Write cookie handler for surf</h3>
+<p>The biggest disadvantage of <a href="https://surf.suckless.org/">surf</a> is sloppy cookie
+handling. libwebkit and libsoup (which are used for HTTP) were never designed
+to run in multiple processes simultaneously.</p>
+<p>This task requires writing a new cookie handler in surf which:</p>
+<ul>
+<li>creates a nice human-readable cookie file</li>
+<li>is able to run in multiple concurrent processes</li>
+</ul>
+<p><strong><em>Requirements:</em></strong> Good knowledge of C and POSIX file locking. Basic knowledge
+of GTK and its other evil friends.</p>
+<h3>Gopher services</h3>
+<p>Gopher is a sane protocol which has hierarchy in its design. It allows the
+abstraction of a mass of information in a filesystem. The goal of this meta
+project is to find ideas how to implement gopher services to easily access the
+web and new information.</p>
+<p>See the
+<a href="https://en.wikipedia.org/wiki/Gopher_%28protocol%29#Protocol">protocol</a> for
+how easy it is to write a <code>menu</code>, which can be seen as a directory.</p>
+<ul>
+<li><a href="http://www.gopherproject.org">gopherproject.org</a></li>
+<li><a href="http://gopher.floodgap.com/gopher/">gopher proxy</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Gopher_%28protocol%29">Gopher wikipedia article</a></li>
+<li><a href="http://git.r-36.net/geomyidae/">geomyidae</a></li>
+</ul>
+<p>Anyone creating a gopher interface to suckless.org will get a bonus.</p>
+<p><strong><em>Requirements:</em></strong> Just some shell scripting and a way to setup a gopher
+daemon is required. Everyone can do this.</p>
+<h3>A sane backend for surf</h3>
+<p>There is dillo, netsurf and abaco which implement HTML. The problem is
+JavaScript and extensions to replace webkit as the big dependency hell for web
+rendering in surf.</p>
+<p>If you prepare to work on this project, plan ahead in recruiting more
+developers. You will need them.</p>
+<p><strong><em>Requirements:</em></strong> Very good C knowledge, a very good knowledge in web
+standards and how to strip them down to the suckless level. <strong><em>Difficulty
+level:</em></strong> Probably impossible.</p>
+</div>
+
+</div>
+
+</html>

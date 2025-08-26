@@ -1,0 +1,243 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>software that sucks less | suckless.org software that sucks less</title>
+	<link rel="stylesheet" type="text/css" href="../pub/style.css"/>
+</head>
+
+<div id="header">
+	<a href="../index.html"><img src="../logo.svg" alt=""/></a>&nbsp;
+	<a id="headerLink" href="../index.html">suckless.org</a>
+	<span class="hidden"> - </span>
+	<span id="headerSubtitle">software that sucks less</span>
+</div>
+<hr class="hidden"/>
+<div id="menu">
+	<a href="../index.html"><b>home</b></a>
+	<a href="https://dwm.suckless.org/">dwm</a>
+	<a href="https://st.suckless.org/">st</a>
+	<a href="https://core.suckless.org/">core</a>
+	<a href="https://surf.suckless.org/">surf</a>
+	<a href="https://tools.suckless.org/">tools</a>
+	<a href="https://libs.suckless.org/">libs</a>
+	<a href="https://ev.suckless.org/">e.V.</a>
+	<span class="right">
+		<a href="https://dl.suckless.org/">download</a>
+		<a href="https://git.suckless.org/">source</a>
+	</span>
+</div>
+<hr class="hidden"/>
+<div id="content">
+<div id="nav">
+	<ul>
+	<li><a href="../index.html">about</a></li>
+	<li><a href="index.html"><b>coding style/</b></a></li>
+	<li><a href="../community/index.html">community/</a></li>
+	<li><a href="../conferences/index.html">conferences/</a></li>
+	<li><a href="../donations/index.html">donations/</a></li>
+	<li><a href="../faq/index.html">faq/</a></li>
+	<li><a href="../hacking/index.html">hacking/</a></li>
+	<li><a href="../other_projects/index.html">other projects/</a></li>
+	<li><a href="../people/index.html">people/</a></li>
+	<li><a href="../philosophy/index.html">philosophy/</a></li>
+	<li><a href="../project_ideas/index.html">project ideas/</a></li>
+	<li><a href="../rocks/index.html">rocks/</a></li>
+	<li><a href="../sucks/index.html">sucks/</a></li>
+	<li><a href="../wiki/index.html">wiki/</a></li>
+	</ul>
+</div>
+<hr class="hidden"/>
+<div id="main">
+
+<h1>Style</h1>
+<p>Note that the following are guidelines and the most important aspect of style
+is consistency. Strive to keep your style consistent with the project on which
+you are working. It is up to the project maintainer to take some liberty in the
+style <strong>guidelines</strong>.</p>
+<h2>Recommended Reading</h2>
+<p>The following contain good information, some of which is repeated below, some
+of which is contradicted below.</p>
+<ul>
+<li><a href="https://man.openbsd.org/style">https://man.openbsd.org/style</a></li>
+<li><a href="http://doc.cat-v.org/bell_labs/pikestyle">http://doc.cat-v.org/bell_labs/pikestyle</a></li>
+<li><a href="https://www.kernel.org/doc/Documentation/process/coding-style.rst">https://www.kernel.org/doc/Documentation/process/coding-style.rst</a></li>
+</ul>
+<h2>File Layout</h2>
+<ul>
+<li>Comment with LICENSE and possibly short explanation of file/tool.</li>
+<li>Headers</li>
+<li>Macros</li>
+<li>Types</li>
+<li>Function declarations:
+<ul>
+<li>Include variable names.</li>
+<li>For short files these can be left out.</li>
+<li>Group/order in logical manner.</li>
+</ul>
+</li>
+<li>Global variables.</li>
+<li>Function definitions in same order as declarations.</li>
+<li><code>main</code></li>
+</ul>
+<h2>C Features</h2>
+<ul>
+<li>Use C99 without extensions (ISO/IEC 9899:1999).</li>
+<li>Use POSIX.1-2008:
+<ul>
+<li>When using gcc define <code>_POSIX_C_SOURCE 200809L</code>.</li>
+<li>Alternatively define <code>_XOPEN_SOURCE 700</code>.</li>
+</ul>
+</li>
+<li>Do not mix declarations and code.</li>
+<li>Do not use for loop initial declarations.</li>
+<li>Use <code>/* */</code> for comments, not <code>//</code>.</li>
+<li>Variadic macros are acceptable, but remember:
+<ul>
+<li><code>__VA_ARGS__</code> not a named parameter.</li>
+<li>Arg list cannot be empty.</li>
+</ul>
+</li>
+</ul>
+<h2>Blocks</h2>
+<ul>
+<li>All variable declarations at top of block.</li>
+<li><code>{</code> on same line preceded by single space (except functions).</li>
+<li><code>}</code> on own line unless continuing statement (<code>if else</code>, <code>do while</code>, ...).</li>
+</ul>
+<p>Use block for single statement if inner statement needs a block.</p>
+<pre><code>for (;;) {
+	if (foo) {
+		bar;
+		baz;
+	}
+}
+</code></pre>
+<p>Use block if another branch of the same statement needs a block:</p>
+<pre><code>if (foo) {
+	bar;
+} else {
+	baz;
+	qux;
+}
+</code></pre>
+<h2>Leading Whitespace</h2>
+<p>Use tabs for indentation and spaces for alignment. This ensures everything will
+line up independent of tab size. This means:</p>
+<ul>
+<li>No tabs except beginning of line.</li>
+<li>Use spaces - not tabs - for multiline macros as the indentation level is 0,
+where the <code>#define</code> began.</li>
+</ul>
+<h2>Functions</h2>
+<ul>
+<li>Return type and modifiers on own line.</li>
+<li>Function name and argument list on next line. This allows to grep for function
+names simply using <code>grep ^functionname(</code>.</li>
+<li>Opening <code>{</code> on own line (function definitions are a special case of blocks as
+they cannot be nested).</li>
+<li>Functions not used outside translation unit should be declared and defined
+<code>static</code>.</li>
+</ul>
+<p>Example:</p>
+<pre><code>static void
+usage(void)
+{
+	eprintf("usage: %s [file ...]\n", argv0);
+}
+</code></pre>
+<h2>Variables</h2>
+<ul>
+<li>Global variables not used outside translation unit should be declared <code>static</code>.</li>
+<li>In declaration of pointers the <code>*</code> is adjacent to variable name, not type.</li>
+</ul>
+<h2>Keywords</h2>
+<ul>
+<li>Use a space after <code>if</code>, <code>for</code>, <code>while</code>, <code>switch</code> (they are not function calls).</li>
+<li>Do not use a space after the opening <code>(</code> and before the closing <code>)</code>.</li>
+<li>Preferably use <code>()</code> with <code>sizeof</code>.</li>
+<li>Do not use a space with <code>sizeof()</code>.</li>
+</ul>
+<h2>Switch</h2>
+<ul>
+<li>Do not indent cases another level.</li>
+<li>Comment cases that FALLTHROUGH.</li>
+</ul>
+<p>Example:</p>
+<pre><code>switch (value) {
+case 0: /* FALLTHROUGH */
+case 1:
+case 2:
+	break;
+default:
+	break;
+}
+</code></pre>
+<h2>Headers</h2>
+<ul>
+<li>Place system/libc headers first in alphabetical order.
+<ul>
+<li>If headers must be included in a specific order add a comment to explain.</li>
+</ul>
+</li>
+<li>Place local headers after an empty line.</li>
+<li>When writing and using local headers.
+<ul>
+<li>Try to avoid cyclic header inclusion dependencies.</li>
+<li>Instead ensure they are included where and when they are needed.</li>
+<li>Read <a href="https://talks.golang.org/2012/splash.article#TOC_5.">https://talks.golang.org/2012/splash.article#TOC_5.</a></li>
+<li>Read <a href="http://plan9.io/sys/doc/comp.html">http://plan9.io/sys/doc/comp.html</a></li>
+</ul>
+</li>
+</ul>
+<h2>User Defined Types</h2>
+<ul>
+<li>Do not use <code>type_t</code> naming (it is reserved for POSIX and less readable).</li>
+<li>Typedef opaque structs.</li>
+<li>Do not typedef builtin types.</li>
+<li>Use <code>CamelCase</code> for typedef'd types.</li>
+</ul>
+<h2>Line Length</h2>
+<ul>
+<li>Keep lines to reasonable length (max 79 characters).</li>
+</ul>
+<h2>Tests and Boolean Values</h2>
+<ul>
+<li>Do not use C99 <code>bool</code> types (stick to integer types).</li>
+<li>Otherwise use compound assignment and tests unless the line grows too long:</li>
+</ul>
+<pre><code>if (!(p = malloc(sizeof(*p))))
+	hcf();
+</code></pre>
+<h2>Handling Errors</h2>
+<ul>
+<li>When functions <code>return -1</code> for error test against <code>0</code> not <code>-1</code>:</li>
+</ul>
+<pre><code>if (func() &lt; 0)
+	hcf();
+</code></pre>
+<ul>
+<li>Use <code>goto</code> to unwind and cleanup when necessary instead of multiple nested
+levels.</li>
+<li><code>return</code> or <code>exit</code> early on failures instead of multiple nested levels.</li>
+<li>Unreachable code should have a NOTREACHED comment.</li>
+<li>Think long and hard on whether or not you should cleanup on fatal errors.
+For simple "one-shot" programs (not daemons) it can be OK to not free memory.
+It is advised to cleanup temporary files however.</li>
+</ul>
+<h2>Enums and #define</h2>
+<p>Use enums for values that are grouped semantically and #define otherwise:</p>
+<pre><code>#define MAXSZ  4096
+#define MAGIC1 0xdeadbeef
+</code></pre>
+<pre><code>enum {
+	DIRECTION_X,
+	DIRECTION_Y,
+	DIRECTION_Z
+};
+</code></pre>
+</div>
+
+</div>
+
+</html>
