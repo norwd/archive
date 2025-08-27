@@ -1,0 +1,69 @@
+From 9a6ef6174ade2913e940d453f81c488b47d365fa Mon Sep 17 00:00:00 2001
+From: vishal <vishal340@github.com>
+Date: Fri, 5 Jan 2024 16:54:19 +0530
+Subject: [PATCH] With this patch dmenu will no longer select the first item by
+ default and you can use right and left key for bothmoving in text and drop
+ down. dependencies: grid and gridnav
+
+---
+ dmenu.c | 14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
+
+diff --git a/dmenu.c b/dmenu.c
+index 1a76e1b..050073b 100644
+--- a/dmenu.c
++++ b/dmenu.c
+@@ -282,7 +282,7 @@ match(void)
+ 			matches = lsubstr;
+ 		matchend = substrend;
+ 	}
+-	curr = sel = matches;
++	curr = matches;
+ 	calcoffsets();
+ }
+ 
+@@ -467,8 +467,10 @@ insert:
+ 		break;
+ 	case XK_Left:
+ 		if (columns > 1) {
+-			if (!sel)
++			if (!sel){
++				system("xdotool key KP_Left");
+ 				return;
++			}
+ 			tmpsel = sel;
+ 			for (i = 0; i < lines; i++) {
+ 				if (!tmpsel->left || tmpsel->left->right != tmpsel) {
+@@ -501,6 +503,8 @@ insert:
+ 			curr = prev;
+ 			calcoffsets();
+ 		}
++		else if (sel && !sel->left)
++			sel = NULL;
+ 		break;
+ 	case XK_Next:
+ 	case XK_KP_Next:
+@@ -528,8 +532,10 @@ insert:
+ 		break;
+ 	case XK_Right:
+ 		if (columns > 1) {
+-			if (!sel)
++			if (!sel) {
++				system("xdotool key KP_Right");
+ 				return;
++			}
+ 			tmpsel = sel;
+ 			for (i = 0; i < lines; i++) {
+ 				if (!tmpsel->right ||  tmpsel->right->left != tmpsel) {
+@@ -562,6 +568,8 @@ insert:
+ 			curr = next;
+ 			calcoffsets();
+ 		}
++		else if (!sel && curr)
++			sel = curr;
+ 		break;
+ 	case XK_Tab:
+ 		if (!sel)
+-- 
+2.43.0
+

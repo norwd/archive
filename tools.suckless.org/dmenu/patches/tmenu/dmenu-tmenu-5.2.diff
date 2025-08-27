@@ -1,0 +1,110 @@
+diff --git a/config.def.h b/config.def.h
+index 1edb647..805d8c4 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -21,3 +21,6 @@ static unsigned int lines      = 0;
+  * for example: " /?\"&[]"
+  */
+ static const char worddelimiters[] = " ";
++
++/* delimiter for tmenu */
++static char valuedelimiter = '\t';
+diff --git a/dmenu.1 b/dmenu.1
+index 323f93c..fb22ed3 100644
+--- a/dmenu.1
++++ b/dmenu.1
+@@ -47,6 +47,9 @@ is faster, but will lock up X until stdin reaches end\-of\-file.
+ .B \-i
+ dmenu matches menu items case insensitively.
+ .TP
++.BI \-d " tmenu delimiter"
++when used in a line, the value after the delimiter will be displayed. When selected, the value before the delimiter will be output. Only uses a single char as the delimiter.
++.TP
+ .BI \-l " lines"
+ dmenu lists items vertically, with the given number of lines.
+ .TP
+diff --git a/dmenu.c b/dmenu.c
+index 27b7a30..b586a40 100644
+--- a/dmenu.c
++++ b/dmenu.c
+@@ -29,7 +29,7 @@
+ enum { SchemeNorm, SchemeSel, SchemeOut, SchemeLast }; /* color schemes */
+ 
+ struct item {
+-	char *text;
++	char *text, *value;
+ 	struct item *left, *right;
+ 	int out;
+ };
+@@ -104,8 +104,8 @@ cleanup(void)
+ 	XUngrabKey(dpy, AnyKey, AnyModifier, root);
+ 	for (i = 0; i < SchemeLast; i++)
+ 		free(scheme[i]);
+-	for (i = 0; items && items[i].text; ++i)
+-		free(items[i].text);
++	for (i = 0; items && items[i].value; ++i)
++		free(items[i].value);
+ 	free(items);
+ 	drw_free(drw);
+ 	XSync(dpy, False);
+@@ -490,7 +490,7 @@ insert:
+ 		break;
+ 	case XK_Return:
+ 	case XK_KP_Enter:
+-		puts((sel && !(ev->state & ShiftMask)) ? sel->text : text);
++		puts((sel && !(ev->state & ShiftMask)) ? sel->value : text);
+ 		if (!(ev->state & ControlMask)) {
+ 			cleanup();
+ 			exit(0);
+@@ -549,7 +549,7 @@ paste(void)
+ static void
+ readstdin(void)
+ {
+-	char *line = NULL;
++	char *line = NULL, *text;
+ 	size_t i, junk, itemsiz = 0;
+ 	ssize_t len;
+ 
+@@ -562,13 +562,22 @@ readstdin(void)
+ 		}
+ 		if (line[len - 1] == '\n')
+ 			line[len - 1] = '\0';
+-		items[i].text = line;
++
++		if ((text = strchr(line, valuedelimiter)) != NULL) {
++			items[i].text = text + 1;
++			text[0] = '\0';
++		} else {
++			items[i].text = line;
++		}
++		items[i].value = line;
+ 		items[i].out = 0;
+ 		line = NULL; /* next call of getline() allocates a new line */
+ 	}
+ 	free(line);
+-	if (items)
++	if (items) {
+ 		items[i].text = NULL;
++		items[i].value = NULL;
++	}
+ 	lines = MIN(lines, i);
+ }
+ 
+@@ -714,7 +723,7 @@ setup(void)
+ static void
+ usage(void)
+ {
+-	die("usage: dmenu [-bfiv] [-l lines] [-p prompt] [-fn font] [-m monitor]\n"
++	die("usage: dmenu [-bfiv] [-d tmenu-delim] [-l lines] [-p prompt] [-fn font] [-m monitor]\n"
+ 	    "             [-nb color] [-nf color] [-sb color] [-sf color] [-w windowid]");
+ }
+ 
+@@ -739,6 +748,8 @@ main(int argc, char *argv[])
+ 		} else if (i + 1 == argc)
+ 			usage();
+ 		/* these options take one argument */
++		else if (!strcmp(argv[i], "-d"))   /* delimiter for tmenu */
++			valuedelimiter = argv[++i][0];
+ 		else if (!strcmp(argv[i], "-l"))   /* number of lines in vertical list */
+ 			lines = atoi(argv[++i]);
+ 		else if (!strcmp(argv[i], "-m"))

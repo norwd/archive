@@ -1,0 +1,190 @@
+From cc85ae2c548660f7ccbcd244dbcfb52420160973 Mon Sep 17 00:00:00 2001
+From: Drew Marino <drewmarino25@gmail.com>
+Date: Sat, 2 Dec 2023 02:30:59 -0500
+Subject: [PATCH] Allow for per-status images instead of colors
+
+---
+ config.def.h |  3 +-
+ config.mk    |  2 +-
+ slock.c      | 78 ++++++++++++++++++++++++++++++++++++++++++++--------
+ 3 files changed, 70 insertions(+), 13 deletions(-)
+
+diff --git a/config.def.h b/config.def.h
+index 9855e21..ee79df9 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -1,7 +1,8 @@
+ /* user and group to drop privileges to */
+ static const char *user  = "nobody";
+-static const char *group = "nogroup";
++static const char *group = "nobody";
+ 
++/* image files can be used if absolute path is given */
+ static const char *colorname[NUMCOLS] = {
+ 	[INIT] =   "black",     /* after initialization */
+ 	[INPUT] =  "#005577",   /* during input */
+diff --git a/config.mk b/config.mk
+index 514c236..db0641c 100644
+--- a/config.mk
++++ b/config.mk
+@@ -12,7 +12,7 @@ X11LIB = /usr/X11R6/lib
+ 
+ # includes and libs
+ INCS = -I. -I/usr/include -I${X11INC}
+-LIBS = -L/usr/lib -lc -lcrypt -L${X11LIB} -lX11 -lXext -lXrandr
++LIBS = -L/usr/lib -lc -lcrypt -L${X11LIB} -lX11 -lXext -lXrandr -lImlib2
+ 
+ # flags
+ CPPFLAGS = -DVERSION=\"${VERSION}\" -D_DEFAULT_SOURCE -DHAVE_SHADOW_H
+diff --git a/slock.c b/slock.c
+index b2f14e3..a0378df 100644
+--- a/slock.c
++++ b/slock.c
+@@ -18,6 +18,7 @@
+ #include <X11/keysym.h>
+ #include <X11/Xlib.h>
+ #include <X11/Xutil.h>
++#include <Imlib2.h>
+ 
+ #include "arg.h"
+ #include "util.h"
+@@ -190,9 +191,12 @@ readpw(Display *dpy, struct xrandr *rr, struct lock **locks, int nscreens,
+ 			color = len ? INPUT : ((failure || failonclear) ? FAILED : INIT);
+ 			if (running && oldc != color) {
+ 				for (screen = 0; screen < nscreens; screen++) {
+-					XSetWindowBackground(dpy,
+-					                     locks[screen]->win,
+-					                     locks[screen]->colors[color]);
++					if (colorname[color][0]!='/')
++						XSetWindowBackground(dpy, locks[screen]->win,
++						                     locks[screen]->colors[color]);
++					else
++						XSetWindowBackgroundPixmap(dpy, locks[screen]->win,
++						                           locks[screen]->colors[color]);
+ 					XClearWindow(dpy, locks[screen]->win);
+ 				}
+ 				oldc = color;
+@@ -220,14 +224,17 @@ readpw(Display *dpy, struct xrandr *rr, struct lock **locks, int nscreens,
+ }
+ 
+ static struct lock *
+-lockscreen(Display *dpy, struct xrandr *rr, int screen)
++lockscreen(Display *dpy, struct xrandr *rr, int screen,
++           Imlib_Image images[NUMCOLS])
+ {
+ 	char curs[] = {0, 0, 0, 0, 0, 0, 0, 0};
+-	int i, ptgrab, kbgrab;
++	int i, j, ptgrab, kbgrab, num_monitors, img_width, img_height;
+ 	struct lock *lock;
+ 	XColor color, dummy;
+ 	XSetWindowAttributes wa;
+ 	Cursor invisible;
++	Imlib_Image image;
++	XRRMonitorInfo *monitors;
+ 
+ 	if (dpy == NULL || screen < 0 || !(lock = malloc(sizeof(struct lock))))
+ 		return NULL;
+@@ -235,15 +242,48 @@ lockscreen(Display *dpy, struct xrandr *rr, int screen)
+ 	lock->screen = screen;
+ 	lock->root = RootWindow(dpy, lock->screen);
+ 
++	/* set colors for each state, if is image render the image into pixmap */
++	imlib_context_set_display(dpy);
++	imlib_context_set_visual(DefaultVisual(dpy, lock->screen));
++	imlib_context_set_colormap(DefaultColormap(dpy, lock->screen));
++
+ 	for (i = 0; i < NUMCOLS; i++) {
+-		XAllocNamedColor(dpy, DefaultColormap(dpy, lock->screen),
+-		                 colorname[i], &color, &dummy);
+-		lock->colors[i] = color.pixel;
++		if (colorname[i][0]!='/') {
++			XAllocNamedColor(dpy, DefaultColormap(dpy, lock->screen),
++			                 colorname[i], &color, &dummy);
++			lock->colors[i] = color.pixel;
++		} else {
++			lock->colors[i] = XCreatePixmap(dpy, lock->root,
++			                                DisplayWidth(dpy, lock->screen),
++			                                DisplayHeight(dpy, lock->screen),
++			                                DefaultDepth(dpy, lock->screen));
++			imlib_context_set_image(images[i]);
++			img_width = imlib_image_get_width();
++			img_height = imlib_image_get_height();
++			monitors = XRRGetMonitors(dpy, RootWindow(dpy, lock->screen),
++			                          True, &num_monitors);
++			image = imlib_create_image(XDisplayWidth(dpy, lock->screen),
++			                           XDisplayHeight(dpy, lock->screen));
++			imlib_context_set_image(image);
++			/* resize the image for each monitor in the screen */
++			for (j=0; j < num_monitors; j++)
++				imlib_blend_image_onto_image(images[i], 0, 0, 0, img_width,
++				                             img_height, monitors[j].x,
++				                             monitors[j].y,
++				                             monitors[j].width,
++				                             monitors[j].height);
++			imlib_context_set_drawable(lock->colors[i]);
++			imlib_render_image_on_drawable(0, 0);
++			imlib_free_image();
++		}
+ 	}
+ 
+ 	/* init */
+ 	wa.override_redirect = 1;
+-	wa.background_pixel = lock->colors[INIT];
++	if (colorname[INIT][0]!='/')
++		wa.background_pixel = lock->colors[INIT];
++	else
++		wa.background_pixmap = lock->colors[INIT];
+ 	lock->win = XCreateWindow(dpy, lock->root, 0, 0,
+ 	                          DisplayWidth(dpy, lock->screen),
+ 	                          DisplayHeight(dpy, lock->screen),
+@@ -313,7 +353,8 @@ main(int argc, char **argv) {
+ 	gid_t dgid;
+ 	const char *hash;
+ 	Display *dpy;
+-	int s, nlocks, nscreens;
++	int s, i, nlocks, nscreens;
++	Imlib_Image images[NUMCOLS];
+ 
+ 	ARGBEGIN {
+ 	case 'v':
+@@ -347,6 +388,14 @@ main(int argc, char **argv) {
+ 	if (!(dpy = XOpenDisplay(NULL)))
+ 		die("slock: cannot open display\n");
+ 
++	/* load image files, if there are any */
++	for (i = 0; i < NUMCOLS; i++)
++		if (colorname[i][0]=='/')
++			if ((images[i] = imlib_load_image_with_errno_return(colorname[i],
++			                                                    &errno))==NULL)
++				die("slock: unable to load image file: %s: %s\n",
++				    colorname[i], strerror(errno));
++
+ 	/* drop privileges */
+ 	if (setgroups(0, NULL) < 0)
+ 		die("slock: setgroups: %s\n", strerror(errno));
+@@ -363,7 +412,7 @@ main(int argc, char **argv) {
+ 	if (!(locks = calloc(nscreens, sizeof(struct lock *))))
+ 		die("slock: out of memory\n");
+ 	for (nlocks = 0, s = 0; s < nscreens; s++) {
+-		if ((locks[s] = lockscreen(dpy, &rr, s)) != NULL)
++		if ((locks[s] = lockscreen(dpy, &rr, s, images)) != NULL)
+ 			nlocks++;
+ 		else
+ 			break;
+@@ -374,6 +423,13 @@ main(int argc, char **argv) {
+ 	if (nlocks != nscreens)
+ 		return 1;
+ 
++	/* unload image files */
++	for (i = 0; i < NUMCOLS; i++)
++		if (colorname[i][0]=='/') {
++			imlib_context_set_image(images[i]);
++			imlib_free_image();
++		}
++
+ 	/* run post-lock command */
+ 	if (argc > 0) {
+ 		switch (fork()) {
+-- 
+2.43.0
+
