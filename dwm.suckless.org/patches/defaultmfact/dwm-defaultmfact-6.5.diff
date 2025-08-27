@@ -1,0 +1,58 @@
+From 7c770d00c0010e93b37042e9fdff34e3d161ff15 Mon Sep 17 00:00:00 2001
+From: Rumen <rumenmitov@protonmail.com>
+Date: Fri, 3 Jan 2025 17:14:51 +0100
+Subject: [PATCH] patch: defaultmfact
+
+patch adds a default value for mfact, which can be used through
+setmfact
+---
+ config.def.h | 4 +++-
+ dwm.c        | 7 +++++++
+ 2 files changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/config.def.h b/config.def.h
+index 9efa774..acb43cb 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -32,7 +32,8 @@ static const Rule rules[] = {
+ };
+ 
+ /* layout(s) */
+-static const float mfact     = 0.55; /* factor of master area size [0.05..0.95] */
++#define DEFAULT_MFACT 0.55
++static const float mfact     = DEFAULT_MFACT; /* factor of master area size [0.05..0.95] */
+ static const int nmaster     = 1;    /* number of clients in master area */
+ static const int resizehints = 1;    /* 1 means respect size hints in tiled resizals */
+ static const int lockfullscreen = 1; /* 1 will force focus on the fullscreen window */
+@@ -71,6 +72,7 @@ static const Key keys[] = {
+ 	{ MODKEY,                       XK_d,      incnmaster,     {.i = -1 } },
+ 	{ MODKEY,                       XK_h,      setmfact,       {.f = -0.05} },
+ 	{ MODKEY,                       XK_l,      setmfact,       {.f = +0.05} },
++	{ MODKEY,                       XK_equal,  setmfact,       {.f = -1.0} },
+ 	{ MODKEY,                       XK_Return, zoom,           {0} },
+ 	{ MODKEY,                       XK_Tab,    view,           {0} },
+ 	{ MODKEY|ShiftMask,             XK_c,      killclient,     {0} },
+diff --git a/dwm.c b/dwm.c
+index 1443802..bf3a66e 100644
+--- a/dwm.c
++++ b/dwm.c
+@@ -1521,9 +1521,16 @@ setlayout(const Arg *arg)
+ }
+ 
+ /* arg > 1.0 will set mfact absolutely */
++/* arg <= -1.0 will set mfact to DEFAULT_MFACT */
+ void
+ setmfact(const Arg *arg)
+ {
++    if (arg->f <= -1.0) {
++        selmon->mfact = DEFAULT_MFACT;
++        arrange(selmon);
++        return;
++    }
++
+ 	float f;
+ 
+ 	if (!arg || !selmon->lt[selmon->sellt]->arrange)
+-- 
+2.47.1
+

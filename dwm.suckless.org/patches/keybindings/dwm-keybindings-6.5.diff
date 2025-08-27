@@ -1,0 +1,129 @@
+diff --git a/config.def.h b/config.def.h
+index 9efa774..5ca4a0d 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -51,6 +51,8 @@ static const Layout layouts[] = {
+ 	{ MODKEY|ControlMask,           KEY,      toggleview,     {.ui = 1 << TAG} }, \
+ 	{ MODKEY|ShiftMask,             KEY,      tag,            {.ui = 1 << TAG} }, \
+ 	{ MODKEY|ControlMask|ShiftMask, KEY,      toggletag,      {.ui = 1 << TAG} },
++#define KEYEVENT(SRC_MOD,SRC_KEY,DST_MOD,DST_KEY) \
++	{ SRC_MOD, SRC_KEY, sendkeyevent, { .v = &(const KeyBinding){ DST_MOD, DST_KEY } } },
+ 
+ /* helper for spawning shell commands in the pre dwm-5.0 fashion */
+ #define SHCMD(cmd) { .v = (const char*[]){ "/bin/sh", "-c", cmd, NULL } }
+@@ -85,6 +87,43 @@ static const Key keys[] = {
+ 	{ MODKEY,                       XK_period, focusmon,       {.i = +1 } },
+ 	{ MODKEY|ShiftMask,             XK_comma,  tagmon,         {.i = -1 } },
+ 	{ MODKEY|ShiftMask,             XK_period, tagmon,         {.i = +1 } },
++	// Navigation(two-handed)
++	KEYEVENT(Mod1Mask, XK_h, 0, XK_Left)
++	KEYEVENT(Mod1Mask, XK_l, 0, XK_Right)
++	KEYEVENT(Mod1Mask, XK_k, 0, XK_Up)
++	KEYEVENT(Mod1Mask, XK_j, 0, XK_Down)
++	KEYEVENT(Mod1Mask, XK_p, 0, XK_Up)
++	KEYEVENT(Mod1Mask, XK_n, 0, XK_Down)
++	KEYEVENT(Mod1Mask, XK_i, ControlMask, XK_Left)
++	KEYEVENT(Mod1Mask, XK_o, ControlMask, XK_Right)
++	KEYEVENT(Mod1Mask, XK_equal, ControlMask, XK_Home)
++	KEYEVENT(Mod1Mask, XK_minus, ControlMask, XK_End)
++	// Navigation(one-handed)
++	KEYEVENT(Mod1Mask, XK_s, 0, XK_Up)
++	KEYEVENT(Mod1Mask, XK_x, 0, XK_Down)
++	KEYEVENT(Mod1Mask, XK_z, 0, XK_Left)
++	KEYEVENT(Mod1Mask, XK_c, 0, XK_Right)
++	KEYEVENT(Mod1Mask, XK_d, 0, XK_Return)
++	KEYEVENT(Mod1Mask, XK_a, 0, XK_Home)
++	KEYEVENT(Mod1Mask, XK_e, 0, XK_End)
++	// Selection(two-handed)
++	KEYEVENT(Mod1Mask|ShiftMask, XK_h, ShiftMask, XK_Left)
++	KEYEVENT(Mod1Mask|ShiftMask, XK_l, ShiftMask, XK_Right)
++	KEYEVENT(Mod1Mask|ShiftMask, XK_k, ShiftMask, XK_Up)
++	KEYEVENT(Mod1Mask|ShiftMask, XK_j, ShiftMask, XK_Down)
++	KEYEVENT(Mod1Mask|ShiftMask, XK_p, ShiftMask, XK_Up)
++	KEYEVENT(Mod1Mask|ShiftMask, XK_n, ShiftMask, XK_Down)
++	KEYEVENT(Mod1Mask|ShiftMask, XK_i, ControlMask|ShiftMask, XK_Left)
++	KEYEVENT(Mod1Mask|ShiftMask, XK_o, ControlMask|ShiftMask, XK_Right)
++	KEYEVENT(Mod1Mask|ShiftMask, XK_equal, ControlMask|ShiftMask, XK_Home)
++	KEYEVENT(Mod1Mask|ShiftMask, XK_minus, ControlMask|ShiftMask, XK_End)
++	// Selection(one-handed)
++	KEYEVENT(Mod1Mask|ShiftMask, XK_s, ShiftMask, XK_Up)
++	KEYEVENT(Mod1Mask|ShiftMask, XK_x, ShiftMask, XK_Down)
++	KEYEVENT(Mod1Mask|ShiftMask, XK_z, ShiftMask, XK_Left)
++	KEYEVENT(Mod1Mask|ShiftMask, XK_c, ShiftMask, XK_Right)
++	KEYEVENT(Mod1Mask|ShiftMask, XK_a, ShiftMask, XK_Home)
++	KEYEVENT(Mod1Mask|ShiftMask, XK_e, ShiftMask, XK_End)
+ 	TAGKEYS(                        XK_1,                      0)
+ 	TAGKEYS(                        XK_2,                      1)
+ 	TAGKEYS(                        XK_3,                      2)
+diff --git a/dwm.c b/dwm.c
+index 67c6b2b..b7c911d 100644
+--- a/dwm.c
++++ b/dwm.c
+@@ -106,6 +106,11 @@ typedef struct {
+ 	const Arg arg;
+ } Key;
+ 
++typedef struct {
++	unsigned int mod;
++	KeySym keysym;
++} KeyBinding;
++
+ typedef struct {
+ 	const char *symbol;
+ 	void (*arrange)(Monitor *);
+@@ -196,6 +201,7 @@ static void restack(Monitor *m);
+ static void run(void);
+ static void scan(void);
+ static int sendevent(Client *c, Atom proto);
++static void sendkeyevent(const Arg *arg);
+ static void sendmon(Client *c, Monitor *m);
+ static void setclientstate(Client *c, long state);
+ static void setfocus(Client *c);
+@@ -1467,6 +1473,47 @@ sendevent(Client *c, Atom proto)
+ 	return exists;
+ }
+ 
++XKeyEvent
++createkeyevent(Display *display, Window win, Window rootWindow, int type, KeyBinding *keyBinding)
++{
++	int keysym = keyBinding->keysym;
++	unsigned int modifier = keyBinding->mod;
++
++	XKeyEvent event;
++	event.type = type;
++	event.display = display;
++	event.window = win;
++	event.root = rootWindow;
++	event.subwindow = None;
++	event.time = CurrentTime;
++	event.x = 1;
++	event.y = 1;
++	event.x_root = 1;
++	event.y_root = 1;
++	event.same_screen = True;
++	event.keycode = XKeysymToKeycode(display, keysym);
++	event.state = modifier;
++
++	return event;
++}
++
++void sendkeyevent(const Arg *arg)
++{
++	Window rootWindow = XDefaultRootWindow(dpy);
++
++	Window focusedWindow;
++	int revert;
++	XGetInputFocus(dpy, &focusedWindow, &revert);
++
++	KeyBinding *keyBinding = (KeyBinding *)arg->v;
++
++	XKeyEvent event = createkeyevent(dpy, focusedWindow, rootWindow, KeyPress, keyBinding);
++	XSendEvent(event.display, event.window, True, KeyPressMask, (XEvent *)&event);
++
++	event = createkeyevent(dpy, focusedWindow, rootWindow, KeyRelease, keyBinding);
++	XSendEvent(event.display, event.window, True, KeyReleaseMask, (XEvent *)&event);
++}
++
+ void
+ setfocus(Client *c)
+ {

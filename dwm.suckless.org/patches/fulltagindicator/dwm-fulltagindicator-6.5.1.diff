@@ -1,0 +1,127 @@
+diff --git a/config.def.h b/config.def.h
+index 4f59424..9f13490 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -19,6 +19,19 @@ static const char *colors[][3]      = {
+ 	[SchemeSel]  = { col_gray4, col_cyan,  col_cyan  },
+ };
+ 
++/* full tag indicator variables */
++static const int fti_top              = 1; /* 0 means bottom indicator                           */
++static const int fti_border           = 1; /* 0 means no border                                  */
++static const unsigned int fti_height  = 4; /* indicator height (as px)                           */
++static const unsigned int fti_ptop    = 0; /* top padding                                        */
++static const unsigned int fti_pbot    = 0; /* bottom padding                                     */
++static const unsigned int fti_plef    = 0; /* left padding                                       */
++static const unsigned int fti_prig    = 0; /* right padding                                      */
++static const char fti_color_nor[]     = "#222222"; /* indicator color (not selected tag)         */
++static const char fti_color_sel[]     = "#eeeeee"; /* indicator color (selected tag)             */
++static const char fti_color_nor_inv[] = "#bbbbbb"; /* inverse indicator color (not selected tag) */
++static const char fti_color_sel_inv[] = "#005577"; /* inverse indicator color (selected tag)     */
++
+ /* tagging */
+ static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+ 
+diff --git a/drw.c b/drw.c
+index c41e6af..fe4734d 100644
+--- a/drw.c
++++ b/drw.c
+@@ -221,6 +221,32 @@ drw_rect(Drw *drw, int x, int y, unsigned int w, unsigned int h, int filled, int
+ 		XDrawRectangle(drw->dpy, drw->drawable, drw->gc, x, y, w - 1, h - 1);
+ }
+ 
++/* full tag indicator draw function (it does almost the same as drw_rect, check the
++ * https://github.com/nasccped/dwm-fulltag-indicator) */
++void
++drw_fti(Drw *drw, int x_pos, int y_pos, unsigned int wid, unsigned int hei, const char *bg, const char *border)
++{
++	if (!drw || !drw->scheme)
++		return;
++	XSetForeground(drw->dpy, drw->gc, get_colorpixel(drw->dpy, bg));
++	XFillRectangle(drw->dpy, drw->drawable, drw->gc, x_pos, y_pos, wid, hei);
++	XSetForeground(drw->dpy, drw->gc, get_colorpixel(drw->dpy, border));
++	XDrawRectangle(drw->dpy, drw->drawable, drw->gc, x_pos, y_pos, wid - 1, hei - 1);
++}
++
++/* full tag indicator utility: convert a string hex to a valid X server color (unsigned long) */
++unsigned long
++get_colorpixel(Display *dpy, const char *hex)
++{
++	if (!dpy || !hex) return 0;
++	XColor color;
++	int screen = DefaultScreen(dpy);
++	Colormap cmap = DefaultColormap(dpy, screen);
++	if (!XParseColor(dpy, cmap, hex, &color)) return BlackPixel(dpy, screen);
++	if (!XAllocColor(dpy, cmap, &color)) return BlackPixel(dpy, screen);
++	return color.pixel;
++}
++
+ int
+ drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, unsigned int lpad, const char *text, int invert)
+ {
+diff --git a/drw.h b/drw.h
+index 6471431..77bc431 100644
+--- a/drw.h
++++ b/drw.h
+@@ -54,5 +54,9 @@ void drw_setscheme(Drw *drw, Clr *scm);
+ void drw_rect(Drw *drw, int x, int y, unsigned int w, unsigned int h, int filled, int invert);
+ int drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, unsigned int lpad, const char *text, int invert);
+ 
++/* full tag indicator functions */
++void drw_fti(Drw *drw, int x_pos, int y_pos, unsigned int wid, unsigned int hei, const char *bg, const char *border);
++unsigned long get_colorpixel(Display *dpy, const char *hex);
++
+ /* Map functions */
+ void drw_map(Drw *drw, Window win, int x, int y, unsigned int w, unsigned int h);
+diff --git a/dwm.c b/dwm.c
+index b1c1c4f..bf77d40 100644
+--- a/dwm.c
++++ b/dwm.c
+@@ -266,6 +266,9 @@ static Display *dpy;
+ static Drw *drw;
+ static Monitor *mons, *selmon;
+ static Window root, wmcheckwin;
++static int fti_x, fti_y;                          /* full tag indicator x and y position                       */
++static int fti_wid;                               /* full tag indicator width (calculated at drawbar function) */
++static const char *fti_bg_color, *fti_bord_color; /* full tag indicator colors                                  */
+ 
+ /* configuration, allows nested code to access above variables */
+ #include "config.h"
+@@ -723,10 +726,33 @@ drawbar(Monitor *m)
+ 		w = TEXTW(tags[i]);
+ 		drw_setscheme(drw, scheme[m->tagset[m->seltags] & 1 << i ? SchemeSel : SchemeNorm]);
+ 		drw_text(drw, x, 0, w, bh, lrpad / 2, tags[i], urg & 1 << i);
+-		if (occ & 1 << i)
+-			drw_rect(drw, x + boxs, boxs, boxw, boxw,
+-				m == selmon && selmon->sel && selmon->sel->tags & 1 << i,
+-				urg & 1 << i);
++		if (occ & 1 << i) {
++			// if negative space
++			if (0
++			|| (fti_plef + fti_prig >= w)
++			|| (fti_top && (fti_ptop + fti_height >= bh))
++			|| (!fti_top && (fti_pbot + fti_height >= bh))) {
++				x += w;
++				continue;
++			}
++			// set x position
++			fti_x = x + fti_plef;
++			// set width
++			fti_wid = w - fti_plef - fti_prig;
++			// set y position
++			fti_y = topbar
++				? fti_top ? m->wy - bh + fti_ptop : m->wy - fti_height - fti_pbot
++				: fti_top ? m->wy + fti_ptop : m->wy + bh - fti_height - fti_pbot;
++			// set colors for bg and border
++			fti_bg_color = (m == selmon && selmon->sel && selmon->sel->tags & 1 << i)
++				? ((urg & 1 << i) ? fti_color_sel_inv : fti_color_sel)
++				: ((urg & 1 << i) ? fti_color_nor_inv : fti_color_nor);
++			fti_bord_color = fti_border
++				? ((urg & 1 << i) ? fti_color_sel_inv : fti_color_sel)
++				: fti_bg_color;
++			// draw indicator
++			drw_fti(drw, fti_x, fti_y, fti_wid, fti_height, fti_bg_color, fti_bord_color);
++		}
+ 		x += w;
+ 	}
+ 	w = TEXTW(m->ltsymbol);

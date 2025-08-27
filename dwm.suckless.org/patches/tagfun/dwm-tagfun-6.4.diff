@@ -1,0 +1,57 @@
+diff --git a/config.def.h b/config.def.h
+index 061ad66..8edac81 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -59,6 +59,14 @@ static const Layout layouts[] = {
+ static const char *dmenucmd[] = { "dmenu_run", "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_cyan, "-sf", col_gray4, NULL };
+ static const char *termcmd[]  = { "st", NULL };
+ 
++static struct {
++	void (*func)(const Arg *arg);
++	const Arg arg;
++} tagfun_cmds[LENGTH(tags)] = {
++	[0] = { killclient, {0} },
++	[1] = { spawn, { .v = termcmd } },
++};
++
+ static const Key keys[] = {
+ 	/* modifier                     key        function        argument */
+ 	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },
+@@ -108,6 +116,7 @@ static const Button buttons[] = {
+ 	{ ClkClientWin,         MODKEY,         Button2,        togglefloating, {0} },
+ 	{ ClkClientWin,         MODKEY,         Button3,        resizemouse,    {0} },
+ 	{ ClkTagBar,            0,              Button1,        view,           {0} },
++	{ ClkTagBar,            0,              Button2,        tagfun,         {0} },
+ 	{ ClkTagBar,            0,              Button3,        toggleview,     {0} },
+ 	{ ClkTagBar,            MODKEY,         Button1,        tag,            {0} },
+ 	{ ClkTagBar,            MODKEY,         Button3,        toggletag,      {0} },
+diff --git a/dwm.c b/dwm.c
+index e5efb6a..79b76cb 100644
+--- a/dwm.c
++++ b/dwm.c
+@@ -208,6 +208,7 @@ static void showhide(Client *c);
+ static void sigchld(int unused);
+ static void spawn(const Arg *arg);
+ static void tag(const Arg *arg);
++static void tagfun(const Arg *arg);
+ static void tagmon(const Arg *arg);
+ static void tile(Monitor *m);
+ static void togglebar(const Arg *arg);
+@@ -1658,6 +1659,17 @@ tag(const Arg *arg)
+ 	}
+ }
+ 
++void
++tagfun(const Arg *arg)
++{
++	unsigned int i = arg->ui & TAGMASK, j = 0;
++	if (i) {
++		while ( i >>= 1) j++;
++		if (tagfun_cmds[j].func)
++			tagfun_cmds[j].func(&tagfun_cmds[j].arg);
++	}
++}
++
+ void
+ tagmon(const Arg *arg)
+ {

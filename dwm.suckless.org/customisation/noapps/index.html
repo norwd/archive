@@ -1,0 +1,104 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>dwm - dynamic window manager | suckless.org software that sucks less</title>
+	<link rel="stylesheet" type="text/css" href="https://suckless.org/pub/style.css"/>
+</head>
+
+<div id="header">
+	<a href="https://suckless.org/"><img src="https://suckless.org/logo.svg" alt=""/></a>&nbsp;
+	<a id="headerLink" href="https://suckless.org/">suckless.org</a>
+	<span class="hidden"> - </span>
+	<span id="headerSubtitle">dwm - dynamic window manager</span>
+</div>
+<hr class="hidden"/>
+<div id="menu">
+	<a href="https://suckless.org/">home</a>
+	<a href="../../index.html"><b>dwm</b></a>
+	<a href="https://st.suckless.org/">st</a>
+	<a href="https://core.suckless.org/">core</a>
+	<a href="https://surf.suckless.org/">surf</a>
+	<a href="https://tools.suckless.org/">tools</a>
+	<a href="https://libs.suckless.org/">libs</a>
+	<a href="https://ev.suckless.org/">e.V.</a>
+	<span class="right">
+		<a href="https://dl.suckless.org/">download</a>
+		<a href="https://git.suckless.org/">source</a>
+	</span>
+</div>
+<hr class="hidden"/>
+<div id="content">
+<div id="nav">
+	<ul>
+	<li><a href="../../index.html">about</a></li>
+	<li><a href="../index.html"><b>customisation/</b></a>
+		<ul>
+		<li><a href="../customfuncs/index.html">customfuncs/</a></li>
+		<li><a href="../font/index.html">font/</a></li>
+		<li><a href="index.html"><b>noapps/</b></a></li>
+		<li><a href="../patches_in_git/index.html">patches in git/</a></li>
+		<li><a href="../rules/index.html">rules/</a></li>
+		<li><a href="../tagmask/index.html">tagmask/</a></li>
+		<li><a href="../windows_key/index.html">windows key/</a></li>
+		</ul>
+	</li>
+	<li><a href="../../dynamic_window_management/index.html">dynamic window management/</a></li>
+	<li><a href="../../faq/index.html">faq/</a></li>
+	<li><a href="../../multi-monitor/index.html">multi monitor/</a></li>
+	<li><a href="../../multi-pointer/index.html">multi pointer/</a></li>
+	<li><a href="../../patches/index.html">patches/</a></li>
+	<li><a href="../../screenshots/index.html">screenshots/</a></li>
+	<li><a href="../../status_monitor/index.html">status monitor/</a></li>
+	<li><a href="../../tutorial/index.html">tutorial/</a></li>
+	</ul>
+</div>
+<hr class="hidden"/>
+<div id="main">
+
+<h1>Remove application defaults from config.h</h1>
+<p>The rules array is initialized, by default, to treat windows of class <code>Gimp</code>
+and <code>Firefox</code> in a special way. If, like me, you don't want any application to
+be treated in a special way, you must be careful when editing the rules array
+initialization code.</p>
+<p>The original code describes what each value represents within the Rule
+structure.</p>
+<pre><code>static Rule rules[] = {
+	/* class      instance    title       tags mask     isfloating   monitor */
+	{ "Gimp",     NULL,       NULL,       0,            True,        -1 },
+	{ "Firefox",  NULL,       NULL,       1 &lt;&lt; 8,       True,        -1 },
+};
+</code></pre>
+<p>For instance, Gimp and Firefox will be labeled as floating windows, even if the
+layout selected is Monocle or Tiled. In particular, the tag mask will attach
+Firefox to tag '9'.</p>
+<p>If we don't want any window class to be treated in a special way, we need to
+initialize rules with at least one element:</p>
+<pre><code>static Rule rules[] = {
+	/* class      instance    title       tags mask     isfloating   monitor */
+	{ NULL,       NULL,       NULL,       0,            False,       -1 },
+};
+</code></pre>
+<p>The code in dwm.c will check that the <code>class</code> element is not NULL before any
+matching is done.</p>
+<pre><code>/* rule matching */
+XGetClassHint(dpy, c-&gt;win, &amp;ch);
+for(i = 0; i &lt; LENGTH(rules); i++) {
+	r = &amp;rules[i];
+	if((!r-&gt;title || strstr(c-&gt;name, r-&gt;title))
+			&amp;&amp; (!r-&gt;class || (ch.res_class &amp;&amp; strstr(ch.res_class, r-&gt;class)))
+			&amp;&amp; (!r-&gt;instance || (ch.res_name &amp;&amp; strstr(ch.res_name, r-&gt;instance)))) {
+		c-&gt;isfloating = r-&gt;isfloating;
+		c-&gt;tags |= r-&gt;tags &amp; TAGMASK;
+	}
+}
+</code></pre>
+<p>This code assumes the rules array has at least one element, and that the first
+rule that does not match will apply to all window classes. Therefore, the rule
+we just made, is the default rule for all new windows and therefore it is
+important you set the <code>tags mask</code> and <code>isfloating</code> elements correctly.</p>
+</div>
+
+</div>
+
+</html>

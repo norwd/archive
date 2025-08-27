@@ -1,0 +1,132 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>dwm - dynamic window manager | suckless.org software that sucks less</title>
+	<link rel="stylesheet" type="text/css" href="https://suckless.org/pub/style.css"/>
+</head>
+
+<div id="header">
+	<a href="https://suckless.org/"><img src="https://suckless.org/logo.svg" alt=""/></a>&nbsp;
+	<a id="headerLink" href="https://suckless.org/">suckless.org</a>
+	<span class="hidden"> - </span>
+	<span id="headerSubtitle">dwm - dynamic window manager</span>
+</div>
+<hr class="hidden"/>
+<div id="menu">
+	<a href="https://suckless.org/">home</a>
+	<a href="../../index.html"><b>dwm</b></a>
+	<a href="https://st.suckless.org/">st</a>
+	<a href="https://core.suckless.org/">core</a>
+	<a href="https://surf.suckless.org/">surf</a>
+	<a href="https://tools.suckless.org/">tools</a>
+	<a href="https://libs.suckless.org/">libs</a>
+	<a href="https://ev.suckless.org/">e.V.</a>
+	<span class="right">
+		<a href="https://dl.suckless.org/">download</a>
+		<a href="https://git.suckless.org/">source</a>
+	</span>
+</div>
+<hr class="hidden"/>
+<div id="content">
+<div id="nav">
+	<ul>
+	<li><a href="../../index.html">about</a></li>
+	<li><a href="../index.html"><b>customisation/</b></a>
+		<ul>
+		<li><a href="../customfuncs/index.html">customfuncs/</a></li>
+		<li><a href="../font/index.html">font/</a></li>
+		<li><a href="../noapps/index.html">noapps/</a></li>
+		<li><a href="../patches_in_git/index.html">patches in git/</a></li>
+		<li><a href="../rules/index.html">rules/</a></li>
+		<li><a href="index.html"><b>tagmask/</b></a></li>
+		<li><a href="../windows_key/index.html">windows key/</a></li>
+		</ul>
+	</li>
+	<li><a href="../../dynamic_window_management/index.html">dynamic window management/</a></li>
+	<li><a href="../../faq/index.html">faq/</a></li>
+	<li><a href="../../multi-monitor/index.html">multi monitor/</a></li>
+	<li><a href="../../multi-pointer/index.html">multi pointer/</a></li>
+	<li><a href="../../patches/index.html">patches/</a></li>
+	<li><a href="../../screenshots/index.html">screenshots/</a></li>
+	<li><a href="../../status_monitor/index.html">status monitor/</a></li>
+	<li><a href="../../tutorial/index.html">tutorial/</a></li>
+	</ul>
+</div>
+<hr class="hidden"/>
+<div id="main">
+
+<h1>How does a tag-mask work?</h1>
+<p>There exists extensive documentation in this wiki about tags in dwm.</p>
+<p>This article will concentrate on how to manage bit masks in default rules.</p>
+<p>In order to manage a number of tags efficiently, dwm uses bitmasks.</p>
+<p>Looking at dwm's code, the tags array is defined in the familiar way:</p>
+<pre><code>static const char tags[][MAXTAGLEN] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+</code></pre>
+<p>We have 9 tags, labelled numerically (but the labels are just that, labels;
+they don't have any intrinsic values).</p>
+<p>Within dwm's code, each client's tag list is managed as a bit mask: given an
+integer binary representation, tags are associated from the least significant
+bit (rightmost) to the most significant bit (leftmost).</p>
+<p>For example, tag '1' is 000000001, while tag 9 is 100000000. Tag '3' is
+000000100 (third from the right)</p>
+<p>The code in dwm.c that uses the rules array matches the current client
+properties with each rule, and when matched, it bit-ands the tags member of the
+rules array element with TAGMASK, then bit-ors it with the client's current tag
+mask.</p>
+<pre><code>/* rule matching */
+XGetClassHint(dpy, c-&gt;win, &amp;ch);
+for(i = 0; i &lt; LENGTH(rules); i++) {
+	r = &amp;rules[i];
+	if((!r-&gt;title || strstr(c-&gt;name, r-&gt;title))
+			&amp;&amp; (!r-&gt;class || (ch.res_class &amp;&amp; strstr(ch.res_class, r-&gt;class)))
+			&amp;&amp; (!r-&gt;instance || (ch.res_name &amp;&amp; strstr(ch.res_name, r-&gt;instance)))) {
+		c-&gt;isfloating = r-&gt;isfloating;
+		c-&gt;tags |= r-&gt;tags &amp; TAGMASK;
+	}
+}
+</code></pre>
+<p>The client's tags value is therefore built sequentially through the rules. If
+the tagmask in rules is 0, the currently selected tag becomes the client's tags
+value.</p>
+<pre><code>if(!c-&gt;tags)
+	c-&gt;tags = tagset[seltags];
+</code></pre>
+<p>TAGMASK is the all-one bit mask, setting to 1 all the bits corresponding to a
+tag in the tags array. TAGMASK is defined in dwm.c as:</p>
+<pre><code>#define TAGMASK ((int)((1LL &lt;&lt; LENGTH(tags)) - 1))
+</code></pre>
+<p>and would produce, for the standard tags array, the bit configuration 111111111
+(nine 1's).</p>
+<p>The reason for using TAGMASK is that it disallows the rules array to select a
+tag for which we do not have a representation in the tags array.</p>
+<p>Now, this method of representing tags allows us to express our preferences
+regarding tags using bit-wise operators.</p>
+<h2>When are tagmasks used?</h2>
+<p>Please note that dwm always uses tagmasks: even when one tag is selected as the
+visible tag, it is actually internally managed as a tagmask.</p>
+<p>To prove this, use the command combination that allows you to bring more than
+one tag into view (usually Mod1-Ctrl-tagnumber). If you select tags 1, 2 and 3,
+and then open a new xterm using Mod1-Shift-Return, the new xterm will be tagged
+with tags 1, 2 and 3.</p>
+<p>A very powerful feature.</p>
+<h2>What does tagmask 0 mean?</h2>
+<p>It means that the current tagmask should be selected for this window: if more
+than one tag are currently visible, all the currently visible tags are going to
+be associated to that window.</p>
+<h2>What does tagmask 1 &lt;&lt; 8 mean?</h2>
+<p>1 shifted to the left by eight positions generates mask 100000000, selecting
+tag '9' (ninth from the right) in the the tags array.</p>
+<h2>What does ~0 mean?</h2>
+<p>Complement of 0 is all 1's. This indicates all tags should be selected. The tag
+mask in rules is then filtered using the TAGMASK macro to adapt the mask to
+just the available tags.</p>
+<h2>What does (1 &lt;&lt; 8) - 1 mean?</h2>
+<p>1 &lt;&lt; 8 selects tag '9' only (100000000). Subtracting 1 to that bitmask
+transforms all the 0's to the right of that tagmask into 1's (011111111),
+effectively selecting all tags except '9'.</p>
+</div>
+
+</div>
+
+</html>

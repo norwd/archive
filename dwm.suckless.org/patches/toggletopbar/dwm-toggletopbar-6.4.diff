@@ -1,0 +1,38 @@
+diff -up a/config.def.h b/config.def.h
+--- a/config.def.h	2022-10-04 19:38:18.000000000 +0200
++++ b/config.def.h	2022-10-22 14:12:40.528975869 +0200
+@@ -64,6 +64,7 @@ static const Key keys[] = {
+ 	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },
+ 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
+ 	{ MODKEY,                       XK_b,      togglebar,      {0} },
++	{ MODKEY,                       XK_t,      toggletopbar,   {0} },
+ 	{ MODKEY,                       XK_j,      focusstack,     {.i = +1 } },
+ 	{ MODKEY,                       XK_k,      focusstack,     {.i = -1 } },
+ 	{ MODKEY,                       XK_i,      incnmaster,     {.i = +1 } },
+diff -up a/dwm.c b/dwm.c
+--- a/dwm.c	2022-10-04 19:38:18.000000000 +0200
++++ b/dwm.c	2022-10-22 14:12:14.142976534 +0200
+@@ -211,6 +211,7 @@ static void tag(const Arg *arg);
+ static void tagmon(const Arg *arg);
+ static void tile(Monitor *m);
+ static void togglebar(const Arg *arg);
++static void toggletopbar(const Arg *arg);
+ static void togglefloating(const Arg *arg);
+ static void toggletag(const Arg *arg);
+ static void toggleview(const Arg *arg);
+@@ -1701,6 +1702,15 @@ togglebar(const Arg *arg)
+ 	updatebarpos(selmon);
+ 	XMoveResizeWindow(dpy, selmon->barwin, selmon->wx, selmon->by, selmon->ww, bh);
+ 	arrange(selmon);
++}
++
++void
++toggletopbar(const Arg *arg)
++{
++    selmon->topbar = !selmon->topbar;
++	updatebarpos(selmon);
++	XMoveResizeWindow(dpy, selmon->barwin, selmon->wx, selmon->by, selmon->ww, bh);
++	arrange(selmon);
+ }
+ 
+ void

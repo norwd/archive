@@ -1,0 +1,75 @@
+From c107bca4d607041850166bebe68e136557749702 Mon Sep 17 00:00:00 2001
+From: tch69 <ifa26417@outlook.com.vn>
+Date: Sun, 6 Apr 2025 11:46:32 +0700
+Subject: [PATCH] allow setting ENV vars inside config.h
+
+---
+ config.def.h |  5 +++++
+ dwm.c        | 14 ++++++++++++++
+ 2 files changed, 19 insertions(+)
+
+diff --git a/config.def.h b/config.def.h
+index 9efa774..9d93742 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -44,6 +44,11 @@ static const Layout layouts[] = {
+ 	{ "[M]",      monocle },
+ };
+
++static const Env envs[] = {
++	/* variable 	value */
++	{ "TERMINAL",	"st" },
++};
++
+ /* key definitions */
+ #define MODKEY Mod1Mask
+ #define TAGKEYS(KEY,TAG) \
+diff --git a/dwm.c b/dwm.c
+index f1d86b2..30cf88a 100644
+--- a/dwm.c
++++ b/dwm.c
+@@ -99,6 +99,11 @@ struct Client {
+ 	Window win;
+ };
+
++typedef struct {
++	const char *variable;
++	const char *value;
++} Env;
++
+ typedef struct {
+ 	unsigned int mod;
+ 	KeySym keysym;
+@@ -198,6 +203,7 @@ static void scan(void);
+ static int sendevent(Client *c, Atom proto);
+ static void sendmon(Client *c, Monitor *m);
+ static void setclientstate(Client *c, long state);
++static void setenvvars(void);
+ static void setfocus(Client *c);
+ static void setfullscreen(Client *c, int fullscreen);
+ static void setlayout(const Arg *arg);
+@@ -1467,6 +1473,13 @@ sendevent(Client *c, Atom proto)
+ 	return exists;
+ }
+
++static void
++setenvvars(void)
++{
++	for (size_t i = 0; i < LENGTH(envs); i++)
++		setenv(envs[i].variable, envs[i].value, 1);
++}
++
+ void
+ setfocus(Client *c)
+ {
+@@ -2152,6 +2165,7 @@ main(int argc, char *argv[])
+ 	if (!(dpy = XOpenDisplay(NULL)))
+ 		die("dwm: cannot open display");
+ 	checkotherwm();
++	setenvvars();
+ 	setup();
+ #ifdef __OpenBSD__
+ 	if (pledge("stdio rpath proc exec", NULL) == -1)
+--
+2.48.1
+
