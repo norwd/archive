@@ -1,0 +1,105 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>dwm - dynamic window manager | suckless.org software that sucks less</title>
+	<link rel="stylesheet" type="text/css" href="https://suckless.org/pub/style.css"/>
+</head>
+
+<div id="header">
+	<a href="https://suckless.org/"><img src="https://suckless.org/logo.svg" alt=""/></a>&nbsp;
+	<a id="headerLink" href="https://suckless.org/">suckless.org</a>
+	<span class="hidden"> - </span>
+	<span id="headerSubtitle">dwm - dynamic window manager</span>
+</div>
+<hr class="hidden"/>
+<div id="menu">
+	<a href="https://suckless.org/">home</a>
+	<a href="../index.html"><b>dwm</b></a>
+	<a href="https://st.suckless.org/">st</a>
+	<a href="https://core.suckless.org/">core</a>
+	<a href="https://surf.suckless.org/">surf</a>
+	<a href="https://tools.suckless.org/">tools</a>
+	<a href="https://libs.suckless.org/">libs</a>
+	<a href="https://ev.suckless.org/">e.V.</a>
+	<span class="right">
+		<a href="https://dl.suckless.org/">download</a>
+		<a href="https://git.suckless.org/">source</a>
+	</span>
+</div>
+<hr class="hidden"/>
+<div id="content">
+<div id="nav">
+	<ul>
+	<li><a href="../index.html">about</a></li>
+	<li><a href="../customisation/index.html">customisation/</a></li>
+	<li><a href="../dynamic_window_management/index.html">dynamic window management/</a></li>
+	<li><a href="../faq/index.html">faq/</a></li>
+	<li><a href="../multi-monitor/index.html">multi monitor/</a></li>
+	<li><a href="index.html"><b>multi pointer/</b></a></li>
+	<li><a href="../patches/index.html">patches/</a></li>
+	<li><a href="../screenshots/index.html">screenshots/</a></li>
+	<li><a href="../status_monitor/index.html">status monitor/</a></li>
+	<li><a href="../tutorial/index.html">tutorial/</a></li>
+	</ul>
+</div>
+<hr class="hidden"/>
+<div id="main">
+
+<h1>Multi-pointer</h1>
+<p>Multi-pointer can be an alternative to multi-seat. Compared to multi-seat,
+multi-pointer is easier to setup (because no multi-seat experience), allows
+hardware acceleration and at least one monitor is required. Bad news? Both
+shared the same xorg server, most things are shared.</p>
+<p>As of now, no window manager with active development support multi-pointers
+with multiple active window. Dwm does not support multi-pointer but here's a
+crappy version in which the other users can only control one application
+through keyboard since there is only one active window at a time.</p>
+<h2>Configuring inputs</h2>
+<p>One way to configure input devices is via the <code>xinput</code> tool. Without any
+arguments given, it should list all the input devices in short format.</p>
+<pre><code>xinput
+</code></pre>
+<p>It will print all the master device (cursors on screen) and the slave device
+(physical device). Master device comes in pair, which is pointer and keyboard.</p>
+<h2>Adding master device</h2>
+<p>To create another pointer for a new user. First, we add a master device.</p>
+<pre><code>xinput create-master Name
+</code></pre>
+<p>Another pointer should appear in the center of the screen by now.</p>
+<h2>Assigning slave device</h2>
+<p>We will then require to assign a slave device to the master device. The <em>id</em> of
+the <strong>master</strong> and <strong>slave</strong> device can be found by using <code>xinput</code>.</p>
+<pre><code>xinput reattach &lt;slave&gt; &lt;master&gt;
+</code></pre>
+<p>By the end of this, both pointer can move simultaneously but keyboard cannot
+type in different application simultaneously, this is normal for window manager
+without multi-pointer support.</p>
+<h2>Point master device to window</h2>
+<p>Time to point the master device to the respective window, do this for both
+pointer and keyboard master device (not sure if specifying one works).</p>
+<p>The <strong>window</strong> is the PID of window which can be checked with either <code>xprop</code>
+(useless sometimes) or <code>xdotool selectwindow</code>.</p>
+<pre><code>xinput set-cp &lt;window&gt; &lt;master&gt;
+</code></pre>
+<p>If the setup is successful, the other keyboard should be able to input only in
+the window. In which multiple user can play different games at the same time.</p>
+<h2>Cleaning up</h2>
+<p>Remove all the master device that was created.</p>
+<pre><code>xinput remove-master &lt;master&gt;
+</code></pre>
+<p>And <code>reattach</code> the pointer or keyboard back to the main master device.</p>
+<h2>Ideas</h2>
+<ul>
+<li>The other could have used Xephyr or Xnest to have his own session instead.</li>
+</ul>
+<h2>See also</h2>
+<ul>
+<li><a href="https://ao2.it/en/blog/2010/01/19/poor-mans-multi-touch-using-multiple-mice-xorg">https://ao2.it/en/blog/2010/01/19/poor-mans-multi-touch-using-multiple-mice-xorg</a></li>
+<li><a href="https://www.x.org/wiki/Development/Documentation/MPX/">https://www.x.org/wiki/Development/Documentation/MPX/</a></li>
+</ul>
+</div>
+
+</div>
+
+</html>

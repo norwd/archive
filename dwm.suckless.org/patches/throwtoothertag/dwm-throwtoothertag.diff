@@ -1,0 +1,52 @@
+From bca2e4381ab60a54174bac3c15ba8776740274f3 Mon Sep 17 00:00:00 2001
+From: "Mike S. Stevenson" <mikess@disroot.org>
+Date: Tue, 8 Oct 2024 20:20:29 -0600
+Subject: [PATCH] tag({0}) tags the selected window to the previous tagset.
+
+In the same way that view({0}) toggles between tagsets.
+
+Likewise, tag({0}) shall be bound to mod+shift+tab, corresponding to the
+existing mod+tab binding.
+---
+ config.def.h |  1 +
+ dwm.c        | 11 +++++++----
+ 2 files changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/config.def.h b/config.def.h
+index 9efa774..97606d7 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -73,6 +73,7 @@ static const Key keys[] = {
+ 	{ MODKEY,                       XK_l,      setmfact,       {.f = +0.05} },
+ 	{ MODKEY,                       XK_Return, zoom,           {0} },
+ 	{ MODKEY,                       XK_Tab,    view,           {0} },
++	{ MODKEY|ShiftMask,             XK_Tab,    tag,            {0} },
+ 	{ MODKEY|ShiftMask,             XK_c,      killclient,     {0} },
+ 	{ MODKEY,                       XK_t,      setlayout,      {.v = &layouts[0]} },
+ 	{ MODKEY,                       XK_f,      setlayout,      {.v = &layouts[1]} },
+diff --git a/dwm.c b/dwm.c
+index 2f2b871..a11aa99 100644
+--- a/dwm.c
++++ b/dwm.c
+@@ -1669,11 +1669,14 @@ spawn(const Arg *arg)
+ void
+ tag(const Arg *arg)
+ {
+-	if (selmon->sel && arg->ui & TAGMASK) {
++	if(!selmon->sel)
++		return;
++	if (arg->ui & TAGMASK)
+ 		selmon->sel->tags = arg->ui & TAGMASK;
+-		focus(NULL);
+-		arrange(selmon);
+-	}
++	else
++		selmon->sel->tags = selmon->tagset[selmon->seltags ^ 1];
++	focus(NULL);
++	arrange(selmon);
+ }
+ 
+ void
+-- 
+2.46.2
+

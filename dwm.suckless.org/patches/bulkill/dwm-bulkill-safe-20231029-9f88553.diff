@@ -1,0 +1,78 @@
+From c40d70e238b7e5e8ebfd16b435c56af55a541912 Mon Sep 17 00:00:00 2001
+From: ysl2 <www.songli.yu@gmail.com>
+Date: Sun, 29 Oct 2023 15:39:46 +0800
+Subject: [PATCH] Bulk kill: arg.ui == 0 for normal kill current client; arg.ui
+ == 1 for kill other clients in current tag (except current focusing client);
+ arg.ui == 2 for kill all clients in current tag (include focusing client).
+
+---
+ bulkill.c    | 35 +++++++++++++++++++++++++++++++++++
+ config.def.h |  3 +++
+ 2 files changed, 38 insertions(+)
+ create mode 100644 bulkill.c
+
+diff --git a/bulkill.c b/bulkill.c
+new file mode 100644
+index 0000000..732852e
+--- /dev/null
++++ b/bulkill.c
+@@ -0,0 +1,35 @@
++static void killthis(Client *c);
++static void bulkill(const Arg *arg);
++
++void
++killthis(Client *c) {
++	if (!sendevent(c, wmatom[WMDelete])) {
++		XGrabServer(dpy);
++		XSetErrorHandler(xerrordummy);
++		XSetCloseDownMode(dpy, DestroyAll);
++		XKillClient(dpy, c->win);
++		XSync(dpy, False);
++		XSetErrorHandler(xerror);
++		XUngrabServer(dpy);
++	}
++}
++
++void
++bulkill(const Arg *arg)
++{
++    Client *c;
++
++	if (!selmon->sel)
++		return;
++
++    if (!arg->ui || arg->ui == 0) {
++        killthis(selmon->sel);
++        return;
++    }
++
++    for (c = selmon->clients; c; c = c->next) {
++        if (!ISVISIBLE(c) || (arg->ui == 1 && c == selmon->sel))
++            continue;
++        killthis(c);
++    }
++}
+diff --git a/config.def.h b/config.def.h
+index 9efa774..28cfd78 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -60,6 +60,7 @@ static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn()
+ static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_cyan, "-sf", col_gray4, NULL };
+ static const char *termcmd[]  = { "st", NULL };
+ 
++#include "bulkill.c"
+ static const Key keys[] = {
+ 	/* modifier                     key        function        argument */
+ 	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },
+@@ -74,6 +75,8 @@ static const Key keys[] = {
+ 	{ MODKEY,                       XK_Return, zoom,           {0} },
+ 	{ MODKEY,                       XK_Tab,    view,           {0} },
+ 	{ MODKEY|ShiftMask,             XK_c,      killclient,     {0} },
++    { MODKEY|ControlMask,           XK_c,      bulkill,        {.ui = 1} },  // kill unselect
++    { MODKEY|ShiftMask|ControlMask, XK_c,      bulkill,        {.ui = 2} },  // killall
+ 	{ MODKEY,                       XK_t,      setlayout,      {.v = &layouts[0]} },
+ 	{ MODKEY,                       XK_f,      setlayout,      {.v = &layouts[1]} },
+ 	{ MODKEY,                       XK_m,      setlayout,      {.v = &layouts[2]} },
+-- 
+2.20.1
+
