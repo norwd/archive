@@ -1,0 +1,28 @@
+From 3451db9c35ec812f5e063a48773b1761f0d18071 Mon Sep 17 00:00:00 2001
+From: NRK <nrk@disroot.org>
+Date: Wed, 27 Oct 2021 07:45:00 +0600
+Subject: [PATCH] patch: add -t for topbar
+
+currently config.h allows users to set the value of topbar to 0.
+however if one does that, there's no way for him to get a topbar again.
+this adds a new flag -t which will force a topbar.
+---
+ dmenu.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/dmenu.c b/dmenu.c
+index 98507d9..bf5d786 100644
+--- a/dmenu.c
++++ b/dmenu.c
+@@ -718,6 +718,8 @@ main(int argc, char *argv[])
+ 			exit(0);
+ 		} else if (!strcmp(argv[i], "-b")) /* appears at the bottom of the screen */
+ 			topbar = 0;
++		else if (!strcmp(argv[i], "-t"))   /* appears at the top of the screen */
++			topbar = 1;
+ 		else if (!strcmp(argv[i], "-f"))   /* grabs keyboard before reading stdin */
+ 			fast = 1;
+ 		else if (!strcmp(argv[i], "-i")) { /* case-insensitive item matching */
+-- 
+2.33.1
+

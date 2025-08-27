@@ -1,0 +1,66 @@
+From 5622f9497f5dca83035443a0a00e89c63862b15b Mon Sep 17 00:00:00 2001
+From: Aaron Züger <contact@azureorange.xyz>
+Date: Tue, 28 Mar 2023 18:05:36 +0200
+Subject: [PATCH] Added the -no-escape flag which will stop the escape key from
+ exiting dmenu.
+
+---
+ dmenu.c | 14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
+
+diff --git a/dmenu.c b/dmenu.c
+index 4e7df12..203d9bf 100644
+--- a/dmenu.c
++++ b/dmenu.c
+@@ -1,6 +1,7 @@
+ /* See LICENSE file for copyright and license details. */
+ #include <ctype.h>
+ #include <locale.h>
++#include <stdbool.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+@@ -53,6 +54,8 @@ static XIC xic;
+ static Drw *drw;
+ static Clr *scheme[SchemeLast];
+ 
++static bool no_escape = false;
++
+ #include "config.h"
+ 
+ static int (*fstrncmp)(const char *, const char *, size_t) = strncmp;
+@@ -447,8 +450,10 @@ insert:
+ 		sel = matchend;
+ 		break;
+ 	case XK_Escape:
+-		cleanup();
+-		exit(1);
++        if (no_escape == false) {
++		    cleanup();
++		    exit(1);
++        }
+ 	case XK_Home:
+ 	case XK_KP_Home:
+ 		if (sel == matches) {
+@@ -716,6 +721,7 @@ static void
+ usage(void)
+ {
+ 	die("usage: dmenu [-bfiv] [-l lines] [-p prompt] [-fn font] [-m monitor]\n"
++        "             [-no-escape]\n"
+ 	    "             [-nb color] [-nf color] [-sb color] [-sf color] [-w windowid]");
+ }
+ 
+@@ -737,7 +743,9 @@ main(int argc, char *argv[])
+ 		else if (!strcmp(argv[i], "-i")) { /* case-insensitive item matching */
+ 			fstrncmp = strncasecmp;
+ 			fstrstr = cistrstr;
+-		} else if (i + 1 == argc)
++        } else if (!strcmp(argv[i], "-no-escape"))   /* disable escape */
++			no_escape = !no_escape;
++		else if (i + 1 == argc)
+ 			usage();
+ 		/* these options take one argument */
+ 		else if (!strcmp(argv[i], "-l"))   /* number of lines in vertical list */
+-- 
+2.40.0
+

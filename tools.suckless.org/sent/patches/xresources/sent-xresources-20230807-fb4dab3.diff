@@ -1,0 +1,91 @@
+From a09330410518e8baa127493aa79704f7726c27c7 Mon Sep 17 00:00:00 2001
+From: Fikri Rahmat Nurhidayat <fikrirnurhidayat@gmail.com>
+Date: Mon, 7 Aug 2023 15:59:57 +0700
+Subject: [PATCH] use xrdb value for fontfallbacks, and colors
+
+---
+ config.def.h |  4 ++--
+ sent.c       | 33 +++++++++++++++++++++++++++++++++
+ 2 files changed, 35 insertions(+), 2 deletions(-)
+
+diff --git a/config.def.h b/config.def.h
+index 60eb376..50a9808 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -1,6 +1,6 @@
+ /* See LICENSE file for copyright and license details. */
+-
+-static char *fontfallbacks[] = {
++#define MAXFONTS 10
++static char *fontfallbacks[MAXFONTS] = {
+ 	"dejavu sans",
+ 	"roboto",
+ 	"ubuntu",
+diff --git a/sent.c b/sent.c
+index dfadd3a..5875f5e 100644
+--- a/sent.c
++++ b/sent.c
+@@ -18,6 +18,7 @@
+ #include <X11/Xlib.h>
+ #include <X11/Xutil.h>
+ #include <X11/Xft/Xft.h>
++#include <X11/Xresource.h>
+ 
+ #include "arg.h"
+ #include "util.h"
+@@ -105,6 +106,7 @@ static void xdraw(void);
+ static void xhints(void);
+ static void xinit(void);
+ static void xloadfonts(void);
++static void xresources(void);
+ 
+ static void bpress(XEvent *);
+ static void cmessage(XEvent *);
+@@ -573,6 +575,7 @@ xinit(void)
+ 
+ 	if (!(xw.dpy = XOpenDisplay(NULL)))
+ 		die("sent: Unable to open display");
++	xresources();
+ 	xw.scr = XDefaultScreen(xw.dpy);
+ 	xw.vis = XDefaultVisual(xw.dpy, xw.scr);
+ 	resize(DisplayWidth(xw.dpy, xw.scr), DisplayHeight(xw.dpy, xw.scr));
+@@ -632,6 +635,36 @@ xloadfonts(void)
+ 		free(fstrs[j]);
+ }
+ 
++void
++xresources(void) {
++	XrmInitialize();
++	char* xrm;
++	if ((xrm = XResourceManagerString(xw.dpy))) {
++		char *type;
++		XrmDatabase xdb = XrmGetStringDatabase(xrm);
++		XrmValue xval;
++		if (XrmGetResource(xdb, "sent.font", "*", &type, &xval)) {
++			int fc = 0;
++			char *token;
++			char *delimiter = ",";
++			char *font_string = (char *)xval.addr;
++
++			// Tokenize the font names and store them in the array
++			token = strtok(font_string, delimiter);
++			while (token != NULL && fc < MAXFONTS) {
++				fontfallbacks[fc] = strdup(token);
++				fc++;
++				token = strtok(NULL, delimiter);
++			}
++		}
++		if (XrmGetResource(xdb, "sent.foreground", "*", &type, &xval))
++			colors[0] = strdup(xval.addr);
++		if (XrmGetResource(xdb, "sent.background", "*", &type, &xval))
++			colors[1] = strdup(xval.addr);
++		XrmDestroyDatabase(xdb);
++	}
++}
++
+ void
+ bpress(XEvent *e)
+ {
+-- 
+2.41.0
+

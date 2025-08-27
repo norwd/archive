@@ -1,0 +1,147 @@
+From 014eabf578fb7d4b37c368c6e110e99897b6013d Mon Sep 17 00:00:00 2001
+From: Mahdi Mirzadeh <mahdi@mirzadeh.pro>
+Date: Wed, 22 Jun 2022 04:26:22 +0430
+Subject: [PATCH] handle tabbed settings from Xresources + reload all tabbed
+ instances by running 'pidof tabbed | xargs kill -s USR1'
+
+---
+ config.def.h |  2 +-
+ tabbed.c     | 67 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 68 insertions(+), 1 deletion(-)
+
+diff --git a/config.def.h b/config.def.h
+index defa426..f6d59b2 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -1,7 +1,7 @@
+ /* See LICENSE file for copyright and license details. */
+ 
+ /* appearance */
+-static const char font[]        = "monospace:size=9";
++static const char* font         = "monospace:size=9";
+ static const char* normbgcolor  = "#222222";
+ static const char* normfgcolor  = "#cccccc";
+ static const char* selbgcolor   = "#555555";
+diff --git a/tabbed.c b/tabbed.c
+index eafe28a..829c58b 100644
+--- a/tabbed.c
++++ b/tabbed.c
+@@ -16,6 +16,7 @@
+ #include <X11/Xutil.h>
+ #include <X11/XKBlib.h>
+ #include <X11/Xft/Xft.h>
++#include <X11/Xresource.h>
+ 
+ #include "arg.h"
+ 
+@@ -47,6 +48,16 @@
+ #define CLEANMASK(mask)         (mask & ~(numlockmask | LockMask))
+ #define TEXTW(x)                (textnw(x, strlen(x)) + dc.font.height)
+ 
++#define XRESOURCE_LOAD_META(NAME)						\
++	if(!XrmGetResource(xrdb, "tabbed." NAME, "tabbed." NAME, &type, &ret))	\
++		XrmGetResource(xrdb, "*." NAME, "*." NAME, &type, &ret);	\
++	if (ret.addr != NULL && !strncmp("String", type, 64))
++
++#define XRESOURCE_LOAD_STRING(NAME, DST)	\
++	XRESOURCE_LOAD_META(NAME)		\
++	DST = ret.addr;
++
++
+ enum { ColFG, ColBG, ColLast };       /* color */
+ enum { WMProtocols, WMDelete, WMName, WMState, WMFullscreen,
+        XEmbed, WMSelectTab, WMLast }; /* default atoms */
+@@ -135,6 +146,9 @@ static void updatenumlockmask(void);
+ static void updatetitle(int c);
+ static int xerror(Display *dpy, XErrorEvent *ee);
+ static void xsettitle(Window w, const char *str);
++static void xrdb_load(void);
++static void reload(int sig);
++static void writecolors(void);
+ 
+ /* variables */
+ static int screen;
+@@ -172,6 +186,8 @@ static const char *geometry;
+ 
+ char *argv0;
+ 
++static int colors_changed = 0;
++
+ /* configuration, allows nested code to access above variables */
+ #include "config.h"
+ 
+@@ -327,6 +343,8 @@ drawbar(void)
+ 	int c, cc, fc, width;
+ 	char *name = NULL;
+ 
++	if (colors_changed == 1) writecolors();
++
+ 	if (nclients == 0) {
+ 		dc.x = 0;
+ 		dc.w = ww;
+@@ -1273,6 +1291,53 @@ usage(void)
+ 	    "       [-u color] [-U color] command...\n", argv0);
+ }
+ 
++void
++xrdb_load(void)
++{
++	char *xrm;
++	char *type;
++	XrmDatabase xrdb;
++	XrmValue ret;
++	Display *dpy;
++
++	if(!(dpy = XOpenDisplay(NULL)))
++		die("Can't open display\n");
++
++	XrmInitialize();
++	xrm = XResourceManagerString(dpy);
++
++	if (xrm != NULL) {
++		xrdb = XrmGetStringDatabase(xrm);
++		XRESOURCE_LOAD_STRING("color0", normbgcolor);
++		XRESOURCE_LOAD_STRING("color12", normfgcolor);
++		XRESOURCE_LOAD_STRING("color12", selbgcolor);
++		XRESOURCE_LOAD_STRING("color0", selfgcolor);
++		XRESOURCE_LOAD_STRING("color0", urgbgcolor);
++		XRESOURCE_LOAD_STRING("color1", urgfgcolor);
++		XRESOURCE_LOAD_STRING("font", font);
++	}
++	XFlush(dpy);
++}
++
++void
++reload(int sig) {
++	xrdb_load();
++	colors_changed=1;
++	signal(SIGUSR1, reload);
++}
++
++void
++writecolors(void) {
++	dc.norm[ColBG] = getcolor(normbgcolor);
++	dc.norm[ColFG] = getcolor(normfgcolor);
++	dc.sel[ColBG] = getcolor(selbgcolor);
++	dc.sel[ColFG] = getcolor(selfgcolor);
++	dc.urg[ColBG] = getcolor(urgbgcolor);
++	dc.urg[ColFG] = getcolor(urgfgcolor);
++
++	colors_changed = 0;
++}
++
+ int
+ main(int argc, char *argv[])
+ {
+@@ -1354,6 +1419,8 @@ main(int argc, char *argv[])
+ 	if (!(dpy = XOpenDisplay(NULL)))
+ 		die("%s: cannot open display\n", argv0);
+ 
++	xrdb_load();
++	signal(SIGUSR1, reload);
+ 	setup();
+ 	printf("0x%lx\n", win);
+ 	fflush(NULL);
+-- 
+2.35.2
+

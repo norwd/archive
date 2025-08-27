@@ -1,0 +1,122 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>tools | suckless.org software that sucks less</title>
+	<link rel="stylesheet" type="text/css" href="https://suckless.org/pub/style.css"/>
+</head>
+
+<div id="header">
+	<a href="https://suckless.org/"><img src="https://suckless.org/logo.svg" alt=""/></a>&nbsp;
+	<a id="headerLink" href="https://suckless.org/">suckless.org</a>
+	<span class="hidden"> - </span>
+	<span id="headerSubtitle">tools</span>
+</div>
+<hr class="hidden"/>
+<div id="menu">
+	<a href="https://suckless.org/">home</a>
+	<a href="https://dwm.suckless.org/">dwm</a>
+	<a href="https://st.suckless.org/">st</a>
+	<a href="https://core.suckless.org/">core</a>
+	<a href="https://surf.suckless.org/">surf</a>
+	<a href="../index.html"><b>tools</b></a>
+	<a href="https://libs.suckless.org/">libs</a>
+	<a href="https://ev.suckless.org/">e.V.</a>
+	<span class="right">
+		<a href="https://dl.suckless.org/">download</a>
+		<a href="https://git.suckless.org/">source</a>
+	</span>
+</div>
+<hr class="hidden"/>
+<div id="content">
+<div id="nav">
+	<ul>
+	<li><a href="../index.html">about</a></li>
+	<li><a href="../9base/index.html">9base/</a></li>
+	<li><a href="../blind/index.html">blind/</a></li>
+	<li><a href="../dmenu/index.html">dmenu/</a></li>
+	<li><a href="../farbfeld/index.html">farbfeld/</a></li>
+	<li><a href="../ii/index.html">ii/</a></li>
+	<li><a href="../lchat/index.html">lchat/</a></li>
+	<li><a href="index.html"><b>quark/</b></a>
+		<ul>
+		<li><a href="patches/index.html">patches/</a></li>
+		</ul>
+	</li>
+	<li><a href="../scroll/index.html">scroll/</a></li>
+	<li><a href="../sent/index.html">sent/</a></li>
+	<li><a href="../sic/index.html">sic/</a></li>
+	<li><a href="../slock/index.html">slock/</a></li>
+	<li><a href="../slstatus/index.html">slstatus/</a></li>
+	<li><a href="../tabbed/index.html">tabbed/</a></li>
+	<li><a href="../x/index.html">x/</a></li>
+	</ul>
+</div>
+<hr class="hidden"/>
+<div id="main">
+
+<p><img src="quark.svg" alt="quark" /></p>
+<p>quark is an extremely small and simple HTTP GET/HEAD-only web server for static
+content.</p>
+<p>The goal of this project is to do one thing and do it well, namely serving
+static web directories and doing that right. Most other solutions either are
+too complex (CGI support, dependencies on external libraries, ...) or lack
+features you expect (TLS, virtual hosts, partial content, not modified since,
+...). quark tries to find a midway and just restrict itself to being static
+while still offering functions you only find in more bloated solutions and
+being as secure as possible (chroot, privilege dropping, strict parsers, no
+malloc at runtime, pledge, unveil, ...).</p>
+<h2>Static web</h2>
+<p>We believe that most of the web does not need to be dynamic and increasing
+complexity on server-side applications is one of the main reasons for the web
+obesity crisis. The common approach nowadays is to do everything on the server,
+including parsing requests, modifying files and databases, generating HTML and
+all that using unfit languages like PHP or JavaScript, which is a security and
+efficiency nightmare.</p>
+<p>Over the years we have seen massive amounts of security holes in numerous
+applications of tools commonly used for these jobs (PHP, node.js,
+CGI-implementations, ...). The reason why we are in this situation in the first
+place is due to the fact that the jobs of data processing and data
+presentation, which should be separate, converged together into one.</p>
+<p>The solution is to rely on static regeneration independent from the web server,
+which just serves static files. You can still implement e.g. form handlers for
+dynamic content which run as their own network instance and operate
+independently from the web server. What's left is just to generate the static
+content using the database and repeating this process in case the database is
+updated.</p>
+<p>This way the jobs of data processing and data presentation are separate again,
+with many advantages. All requests are handled with constantly low latency,
+with the possibility of serving everything directly from RAM (using a ramfs).
+Separated concerns make it very unattractive to attack the web server itself
+and the attack surface that is left, if it is present at all, is the separate
+form handler, which can be implemented in a very simple, safe and efficient
+manner.</p>
+<p>In case there is an attack on this infrastructure and the attacker manages to
+DoS the form handler, the serving of content is still unaffected.</p>
+<h2>TLS-support</h2>
+<p>quark does not natively support TLS. A more suckless approach than to
+implement TLS into it is to use a TLS reverse proxy (e.g. <a href="https://github.com/hannesm/tlstunnel">tlstunnel</a>,
+<a href="https://hitch-tls.org/">hitch</a> or <a href="https://www.stunnel.org/">stunnel</a>).
+It accepts encrypted TLS connections and forwards them as unencrypted
+requests to a server. In this case, one can run such a reverse proxy to listen
+on a public IP address and forward the requests to a local port or UNIX-domain socket.</p>
+<h2>Solutions</h2>
+<ul>
+<li><a href="https://git.codemadness.org/saait/file/README.html">saait</a> site generator</li>
+<li><a href="https://git.codemadness.org/stagit/file/README.html">stagit</a> git page generator</li>
+</ul>
+<h2>Development</h2>
+<p>You can <a href="https://git.suckless.org/quark">browse</a> the source code repository or get a
+copy with the following command:</p>
+<pre><code>git clone https://git.suckless.org/quark
+</code></pre>
+<h2>Author</h2>
+<ul>
+<li>Laslo Hunhold (dev@frign.de)</li>
+</ul>
+<p>Please contact me when you find information that could be added to this page.</p>
+</div>
+
+</div>
+
+</html>

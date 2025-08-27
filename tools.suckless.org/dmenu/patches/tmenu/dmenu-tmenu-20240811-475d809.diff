@@ -1,0 +1,114 @@
+From a90fe0dcad642e4c314d08a86f0848c7c5bc87cb Mon Sep 17 00:00:00 2001
+From: Robert Bilski <robert@rbilski.com>
+Date: Sun, 11 Aug 2024 16:27:58 +0200
+Subject: [PATCH] Update tmenu patch
+
+---
+ config.def.h |  3 +++
+ dmenu.1      |  3 +++
+ dmenu.c      | 25 +++++++++++++++++++------
+ 3 files changed, 25 insertions(+), 6 deletions(-)
+
+diff --git a/config.def.h b/config.def.h
+index 1edb647..805d8c4 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -21,3 +21,6 @@ static unsigned int lines      = 0;
+  * for example: " /?\"&[]"
+  */
+ static const char worddelimiters[] = " ";
++
++/* delimiter for tmenu */
++static char valuedelimiter = '\t';
+diff --git a/dmenu.1 b/dmenu.1
+index 323f93c..fb22ed3 100644
+--- a/dmenu.1
++++ b/dmenu.1
+@@ -47,6 +47,9 @@ is faster, but will lock up X until stdin reaches end\-of\-file.
+ .B \-i
+ dmenu matches menu items case insensitively.
+ .TP
++.BI \-d " tmenu delimiter"
++when used in a line, the value after the delimiter will be displayed. When selected, the value before the delimiter will be output. Only uses a single char as the delimiter.
++.TP
+ .BI \-l " lines"
+ dmenu lists items vertically, with the given number of lines.
+ .TP
+diff --git a/dmenu.c b/dmenu.c
+index 40f93e0..a456425 100644
+--- a/dmenu.c
++++ b/dmenu.c
+@@ -28,7 +28,7 @@
+ enum { SchemeNorm, SchemeSel, SchemeOut, SchemeLast }; /* color schemes */
+ 
+ struct item {
+-	char *text;
++	char *text, *value;
+ 	struct item *left, *right;
+ 	int out;
+ };
+@@ -103,8 +103,8 @@ cleanup(void)
+ 	XUngrabKey(dpy, AnyKey, AnyModifier, root);
+ 	for (i = 0; i < SchemeLast; i++)
+ 		free(scheme[i]);
+-	for (i = 0; items && items[i].text; ++i)
+-		free(items[i].text);
++	for (i = 0; items && items[i].value; ++i)
++		free(items[i].value);
+ 	free(items);
+ 	drw_free(drw);
+ 	XSync(dpy, False);
+@@ -489,7 +489,7 @@ insert:
+ 		break;
+ 	case XK_Return:
+ 	case XK_KP_Enter:
+-		puts((sel && !(ev->state & ShiftMask)) ? sel->text : text);
++		puts((sel && !(ev->state & ShiftMask)) ? sel->value : text);
+ 		if (!(ev->state & ControlMask)) {
+ 			cleanup();
+ 			exit(0);
+@@ -564,11 +564,22 @@ readstdin(void)
+ 		if (!(items[i].text = strdup(line)))
+ 			die("strdup:");
+ 
++		if (!(items[i].value = strdup(line)))
++			die("strdup:");
++
++		if ((items[i].text = strchr(items[i].value, valuedelimiter))) {
++			items[i].text[0] = '\0';
++			items[i].text++;
++		} else {
++			items[i].text = items[i].value;
++		}
+ 		items[i].out = 0;
+ 	}
+ 	free(line);
+-	if (items)
++	if (items) {
+ 		items[i].text = NULL;
++		items[i].value = NULL;
++	}
+ 	lines = MIN(lines, i);
+ }
+ 
+@@ -715,7 +726,7 @@ setup(void)
+ static void
+ usage(void)
+ {
+-	die("usage: dmenu [-bfiv] [-l lines] [-p prompt] [-fn font] [-m monitor]\n"
++	die("usage: dmenu [-bfiv] [-d tmenu-delim] [-l lines] [-p prompt] [-fn font] [-m monitor]\n"
+ 	    "             [-nb color] [-nf color] [-sb color] [-sf color] [-w windowid]");
+ }
+ 
+@@ -740,6 +751,8 @@ main(int argc, char *argv[])
+ 		} else if (i + 1 == argc)
+ 			usage();
+ 		/* these options take one argument */
++		else if (!strcmp(argv[i], "-d"))   /* delimiter for tmenu */
++			valuedelimiter = argv[++i][0];
+ 		else if (!strcmp(argv[i], "-l"))   /* number of lines in vertical list */
+ 			lines = atoi(argv[++i]);
+ 		else if (!strcmp(argv[i], "-m"))
+-- 
+2.46.0
+
