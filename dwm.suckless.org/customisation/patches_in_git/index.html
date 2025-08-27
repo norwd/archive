@@ -1,0 +1,133 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>dwm - dynamic window manager | suckless.org software that sucks less</title>
+	<link rel="stylesheet" type="text/css" href="https://suckless.org/pub/style.css"/>
+</head>
+
+<div id="header">
+	<a href="https://suckless.org/"><img src="https://suckless.org/logo.svg" alt=""/></a>&nbsp;
+	<a id="headerLink" href="https://suckless.org/">suckless.org</a>
+	<span class="hidden"> - </span>
+	<span id="headerSubtitle">dwm - dynamic window manager</span>
+</div>
+<hr class="hidden"/>
+<div id="menu">
+	<a href="https://suckless.org/">home</a>
+	<a href="../../index.html"><b>dwm</b></a>
+	<a href="https://st.suckless.org/">st</a>
+	<a href="https://core.suckless.org/">core</a>
+	<a href="https://surf.suckless.org/">surf</a>
+	<a href="https://tools.suckless.org/">tools</a>
+	<a href="https://libs.suckless.org/">libs</a>
+	<a href="https://ev.suckless.org/">e.V.</a>
+	<span class="right">
+		<a href="https://dl.suckless.org/">download</a>
+		<a href="https://git.suckless.org/">source</a>
+	</span>
+</div>
+<hr class="hidden"/>
+<div id="content">
+<div id="nav">
+	<ul>
+	<li><a href="../../index.html">about</a></li>
+	<li><a href="../index.html"><b>customisation/</b></a>
+		<ul>
+		<li><a href="../customfuncs/index.html">customfuncs/</a></li>
+		<li><a href="../font/index.html">font/</a></li>
+		<li><a href="../noapps/index.html">noapps/</a></li>
+		<li><a href="index.html"><b>patches in git/</b></a></li>
+		<li><a href="../rules/index.html">rules/</a></li>
+		<li><a href="../tagmask/index.html">tagmask/</a></li>
+		<li><a href="../windows_key/index.html">windows key/</a></li>
+		</ul>
+	</li>
+	<li><a href="../../dynamic_window_management/index.html">dynamic window management/</a></li>
+	<li><a href="../../faq/index.html">faq/</a></li>
+	<li><a href="../../multi-monitor/index.html">multi monitor/</a></li>
+	<li><a href="../../multi-pointer/index.html">multi pointer/</a></li>
+	<li><a href="../../patches/index.html">patches/</a></li>
+	<li><a href="../../screenshots/index.html">screenshots/</a></li>
+	<li><a href="../../status_monitor/index.html">status monitor/</a></li>
+	<li><a href="../../tutorial/index.html">tutorial/</a></li>
+	</ul>
+</div>
+<hr class="hidden"/>
+<div id="main">
+
+<h1>How to maintain dwm configuration and customization in git</h1>
+<p>Customizations can be managed directly in git.</p>
+<h2>The concept</h2>
+<p>By recording changes and applied patches as commits in a special branch they
+can be rebased on top of the master branch when required.</p>
+<h2>Cloning the repository</h2>
+<p>You need to have the <a href="http://git-scm.com/">Git VCS</a> installed first. Then clone
+the upstream repository locally</p>
+<pre><code>git clone git://git.suckless.org/dwm
+</code></pre>
+<h2>Recording customizations</h2>
+<p>Create a special branch where all the customizations will be kept. It doesn't
+matter what the name is, it just needs to be something different than <code>master</code>.</p>
+<pre><code>git branch my_dwm
+</code></pre>
+<p>Now switch to the new branch. This will do nothing at the moment as the
+branches are the same.</p>
+<pre><code>git checkout my_dwm
+</code></pre>
+<p>Now make your changes. If you want to apply one of the <a href="../../patches/index.html">contributed
+patches</a> you can use the <code>git apply</code> command</p>
+<pre><code>git apply some_patch.diff
+</code></pre>
+<p>Note that many patches make changes <code>config.def.h</code> instead of <code>config.h</code>.
+Either move those changes also to <code>config.h</code>, or add <code>rm config.h</code> to the
+<code>clean</code> target in the <code>Makefile</code>.</p>
+<p>Then record the changes as commits</p>
+<pre><code># tell git to add the changes in the given file(s) to be recorded
+git add some_file.ext
+# git will ask you to provide a message describing your changes,
+# while showing a diff of what's being commited.
+git commit -v
+</code></pre>
+<h3>Experimenting with different combinations of customizations</h3>
+<p>If you plan on experimenting with different combinations of customizations it
+might be easier to record the commits in separate feature branches by first
+creating and checking out a branch and then recording the changes as commits.
+Having patches in different branches also helps to keep their dependencies
+transparent by creating branches based on other patch branches.</p>
+<p>Then merge the selected combination of changes into your branch</p>
+<pre><code>git merge some_feature_branch
+git merge other_feature_branch
+</code></pre>
+<p>If you some conflicts occur, resolve them and then record the changes and
+commit the result. <code>git mergetool</code> can help with resolving the conflicts.</p>
+<h2>Updating customizations after new release</h2>
+<p>When the time comes to update your customizations after a new release of dwm or
+when the dwm repository contains a commit fixing some bug, you first pull the
+new upstream changes into the master branch</p>
+<pre><code>git checkout master
+git pull
+</code></pre>
+<p>Then rebase your customization branch on top of the master branch</p>
+<pre><code>git checkout my_dwm
+git rebase --preserve-merges master
+</code></pre>
+<p>The <code>--preserve-merges</code> option ensures that you don't have to resolve conflicts
+which you have already resolved while performing merges again.</p>
+<p>In case there are merge conflicts anyway, resolve them (possibly with the help
+of <code>git mergetool</code>), then record them as resolved and let the rebase continue</p>
+<pre><code>git add resolved_file.ext
+git rebase --continue
+</code></pre>
+<p>If you want to give up, you can always abort the rebase</p>
+<pre><code>git rebase --abort
+</code></pre>
+<h2>Author</h2>
+<ul>
+<li><a href="mailto:ondrej.grover@gmail.com">Ondřej Grover</a></li>
+</ul>
+</div>
+
+</div>
+
+</html>

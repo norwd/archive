@@ -1,0 +1,87 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>dwm - dynamic window manager | suckless.org software that sucks less</title>
+	<link rel="stylesheet" type="text/css" href="https://suckless.org/pub/style.css"/>
+</head>
+
+<div id="header">
+	<a href="https://suckless.org/"><img src="https://suckless.org/logo.svg" alt=""/></a>&nbsp;
+	<a id="headerLink" href="https://suckless.org/">suckless.org</a>
+	<span class="hidden"> - </span>
+	<span id="headerSubtitle">dwm - dynamic window manager</span>
+</div>
+<hr class="hidden"/>
+<div id="menu">
+	<a href="https://suckless.org/">home</a>
+	<a href="../index.html"><b>dwm</b></a>
+	<a href="https://st.suckless.org/">st</a>
+	<a href="https://core.suckless.org/">core</a>
+	<a href="https://surf.suckless.org/">surf</a>
+	<a href="https://tools.suckless.org/">tools</a>
+	<a href="https://libs.suckless.org/">libs</a>
+	<a href="https://ev.suckless.org/">e.V.</a>
+	<span class="right">
+		<a href="https://dl.suckless.org/">download</a>
+		<a href="https://git.suckless.org/">source</a>
+	</span>
+</div>
+<hr class="hidden"/>
+<div id="content">
+<div id="nav">
+	<ul>
+	<li><a href="../index.html">about</a></li>
+	<li><a href="../customisation/index.html">customisation/</a></li>
+	<li><a href="../dynamic_window_management/index.html">dynamic window management/</a></li>
+	<li><a href="../faq/index.html">faq/</a></li>
+	<li><a href="index.html"><b>multi monitor/</b></a></li>
+	<li><a href="../multi-pointer/index.html">multi pointer/</a></li>
+	<li><a href="../patches/index.html">patches/</a></li>
+	<li><a href="../screenshots/index.html">screenshots/</a></li>
+	<li><a href="../status_monitor/index.html">status monitor/</a></li>
+	<li><a href="../tutorial/index.html">tutorial/</a></li>
+	</ul>
+</div>
+<hr class="hidden"/>
+<div id="main">
+
+<h1>Multi-monitor setup</h1>
+<p>If configured to use Xinerama libraries in <code>config.mk</code>, dwm can automatically
+detect configured screen outputs (monitor, overhead projector, etc.) and their
+resolutions and draw the windows in the output area accordingly.</p>
+<h2>Configuring monitors</h2>
+<p>One of the easiest ways to configure screen outputs is via the <em>RandR</em> X server
+extension using the <code>xrandr</code> tool. Without arguments it will list the current
+configuration of screen outputs.</p>
+<pre><code>xrandr
+</code></pre>
+<p>For each connected output the supported resolution modes will be printed.</p>
+<h2>Mirroring two outputs</h2>
+<p>dwm will assume that two outputs should display identical windows and tags if:</p>
+<ul>
+<li>one of them is configured to display in the same area as the other
+(<code>--same-as</code> switch)</li>
+<li>they have the same resolution</li>
+</ul>
+<p>After connecting a monitor, this could be an example of a mirroring setup</p>
+<pre><code>xrandr --output VGA1 --auto --same-as LVDS1 --mode 1024x768
+xrandr --output LVDS1 --mode 1024x768
+</code></pre>
+<p>The <code>--auto</code> switch enables the output after it was connected.</p>
+<h2>Two independent outputs</h2>
+<p>If two screen outputs have different resolutions, dwm assumes that they should
+display different windows and tag sets. It may therefore be necessary to
+instruct the X server via the <code>xrandr</code> tool to draw the outputs in different
+areas of the screen, as it may default to <code>--same-as</code> and the areas would
+overlap.</p>
+<p>After connecting a monitor, this could be an example of such a setup</p>
+<pre><code>xrandr --output VGA1 --auto --right-of LVDS1
+</code></pre>
+<p>In this case the <code>--auto</code> switch enables the output after connecting and also
+sets its preferred resolution mode.</p>
+</div>
+
+</div>
+
+</html>
