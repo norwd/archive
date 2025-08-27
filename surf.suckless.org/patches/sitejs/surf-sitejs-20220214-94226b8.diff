@@ -1,0 +1,113 @@
+From 94226b8009dcb92a309148f73a39cbb6223ea34b Mon Sep 17 00:00:00 2001
+From: avalonwilliams <avalonwilliams@protonmail.com>
+Date: Mon, 14 Feb 2022 23:29:35 -0500
+Subject: [PATCH] Per-site JS script patch
+
+Allows configuration of different javascript files for different sites
+(similar to stylesheets)
+---
+ config.def.h | 10 ++++++++++
+ surf.c       | 34 ++++++++++++++++++++++++++++++----
+ 2 files changed, 40 insertions(+), 4 deletions(-)
+
+diff --git a/config.def.h b/config.def.h
+index 1355ba3..8ba093b 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -6,6 +6,7 @@ static char *styledir       = "~/.surf/styles/";
+ static char *certdir        = "~/.surf/certificates/";
+ static char *cachedir       = "~/.surf/cache/";
+ static char *cookiefile     = "~/.surf/cookies.txt";
++static char *scriptdir      = "~/.surf/scripts/";
+ 
+ /* Webkit default features */
+ /* Highest priority value will be used.
+@@ -121,6 +122,15 @@ static SiteSpecific certs[] = {
+ 	{ "://suckless\\.org/", "suckless.org.crt" },
+ };
+ 
++/* scripts */
++/*
++ * Run scripts on certain URLs, will inject more than one script
++ */
++static SiteSpecific scripts[] = {
++	/* regexp                script in $scriptdir */
++	{ "://duckduckgo\\.com", "example.js" },
++};
++
+ #define MODKEY GDK_CONTROL_MASK
+ 
+ /* hotkeys */
+diff --git a/surf.c b/surf.c
+index 03d8242..3aa84a3 100644
+--- a/surf.c
++++ b/surf.c
+@@ -168,7 +168,8 @@ static const char *getcert(const char *uri);
+ static void setcert(Client *c, const char *file);
+ static const char *getstyle(const char *uri);
+ static void setstyle(Client *c, const char *file);
+-static void runscript(Client *c);
++static void runscript(Client *c, const char *file);
++static void runsitescripts(Client *c, const char *uri);
+ static void evalscript(Client *c, const char *jsstr, ...);
+ static void updatewinid(Client *c);
+ static void handleplumb(Client *c, const char *uri);
+@@ -400,6 +401,17 @@ setup(void)
+ 		stylefile = buildfile(stylefile);
+ 	}
+ 
++	scriptdir = buildpath(scriptdir);
++	for (i = 0; i < LENGTH(scripts); ++i) {
++		if (!regcomp(&(scripts[i].re), scripts[i].regex, REG_EXTENDED)) {
++			scripts[i].file = g_strconcat(scriptdir, "/",
++								scripts[i].file, NULL);
++		} else {
++			fprintf(stderr, "Could not compile regex: %s\n", scripts[i].regex);
++			scripts[i].regex = NULL;
++		}
++	}
++
+ 	for (i = 0; i < LENGTH(uriparams); ++i) {
+ 		if (regcomp(&(uriparams[i].re), uriparams[i].uri,
+ 		    REG_EXTENDED)) {
+@@ -951,12 +963,25 @@ setstyle(Client *c, const char *file)
+ }
+ 
+ void
+-runscript(Client *c)
++runsitescripts(Client *c, const char *uri) {
++	gchar *script;
++	gsize l;
++	int i;
++
++	for (i = 0; i < LENGTH(scripts); ++i) {
++		if (scripts[i].regex &&
++			!regexec(&(scripts[i].re), uri, 0, NULL, 0))
++			runscript(c, scripts[i].file);
++	}
++}
++
++void
++runscript(Client *c, const char *file)
+ {
+ 	gchar *script;
+ 	gsize l;
+ 
+-	if (g_file_get_contents(scriptfile, &script, &l, NULL) && l)
++	if (g_file_get_contents(file, &script, &l, NULL) && l)
+ 		evalscript(c, "%s", script);
+ 	g_free(script);
+ }
+@@ -1536,7 +1561,8 @@ loadchanged(WebKitWebView *v, WebKitLoadEvent e, Client *c)
+ 		evalscript(c, "document.documentElement.style.overflow = '%s'",
+ 		    enablescrollbars ? "auto" : "hidden");
+ 		*/
+-		runscript(c);
++		runsitescripts(c, uri);
++		runscript(c, scriptfile);
+ 		break;
+ 	}
+ 	updatetitle(c);
+-- 
+2.34.1
+

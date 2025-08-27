@@ -1,0 +1,240 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>surf | suckless.org software that sucks less</title>
+	<link rel="stylesheet" type="text/css" href="https://suckless.org/pub/style.css"/>
+</head>
+
+<div id="header">
+	<a href="https://suckless.org/"><img src="https://suckless.org/logo.svg" alt=""/></a>&nbsp;
+	<a id="headerLink" href="https://suckless.org/">suckless.org</a>
+	<span class="hidden"> - </span>
+	<span id="headerSubtitle">surf</span>
+</div>
+<hr class="hidden"/>
+<div id="menu">
+	<a href="https://suckless.org/">home</a>
+	<a href="https://dwm.suckless.org/">dwm</a>
+	<a href="https://st.suckless.org/">st</a>
+	<a href="https://core.suckless.org/">core</a>
+	<a href="../../index.html"><b>surf</b></a>
+	<a href="https://tools.suckless.org/">tools</a>
+	<a href="https://libs.suckless.org/">libs</a>
+	<a href="https://ev.suckless.org/">e.V.</a>
+	<span class="right">
+		<a href="https://dl.suckless.org/">download</a>
+		<a href="https://git.suckless.org/">source</a>
+	</span>
+</div>
+<hr class="hidden"/>
+<div id="content">
+<div id="nav">
+	<ul>
+	<li><a href="../../index.html">about</a></li>
+	<li><a href="../index.html"><b>files/</b></a>
+		<ul>
+		<li><a href="../adblock-hosts/index.html">adblock hosts/</a></li>
+		<li><a href="../autologin/index.html">autologin/</a></li>
+		<li><a href="../autorefresh/index.html">autorefresh/</a></li>
+		<li><a href="../bmarks/index.html">bmarks/</a></li>
+		<li><a href="index.html"><b>bmarks history/</b></a></li>
+		<li><a href="../easier_key/index.html">easier key/</a></li>
+		<li><a href="../easy_links/index.html">easy links/</a></li>
+		<li><a href="../edit_source/index.html">edit source/</a></li>
+		<li><a href="../feeds/index.html">feeds/</a></li>
+		<li><a href="../hide_applets/index.html">hide applets/</a></li>
+		<li><a href="../kiosk_mode/index.html">kiosk mode/</a></li>
+		<li><a href="../link_hints/index.html">link hints/</a></li>
+		<li><a href="../middle_click_link/index.html">middle click link/</a></li>
+		<li><a href="../not_flash/index.html">not flash/</a></li>
+		<li><a href="../quick_search/index.html">quick search/</a></li>
+		<li><a href="../simple_bookmarking/index.html">simple bookmarking/</a></li>
+		<li><a href="../simple_bookmarking_redux/index.html">simple bookmarking redux/</a></li>
+		<li><a href="../simplyread/index.html">simplyread/</a></li>
+		<li><a href="../smartdownloads/index.html">smartdownloads/</a></li>
+		<li><a href="../surfraw_as_searchengine/index.html">surfraw as searchengine/</a></li>
+		<li><a href="../untarget/index.html">untarget/</a></li>
+		</ul>
+	</li>
+	<li><a href="../../patches/index.html">patches/</a></li>
+	<li><a href="../../screenshots/index.html">screenshots/</a></li>
+	<li><a href="../../stylesheets/index.html">stylesheets/</a></li>
+	</ul>
+</div>
+<hr class="hidden"/>
+<div id="main">
+
+<h1>Bookmarks for surf</h1>
+<h2>Description</h2>
+<p>This script enables bookmarks, url handlers, and history (find and url entries) for surf.
+NB: This script obviates the need to patch surf at all with, e.g., the history or the url handlers patches!</p>
+<h2>Keybindings</h2>
+<pre><code>^I (get some information)
+^b (bookmark current url with given tags)
+^g (open url with bookmark autocompletion)
+^G (open url without bookmark autocompletion)
+</code></pre>
+<h2>URL handlers</h2>
+<pre><code>This script implements several url handlers
+"d " (bookmark current url in delicious)
+"t " (create tinyurl from current page)
+"w word .." (lookup word in wikipedia)
+"g word .." (google for given word)
+"y word .." (search in youtube)
+"x word .." (remove an entry from the bookmarks file)
+</code></pre>
+<h2>Author</h2>
+<ul>
+<li>The code was originally from Peter John Hartman, then filtered through pancake and nibble (see their bmarks) 
+and now back to Peter John Hartman.  You can get the latest version at http://durandus.trilidun.org/durandus/code/surf/.</li>
+</ul>
+<h2>Installation</h2>
+<p>Copy the following code into a shellscript named 'surf.sh' in $PATH. Edit config.h according to the rules explained in header.</p>
+<h2>Code</h2>
+<pre><code>#!/bin/sh
+# v. 2.0 - upgrade based on surf 4.0
+# Creative Commons License.  Peter John Hartman (http://individual.utoronto.ca/peterjh)
+# Much thanks to nibble and pancake who have a different surf.sh script available which
+# doesn't do the history bit.
+#
+# this script does:
+# * stores history of: (1) successful uri entries; (2) certain smart prefix entries, e.g., "g foobar"; (3) find entries
+# * direct bookmark (via ^b)
+# * information debug (via ^I)
+# * smart prefixes e.g. g for google search, t for tinyurl, etc.
+# * delete (with smart prefix x)
+#
+# $1 = $xid
+# $2 = $p = _SURF_FIND _SURF_BMARK _SURF_URI (what SETPROP sets in config.h)
+#
+# // replace default setprop with this one
+# #define SETPROP(p) { .v = (char *[]){ "/bin/sh", "-c", "surf.sh $0 $1 $2", p, q, winid, NULL } }
+#
+# { MODKEY, GDK_b, spawn, SETPROP("_SURF_BMARK") },
+# { MODKEY|GDK_SHIFT_MASK, GDK_i, spawn, SETPROP("_SURF_INFO") },
+# { MODKEY|GDK_SHIFT_MASK, GDK_g, spawn, SETPROP("_SURF_URI_RAW") },
+</code></pre>
+<pre><code>font='-*-terminus-medium-*-*-*-*-*-*-*-*-*-*-*'
+normbgcolor='#181818'
+normfgcolor='#e9e9e9'
+selbgcolor=$normbgcolor
+selfgcolor='#dd6003'
+bmarks=~/.surf/history.txt
+ffile=~/.surf/find.txt 
+</code></pre>
+<pre><code>pid=$1
+fid=$2
+xid=$3
+</code></pre>
+<pre><code>dmenu="dmenu -nb $normbgcolor -nf $normfgcolor \
+	   -sb $selbgcolor -sf $selfgcolor"
+</code></pre>
+<pre><code>s_get_prop() { # xprop
+	xprop -id $xid $1 | cut -d '"' -f 2
+}
+</code></pre>
+<pre><code>s_set_prop() { # xprop value
+	[ -n "$2" ] &amp;&amp; xprop -id $xid -f $1 8s -set $1 "$2"
+}
+</code></pre>
+<pre><code>s_write_f() { # file value
+	[ -n "$2" ] &amp;&amp; (sed -i "\|$2|d" $1; echo "$2" &gt;&gt; $1)
+	#grep "$uri" $bmarks &gt;/dev/null 2&gt;&amp;1 || echo "$uri" &gt;&gt; $bmarks
+}
+</code></pre>
+<pre><code>s_set_write_proper_uri() { # uri
+	# TODO: (xprop -spy _SURF_URI ... | while read name __ value; do echo $value; done works quite nice for eventloops)
+	# input is whatever the use inputed, so don't store that!
+	# first, clear the name field because surf doesn't sometimes
+	#s_set_prop WM_ICON_NAME ""
+	# set the uri
+	s_set_prop _SURF_GO "$1"
+	# get the new name
+	name=`s_get_prop WM_ICON_NAME`
+	# loop until the [10%] stuff is finished and we have a load (is this necessary?)
+	#while echo $name | grep "[*%\]" &gt;/dev/null 2&gt;&amp;1; do 
+	#	name=`s_get_prop WM_ICON_NAME`
+	#done 
+	# bail on error and don't store
+	#if [[ $name != "Error" ]]; then
+	#	uri=`s_get_prop _SURF_URI`
+		# store to the bmarks file the OFFICIAL url (with http://whatever)
+		s_write_f $bmarks "$1"
+		#grep "$uri" $bmarks &gt;/dev/null 2&gt;&amp;1 || echo "$uri" &gt;&gt; $bmarks
+	#fi
+}
+</code></pre>
+<pre><code>case "$pid" in
+"_SURF_INFO")
+	xprop -id $xid | sed 's/\t/    /g' | $dmenu -fn "$font" -b -l 20
+	;;
+"_SURF_FIND")
+	find="`tac $ffile 2&gt;/dev/null | $dmenu -fn "$font" -b -p find:`"
+	s_set_prop _SURF_FIND "$find"
+	s_write_f $ffile "$find"
+	;;
+"_SURF_BMARK")
+	uri=`s_get_prop _SURF_URI`
+	s_write_f $bmarks "$uri"
+	;;
+"_SURF_URI_RAW")
+	uri=`echo $(s_get_prop _SURF_URI) | $dmenu -fn "$font" -b -p "uri:"`
+	s_set_prop _SURF_GO "$uri"
+	;;
+"_SURF_URI")
+	sel=`tac $bmarks 2&gt; /dev/null | $dmenu -fn "$font" -b -l 5 -p "uri [dgtwuy*]:"`
+	[ -z "$sel" ] &amp;&amp; exit
+	opt=$(echo $sel | cut -d ' ' -f 1)
+	arg=$(echo $sel | cut -d ' ' -f 2-)
+	save=0
+	case "$opt" in
+	"d") # del.icio.us
+		uri="http://del.icio.us/save?url=`s_get_prop _SURF_URI`"
+		;;
+	"g") # google for it
+		uri="http://www.google.com/search?q=$arg"
+		save=1
+		;;
+	"t") # tinyurl
+		uri="http://tinyurl.com/create.php?url=`s_get_prop _SURF_URI`"
+		;;
+	"w") # wikipedia
+		uri="http://wikipedia.org/wiki/$arg"
+		save=1
+		;;
+	"u") # utoronto
+		uri="http://search2.library.utoronto.ca/UTL/index?N=0&amp;Ntk=Anywhere&amp;Ntt=$arg&amp;Ntx=mode%2Bmatchallpartial&amp;Nu=p_work_normalized&amp;Np=1&amp;formName=search_form_simple"
+		save=1
+		;;
+	"y") # youtube
+		uri="http://www.youtube.com/results?search_query=$arg&amp;aq=f"
+		save=1
+		;;
+	"x") # delete
+		sed -i "\|$arg|d" $bmarks
+		exit;
+		;;
+	*)
+		uri="$sel"
+		save=2
+		;;
+	esac
+</code></pre>
+<pre><code>	# only set the uri; don't write to file
+	[ $save -eq 0 ] &amp;&amp; s_set_prop _SURF_GO "$uri"
+	# set the url and write exactly what the user inputed to the file
+	[ $save -eq 1 ] &amp;&amp; (s_set_prop _SURF_GO "$uri"; s_write_f $bmarks "$sel")
+	# try to set the uri only if it is a success
+	[ $save -eq 2 ] &amp;&amp; s_set_write_proper_uri "$uri"
+	;;
+*)
+	echo Unknown xprop
+	;;
+esac
+</code></pre>
+</div>
+
+</div>
+
+</html>

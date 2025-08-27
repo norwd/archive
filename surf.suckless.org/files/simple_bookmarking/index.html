@@ -1,0 +1,116 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>surf | suckless.org software that sucks less</title>
+	<link rel="stylesheet" type="text/css" href="https://suckless.org/pub/style.css"/>
+</head>
+
+<div id="header">
+	<a href="https://suckless.org/"><img src="https://suckless.org/logo.svg" alt=""/></a>&nbsp;
+	<a id="headerLink" href="https://suckless.org/">suckless.org</a>
+	<span class="hidden"> - </span>
+	<span id="headerSubtitle">surf</span>
+</div>
+<hr class="hidden"/>
+<div id="menu">
+	<a href="https://suckless.org/">home</a>
+	<a href="https://dwm.suckless.org/">dwm</a>
+	<a href="https://st.suckless.org/">st</a>
+	<a href="https://core.suckless.org/">core</a>
+	<a href="../../index.html"><b>surf</b></a>
+	<a href="https://tools.suckless.org/">tools</a>
+	<a href="https://libs.suckless.org/">libs</a>
+	<a href="https://ev.suckless.org/">e.V.</a>
+	<span class="right">
+		<a href="https://dl.suckless.org/">download</a>
+		<a href="https://git.suckless.org/">source</a>
+	</span>
+</div>
+<hr class="hidden"/>
+<div id="content">
+<div id="nav">
+	<ul>
+	<li><a href="../../index.html">about</a></li>
+	<li><a href="../index.html"><b>files/</b></a>
+		<ul>
+		<li><a href="../adblock-hosts/index.html">adblock hosts/</a></li>
+		<li><a href="../autologin/index.html">autologin/</a></li>
+		<li><a href="../autorefresh/index.html">autorefresh/</a></li>
+		<li><a href="../bmarks/index.html">bmarks/</a></li>
+		<li><a href="../bmarks_history/index.html">bmarks history/</a></li>
+		<li><a href="../easier_key/index.html">easier key/</a></li>
+		<li><a href="../easy_links/index.html">easy links/</a></li>
+		<li><a href="../edit_source/index.html">edit source/</a></li>
+		<li><a href="../feeds/index.html">feeds/</a></li>
+		<li><a href="../hide_applets/index.html">hide applets/</a></li>
+		<li><a href="../kiosk_mode/index.html">kiosk mode/</a></li>
+		<li><a href="../link_hints/index.html">link hints/</a></li>
+		<li><a href="../middle_click_link/index.html">middle click link/</a></li>
+		<li><a href="../not_flash/index.html">not flash/</a></li>
+		<li><a href="../quick_search/index.html">quick search/</a></li>
+		<li><a href="index.html"><b>simple bookmarking/</b></a></li>
+		<li><a href="../simple_bookmarking_redux/index.html">simple bookmarking redux/</a></li>
+		<li><a href="../simplyread/index.html">simplyread/</a></li>
+		<li><a href="../smartdownloads/index.html">smartdownloads/</a></li>
+		<li><a href="../surfraw_as_searchengine/index.html">surfraw as searchengine/</a></li>
+		<li><a href="../untarget/index.html">untarget/</a></li>
+		</ul>
+	</li>
+	<li><a href="../../patches/index.html">patches/</a></li>
+	<li><a href="../../screenshots/index.html">screenshots/</a></li>
+	<li><a href="../../stylesheets/index.html">stylesheets/</a></li>
+	</ul>
+</div>
+<hr class="hidden"/>
+<div id="main">
+
+<h1>Simple bookmarking</h1>
+<h2>Description</h2>
+<p>change this script to fit your needs.</p>
+<p>bookmarkurl:</p>
+<pre><code>#!/bin/sh
+file=~/.surf/bookmarks
+url=`xprop -id $1 | grep URI | awk '{print $3}' | sed 's/\"//g'`
+title=`xprop -id $1 | grep WM_ICON_NAME\(STRING\) | cut -c 40- | sed 's/.$//g`
+echo $url $title | dmenu -p 'Add Bookmark' -b -w $1 &gt;&gt; $file
+</code></pre>
+<p>to add tags, when dmenu displays, simply tab, space and write your tag.
+<br />  </p>
+<p>loadbookmark:</p>
+<p>(needs a vertical patch on dmenu for convenience, choose the one you like,
+Meillo's is the lightweight, Fresch's is the full featured)</p>
+<pre><code>#!/bin/sh
+cat ~/.surf/bookmarks | dmenu -p 'Load Bookmark' -i -b -l 10 -w $1 | awk '{print $1}'
+</code></pre>
+<p>To make dmenu display bookmark with a tag only, add a grep part in the
+first line and launch this script with the tag as argument.</p>
+<p>bookmarkurl and loadbookmark can be launched with the following in config.h above the
+"static Key keys[] = {" line:</p>
+<pre><code>#define ADDBMK { \
+	.v = (char *[]){ "/bin/sh", "-c", \
+	     "bookmarkurl $0", winid, NULL \
+	} \
+}
+</code></pre>
+<pre><code>#define LOADBMK(r, s, p) { \
+	.v = (const char *[]){ "/bin/sh", "-c", \
+	     "prop=\"$(loadbookmark $1)\" &amp;&amp; xprop -id $1 -f $3 8s -set $3 \"$prop\"", \
+	     "surf-setprop", winid, r, s, p, NULL \
+	} \
+}
+</code></pre>
+<p>and</p>
+<pre><code>{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_z,      spawn,      ADDBMK },
+{ MODKEY,                GDK_KEY_z,      spawn,      LOADBMK("_SURF_URI", "_SURF_GO", PROMPT_GO) },
+</code></pre>
+<p>in the "static Key keys[] = {" part.</p>
+<h2>Author</h2>
+<ul>
+<li>Julien Steinhauser <a href="&#x6D;&#x61;i&#x6C;&#x74;&#x6F;:&#106;&#117;&#108;&#105;&#101;&#110;&#46;&#115;&#116;&#101;&#105;&#110;&#104;&#97;&#117;&#115;&#101;&#114;&#64;&#111;&#114;&#97;&#110;&#103;&#101;&#46;&#102;&#114;">&#106;&#117;&#108;&#105;&#101;&#110;&#46;&#115;&#116;&#101;&#105;&#110;&#104;&#97;&#117;&#115;&#101;&#114;&#64;&#111;&#114;&#97;&#110;&#103;&#101;&#46;&#102;&#114;</a></li>
+</ul>
+</div>
+
+</div>
+
+</html>

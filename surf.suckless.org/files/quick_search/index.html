@@ -1,0 +1,145 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>surf | suckless.org software that sucks less</title>
+	<link rel="stylesheet" type="text/css" href="https://suckless.org/pub/style.css"/>
+</head>
+
+<div id="header">
+	<a href="https://suckless.org/"><img src="https://suckless.org/logo.svg" alt=""/></a>&nbsp;
+	<a id="headerLink" href="https://suckless.org/">suckless.org</a>
+	<span class="hidden"> - </span>
+	<span id="headerSubtitle">surf</span>
+</div>
+<hr class="hidden"/>
+<div id="menu">
+	<a href="https://suckless.org/">home</a>
+	<a href="https://dwm.suckless.org/">dwm</a>
+	<a href="https://st.suckless.org/">st</a>
+	<a href="https://core.suckless.org/">core</a>
+	<a href="../../index.html"><b>surf</b></a>
+	<a href="https://tools.suckless.org/">tools</a>
+	<a href="https://libs.suckless.org/">libs</a>
+	<a href="https://ev.suckless.org/">e.V.</a>
+	<span class="right">
+		<a href="https://dl.suckless.org/">download</a>
+		<a href="https://git.suckless.org/">source</a>
+	</span>
+</div>
+<hr class="hidden"/>
+<div id="content">
+<div id="nav">
+	<ul>
+	<li><a href="../../index.html">about</a></li>
+	<li><a href="../index.html"><b>files/</b></a>
+		<ul>
+		<li><a href="../adblock-hosts/index.html">adblock hosts/</a></li>
+		<li><a href="../autologin/index.html">autologin/</a></li>
+		<li><a href="../autorefresh/index.html">autorefresh/</a></li>
+		<li><a href="../bmarks/index.html">bmarks/</a></li>
+		<li><a href="../bmarks_history/index.html">bmarks history/</a></li>
+		<li><a href="../easier_key/index.html">easier key/</a></li>
+		<li><a href="../easy_links/index.html">easy links/</a></li>
+		<li><a href="../edit_source/index.html">edit source/</a></li>
+		<li><a href="../feeds/index.html">feeds/</a></li>
+		<li><a href="../hide_applets/index.html">hide applets/</a></li>
+		<li><a href="../kiosk_mode/index.html">kiosk mode/</a></li>
+		<li><a href="../link_hints/index.html">link hints/</a></li>
+		<li><a href="../middle_click_link/index.html">middle click link/</a></li>
+		<li><a href="../not_flash/index.html">not flash/</a></li>
+		<li><a href="index.html"><b>quick search/</b></a></li>
+		<li><a href="../simple_bookmarking/index.html">simple bookmarking/</a></li>
+		<li><a href="../simple_bookmarking_redux/index.html">simple bookmarking redux/</a></li>
+		<li><a href="../simplyread/index.html">simplyread/</a></li>
+		<li><a href="../smartdownloads/index.html">smartdownloads/</a></li>
+		<li><a href="../surfraw_as_searchengine/index.html">surfraw as searchengine/</a></li>
+		<li><a href="../untarget/index.html">untarget/</a></li>
+		</ul>
+	</li>
+	<li><a href="../../patches/index.html">patches/</a></li>
+	<li><a href="../../screenshots/index.html">screenshots/</a></li>
+	<li><a href="../../stylesheets/index.html">stylesheets/</a></li>
+	</ul>
+</div>
+<hr class="hidden"/>
+<div id="main">
+
+<h1>Quick searching with dmenu</h1>
+<h2>Description</h2>
+<p>Prompts for a query with dmenu and posts it to the selected search engine.
+The engine is specified by a single-character code that precedes the
+actual query, e.g. 'w pancakes' would search en.wikipedia.org for the string
+'pancakes'. This reduces the necessary shell plumbing to a couple of pipes
+and a case statement.</p>
+<p>Character ugliness in the query is avoided using od and tr. This
+has worked so far.</p>
+<p><strong>EDIT:</strong> Replaced xxd with od and eliminated a sed pipe. Replaced cut pipes
+with sh variable expansion.</p>
+<h2>Author</h2>
+<p>Wolfgang Corcoran-Mathe</p>
+<h2>Installation</h2>
+<p>Copy the following code into an executable file and place it in PATH. Edit
+surf/config.def.h as described in the header.</p>
+<h2>Code</h2>
+<pre><code>#!/bin/sh
+#
+# surf_qsearch:
+# Search script for surf. Takes the surf window id as argument.
+# POSIX compliant and GNU-free, I think.
+#
+# Add something like the following to your surf/config.(def.)h, replacing
+# surf_qsearch with the name of the file you've copied this code into:
+#
+# /* Quick searching. */
+# #define QSEARCH { \
+#     .v = (char *[]){"/bin/sh", "-c", "surf_qsearch $0 $1", winid, NULL } \
+# }
+#
+# Add a keybinding in keys[]:
+#
+# { MODKEY, GDK_q, spawn, QSEARCH },
+#
+</code></pre>
+<pre><code># Get the full query. The 'echo | dmenu' idiom may be a bit of
+# a hack, but it seems to work.
+q="$(echo | dmenu)"
+[ -z "$q" ] &amp;&amp; exit 0
+</code></pre>
+<pre><code># Extract the engine code.
+e="${q%% *}"
+</code></pre>
+<pre><code># Encode the search string (i.e. the rest of q). xxd was formerly used
+# here, but xxd is part of vim packages on some systems, whereas od is
+# ubiquitous. A search script that breaks if someone accidentally removes
+# vim is stupid.
+s=$(printf %s "${q#* }" | tr -d '\n' | od -t x1 -An |  tr ' ' '%')
+</code></pre>
+<pre><code># These are examples. Change as desired.
+# 's' = startpage.com
+# 'w' = wikipedia.org
+# 'a' = wiki.archlinux.org
+# 'd' = en.wiktionary.org
+case $e in
+	's')
+		xprop -id $1 -f _SURF_GO 8s -set _SURF_GO "https://startpage.com/do/search?q=${s}"
+		;;
+	'w')
+		xprop -id $1 -f _SURF_GO 8s -set _SURF_GO "https://en.wikipedia.org/wiki/index.php/Special:Search?search=${s}&amp;go=Go"
+		;;
+	'a')
+		xprop -id $1 -f _SURF_GO 8s -set _SURF_GO "https://wiki.archlinux.org/index.php/Special:Search?search=${s}&amp;go=Go"
+		;;
+	'd')
+		xprop -id $1 -f _SURF_GO 8s -set _SURF_GO "https://en.wiktionary.org/w/index.php?search=${s}&amp;go=Go"
+		;;
+	*)
+		exit 1
+		;;
+esac
+</code></pre>
+</div>
+
+</div>
+
+</html>
