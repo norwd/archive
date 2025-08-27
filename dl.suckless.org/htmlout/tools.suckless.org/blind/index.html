@@ -1,0 +1,103 @@
+Content-Type: text/html
+
+<!doctype html>
+<html>
+<head> 
+	<title>blind | suckless.org tools</title>
+	<link rel="stylesheet" type="text/css" href="../../../pub/style.css">
+	<meta charset="utf-8"> 
+</head> 
+<body>
+	<div id="header">
+		<a href="https://dl.suckless.org/"><img src="http://suckless.org/logo.svg" /></a>
+		<a id="headerLink" href="https://dl.suckless.org/">suckless.org</a> <span id="headerSubtitle">tools</span>
+	</div>
+
+	<div id="menu">
+		<span class="left">
+		<a href="http://ev.suckless.org">e.V.</a>
+		<a href="http://suckless.org">home</a>
+		<a href="http://dwm.suckless.org">dwm</a>
+		<a href="http://st.suckless.org">st</a>
+		<a href="http://core.suckless.org">core</a>
+		<a href="http://sta.li">stali</a>
+		<a href="http://surf.suckless.org">surf</a>
+		<a class="thisSite" href="http://tools.suckless.org">tools</a>
+		<a href="http://libs.suckless.org">libs</a>
+		</span>
+		<span class="right">
+			<a href="../../../index.html">download</a>
+			<a href="http://git.suckless.org">source</a>
+			<a href="http://git.sta.li">stali</a>
+		</span>
+	</div>
+
+	<div id="content">
+	<div id="nav">
+<ul>
+<li><a href="https://dl.suckless.org/9base">9base</a></li>
+<li><a href="https://dl.suckless.org/blind/" class="thisPage"> blind/</a></li>
+<li><a href="https://dl.suckless.org/dmenu/">dmenu/</a></li>
+<li><a href="../../../farbfeld/index.html">farbfeld/</a></li>
+<li><a href="https://dl.suckless.org/ii/">ii/</a></li>
+<li><a href="https://dl.suckless.org/quark/">quark/</a></li>
+<li><a href="https://dl.suckless.org/sandy">sandy</a></li>
+<li><a href="https://dl.suckless.org/sent/">sent/</a></li>
+<li><a href="https://dl.suckless.org/sic/">sic/</a></li>
+<li><a href="https://dl.suckless.org/slock/">slock/</a></li>
+<li><a href="https://dl.suckless.org/tabbed/">tabbed/</a></li>
+<li><a href="https://dl.suckless.org/x/">x/</a></li>
+</ul>
+	</div>
+
+	<div id="main">
+
+
+<p><img src="https://dl.suckless.org/htmlout/tools.suckless.org/blind/blind.svg" alt="blind" /></p>
+
+<p>blind is a collection of command line video editing utilities.</p>
+
+<h2>Video format</h2>
+
+<p>blind uses a raw video format with a simple container. A
+file begins with an plain-text line, containing the
+number of frames, the width, the height, and the pixel
+format, all separated by a single regular blank space,
+without and leading or tailing white space. After this
+line, which ends with an LF, there is a NUL-byte
+followed by the 4 characters “uivf” (unportable, interim
+video format). This head is followed by the video
+frame-by-frame with row-major frames. Pixels are
+independently encoded, and are encoded unscaled CIE XYZ
+with non-premultiplied alpha and without any
+transfer-function, with values stored in native <code>double</code>s.
+This colour model and space is the only option at the
+moment, but the container format is designed so this can
+be changed in the future.</p>
+
+<p>Unscaled CIE XYZ was choosen because it gives good
+performance for most operations. Most videos use Y'UV;
+this format has good performance for converting to sRGB
+and is has good subsampling quality, but it is not a
+good for editing. <code>double</code>s are used instead of <code>float</code>s
+because has higher precision: 52 instead of 23
+fraction-bits. However, <code>float</code>s have
+<a href="http://www.tomshardware.com/reviews/geforce-gtx-titan-gk110-review,3438-3.html">much better</a>
+performance than <code>double</code>, so support for in may be
+added in the future.</p>
+
+<h2>FAQ</h2>
+
+<h3>Doesn&rsquo;t raw video takes up a lot of space?</h3>
+
+<p>Yes it does, a 4-channel pixel encoded with <code>double</code>
+takes 32 bytes. A 1280-by-720 frame with this pixel format
+takes 29.4912 MB (SI), which means you can only fit almost
+3391 frames in 100 GB, which is about 113 seconds or 1:53
+minutes with a framerate of 30 fps. Therefore, you
+probably do not want to store anything in this format
+unless you know you have room for it, or if it is very
+small segment of your video, which unfortunely becomes a
+bit of a problem when reversing a video. However, when
+possible, feed the resulting video directly to
+<code>bl
