@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII" />
+<meta name="generator" content="hypermail 2.3.0, see http://www.hypermail-project.org/" />
+<title>[news] [farbfeld] version 1 release from FRIGN on 2016-01-06 (news mail list archive)</title>
+<meta name="Author" content="FRIGN (dev_AT_frign.de)" />
+<meta name="Subject" content="[news] [farbfeld] version 1 release" />
+<meta name="Date" content="2016-01-06" />
+<style type="text/css">
+/*<![CDATA[*/
+/* To be incorporated in the main stylesheet, don't code it in hypermail! */
+body {color: black; background: #ffffff}
+dfn {font-weight: bold;}
+pre { background-color:inherit;}
+.head { border-bottom:1px solid black;}
+.foot { border-top:1px solid black;}
+th {font-style:italic;}
+table { margin-left:2em;}map ul {list-style:none;}
+#mid { font-size:0.9em;}
+#received { float:right;}
+address { font-style:inherit ;}
+/*]]>*/
+.quotelev1 {color : #990099}
+.quotelev2 {color : #ff7700}
+.quotelev3 {color : #007799}
+.quotelev4 {color : #95c500}
+.period {font-weight: bold}
+</style>
+</head>
+<body>
+<div class="head">
+<h1>[news] [farbfeld] version 1 release</h1>
+<!-- received="Wed, 6 Jan 2016 19:58:02 +0100" -->
+<!-- isoreceived="20160106185802" -->
+<!-- sent="Wed, 6 Jan 2016 19:58:02 +0100" -->
+<!-- isosent="20160106185802" -->
+<!-- name="FRIGN" -->
+<!-- email="dev_AT_frign.de" -->
+<!-- subject="[news] [farbfeld] version 1 release" -->
+<!-- id="20160106195802.1d05474402ec1cb21aabdf6f_AT_frign.de" -->
+<!-- charset="US-ASCII" -->
+<!-- expires="-1" -->
+<map id="navbar" name="navbar">
+<ul class="links">
+<li>
+<dfn>This message</dfn>:
+[ <a href="0004.html#start4" name="options1" id="options1" tabindex="1">Message body</a> ]
+ [ More options (<a href="0004.html#options2">top</a>, <a href="0004.html#options3">bottom</a>) ]
+</li>
+<li>
+<dfn>Related messages</dfn>:
+<!-- unext="start" -->
+[ <a href="../1603/0005.html" title="Mattias Andr&#0233;e: &quot;[news] [libzahl] 1.0 release&quot;">Next message</a> ]
+[ <a href="../1512/0003.html" title="Christoph Lohmann: &quot;[news] [surf] 0.7 release&quot;">Previous message</a> ]
+<!-- unextthread="start" -->
+<!-- ureply="end" -->
+</li>
+</ul>
+</map>
+<ul class="links">
+<li><a name="options2" id="options2"></a><dfn>Contemporary messages sorted</dfn>: [ <a href="date.html#msg4" title="Contemporary messages by date">by date</a> ] [ <a href="index.html#msg4" title="Contemporary discussion threads">by thread</a> ] [ <a href="subject.html#msg4" title="Contemporary messages by subject">by subject</a> ] [ <a href="author.html#msg4" title="Contemporary messages by author">by author</a> ] [ <a href="attachment.html" title="Contemporary messages by attachment">by messages with attachments</a> ]</li>
+</ul>
+</div>
+<!-- body="start" -->
+<div class="mail">
+<address class="headers">
+<span id="from">
+<dfn>From</dfn>: FRIGN &lt;<a href="mailto:dev_AT_frign.de?Subject=Re%3A%20%5Bnews%5D%20%5Bfarbfeld%5D%20version%201%20release">dev_AT_frign.de</a>&gt;
+</span><br />
+<span id="date"><dfn>Date</dfn>: Wed, 6 Jan 2016 19:58:02 +0100</span><br />
+</address>
+<br />
+Hello fellow hackers,
+<br />
+<br />I'm pleased to announce version 1 of farbfeld[0]. Those of you subscribed
+<br />
+to hackers_AT_ have already seen the ramped up activity in the last few
+<br />
+days and I'm glad to have had the time to finally bring the codebase
+<br />
+forward to something stable and consistent.
+<br />
+<br />Farbfeld is a very simple image format created to make image processing
+<br />
+as easy as possible. Once you've had the chance to use libpng or
+<br />
+libjpeg in your projects, you know what I'm talking about.
+<br />
+It just can't be that when you want to get things done you first have
+<br />
+to fight your way through pages and pages of documentation for a given
+<br />
+image library. It took me quite a while to get this right for libpng,
+<br />
+especially in regard to 16-Bits-per-channel-data.
+<br />
+The farbfeld-format is so simple, I can post the entire spec right here:
+<br />
+<br />&nbsp;&nbsp;+--------+-----------------------------------------------------------+
+<br />
+&nbsp;&nbsp;| Bytes  | Description                                               |
+<br />
+&nbsp;&nbsp;+--------+-----------------------------------------------------------+
+<br />
+&nbsp;&nbsp;| 8      | &quot;farbfeld&quot; magic value                                    |
+<br />
+&nbsp;&nbsp;+--------+-----------------------------------------------------------+
+<br />
+&nbsp;&nbsp;| 4      | 32-Bit BE unsigned integer (width)                        |
+<br />
+&nbsp;&nbsp;+--------+-----------------------------------------------------------+
+<br />
+&nbsp;&nbsp;| 4      | 32-Bit BE unsigned integer (height)                       |
+<br />
+&nbsp;&nbsp;+--------+-----------------------------------------------------------+
+<br />
+&nbsp;&nbsp;| [2222] | 4*16-Bit BE unsigned integers [RGBA] / pixel, row-aligned |
+<br />
+&nbsp;&nbsp;+--------+-----------------------------------------------------------+
+<br />
+<br />I am not going to change this format. This is a 0K.
+<br />
+<br />So, go ahead, download the tarball, read the provided manpages
+<br />
+(at best start with farbfeld(5); you'll find a simple code-example for
+<br />
+a color-inverter there) and start hacking. Use lel(1) or &quot;ff2png | feh
+<br />
+-&quot; to view your results.
+<br />
+I'm sure you'll come up with something cool!
+<br />
+<br /><pre>
+---
+I want to use this chance to also discuss some points that I discussed
+with fellow hackers while working on this project:
+0) Why use 16-Bits-per-channel all the time? Isn't this a total waste?
+	Not when you take compression into account. To make this
+	clearer, assume a paletted image with 5 colors and no
+	transparency. So the data is only a set of regular chunks
+	(color1, ..., color5) in a certain order.
+	Compression algorithms have been designed to recognize those
+	chunks and can even look at how these chunks interact.
+	My testing has shown that farbfeld easily beats paletted
+	PNG-images. Try for yourself and look at the bzipped results!
+	There is no need for special Grayscale, Palette, RGB, 1-, 2-,
+	4-, 8-, 16-Bit subformats.
+	Just store 16-Bit RGBA all the time and let compression take
+	care of the rest.
+1) Why is there no support for color spaces (Adobe RGB, ...)?
+	The most widely-used color space is sRGB. I know it has its
+	drawbacks, but there are excellent ressources[1][2] as to why
+	you probably won't need Adobe RGB and other color spaces anyway.
+	Additionally, AdobeRGB is very difficult to process and if you
+	make one tiny mistake in your pipeline, you'll end up with very
+	dull colors (which is because Adobe RGB just stretches the RGB
+	values non-linearily).
+	Most displays and printers are calibrated for sRGB. I have yet
+	to see an example of an image which looked any different in the
+	print depending on if it had been processed in a sRGB or Adobe RGB
+	pipeline. Also, for smoother gradients, sRGB actually is better
+	because for the same color depth the sRGB colors lie closer to
+	each other. However, this is minor due to the fact that you can
+	easily ramp up bit-depth. However, it helps you realize that
+	Adobe RGB is just a tool like any other and it has no magic
+	properties.
+	Given most people don't even know what this stuff is all about
+	anyway and unknowingly use sRGB, why not appease the 99%?
+	The 1% wanting to use AdobeRGB is not forbidden to use it in
+	farbfeld, nobody is stopping you. You just have to make it clear
+	in your data interchange, which is not problematic given that
+	you have to be very careful building your AdobeRGB-pipeline in
+	the first place.
+	There are exotic color spaces which try to fix some issues of the
+	sRGB color space, but it doesn't look like they'll catch on in
+	the near future.
+2) Which compression should I use?
+	I recommend bzip2 in the manpages, which is widely available
+	and gives good results. As time will move forward and new
+	algorithms hit the market, this recommendation might be rethought.
+---
+I also want to thank Dimitris, Hiltjo, z3bra and all the other guys helping
+me debugging and testing the software across distros, unixes and endianesses.
+Have a nice evening and happy hacking!
+Cheers
+FRIGN
+	
+[0]: <a href="http://git.suckless.org/farbfeld">http://git.suckless.org/farbfeld</a>
+[1]: <a href="http://www.kenrockwell.com/tech/adobe-rgb.htm">http://www.kenrockwell.com/tech/adobe-rgb.htm</a>
+[2]: <a href="http://www.kenrockwell.com/tech/color-management/is-for-wimps.htm">http://www.kenrockwell.com/tech/color-management/is-for-wimps.htm</a>
+-- 
+FRIGN &lt;dev_AT_frign.de&gt;
+</pre>
+<span id="received"><dfn>Received on</dfn> Wed Jan 06 2016 - 19:58:02 CET</span>
+</div>
+<!-- body="end" -->
+<div class="foot">
+<map id="navbarfoot" name="navbarfoot" title="Related messages">
+<ul class="links">
+<li><dfn>This message</dfn>: [ <a href="0004.html#start4">Message body</a> ]</li>
+<!-- lnext="start" -->
+<li><dfn>Next message</dfn>: <a href="../1603/0005.html" title="Next message in the list">Mattias Andr&#0233;e: "[news] [libzahl] 1.0 release"</a></li>
+<li><dfn>Previous message</dfn>: <a href="../1512/0003.html" title="Previous message in the list">Christoph Lohmann: "[news] [surf] 0.7 release"</a></li>
+<!-- lnextthread="start" -->
+<!-- lreply="end" -->
+</ul>
+<ul class="links">
+<li><a name="options3" id="options3"></a><dfn>Contemporary messages sorted</dfn>: [ <a href="date.html#msg4" title="Contemporary messages by date">by date</a> ] [ <a href="index.html#msg4" title="Contemporary discussion threads">by thread</a> ] [ <a href="subject.html#msg4" title="Contemporary messages by subject">by subject</a> ] [ <a href="author.html#msg4" title="Contemporary messages by author">by author</a> ] [ <a href="attachment.html" title="Contemporary messages by attachment">by messages with attachments</a> ]</li>
+</ul>
+</map>
+</div>
+<!-- trailer="footer" -->
+<p><small><em>
+This archive was generated by <a href="http://www.hypermail-project.org/">hypermail 2.3.0</a>
+: Wed Jan 06 2016 - 20:00:19 CET
+</em></small></p>
+</body>
+</html>

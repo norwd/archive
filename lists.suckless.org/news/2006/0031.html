@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=us-ascii" />
+<meta name="generator" content="hypermail 2.3.0, see http://www.hypermail-project.org/" />
+<title>[news] [st] release 0.8.4 from Hiltjo Posthuma on 2020-06-19 (news mail list archive)</title>
+<meta name="Author" content="Hiltjo Posthuma (hiltjo_AT_codemadness.org)" />
+<meta name="Subject" content="[news] [st] release 0.8.4" />
+<meta name="Date" content="2020-06-19" />
+<style type="text/css">
+/*<![CDATA[*/
+/* To be incorporated in the main stylesheet, don't code it in hypermail! */
+body {color: black; background: #ffffff}
+dfn {font-weight: bold;}
+pre { background-color:inherit;}
+.head { border-bottom:1px solid black;}
+.foot { border-top:1px solid black;}
+th {font-style:italic;}
+table { margin-left:2em;}map ul {list-style:none;}
+#mid { font-size:0.9em;}
+#received { float:right;}
+address { font-style:inherit ;}
+/*]]>*/
+.quotelev1 {color : #990099}
+.quotelev2 {color : #ff7700}
+.quotelev3 {color : #007799}
+.quotelev4 {color : #95c500}
+.period {font-weight: bold}
+</style>
+</head>
+<body>
+<div class="head">
+<h1>[news] [st] release 0.8.4</h1>
+<!-- received="Fri, 19 Jun 2020 11:42:12 +0200" -->
+<!-- isoreceived="20200619094212" -->
+<!-- sent="Fri, 19 Jun 2020 11:42:12 +0200" -->
+<!-- isosent="20200619094212" -->
+<!-- name="Hiltjo Posthuma" -->
+<!-- email="hiltjo_AT_codemadness.org" -->
+<!-- subject="[news] [st] release 0.8.4" -->
+<!-- id="20200619094212.GA37838_AT_ren.laptop" -->
+<!-- charset="us-ascii" -->
+<!-- expires="-1" -->
+<map id="navbar" name="navbar">
+<ul class="links">
+<li>
+<dfn>This message</dfn>:
+[ <a href="0031.html#start31" name="options1" id="options1" tabindex="1">Message body</a> ]
+ [ More options (<a href="0031.html#options2">top</a>, <a href="0031.html#options3">bottom</a>) ]
+</li>
+<li>
+<dfn>Related messages</dfn>:
+<!-- unext="start" -->
+[ <a href="../2101/0032.html" title="Jan Klemkow: &quot;[news] [Announce] [scroll-0.1] release&quot;">Next message</a> ]
+[ <a href="0030.html" title="Salvatore Cuzzilla: &quot;[news] test&quot;">Previous message</a> ]
+<!-- unextthread="start" -->
+<!-- ureply="end" -->
+</li>
+</ul>
+</map>
+<ul class="links">
+<li><a name="options2" id="options2"></a><dfn>Contemporary messages sorted</dfn>: [ <a href="date.html#msg31" title="Contemporary messages by date">by date</a> ] [ <a href="index.html#msg31" title="Contemporary discussion threads">by thread</a> ] [ <a href="subject.html#msg31" title="Contemporary messages by subject">by subject</a> ] [ <a href="author.html#msg31" title="Contemporary messages by author">by author</a> ] [ <a href="attachment.html" title="Contemporary messages by attachment">by messages with attachments</a> ]</li>
+</ul>
+</div>
+<!-- body="start" -->
+<div class="mail">
+<address class="headers">
+<span id="from">
+<dfn>From</dfn>: Hiltjo Posthuma &lt;<a href="mailto:hiltjo_AT_codemadness.org?Subject=Re%3A%20%5Bnews%5D%20%5Bst%5D%20release%200.8.4">hiltjo_AT_codemadness.org</a>&gt;
+</span><br />
+<span id="date"><dfn>Date</dfn>: Fri, 19 Jun 2020 11:42:12 +0200</span><br />
+</address>
+<br />
+Hi all,
+<br />
+<br />st is now tagged 0.8.4 as release and available as a tarball.
+<br />
+<br />I want to thank all people who made patch contributions to make st better.
+<br />
+<br />Below most of the changes are listed.
+<br />
+<br /><br />Security
+<br />
+--------
+<br />
+<br />* config.def.h: add an option allowwindowops, by default off (secure).
+<br />
+<br />&nbsp;&nbsp;Similar to the xterm AllowWindowOps option.
+<br />
+&nbsp;&nbsp;The sequence for base64-encoded clipboard copy is now guarded and off by
+<br />
+&nbsp;&nbsp;default because it allows a sequence written to the terminal to manipulate the
+<br />
+&nbsp;&nbsp;clipboard of the (other) running user non-interactively.
+<br />
+<br /><br />Features
+<br />
+--------
+<br />
+<br />* Integrate auto-sync: draw on idle to avoid flicker/tearing by avih.
+<br />
+&nbsp;&nbsp;st could easily tear/flicker with animation or other unattended
+<br />
+&nbsp;&nbsp;output. This commit eliminates most of the tear/flicker.
+<br />
+<br />* Optimize column width calculation and UTF-8 encode for the common-case ASCII.
+<br />
+&nbsp;&nbsp;In particular on glibc and OpenBSD the wcwidth() call is more expensive.
+<br />
+&nbsp;&nbsp;On musl there is no/little difference.
+<br />
+<br />* Add support for REP (repeat) escape sequence and xterm compatibility, by
+<br />
+&nbsp;&nbsp;avih.  The capability is not exposed yet due to some issues with
+<br />
+&nbsp;&nbsp;applications.
+<br />
+<br />* Call xsetcursor to set win.cursor in main, by Steve Ward.
+<br />
+&nbsp;&nbsp;Allowing to set the st snowman cursor extension dynamically.
+<br />
+<br /><br />Fixes and other changes
+<br />
+-----------------------
+<br />
+<br />* Fix unicode glitch in DCS strings, by Tim Allen.
+<br />
+&nbsp;&nbsp;The related sixel stub code is now removed also.
+<br />
+<br />* Fix for incorrect (partial) written sequences when libc wcwidth() == -1
+<br />
+&nbsp;&nbsp;and using st -o.
+<br />
+<br />* Mouse selection fixes, by Jakub
+<br />
+<br />* Make shift+wheel behaves as shift+Prev/Next, patch by k0ga
+<br />
+&nbsp;&nbsp;This patch adds a new hack, making shift+wheel returning the
+<br />
+&nbsp;&nbsp;same sequences than shift+Prev/Next, meaning that scroll or
+<br />
+&nbsp;&nbsp;any other similar program will not be able to differentiate
+<br />
+&nbsp;&nbsp;between them.
+<br />
+<br />* Expose rin terminfo capability.
+<br />
+&nbsp;&nbsp;Tianlin Qu discovered that st is missing rin (scroll back #1 lines).
+<br />
+<br />* Replace exit(3) by _exit(2) in signal handler sigchld(), by Jan.
+<br />
+&nbsp;&nbsp;This change prevents st to crash and dump core in some situations.
+<br />
+<br />* FAQ: add details and a patch example for single-buffering (for the w3mimg
+<br />
+&nbsp;&nbsp;hack).
+<br />
+<br /><pre>
+-- 
+Kind regards,
+Hiltjo
+</pre>
+<span id="received"><dfn>Received on</dfn> Fri Jun 19 2020 - 11:42:12 CEST</span>
+</div>
+<!-- body="end" -->
+<div class="foot">
+<map id="navbarfoot" name="navbarfoot" title="Related messages">
+<ul class="links">
+<li><dfn>This message</dfn>: [ <a href="0031.html#start31">Message body</a> ]</li>
+<!-- lnext="start" -->
+<li><dfn>Next message</dfn>: <a href="../2101/0032.html" title="Next message in the list">Jan Klemkow: "[news] [Announce] [scroll-0.1] release"</a></li>
+<li><dfn>Previous message</dfn>: <a href="0030.html" title="Previous message in the list">Salvatore Cuzzilla: "[news] test"</a></li>
+<!-- lnextthread="start" -->
+<!-- lreply="end" -->
+</ul>
+<ul class="links">
+<li><a name="options3" id="options3"></a><dfn>Contemporary messages sorted</dfn>: [ <a href="date.html#msg31" title="Contemporary messages by date">by date</a> ] [ <a href="index.html#msg31" title="Contemporary discussion threads">by thread</a> ] [ <a href="subject.html#msg31" title="Contemporary messages by subject">by subject</a> ] [ <a href="author.html#msg31" title="Contemporary messages by author">by author</a> ] [ <a href="attachment.html" title="Contemporary messages by attachment">by messages with attachments</a> ]</li>
+</ul>
+</map>
+</div>
+<!-- trailer="footer" -->
+<p><small><em>
+This archive was generated by <a href="http://www.hypermail-project.org/">hypermail 2.3.0</a>
+: Fri Jun 19 2020 - 11:48:41 CEST
+</em></small></p>
+</body>
+</html>
