@@ -1,0 +1,85 @@
+#!/bin/sh
+# bitwarden dmenu script - based off of the autofill userscript from qutebrowser
+# requires the fifo patch
+# $1: winid
+#
+# add something like this to your config.h:
+# #define BITWARDEN_DMENU { .v = (char *[]){ "/bin/sh", "-c", "bw-dmenu-fill" } }
+#
+# and this to your keybindings:
+# { MODKEY, GDK_KEY_z, spawn, BITWARDEN_DMENU },
+
+fifo=~/.surf/fifo/"$1"
+url=$(xprop -id "$1" _SURF_URI | awk '{ print $3 }' | sed 's/"//g')
+
+username=""
+password=""
+
+output=$(bitwarden-dmenu \
+	--bw-list-args="--url=$url" \
+    --dmenu-args="-l 5 -w $1" \
+    --dmenu-pswd-args="-w $1" \
+    --stdout)
+
+if [ ! -z "$output" ]; then
+    username=$(echo "$output" | awk 'FNR == 1 {print}')
+    password=$(echo "$output" | awk 'FNR == 2 {print}')
+else
+    exit
+fi
+
+javascript_escape() {
+    sed "s,[\\\\'\"],\\\\&,g" <<< "$1"
+}
+
+js() {
+cat <<EOF
+    function isVisible(elem) {
+        var style = elem.ownerDocument.defaultView.getComputedStyle(elem, null);
+        if (style.getPropertyValue("visibility") !== "visible" ||
+            style.getPropertyValue("display") === "none" ||
+            style.getPropertyValue("opacity") === "0") {
+            return false;
+        }
+        return elem.offsetWidth > 0 && elem.offsetHeight > 0;
+    };
+    function hasPasswordField(form) {
+        var inputs = form.getElementsByTagName("input");
+        for (var j = 0; j < inputs.length; j++) {
+            var input = inputs[j];
+            if (input.type == "password") {
+                return true;
+            }
+        }
+        return false;
+    };
+    function loadData2Form (form) {
+        var inputs = form.getElementsByTagName("input");
+        for (var j = 0; j < inputs.length; j++) {
+            var input = inputs[j];
+            if (isVisible(input) && (input.type == "text" || input.type == "email")) {
+                input.focus();
+                input.value = "$(javascript_escape "${username}")";
+                input.blur();
+            }
+            if (input.type == "password") {
+                input.focus();
+                input.value = "$(javascript_escape "${password}")";
+                input.blur();
+            }
+        }
+    };
+    var forms = document.getElementsByTagName("form");
+    for (i = 0; i < forms.length; i++) {
+        if (hasPasswordField(forms[i])) {
+            loadData2Form(forms[i]);
+        }
+    }
+EOF
+}
+
+printjs() {
+    js | sed 's,//.*$,,' | tr '\n' ' '
+}
+
+echo "inject $(printjs)" >> "$fifo"

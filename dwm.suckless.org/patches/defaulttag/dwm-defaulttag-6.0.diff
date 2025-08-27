@@ -1,0 +1,25 @@
+diff --git a/config.def.h b/config.def.h
+index 77ff358..d66d225 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -10,6 +10,7 @@ static const char selbgcolor[]      = "#005577";
+ static const char selfgcolor[]      = "#eeeeee";
+ static const unsigned int borderpx  = 1;        /* border pixel of windows */
+ static const unsigned int snap      = 32;       /* snap pixel */
++static const unsigned int defaulttag= 2;        /* default tag on startup */
+ static const Bool showbar           = True;     /* False means no bar */
+ static const Bool topbar            = True;     /* False means bottom bar */
+ 
+diff --git a/dwm.c b/dwm.c
+index 1d78655..cbb9b59 100644
+--- a/dwm.c
++++ b/dwm.c
+@@ -649,7 +649,7 @@ createmon(void) {
+ 
+ 	if(!(m = (Monitor *)calloc(1, sizeof(Monitor))))
+ 		die("fatal: could not malloc() %u bytes\n", sizeof(Monitor));
+-	m->tagset[0] = m->tagset[1] = 1;
++	m->tagset[0] = m->tagset[1] = defaulttag;
+ 	m->mfact = mfact;
+ 	m->nmaster = nmaster;
+ 	m->showbar = showbar;

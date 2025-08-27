@@ -1,0 +1,138 @@
+diff -upN _dwm-6.5/config.def.h dwm-6.5_gridall/config.def.h
+--- _dwm-6.5/config.def.h	2024-03-19 08:24:52.000000000 -0300
++++ dwm-6.5_gridall/config.def.h	2025-06-13 08:50:53.706890303 -0300
+@@ -1,4 +1,5 @@
+ /* See LICENSE file for copyright and license details. */
++#include "gaplessgrid.c"
+ 
+ /* appearance */
+ static const unsigned int borderpx  = 1;        /* border pixel of windows */
+@@ -42,6 +43,7 @@ static const Layout layouts[] = {
+ 	{ "[]=",      tile },    /* first entry is default */
+ 	{ "><>",      NULL },    /* no layout function means floating behavior */
+ 	{ "[M]",      monocle },
++	{ "HHH",      gaplessgrid },
+ };
+ 
+ /* key definitions */
+@@ -95,6 +97,9 @@ static const Key keys[] = {
+ 	TAGKEYS(                        XK_8,                      7)
+ 	TAGKEYS(                        XK_9,                      8)
+ 	{ MODKEY|ShiftMask,             XK_q,      quit,           {0} },
++	{ MODKEY,                       XK_o,      winview,        {0} },
++	{ MODKEY,                       XK_g,      gridall,        {} },
++	{ MODKEY,                       XK_r,      winviewmono,    {} },
+ };
+ 
+ /* button definitions */
+diff -upN _dwm-6.5/dwm.1 dwm-6.5_gridall/dwm.1
+--- _dwm-6.5/dwm.1	2024-03-19 08:24:52.000000000 -0300
++++ dwm-6.5_gridall/dwm.1	2025-06-13 08:47:30.480858739 -0300
+@@ -110,6 +110,9 @@ Increase master area size.
+ .B Mod1\-h
+ Decrease master area size.
+ .TP
++.B Mod1\-o
++Select view of the window in focus. The list of tags to be displayed is matched to the window tag list.
++.TP
+ .B Mod1\-Return
+ Zooms/cycles focused window to/from master area (tiled layouts only).
+ .TP
+diff -upN _dwm-6.5/dwm.c dwm-6.5_gridall/dwm.c
+--- _dwm-6.5/dwm.c	2024-03-19 08:24:52.000000000 -0300
++++ dwm-6.5_gridall/dwm.c	2025-06-13 08:49:14.708874297 -0300
+@@ -229,10 +229,13 @@ static void updatewmhints(Client *c);
+ static void view(const Arg *arg);
+ static Client *wintoclient(Window w);
+ static Monitor *wintomon(Window w);
++static void winview(const Arg* arg);
+ static int xerror(Display *dpy, XErrorEvent *ee);
+ static int xerrordummy(Display *dpy, XErrorEvent *ee);
+ static int xerrorstart(Display *dpy, XErrorEvent *ee);
+ static void zoom(const Arg *arg);
++static void gridall(const Arg *arg);
++static void winviewmono(const Arg *arg);
+ 
+ /* variables */
+ static const char broken[] = "broken";
+@@ -2092,6 +2095,41 @@ wintomon(Window w)
+ 	return selmon;
+ }
+ 
++/* Selects for the view of the focused window. The list of tags */
++/* to be displayed is matched to the focused window tag list. */
++void
++winview(const Arg* arg){
++	Window win, win_r, win_p, *win_c;
++	unsigned nc;
++	int unused;
++	Client* c;
++	Arg a;
++
++	if (!XGetInputFocus(dpy, &win, &unused)) return;
++	while(XQueryTree(dpy, win, &win_r, &win_p, &win_c, &nc)
++	      && win_p != win_r) win = win_p;
++
++	if (!(c = wintoclient(win))) return;
++
++	a.ui = c->tags;
++	view(&a);
++}
++
++/* by desgua */
++void
++gridall(const Arg *arg)
++{
++	setlayout(&(Arg){.v = &layouts[3]});
++	view(&(Arg){.ui = ~0});
++}
++
++void
++winviewmono(const Arg *arg)
++{
++	winview(&(Arg){0});
++	setlayout(&(Arg){.v = &layouts[2]});
++}
++
+ /* There's no way to check accesses to destroyed windows, thus those cases are
+  * ignored (especially on UnmapNotify's). Other types of errors call Xlibs
+  * default error handler, which may call exit. */
+diff -upN _dwm-6.5/gaplessgrid.c dwm-6.5_gridall/gaplessgrid.c
+--- _dwm-6.5/gaplessgrid.c	1969-12-31 21:00:00.000000000 -0300
++++ dwm-6.5_gridall/gaplessgrid.c	2025-06-13 08:47:30.480858739 -0300
+@@ -0,0 +1,35 @@
++void
++gaplessgrid(Monitor *m) {
++	unsigned int n, cols, rows, cn, rn, i, cx, cy, cw, ch;
++	Client *c;
++
++	for(n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++) ;
++	if(n == 0)
++		return;
++
++	/* grid dimensions */
++	for(cols = 0; cols <= n/2; cols++)
++		if(cols*cols >= n)
++			break;
++	if(n == 5) /* set layout against the general calculation: not 1:2:2, but 2:3 */
++		cols = 2;
++	rows = n/cols;
++
++	/* window geometries */
++	cw = cols ? m->ww / cols : m->ww;
++	cn = 0; /* current column number */
++	rn = 0; /* current row number */
++	for(i = 0, c = nexttiled(m->clients); c; i++, c = nexttiled(c->next)) {
++		if(i/rows + 1 > cols - n%cols)
++			rows = n/cols + 1;
++		ch = rows ? m->wh / rows : m->wh;
++		cx = m->wx + cn*cw;
++		cy = m->wy + rn*ch;
++		resize(c, cx, cy, cw - 2 * c->bw, ch - 2 * c->bw, False);
++		rn++;
++		if(rn >= rows) {
++			rn = 0;
++			cn++;
++		}
++	}
++}

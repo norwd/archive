@@ -1,0 +1,131 @@
+From da6ca327f75c661f1a48b23e27e77c4df1081f0d Mon Sep 17 00:00:00 2001
+From: elbachir-one <bachiralfa@gmail.com>
+Date: Fri, 1 Aug 2025 12:19:30 +0100
+Subject: [PATCH] Fix: change battery_notify to return const char * for
+ compatibility
+
+---
+ components/battery.c | 47 ++++++++++++++++++++++++++++++++++++++++++++
+ config.def.h         | 11 +++++++++++
+ slstatus.h           |  1 +
+ 3 files changed, 59 insertions(+)
+
+diff --git a/components/battery.c b/components/battery.c
+index 1c753f9..432f714 100644
+--- a/components/battery.c
++++ b/components/battery.c
+@@ -1,6 +1,7 @@
+ /* See LICENSE file for copyright and license details. */
+ #include <stdio.h>
+ #include <string.h>
++#include <stdlib.h>
+ 
+ #include "../slstatus.h"
+ #include "../util.h"
+@@ -20,6 +21,13 @@
+ 	#define POWER_SUPPLY_CURRENT  "/sys/class/power_supply/%s/current_now"
+ 	#define POWER_SUPPLY_POWER    "/sys/class/power_supply/%s/power_now"
+ 
++	const char notify_cmd[] = "notify-send";
++	const char battery_str[] = "Battery";
++	int last_notified_level = 0;
++
++	extern const int notifiable_levels[];
++	extern const size_t notifiable_levels_count;
++
+ 	static const char *
+ 	pick(const char *bat, const char *f1, const char *f2, char *path,
+ 	     size_t length)
+@@ -49,6 +57,45 @@
+ 		return bprintf("%d", cap_perc);
+ 	}
+ 
++const char *battery_notify(const char *bat)
++{
++	int cap_perc;
++	char state[12];
++	char path[PATH_MAX];
++
++	if (esnprintf(path, sizeof(path), POWER_SUPPLY_CAPACITY, bat) < 0 || pscanf(path, "%d", &cap_perc) != 1)
++		return NULL;
++
++	if (esnprintf(path, sizeof(path), POWER_SUPPLY_STATUS, bat) < 0 || pscanf(path, "%12[a-zA-Z ]", &state) != 1)
++		return NULL;
++
++	if (strcmp("Charging", state) == 0) {
++		last_notified_level = 0;
++		return NULL;
++	}
++
++	if (strcmp("Discharging", state) != 0)
++		return NULL;
++
++	char cmd[28];
++
++	for (size_t i = 0; i < notifiable_levels_count; i++) {
++		if (notifiable_levels[i] != cap_perc)
++			continue;
++
++		if (notifiable_levels[i] != last_notified_level) {
++			last_notified_level = notifiable_levels[i];
++
++			snprintf(cmd, sizeof(cmd), "%s %s %d%%", notify_cmd, battery_str, cap_perc);
++			system(cmd);
++
++			break;
++		}
++	}
++
++	return NULL;
++}
++
+ 	const char *
+ 	battery_state(const char *bat)
+ 	{
+diff --git a/config.def.h b/config.def.h
+index 100093e..d7e77d2 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -9,11 +9,21 @@ static const char unknown_str[] = "n/a";
+ /* maximum output string length */
+ #define MAXLEN 2048
+ 
++/* battery levels to notify - add any levels you want to receive notification for (in percent) */
++const int notifiable_levels[] = {
++    20,
++    10,
++    5,
++};
++const size_t notifiable_levels_count = sizeof(notifiable_levels) / sizeof(notifiable_levels[0]);
++
+ /*
+  * function            description                     argument (example)
+  *
+  * battery_perc        battery percentage              battery name (BAT0)
+  *                                                     NULL on OpenBSD/FreeBSD
++ * battery_notify      linux battery notifications     battery name (BAT0)
++ *                                                     OpenBSD/FreeBSD not supported
+  * battery_remaining   battery remaining HH:MM         battery name (BAT0)
+  *                                                     NULL on OpenBSD/FreeBSD
+  * battery_state       battery charging state          battery name (BAT0)
+@@ -67,4 +77,5 @@ static const char unknown_str[] = "n/a";
+ static const struct arg args[] = {
+ 	/* function format          argument */
+ 	{ datetime, "%s",           "%F %T" },
++	{ battery_notify, "",       "BAT0" }, /* There is nothing to print its just a notifications*/
+ };
+diff --git a/slstatus.h b/slstatus.h
+index 394281c..061d80a 100644
+--- a/slstatus.h
++++ b/slstatus.h
+@@ -2,6 +2,7 @@
+ 
+ /* battery */
+ const char *battery_perc(const char *);
++const char *battery_notify(const char *);
+ const char *battery_remaining(const char *);
+ const char *battery_state(const char *);
+ 
+-- 
+2.50.1
+

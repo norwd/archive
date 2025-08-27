@@ -1,0 +1,138 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>software that sucks less | suckless.org software that sucks less</title>
+	<link rel="stylesheet" type="text/css" href="../pub/style.css"/>
+</head>
+
+<div id="header">
+	<a href="../index.html"><img src="../logo.svg" alt=""/></a>&nbsp;
+	<a id="headerLink" href="../index.html">suckless.org</a>
+	<span class="hidden"> - </span>
+	<span id="headerSubtitle">software that sucks less</span>
+</div>
+<hr class="hidden"/>
+<div id="menu">
+	<a href="../index.html"><b>home</b></a>
+	<a href="https://dwm.suckless.org/">dwm</a>
+	<a href="https://st.suckless.org/">st</a>
+	<a href="https://core.suckless.org/">core</a>
+	<a href="https://surf.suckless.org/">surf</a>
+	<a href="https://tools.suckless.org/">tools</a>
+	<a href="https://libs.suckless.org/">libs</a>
+	<a href="https://ev.suckless.org/">e.V.</a>
+	<span class="right">
+		<a href="https://dl.suckless.org/">download</a>
+		<a href="https://git.suckless.org/">source</a>
+	</span>
+</div>
+<hr class="hidden"/>
+<div id="content">
+<div id="nav">
+	<ul>
+	<li><a href="../index.html">about</a></li>
+	<li><a href="../coding_style/index.html">coding style/</a></li>
+	<li><a href="../community/index.html">community/</a></li>
+	<li><a href="../conferences/index.html">conferences/</a></li>
+	<li><a href="../donations/index.html">donations/</a></li>
+	<li><a href="../faq/index.html">faq/</a></li>
+	<li><a href="index.html"><b>hacking/</b></a></li>
+	<li><a href="../other_projects/index.html">other projects/</a></li>
+	<li><a href="../people/index.html">people/</a></li>
+	<li><a href="../philosophy/index.html">philosophy/</a></li>
+	<li><a href="../project_ideas/index.html">project ideas/</a></li>
+	<li><a href="../rocks/index.html">rocks/</a></li>
+	<li><a href="../sucks/index.html">sucks/</a></li>
+	<li><a href="../wiki/index.html">wiki/</a></li>
+	</ul>
+</div>
+<hr class="hidden"/>
+<div id="main">
+
+<h1>Hacking</h1>
+<h2>Copying/license</h2>
+<p>We only accept contributions from individuals, not corporate entities. See the
+project LICENSE file you're contributing to.</p>
+<h2>Debugging</h2>
+<p>If you find any crashes, please send a full backtrace to the dedicated mailing
+list. You can create backtraces with <code>gdb</code>:</p>
+<p>Before starting a program, you may have to allow core file creation. It is
+recommended that you put this in your profile:</p>
+<pre><code>$ ulimit -c unlimited
+</code></pre>
+<p>Then start the program as usual.</p>
+<p>After the program crashes, do the following:</p>
+<pre><code>$ gdb -q `which program` /path/to/core
+gdb&gt; bt full
+</code></pre>
+<p>If you encounter freezes (no crash at all) of the program, you can debug as
+follows:</p>
+<pre><code>$ gdb -q `which program` --attach `pgrep -o  program`
+gdb&gt; bt full
+</code></pre>
+<p>Send the output of that command to the mailing list along with the output of
+<code>program -v</code>! Thank you!</p>
+<h2>Patches</h2>
+<p>There are two types of patches: The ones that fit to your personal taste and
+the ones you think should be included in mainline.</p>
+<p>For patches that fit your personal taste and you want to share with the
+community, please follow the instructions on the <a href="../wiki/index.html">wiki</a>
+page on how to edit the pages you see here.</p>
+<p>For patches that should be included in mainline see the
+<a href="../community/index.html">community</a> page and the hackers@ mailing list.
+Please note that only patches to be included in mainline repos are to be
+submitted to this list, customisation patches are to be submitted to the wiki!</p>
+<p>Please provide a clear concise "commit message" for your patches.</p>
+<p>The following instructions are a general guide on how to generate and apply
+patches posted on this wiki:</p>
+<h2>patch filename format</h2>
+<p>The expected format for patches is:</p>
+<p>For git revisions:</p>
+<pre><code>toolname-patchname-YYYYMMDD-SHORTHASH.diff
+dwm-allyourbase-20160617-3465bed.diff
+</code></pre>
+<p>The YYYYMMDD date should correspond to the last time the patch has been
+modified. The SHORTHASH here is the seven chars git commit short hash
+corresponding to the last commit of the tool on which the patch can be applied
+correctly and is working with. You can get it by taking the first seven chars
+of the full hash or for example:</p>
+<pre><code>git rev-parse --short &lt;commit-id&gt; (with commit-id: HEAD, commit hash, etc.)
+</code></pre>
+<p>For release versions:</p>
+<pre><code>toolname-patchname-RELEASE.diff
+dwm-allyourbase-6.1.diff
+</code></pre>
+<p>The RELEASE should correspond to the tool release version, ie 6.1 for dwm-6.1.</p>
+<h2>diff generation</h2>
+<p>For git users:</p>
+<pre><code>cd program-directory
+git add filechanges...
+git commit (write a clear patch description)
+git format-patch --stdout HEAD^ &gt; toolname-patchname-YYYYMMDD-SHORTHASH.diff
+</code></pre>
+<p>For tarballs:</p>
+<pre><code>cd modified-program-directory/..
+diff -up original-program-directory modified-program-directory &gt; \
+           toolname-patchname-RELEASE.diff
+</code></pre>
+<p>Don't push multiple commits patchsets. A single patch should apply all changes
+using <code>patch -p1</code>.</p>
+<h2>patch program</h2>
+<p>For git users, use -3 to fix the conflict easily:</p>
+<pre><code>cd program-directory
+git apply path/to/patch.diff
+</code></pre>
+<p>For patches formatted with git format-patch:</p>
+<pre><code>cd program-directory
+git am path/to/patch.diff
+</code></pre>
+<p>For tarballs:</p>
+<pre><code>cd program-directory
+patch -p1 &lt; path/to/patch.diff
+</code></pre>
+</div>
+
+</div>
+
+</html>

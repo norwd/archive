@@ -1,0 +1,108 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>surf | suckless.org software that sucks less</title>
+	<link rel="stylesheet" type="text/css" href="https://suckless.org/pub/style.css"/>
+</head>
+
+<div id="header">
+	<a href="https://suckless.org/"><img src="https://suckless.org/logo.svg" alt=""/></a>&nbsp;
+	<a id="headerLink" href="https://suckless.org/">suckless.org</a>
+	<span class="hidden"> - </span>
+	<span id="headerSubtitle">surf</span>
+</div>
+<hr class="hidden"/>
+<div id="menu">
+	<a href="https://suckless.org/">home</a>
+	<a href="https://dwm.suckless.org/">dwm</a>
+	<a href="https://st.suckless.org/">st</a>
+	<a href="https://core.suckless.org/">core</a>
+	<a href="../../index.html"><b>surf</b></a>
+	<a href="https://tools.suckless.org/">tools</a>
+	<a href="https://libs.suckless.org/">libs</a>
+	<a href="https://ev.suckless.org/">e.V.</a>
+	<span class="right">
+		<a href="https://dl.suckless.org/">download</a>
+		<a href="https://git.suckless.org/">source</a>
+	</span>
+</div>
+<hr class="hidden"/>
+<div id="content">
+<div id="nav">
+	<ul>
+	<li><a href="../../index.html">about</a></li>
+	<li><a href="../index.html"><b>files/</b></a>
+		<ul>
+		<li><a href="../adblock-hosts/index.html">adblock hosts/</a></li>
+		<li><a href="../autologin/index.html">autologin/</a></li>
+		<li><a href="../autorefresh/index.html">autorefresh/</a></li>
+		<li><a href="../bmarks/index.html">bmarks/</a></li>
+		<li><a href="../bmarks_history/index.html">bmarks history/</a></li>
+		<li><a href="../easier_key/index.html">easier key/</a></li>
+		<li><a href="../easy_links/index.html">easy links/</a></li>
+		<li><a href="../edit_source/index.html">edit source/</a></li>
+		<li><a href="../feeds/index.html">feeds/</a></li>
+		<li><a href="../hide_applets/index.html">hide applets/</a></li>
+		<li><a href="../kiosk_mode/index.html">kiosk mode/</a></li>
+		<li><a href="../link_hints/index.html">link hints/</a></li>
+		<li><a href="../middle_click_link/index.html">middle click link/</a></li>
+		<li><a href="index.html"><b>not flash/</b></a></li>
+		<li><a href="../quick_search/index.html">quick search/</a></li>
+		<li><a href="../simple_bookmarking/index.html">simple bookmarking/</a></li>
+		<li><a href="../simple_bookmarking_redux/index.html">simple bookmarking redux/</a></li>
+		<li><a href="../simplyread/index.html">simplyread/</a></li>
+		<li><a href="../smartdownloads/index.html">smartdownloads/</a></li>
+		<li><a href="../surfraw_as_searchengine/index.html">surfraw as searchengine/</a></li>
+		<li><a href="../untarget/index.html">untarget/</a></li>
+		</ul>
+	</li>
+	<li><a href="../../patches/index.html">patches/</a></li>
+	<li><a href="../../screenshots/index.html">screenshots/</a></li>
+	<li><a href="../../stylesheets/index.html">stylesheets/</a></li>
+	</ul>
+</div>
+<hr class="hidden"/>
+<div id="main">
+
+<h1>Watch flash videos with mpv</h1>
+<h2>Description</h2>
+<p>Save this script as ~/bin/yt and adjust it to your needs. (Requires <a href="http://rg3.github.io/youtube-dl/">youtube-dl</a>)</p>
+<pre><code>#!/bin/sh
+format="-f34" # leave empty for default
+player="mpv --quiet --geometry=50%:50% --idx --keep-open"
+tmpdir="$HOME/tmp"
+
+url="$1"
+filepath="$tmpdir/$(youtube-dl --id --get-filename $format $url)"
+
+youtube-dl -c -o $filepath $format $url &amp;
+echo $! &gt; $filepath.$$.pid
+
+while [ ! -r $filepath ] &amp;&amp; [ ! -r $filepath.part ]; do 
+	echo "Waiting for youtube-dl..."
+	sleep 3
+done
+
+[ -r $filepath.part ] &amp;&amp; $player $filepath.part || $player $filepath
+kill $(cat $filepath.$$.pid)
+rm $filepath.$$.pid
+</code></pre>
+<p>Add this to surf's config.h:</p>
+<pre><code>#define WATCH {.v = (char *[]){ "/bin/sh", "-c", \
+	"st -e \
+	yt $(xprop -id $0 _SURF_URI | cut -d \\\" -f 2)", \
+	winid, NULL } }
+</code></pre>
+<p>and in the keys section:</p>
+<pre><code>{ MODKEY,               GDK_w,      spawn,      WATCH },
+</code></pre>
+<h2>Author</h2>
+<ul>
+<li>Maximilian Dietrich - &lt;dxm<em>at</em>lavabit<em>dot</em>com&gt;</li>
+</ul>
+</div>
+
+</div>
+
+</html>

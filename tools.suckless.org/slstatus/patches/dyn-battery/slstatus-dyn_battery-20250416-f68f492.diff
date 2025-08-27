@@ -1,0 +1,146 @@
+From 44fcd213f975ae35fb92de9bc56d8d895478edb5 Mon Sep 17 00:00:00 2001
+From: Madison Lynch <madi@mxdi.xyz>
+Date: Wed, 16 Apr 2025 16:18:33 -0700
+Subject: [PATCH] Improved memory-safety in dyn_battery function
+
+---
+ Makefile                 |  1 +
+ components/dyn_battery.c | 84 ++++++++++++++++++++++++++++++++++++++++
+ config.def.h             |  3 ++
+ slstatus.h               |  3 ++
+ 4 files changed, 91 insertions(+)
+ create mode 100644 components/dyn_battery.c
+
+diff --git a/Makefile b/Makefile
+index 7a18274..d1b24dd 100644
+--- a/Makefile
++++ b/Makefile
+@@ -11,6 +11,7 @@ COM =\
+ 	components/cpu\
+ 	components/datetime\
+ 	components/disk\
++	components/dyn_battery\
+ 	components/entropy\
+ 	components/hostname\
+ 	components/ip\
+diff --git a/components/dyn_battery.c b/components/dyn_battery.c
+new file mode 100644
+index 0000000..9377071
+--- /dev/null
++++ b/components/dyn_battery.c
+@@ -0,0 +1,84 @@
++/* Written by Madison Lynch <madi@mxdi.xyz> */
++/* Only Linux is supported */
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <dirent.h>
++
++#include "../slstatus.h"
++
++#define BAT_PREFIX "BAT"
++#define BAT_DIR "/sys/class/power_supply"
++
++/**
++* Counts number of batteries detected by system.
++*
++* @return unsigned integer denoting the number of detected batteries.
++* @author Madison Lynch
++*/
++static unsigned int
++battery_count(void) {
++    DIR *dir = opendir(BAT_DIR);
++    unsigned int bat_c = 0;
++
++    struct dirent *entry;
++    while((entry = readdir(dir)))
++        if(strlen(entry->d_name) > 3)
++            if(strncmp(entry->d_name, BAT_PREFIX, 3) == 0)
++                bat_c++;
++
++    (void) closedir(dir);
++    return bat_c;
++}
++
++/**
++* Displays the status and capacity of a dynamic amount of batteries (i.e.
++* laptop may have secondary external battery).
++*
++* @param  fmt format string to use for each battery display. ordered key:
++*             %u: battery number || %s: battery state || %s battery capacity
++* @return string containing the status and capacities of all detected batteries
++* @author Madison Lynch
++*/
++const char *
++dyn_battery(const char *fmt) {
++    static char *ret;
++    free(ret); // Free address from previous output
++
++    const size_t fmt_s = strlen(fmt);
++    const unsigned int bat_c = battery_count();
++
++    // Extra byte in calloc() for null byte
++    ret = (char *)calloc(fmt_s * bat_c + 1, sizeof(char));
++    if(!ret) {
++        fprintf(stderr, "dyn_battery: calloc() failed.");
++        return NULL;
++    }
++
++    unsigned int displacement = 0; // For appending battery displays
++    for(unsigned int i=0; i<bat_c; i++) {
++        char bat[7]; // "BAT" = 3 + <=3 digit number + null byte
++        (void) sprintf(bat, "BAT%u", i);
++
++        // Add battery display to final string to be returned
++        (void) sprintf(
++            ret + displacement,
++            fmt,
++            i,
++            battery_state(bat),
++            battery_perc(bat)
++        );
++        displacement = strlen(ret);
++
++        // Add space between battery displays
++        ret[displacement++] = ' ';
++    }
++
++    // Remove extra space after last battery display
++    ret[--displacement] = '\0';
++
++    return ret;
++}
++
++#undef BAT_DIR
++#undef BAT_PREFIX
+diff --git a/config.def.h b/config.def.h
+index d805331..a0052e3 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -26,6 +26,9 @@ static const char unknown_str[] = "n/a";
+  * disk_perc           disk usage in percent           mountpoint path (/)
+  * disk_total          total disk space in GB          mountpoint path (/)
+  * disk_used           used disk space in GB           mountpoint path (/)
++ * dyn_battery         displays the name, state and    format string (%u, %s,
++ *                     capacity of all detected        %s). order is important,
++ *                     batteries                       and matches description.
+  * entropy             available entropy               NULL
+  * gid                 GID of current user             NULL
+  * hostname            hostname                        NULL
+diff --git a/slstatus.h b/slstatus.h
+index 8ef5874..44a4b61 100644
+--- a/slstatus.h
++++ b/slstatus.h
+@@ -21,6 +21,9 @@ const char *disk_perc(const char *path);
+ const char *disk_total(const char *path);
+ const char *disk_used(const char *path);
+ 
++/* dyn_battery */
++const char *dyn_battery(const char *fmt);
++
+ /* entropy */
+ const char *entropy(const char *unused);
+ 
+-- 
+2.49.0
+

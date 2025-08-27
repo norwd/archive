@@ -1,0 +1,158 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>tools | suckless.org software that sucks less</title>
+	<link rel="stylesheet" type="text/css" href="https://suckless.org/pub/style.css"/>
+</head>
+
+<div id="header">
+	<a href="https://suckless.org/"><img src="https://suckless.org/logo.svg" alt=""/></a>&nbsp;
+	<a id="headerLink" href="https://suckless.org/">suckless.org</a>
+	<span class="hidden"> - </span>
+	<span id="headerSubtitle">tools</span>
+</div>
+<hr class="hidden"/>
+<div id="menu">
+	<a href="https://suckless.org/">home</a>
+	<a href="https://dwm.suckless.org/">dwm</a>
+	<a href="https://st.suckless.org/">st</a>
+	<a href="https://core.suckless.org/">core</a>
+	<a href="https://surf.suckless.org/">surf</a>
+	<a href="../../index.html"><b>tools</b></a>
+	<a href="https://libs.suckless.org/">libs</a>
+	<a href="https://ev.suckless.org/">e.V.</a>
+	<span class="right">
+		<a href="https://dl.suckless.org/">download</a>
+		<a href="https://git.suckless.org/">source</a>
+	</span>
+</div>
+<hr class="hidden"/>
+<div id="content">
+<div id="nav">
+	<ul>
+	<li><a href="../../index.html">about</a></li>
+	<li><a href="../../9base/index.html">9base/</a></li>
+	<li><a href="../../blind/index.html">blind/</a></li>
+	<li><a href="../../dmenu/index.html">dmenu/</a></li>
+	<li><a href="../../farbfeld/index.html">farbfeld/</a></li>
+	<li><a href="../index.html"><b>ii/</b></a>
+		<ul>
+		<li><a href="index.html"><b>bots/</b></a></li>
+		<li><a href="../patches/index.html">patches/</a></li>
+		<li><a href="../usage/index.html">usage/</a></li>
+		</ul>
+	</li>
+	<li><a href="../../lchat/index.html">lchat/</a></li>
+	<li><a href="../../quark/index.html">quark/</a></li>
+	<li><a href="../../scroll/index.html">scroll/</a></li>
+	<li><a href="../../sent/index.html">sent/</a></li>
+	<li><a href="../../sic/index.html">sic/</a></li>
+	<li><a href="../../slock/index.html">slock/</a></li>
+	<li><a href="../../slstatus/index.html">slstatus/</a></li>
+	<li><a href="../../tabbed/index.html">tabbed/</a></li>
+	<li><a href="../../x/index.html">x/</a></li>
+	</ul>
+</div>
+<hr class="hidden"/>
+<div id="main">
+
+<h1>Bots</h1>
+<p>Its very easy to write shell script based bots with ii. As a short example look
+at this:</p>
+<pre><code>tail -f \#&lt;CHANNEL&gt;/out |
+    while read -r date time nick mesg; do
+	nick="${nick#&lt;}"
+	nick="${nick%&gt;}"
+	printf "%s: WHAT??\n" "$nick"
+    done &gt;#&lt;CHANNEL&gt;/in
+</code></pre>
+<p>Its just spamming a channel but I guess your imagination is boundless. I also
+heard about people using it together with nagios to get the notifications into
+IRC. Remember to strip input for example with tr(1), tr -cd "0-9a-zA-Z" for
+example would only allow numbers and characters.</p>
+<p>If you want to see a live demonstration of a bot written for ii, join #grml on
+freenode, the grml-tips bot which searches for <a href="http://www.grml.org">grml</a> tips
+and gives a link or error messages is written in 45 lines of /bin/sh. No, I
+will not publish the code since I really suck in shell programming :)</p>
+<h2>Stat scripts</h2>
+<p>If you want to use for example <a href="http://pisg.sf.net/">pisg</a> to generate channel
+stats this will also work if you choose the irssi log format.</p>
+<h2>Automatic reconnects</h2>
+<p>If you want some kind of automatic reconnects in ii you can make a something
+like this in a shell script:</p>
+<pre><code>while true; do
+    ii -s irc.oftc.net -n iifoo -f "John Doe" &amp;
+    iipid="$!"
+    sleep 5
+    printf "/j %s\n" "#ii" &gt; ~/irc/irc.oftc.net/in
+    wait "$iipid"
+done
+</code></pre>
+<h1>bots for irc it (ii)</h1>
+<h2>iibot</h2>
+<p><a href="https://github.com/c00kiemon5ter/iibot">iibot</a> by c00kiemon5ter is written in
+bash, but can easily be translated to plain sh (ask him).</p>
+<p>It uses a main script to connect to multiple servers and channels, and
+auto-reconnect and auto-join on network failure.</p>
+<p>It reads commands with a leading '!' and calls a secondary script to handle the
+command and the responce. That way commands can be added or removed
+dynamically. The secondary script knows the network, channel, nick and message
+that triggered the command, so it is easy to filter responses to commands to
+specified channels, users and such.</p>
+<p>if you need help, do not hesitate to ask c00kiemon5ter on freenode and oftc.</p>
+<h2>nagios</h2>
+<p>Simple Perl script "nagios_post.pl" as interface between
+<a href="http://www.nagios.org/">Nagios</a> and ii:</p>
+<pre><code>#!/usr/bin/perl -w
+</code></pre>
+<pre><code>my $users = "your_nickname(s)";
+my $pipe = "$ENV{HOME}/irc/your_irc_server/#your_channel/in";
+my %color = (
+   red    =&gt; "\0034",
+   purple =&gt; "\0036",
+   yellow =&gt; "\0038",
+   clear  =&gt; "\00315",
+   blue   =&gt; "\0032\002",
+   green  =&gt; "\0033",
+   normal =&gt; "\0031",
+   );
+</code></pre>
+<pre><code>open(PIPE, '&gt;', $pipe) or die "Can't write to $pipe: $!";
+while (&lt;&gt;) {
+      s/Host [a-z0-9_.]+ is down/$color{red}$&amp;$color{normal}/i;
+      s/PROBLEM.*?CRITICAL/$color{red}$&amp;$color{normal}/i;
+</code></pre>
+<pre><code>      s/PROBLEM.*?WARNING/$color{yellow}$&amp;$color{normal}/i;
+      s/Host [a-z0-9_.]+ is up/$color{green}$&amp;$color{normal}/i;
+</code></pre>
+<pre><code>      s/RECOVERY.*?OK/$color{green}$&amp;$color{normal}/i;
+</code></pre>
+<pre><code>      print PIPE "$users: $_";
+}
+close(PIPE);
+</code></pre>
+<p>The appropriate Nagios configuration looks like this:</p>
+<pre><code># 'notify-by-irc' command definition
+define command{
+        command_name    notify-by-irc
+        command_line    /usr/bin/printf "%b" "$TIME$ $NOTIFICATIONTYPE$ $HOSTNAME$/$SERVICEDESC$ $SERVICESTATE$ $SERVICEOUTPUT$\n" | /home/nagios/bin/nagios_post.pl
+       }
+</code></pre>
+<pre><code># 'host-notify-by-irc' command-notification
+define command{
+        command_name    host-notify-by-irc
+        command_line    /usr/bin/printf "%b" "$TIME$ Host $HOSTALIAS$ is $HOSTSTATE$ -- $HOSTOUTPUT$\n" | /home/nagios/bin/nagios_post.pl
+       }
+</code></pre>
+<p>Start ii appropriately and add notify-by-irc and host-notify-by-irc to the
+appropriate "service&amp;#x5f;notification&amp;#x5f;commands" and
+"host&amp;#x5f;notification&amp;#x5f;commands" -- and you have your own Nagios IRC bot.</p>
+<h2>rsstail</h2>
+<p>Just piping the output of <a href="http://www.vanheusden.com/rsstail/">rsstail</a> into
+the fifo "in" should work. More detailed examples are welcome.</p>
+</div>
+
+</div>
+
+</html>

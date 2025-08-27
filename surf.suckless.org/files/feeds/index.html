@@ -1,0 +1,158 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>surf | suckless.org software that sucks less</title>
+	<link rel="stylesheet" type="text/css" href="https://suckless.org/pub/style.css"/>
+</head>
+
+<div id="header">
+	<a href="https://suckless.org/"><img src="https://suckless.org/logo.svg" alt=""/></a>&nbsp;
+	<a id="headerLink" href="https://suckless.org/">suckless.org</a>
+	<span class="hidden"> - </span>
+	<span id="headerSubtitle">surf</span>
+</div>
+<hr class="hidden"/>
+<div id="menu">
+	<a href="https://suckless.org/">home</a>
+	<a href="https://dwm.suckless.org/">dwm</a>
+	<a href="https://st.suckless.org/">st</a>
+	<a href="https://core.suckless.org/">core</a>
+	<a href="../../index.html"><b>surf</b></a>
+	<a href="https://tools.suckless.org/">tools</a>
+	<a href="https://libs.suckless.org/">libs</a>
+	<a href="https://ev.suckless.org/">e.V.</a>
+	<span class="right">
+		<a href="https://dl.suckless.org/">download</a>
+		<a href="https://git.suckless.org/">source</a>
+	</span>
+</div>
+<hr class="hidden"/>
+<div id="content">
+<div id="nav">
+	<ul>
+	<li><a href="../../index.html">about</a></li>
+	<li><a href="../index.html"><b>files/</b></a>
+		<ul>
+		<li><a href="../adblock-hosts/index.html">adblock hosts/</a></li>
+		<li><a href="../autologin/index.html">autologin/</a></li>
+		<li><a href="../autorefresh/index.html">autorefresh/</a></li>
+		<li><a href="../bmarks/index.html">bmarks/</a></li>
+		<li><a href="../bmarks_history/index.html">bmarks history/</a></li>
+		<li><a href="../easier_key/index.html">easier key/</a></li>
+		<li><a href="../easy_links/index.html">easy links/</a></li>
+		<li><a href="../edit_source/index.html">edit source/</a></li>
+		<li><a href="index.html"><b>feeds/</b></a></li>
+		<li><a href="../hide_applets/index.html">hide applets/</a></li>
+		<li><a href="../kiosk_mode/index.html">kiosk mode/</a></li>
+		<li><a href="../link_hints/index.html">link hints/</a></li>
+		<li><a href="../middle_click_link/index.html">middle click link/</a></li>
+		<li><a href="../not_flash/index.html">not flash/</a></li>
+		<li><a href="../quick_search/index.html">quick search/</a></li>
+		<li><a href="../simple_bookmarking/index.html">simple bookmarking/</a></li>
+		<li><a href="../simple_bookmarking_redux/index.html">simple bookmarking redux/</a></li>
+		<li><a href="../simplyread/index.html">simplyread/</a></li>
+		<li><a href="../smartdownloads/index.html">smartdownloads/</a></li>
+		<li><a href="../surfraw_as_searchengine/index.html">surfraw as searchengine/</a></li>
+		<li><a href="../untarget/index.html">untarget/</a></li>
+		</ul>
+	</li>
+	<li><a href="../../patches/index.html">patches/</a></li>
+	<li><a href="../../screenshots/index.html">screenshots/</a></li>
+	<li><a href="../../stylesheets/index.html">stylesheets/</a></li>
+	</ul>
+</div>
+<hr class="hidden"/>
+<div id="main">
+
+<h1>RSS/Atom feed detection</h1>
+<h2>Description</h2>
+<p>This script looks for links to RSS or Atom feeds in the current web page. If it
+finds feeds, it places an icon in the corner of the page which toggles showing
+a list of the feeds.</p>
+<p>To install, put the code in <code>~/.surf/script.js</code></p>
+<h2>Author</h2>
+<p>Charles E. Lehner <a href="https://celehner.com/">https://celehner.com/</a></p>
+<h2>Code</h2>
+<pre><code>(function () {
+	var urls = {}
+	var feeds = [].slice.call(document.querySelectorAll(
+		"link[href][rel~=alternate][type$=xml]," +
+		"   a[href][rel~=alternate][type$=xml]"))
+		.map(function (el) {
+			return {
+				href: el.href,
+				title: el.title || document.title,
+				type: /atom/i.test(el.type) ? 'Atom' : 'RSS'
+			};
+		}).filter(function (feed) {
+			if (urls[feed.href]) return false
+			return urls[feed.href] = true
+		});
+	if (!feeds.length) return;
+</code></pre>
+<pre><code>	var container = document.createElement('div');
+	container.style.position = 'fixed';
+	container.style.bottom = 0;
+	container.style.right = 0;
+	container.style.zIndex = 10000;
+	document.body.appendChild(container);
+</code></pre>
+<pre><code>	var feedList = document.createElement('div');
+	feedList.style.display = 'none';
+	feedList.style.backgroundColor = '#ddd';
+	feedList.style.border = '1px solid #bbb';
+	feedList.style.borderStyle = 'solid solid none';
+	feedList.style.padding = '2px 4px';
+	container.appendChild(feedList);
+</code></pre>
+<pre><code>	feeds.forEach(function (feed) {
+		var a = document.createElement('a');
+		a.href = feed.href;
+		a.style.display = 'block';
+		a.style.color = 'blue';
+		var title = feed.title;
+		if (title.indexOf(feed.type) == -1)
+			title += ' (' + feed.type + ')';
+		a.appendChild(document.createTextNode(title));
+		feedList.appendChild(a);
+	});
+</code></pre>
+<pre><code>	var toggleLink = document.createElement('a');
+	toggleLink.href = '';
+	toggleLink.style.display = 'inline-block';
+	toggleLink.style.paddingRight = '3px';
+	toggleLink.style.verticalAlign = 'bottom';
+	toggleLink.addEventListener("click", toggleFeedList, true);
+	container.appendChild(toggleLink);
+</code></pre>
+<pre><code>	var img = new Image();
+	img.style.padding = '4px';
+	img.style.verticalAlign = 'bottom';
+	img.src = 'data:image/gif;base64,' +
+		'R0lGODlhDAAMAPUzAPJoJvJqKvNtLfNuL/NvMfNwMvNyNPNzNvN0OPN1OfN3O/R4' +
+		'PfR5P/R6QPR7QvR+RvR/R/SASfSBS/SDTPWETvWFUPWGUvWJVfWLWfWMWvWNXPaW' +
+		'aPaYbPaabfebb/eccfeedPehePemf/ingPiphPiqhviui/ivjfiwjviykPm6nPm+' +
+		'ofzh1P3k2f3n3P7u5/7v6P738/749f///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' +
+		'AAAAAAAAAAAAAAAAACH5BAEAADQALAAAAAAMAAwAAAZ6QFqB4YBAJBLKZCEsbCDE' +
+		'I2WqQCBms9fqkqRIJg7EZ+WawTxeSAS6AklIMhknwjA6sC/SR/aSKBwSEBcpLzMk' +
+		'IjMoBwwTECEoGTAvDi8uBAhKMokmMxwqMwIIFhQsMRoZMyeIFgILFoEMCAcEAgEA' +
+		'BDQKRhAOsbICNEEAOw==';
+	toggleLink.appendChild(img);
+</code></pre>
+<pre><code>	if (feeds.length &gt; 1) {
+		toggleLink.appendChild(document.createTextNode(feeds.length));
+	}
+</code></pre>
+<pre><code>	function toggleFeedList(e) {
+		e.preventDefault();
+		feedList.style.display = (feedList.style.display == 'none') ?
+			'inline-block' : 'none';
+	}
+})();
+</code></pre>
+</div>
+
+</div>
+
+</html>

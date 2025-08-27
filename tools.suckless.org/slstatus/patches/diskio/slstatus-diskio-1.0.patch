@@ -1,0 +1,255 @@
+From 42d644b1e4ba7d10654574c4225700c8a6a2507b Mon Sep 17 00:00:00 2001
+From: Gene Carlson <kvngncrlsn@gmail.com>
+Date: Sun, 27 Aug 2023 14:06:10 +0900
+Subject: [PATCH] Add disk IO reporting for Linux systems (read, write,
+ percentage).
+
+---
+ Makefile             |   1 +
+ README               |   1 +
+ components/iocheck.c | 177 +++++++++++++++++++++++++++++++++++++++++++
+ config.def.h         |   3 +
+ slstatus.h           |   5 ++
+ 5 files changed, 187 insertions(+)
+ create mode 100644 components/iocheck.c
+
+diff --git a/Makefile b/Makefile
+index 7a18274..75a94cb 100644
+--- a/Makefile
++++ b/Makefile
+@@ -13,6 +13,7 @@ COM =\
+ 	components/disk\
+ 	components/entropy\
+ 	components/hostname\
++	components/iocheck\
+ 	components/ip\
+ 	components/kernel_release\
+ 	components/keyboard_indicators\
+diff --git a/README b/README
+index 12d38bf..1be92c2 100644
+--- a/README
++++ b/README
+@@ -18,6 +18,7 @@ Features
+ - Available entropy
+ - Username/GID/UID
+ - Hostname
++- Disk IO (read, write and percentage) (Linux only)
+ - IP address (IPv4 and IPv6)
+ - Kernel version
+ - Keyboard indicators
+diff --git a/components/iocheck.c b/components/iocheck.c
+new file mode 100644
+index 0000000..1bf027e
+--- /dev/null
++++ b/components/iocheck.c
+@@ -0,0 +1,177 @@
++/* See LICENSE file for copyright and license details. */
++#include <stdio.h>
++#include <string.h>
++#include <stdint.h>
++#include <stdlib.h>
++#include <dirent.h>
++#include <unistd.h>
++
++#include "../util.h"
++
++#if defined(__linux__)
++	static int
++	get_io(uintmax_t *s_in, uintmax_t *s_out)
++	{
++		FILE *fp;
++		struct {
++			const char *name;
++			const size_t len;
++			uintmax_t *var;
++		} ent[] = {
++			{ "pgpgin",  sizeof("pgpgin") - 1,  s_in  },
++			{ "pgpgout", sizeof("pgpgout") - 1, s_out },
++		};
++		size_t line_len = 0, i, left;
++		char *line = NULL;
++			
++		/* get number of fields we want to extract */
++		for (i = 0, left = 0; i < LEN(ent); i++) {
++			if (ent[i].var) {
++				left++;
++			}
++		}
++                
++		if (!(fp = fopen("/proc/vmstat", "r"))) {
++			warn("fopen '/proc/vmstat':");
++			return 1;
++		}
++
++		/* read file line by line and extract field information */
++		while (left > 0 && getline(&line, &line_len, fp) >= 0) {
++			for (i = 0; i < LEN(ent); i++) {
++				if (ent[i].var &&
++				!strncmp(line,ent[i].name, ent[i].len)) {
++					sscanf(line + ent[i].len + 1,
++						"%ju\n", ent[i].var);
++					left--;
++					break;
++				}
++			}
++		}
++		free(line);
++		if(ferror(fp)) {
++			warn("getline '/proc/vmstat':");
++			return 1;
++		}
++		
++		fclose(fp);
++		return 0;
++	}	
++		
++	const char *
++	io_in(void)
++	{
++		uintmax_t oldin;
++		static uintmax_t newin;
++
++		oldin = newin;
++
++		if (get_io(&newin, NULL)) {
++			return NULL;
++		}
++		if (oldin == 0) {
++			return NULL;
++		}
++		
++		return fmt_human((newin - oldin) * 1024, 1024);
++	}
++
++	const char *
++	io_out(void)
++	{
++		uintmax_t oldout;
++		static uintmax_t newout;
++
++		oldout = newout;
++
++		if (get_io(NULL, &newout)) {
++			return NULL;
++		}
++		if (oldout == 0) {
++			return NULL;
++		}
++		
++		return fmt_human((newout - oldout) * 1024, 1024);
++	}
++
++	const char *
++	io_perc(void)
++	{
++		struct dirent *dp;
++		DIR *bd;
++		uintmax_t oldwait;
++		static uintmax_t newwait;
++		extern const unsigned int interval;
++
++		oldwait = newwait;
++		
++		if (!(bd = opendir("/sys/block"))) {
++			warn("opendir '%s':", "/sys/block");
++			return NULL;
++		} 
++
++		newwait = 0;
++		/* get IO wait stats from the /sys/block directories */
++		while ((dp = readdir(bd))) {
++			int devlen, chklen, statlen;
++			devlen = strlen(dp->d_name);
++			char devname[devlen];
++			strcpy(devname, dp->d_name);
++			if (strstr(devname, "loop") ||
++			    strstr(devname, "ram")) {
++			   	continue;
++			}
++			if (!strcmp(devname, ".") ||
++			    !strcmp(devname, "..")) {
++			    	continue;
++			}
++		
++			statlen = 16 + devlen;
++			chklen = 18 + devlen;
++			char statpath[statlen], chkpath[chklen];
++			strcpy(statpath, "/sys/block/");
++			strcat(statpath, devname);
++			/* non-virtual devices only */
++			strcpy(chkpath, statpath);
++			strcat(chkpath, "/device");
++			if (access(chkpath, F_OK) != 0) {
++				continue;
++			}
++	
++			strcat(statpath, "/stat");
++			uintmax_t partwait;
++			if (pscanf(statpath,
++				"%*d %*d %*d %*d %*d %*d %*d %*d %*d %ju %*d",
++	   			&partwait) != 1) {
++				continue;
++			}
++			newwait += partwait;
++		}
++		closedir(bd);
++		if (oldwait == 0 || newwait < oldwait) {
++			return NULL;
++		}
++		
++		return bprintf("%0.1f", 100 *
++		       (newwait - oldwait) / (float)interval);
++	}
++
++#else
++	const char *
++	io_in(void)
++	{
++		return NULL;
++	}
++
++	const char *
++	io_out(void)
++	{
++		return NULL;
++	}
++
++	const char *
++	io_perc(void)
++	{
++		return NULL;
++	}
++#endif
+diff --git a/config.def.h b/config.def.h
+index d805331..b4e7b26 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -29,6 +29,9 @@ static const char unknown_str[] = "n/a";
+  * entropy             available entropy               NULL
+  * gid                 GID of current user             NULL
+  * hostname            hostname                        NULL
++ * io_in               disk IO (read)                  NULL
++ * io_out              disk IO (write)                 NULL
++ * io_perc             disk IO (percentage)            NULL
+  * ipv4                IPv4 address                    interface name (eth0)
+  * ipv6                IPv6 address                    interface name (eth0)
+  * kernel_release      `uname -r`                      NULL
+diff --git a/slstatus.h b/slstatus.h
+index 8ef5874..7c09fb4 100644
+--- a/slstatus.h
++++ b/slstatus.h
+@@ -27,6 +27,11 @@ const char *entropy(const char *unused);
+ /* hostname */
+ const char *hostname(const char *unused);
+ 
++/* iocheck */
++const char *io_in(const char *unused);
++const char *io_out(const char *unused);
++const char *io_perc(const char *unused);
++
+ /* ip */
+ const char *ipv4(const char *interface);
+ const char *ipv6(const char *interface);
+-- 
+2.42.0
+

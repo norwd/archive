@@ -1,0 +1,164 @@
+diff --git a/Makefile b/Makefile
+index 1b95d15..1191145 100644
+--- a/Makefile
++++ b/Makefile
+@@ -8,6 +8,7 @@ OBJ = ${SRC:.c=.o}
+ BIN = ${OBJ:.o=}
+ 
+ all: options ${BIN}
++	rm -f theme_{beg,end}.h
+ 
+ options:
+ 	@echo tabbed build options:
+@@ -19,11 +20,17 @@ options:
+ 	@echo CC $<
+ 	@${CC} -c ${CFLAGS} $<
+ 
+-${OBJ}: config.h config.mk
++${OBJ}: config.h theme_beg.h config.mk
+ 
+-config.h:
++theme.h:
++	./xtheme
++
++theme_beg.h:
++	./themesetup
++
++config.h: theme.h
+ 	@echo creating $@ from config.def.h
+-	@cp config.def.h $@
++	@cp -n config.def.h $@
+ 
+ .o:
+ 	@echo CC -o $@
+@@ -31,7 +38,7 @@ config.h:
+ 
+ clean:
+ 	@echo cleaning
+-	@rm -f ${BIN} ${OBJ} tabbed-${VERSION}.tar.gz
++	@rm -f ${BIN} ${OBJ} theme_{beg,end}.h tabbed-${VERSION}.tar.gz
+ 
+ dist: clean
+ 	@echo creating dist tarball
+diff --git a/config.def.h b/config.def.h
+index defa426..7c1126e 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -1,13 +1,17 @@
+ /* See LICENSE file for copyright and license details. */
+ 
++/* theme management */
++# include "theme_beg.h" /* this is a compile-time generated header file */
++# include "theme.h"
++
+ /* appearance */
+-static const char font[]        = "monospace:size=9";
+-static const char* normbgcolor  = "#222222";
+-static const char* normfgcolor  = "#cccccc";
+-static const char* selbgcolor   = "#555555";
+-static const char* selfgcolor   = "#ffffff";
+-static const char* urgbgcolor   = "#111111";
+-static const char* urgfgcolor   = "#cc0000";
++static const char font[]        = TABBED_FONT;
++static const char* normbgcolor  = TABBED_BACKGROUND;
++static const char* normfgcolor  = TABBED_FOREGROUND;
++static const char* selbgcolor   = TABBED_SELBACKGROUND;
++static const char* selfgcolor   = TABBED_SELFOREGROUND;
++static const char* urgbgcolor   = TABBED_URGBACKGROUND;
++static const char* urgfgcolor   = TABBED_URGFOREGROUND;
+ static const char before[]      = "<";
+ static const char after[]       = ">";
+ static const char titletrim[]   = "...";
+@@ -23,6 +27,9 @@ static       Bool urgentswitch  = False;
+ static int  newposition   = 0;
+ static Bool npisrelative  = False;
+ 
++/* theme management */
++# include "theme_end.h" /* this is a compile-time generated header file */
++
+ #define SETPROP(p) { \
+         .v = (char *[]){ "/bin/sh", "-c", \
+                 "prop=\"`xwininfo -children -id $1 | grep '^     0x' |" \
+diff --git a/themesetup b/themesetup
+new file mode 100755
+index 0000000..e8710c1
+--- /dev/null
++++ b/themesetup
+@@ -0,0 +1,5 @@
++#!/bin/sh
++
++echo \# if $(cat theme.h | cut -d' ' -f3 | sed "s/^/defined /;s/$/ ||/" | tr "\n" " ") 0 > theme_beg.h
++echo -e "# error (conflicting macro names)\n# endif" >> theme_beg.h
++cat theme.h | cut -d' ' -f3 | sed "s/^/# undef /;" > theme_end.h
+diff --git a/xtable.md b/xtable.md
+new file mode 100644
+index 0000000..e05753a
+--- /dev/null
++++ b/xtable.md
+@@ -0,0 +1,9 @@
++|	TYPE    |	RESOURCE			|	DEFAULT VALUE			|	[ALTERNATIVE RESOURCE]	|
++|:---------:|:---------------------:|:-------------------------:|:-------------------------:|
++|	SA		|	font				|	monospace:size=9		|							|
++|	S		|	background			|	#222222					|							|
++|	S		|	foreground			|	#cccccc					|							|
++|	S		|	selbackground		|	#555555					|	foreground				|
++|	S		|	selforeground		|	#ffffff					|	background				|
++|	S		|	urgbackground		|	#111111					|							|
++|	S		|	urgforeground		|	#cc0000					|							|
+diff --git a/xtheme b/xtheme
+new file mode 100755
+index 0000000..6396cdd
+--- /dev/null
++++ b/xtheme
+@@ -0,0 +1,51 @@
++#!/bin/sh
++
++prefix=tabbed
++themeout=theme.h
++xtable=xtable.md
++
++rm -f $themeout
++
++set_resource ()
++{
++	T=$1
++	M=$2
++	V=$3
++
++	case $T in
++		S)
++			V=\"$V\"
++			;;
++		SA)
++			V="{\"$(echo $V | sed 's/, /", "/g')\"}"
++	esac
++
++	[[ $V == '{""}' ]] && V="{}"
++
++	echo "# define $M $V" >> $themeout
++}
++
++cat "$xtable"											|
++	sed '1,2d;s/\t*|\t*/|/g;s/\(^|\)\|\(|$\)//g'		|
++	while IFS='|' read T R D A
++	do
++		m=$(echo "$prefix"'_'"$R" | tr '[:lower:]' '[:upper:]')
++
++		l=''
++
++		for r in "$R" "$A"
++		do
++			[[ "$r" == '' ]] && continue
++
++			l=$(xgetres "$prefix.$r")
++
++			if [[ "$l" != '' ]]
++			then
++				set_resource $T $m "$l"
++				break
++			fi
++		done
++
++		[[ "$l" == '' ]] &&
++			set_resource $T $m "$D"
++	done

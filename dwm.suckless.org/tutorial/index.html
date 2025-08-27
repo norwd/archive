@@ -1,0 +1,144 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>dwm - dynamic window manager | suckless.org software that sucks less</title>
+	<link rel="stylesheet" type="text/css" href="https://suckless.org/pub/style.css"/>
+</head>
+
+<div id="header">
+	<a href="https://suckless.org/"><img src="https://suckless.org/logo.svg" alt=""/></a>&nbsp;
+	<a id="headerLink" href="https://suckless.org/">suckless.org</a>
+	<span class="hidden"> - </span>
+	<span id="headerSubtitle">dwm - dynamic window manager</span>
+</div>
+<hr class="hidden"/>
+<div id="menu">
+	<a href="https://suckless.org/">home</a>
+	<a href="../index.html"><b>dwm</b></a>
+	<a href="https://st.suckless.org/">st</a>
+	<a href="https://core.suckless.org/">core</a>
+	<a href="https://surf.suckless.org/">surf</a>
+	<a href="https://tools.suckless.org/">tools</a>
+	<a href="https://libs.suckless.org/">libs</a>
+	<a href="https://ev.suckless.org/">e.V.</a>
+	<span class="right">
+		<a href="https://dl.suckless.org/">download</a>
+		<a href="https://git.suckless.org/">source</a>
+	</span>
+</div>
+<hr class="hidden"/>
+<div id="content">
+<div id="nav">
+	<ul>
+	<li><a href="../index.html">about</a></li>
+	<li><a href="../customisation/index.html">customisation/</a></li>
+	<li><a href="../dynamic_window_management/index.html">dynamic window management/</a></li>
+	<li><a href="../faq/index.html">faq/</a></li>
+	<li><a href="../multi-monitor/index.html">multi monitor/</a></li>
+	<li><a href="../multi-pointer/index.html">multi pointer/</a></li>
+	<li><a href="../patches/index.html">patches/</a></li>
+	<li><a href="../screenshots/index.html">screenshots/</a></li>
+	<li><a href="../status_monitor/index.html">status monitor/</a></li>
+	<li><a href="index.html"><b>tutorial/</b></a></li>
+	</ul>
+</div>
+<hr class="hidden"/>
+<div id="main">
+
+<h2>Launching</h2>
+<p>To launch dwm, ideally you should setup a <code>~/.xinitrc</code> with at least <code>exec
+dwm</code>.</p>
+<h2>Introduction</h2>
+<p>Using dwm can be done in pure keyboard control or through some extra mouse
+handling. See the <a href="https://git.suckless.org/dwm/plain/config.def.h">config.def.h</a> for
+what are the default bindings. They are used in this tutorial.</p>
+<pre><code>[Shift]+[Alt]+[Enter] - launch terminal
+[Alt]+[p] - dmenu for running programs like the x-www-browser
+</code></pre>
+<p>By default there are 9 tags.</p>
+<h2>Window model</h2>
+<p>Launch a few terminals with <code>[Shift]+[Alt]+[Enter]</code> and dwm will <em>tile</em> the
+windows between the <strong>master</strong> and <strong>stack</strong>. A new terminal appears on the
+<strong>master</strong> window. Existing windows are pushed upon a <strong>stack</strong> to the right of
+the screen. <code>[Alt]+[Enter]</code> toggles windows between master and stack.</p>
+<pre><code>    +------+----------------------------------+--------+
+    | tags | title                            | status |
+    +------+---------------------+------------+--------+
+    |                            |                     |
+    |                            |                     |
+    |                            |                     |
+    |                            |                     |
+    |          master            |        stack        |
+    |                            |                     |
+    |                            |                     |
+    |                            |                     |
+    |                            |                     |
+    +----------------------------+---------------------+
+</code></pre>
+<h2>Moving Around</h2>
+<p>To <strong>move to another terminal</strong>, press <code>[Alt]+[j]</code> or <code>[Alt]+[k]</code>.</p>
+<p>To <strong>move a terminal to another <em>tag</em></strong>, hover to the terminal and press
+<code>[Shift]+[Alt]+[2]</code>. Note! If you are a frequent user of the text editor 'nano'
+the key sequence [Shift]+[Alt]+[4] will stomp on nano's softwrap M-$. To get
+around this you can unbind nano's M-$ in .nanorc thus:</p>
+<pre><code>unbind M-$ all
+</code></pre>
+<p>and rebind it to a new sequence thus (here bind it to 'Meta Key' + ';'):</p>
+<pre><code>  bind M-; softwrap all
+</code></pre>
+<p>There are several other nano key sequences that dwm will stomp on - use the above example to fix nano up.</p>
+<p>To <strong>focus on another <em>tag</em></strong>, press <code>[Alt]+[tag number]</code>.</p>
+<p>To <strong>change the amount of windows in the master area</strong>, press <code>[Alt]+[d]</code> (Decrease) or <code>[Alt]+[i]</code> (Increase).</p>
+<p>To <strong>toggle a window between the master and stack area</strong>, press <code>[Alt]+[Return]</code></p>
+<p>As stated in the dwm manpage, you can click tags with the left mouse button and simulating <code>[Alt]+[tag number]</code>, but you can also click another tag with the right mouse button in order to bring those windows additionally
+into your current focus.</p>
+<p>To <strong>kill a window</strong>, press <code>[Shift]+[Alt]+[c]</code>.</p>
+<h2>Layouts</h2>
+<p>By default dwm is in <strong>tiled</strong> layout mode. Ensure it is tiled mode with:</p>
+<pre><code>[Alt]+[t]
+</code></pre>
+<p>You should also notice the <code>[]=</code> symbol between the tag numbers and the title
+bar.</p>
+<p>dwm has two further layout modes, <strong>floating</strong> <code>&gt;&lt;&gt;</code> <code>[Alt]+[f]</code> and
+<strong>monocle</strong> <code>[M]</code> <code>[Alt]+[m]</code>. Monocle is good for ensuring a window is kept
+maximized and focused. This is useful in web kiosk environments and watching
+flash videos. Further layout modes can be included through
+<a href="../patches/index.html">patches</a>.</p>
+<h2>Floating</h2>
+<p>Floating layout will be familiar to Windows users. Use <code>[Alt]+[right mouse
+button]</code> to resize the floating window and <code>[Alt]+[left mouse button]</code> to move
+it around. This can also be used to raise a floating window.</p>
+<p>There are several ways to get specific windows into being managed as a floating
+window, despite the tiled layout being activated. First there is
+<code>[Alt]+[Shift]+[space]</code>, which will toggle floating mode on the active window.
+Second method is to simply resize the window using <code>[Alt]+[right mouse button]</code>.
+The last method is to <code>[Alt]+[middle mouse button]</code> onto the window, to toggle
+it in being floating. These floating windows then can be used to force certain
+window sizes, when some application requires this for aesthetics or simply to
+being usable.</p>
+<p>If you want to set some type of window to be always floating, look at the
+<a href="https://git.suckless.org/dwm/plain/config.def.h">config.def.h</a> and the <code>rules</code>
+array, where the last but one element defines this behaviour.</p>
+<h2>Quitting</h2>
+<p>To quit dwm cleanly:</p>
+<pre><code>[Shift]+[Alt]+[q]
+</code></pre>
+<h2>Status</h2>
+<p>By default dwm is showing <code>dwm-X.X</code> in its statusbar. This text can be changed
+by setting the <code>WM_NAME</code> property of the root window.</p>
+<p>Using the tools of X.org, this can be set using:</p>
+<pre><code>% xsetroot -name "Some Text"
+</code></pre>
+<p>or</p>
+<pre><code>% xprop -root -set WM_NAME "Some Text"
+</code></pre>
+<p>There are various tools and methods to populate this text with useful
+information from your system or services running on your system. A barebone for
+doing this in C is <a href="../status_monitor/index.html">dwmstatus</a>. See the
+<a href="xinitrc.example">xinitrc</a> example for how to do it using a script.</p>
+</div>
+
+</div>
+
+</html>

@@ -1,0 +1,101 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>dwm - dynamic window manager | suckless.org software that sucks less</title>
+	<link rel="stylesheet" type="text/css" href="https://suckless.org/pub/style.css"/>
+</head>
+
+<div id="header">
+	<a href="https://suckless.org/"><img src="https://suckless.org/logo.svg" alt=""/></a>&nbsp;
+	<a id="headerLink" href="https://suckless.org/">suckless.org</a>
+	<span class="hidden"> - </span>
+	<span id="headerSubtitle">dwm - dynamic window manager</span>
+</div>
+<hr class="hidden"/>
+<div id="menu">
+	<a href="https://suckless.org/">home</a>
+	<a href="../../index.html"><b>dwm</b></a>
+	<a href="https://st.suckless.org/">st</a>
+	<a href="https://core.suckless.org/">core</a>
+	<a href="https://surf.suckless.org/">surf</a>
+	<a href="https://tools.suckless.org/">tools</a>
+	<a href="https://libs.suckless.org/">libs</a>
+	<a href="https://ev.suckless.org/">e.V.</a>
+	<span class="right">
+		<a href="https://dl.suckless.org/">download</a>
+		<a href="https://git.suckless.org/">source</a>
+	</span>
+</div>
+<hr class="hidden"/>
+<div id="content">
+<div id="nav">
+	<ul>
+	<li><a href="../../index.html">about</a></li>
+	<li><a href="../index.html"><b>customisation/</b></a>
+		<ul>
+		<li><a href="../customfuncs/index.html">customfuncs/</a></li>
+		<li><a href="../font/index.html">font/</a></li>
+		<li><a href="../noapps/index.html">noapps/</a></li>
+		<li><a href="../patches_in_git/index.html">patches in git/</a></li>
+		<li><a href="index.html"><b>rules/</b></a></li>
+		<li><a href="../tagmask/index.html">tagmask/</a></li>
+		<li><a href="../windows_key/index.html">windows key/</a></li>
+		</ul>
+	</li>
+	<li><a href="../../dynamic_window_management/index.html">dynamic window management/</a></li>
+	<li><a href="../../faq/index.html">faq/</a></li>
+	<li><a href="../../multi-monitor/index.html">multi monitor/</a></li>
+	<li><a href="../../multi-pointer/index.html">multi pointer/</a></li>
+	<li><a href="../../patches/index.html">patches/</a></li>
+	<li><a href="../../screenshots/index.html">screenshots/</a></li>
+	<li><a href="../../status_monitor/index.html">status monitor/</a></li>
+	<li><a href="../../tutorial/index.html">tutorial/</a></li>
+	</ul>
+</div>
+<hr class="hidden"/>
+<div id="main">
+
+<h1>Setting rules in config.h</h1>
+<h2>What does '<code>rules</code>' do?</h2>
+<p>The <code>rules</code> array allows treating of certain applications (clients) uniquely.
+A rule has a matching and an action part. When a new client appears (sends a
+maprequest), it is matched against the rules based on its class, instance
+(<code>WM_CLASS</code>) and title (<code>WM_NAME</code>) properties and then the given tag and
+floating mode setting actions are performed. The default tag mask is <code>0</code>, which
+means the currently viewed tags and the default mode is tiled so isfloating is
+<code>False</code> or <code>0</code>.</p>
+<p>Example from the default config:</p>
+<pre><code>static Rule rules[] = {
+	/* class      instance    title       tags mask     isfloating   monitor */
+	{ "Gimp",     NULL,       NULL,       0,            1,           -1 },
+	{ "Firefox",  NULL,       NULL,       1 &lt;&lt; 8,       1,           -1 },
+	{ "deadbeef", NULL,       NULL,       1 &lt;&lt; 7,       0             0 }
+};
+</code></pre>
+<p>These rules make every Gimp and Firefox window floating and makes Firefox
+windows appear on tag 9 instead of the currently viewed tags.
+deadbeef similarly displays its window on tag 8 for a secondary display
+monitor.</p>
+<h2>How does the matching work?</h2>
+<p>A client is matched if its properties contain the given strings as substrings
+(case-sensitively) or <code>NULL</code> is given (which means anything is matched there).</p>
+<p>More than one rule can be applied to a client, the rules are matched in order.</p>
+<h2>How to check these properties of a client?</h2>
+<p>The <code>xprop</code> utility can be used to get this information:
+<code>WM_CLASS</code> is (instance, class) <code>WM_NAME</code> (or <code>_NET_WM_NAME</code>) is the title.</p>
+<p>For example this shell script prints the relevant properties of the selected
+client (if the properties does not contain '<code>=</code>' or '<code>,</code>'):</p>
+<pre><code>xprop | awk '
+	/^WM_CLASS/{sub(/.* =/, "instance:"); sub(/,/, "\nclass:"); print}
+	/^WM_NAME/{sub(/.* =/, "title:"); print}'
+</code></pre>
+<h2>How to add exception to a tagging rule?</h2>
+<p>It cannot be simply done. For example it is difficult to achieve that each
+Firefox window goes to tag 9 except one specific dialog, which goes to tag 8,
+because the tag masks of different matched rules are 'or'ed (and not overwritten).</p>
+</div>
+
+</div>
+
+</html>

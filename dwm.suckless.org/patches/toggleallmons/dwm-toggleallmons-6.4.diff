@@ -1,0 +1,46 @@
+diff --git a/config.def.h b/config.def.h
+index 061ad66..d702080 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -72,6 +72,7 @@ static const Key keys[] = {
+ 	{ MODKEY,                       XK_l,      setmfact,       {.f = +0.05} },
+ 	{ MODKEY,                       XK_Return, zoom,           {0} },
+ 	{ MODKEY,                       XK_Tab,    view,           {0} },
++	{ MODKEY|ShiftMask,             XK_Tab,    toggleall,      {0} },
+ 	{ MODKEY|ShiftMask,             XK_c,      killclient,     {0} },
+ 	{ MODKEY,                       XK_t,      setlayout,      {.v = &layouts[0]} },
+ 	{ MODKEY,                       XK_f,      setlayout,      {.v = &layouts[1]} },
+diff --git a/dwm.c b/dwm.c
+index e5efb6a..f01009f 100644
+--- a/dwm.c
++++ b/dwm.c
+@@ -210,6 +210,7 @@ static void spawn(const Arg *arg);
+ static void tag(const Arg *arg);
+ static void tagmon(const Arg *arg);
+ static void tile(Monitor *m);
++static void toggleall(const Arg *arg);
+ static void togglebar(const Arg *arg);
+ static void togglefloating(const Arg *arg);
+ static void toggletag(const Arg *arg);
+@@ -1694,6 +1695,21 @@ tile(Monitor *m)
+ 		}
+ }
+ 
++void
++toggleall(const Arg *arg)
++{
++	Monitor* m;
++	for(m = mons; m; m = m->next){
++		if ((arg->ui & TAGMASK) == m->tagset[m->seltags])
++			return;
++		m->seltags ^= 1; /* toggle sel tagset */
++		if (arg->ui & TAGMASK)
++			m->tagset[m->seltags] = arg->ui & TAGMASK;
++		focus(NULL);
++		arrange(m);
++	}
++}
++
+ void
+ togglebar(const Arg *arg)
+ {

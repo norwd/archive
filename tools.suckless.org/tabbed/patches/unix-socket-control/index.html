@@ -1,0 +1,107 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>tools | suckless.org software that sucks less</title>
+	<link rel="stylesheet" type="text/css" href="https://suckless.org/pub/style.css"/>
+</head>
+
+<div id="header">
+	<a href="https://suckless.org/"><img src="https://suckless.org/logo.svg" alt=""/></a>&nbsp;
+	<a id="headerLink" href="https://suckless.org/">suckless.org</a>
+	<span class="hidden"> - </span>
+	<span id="headerSubtitle">tools</span>
+</div>
+<hr class="hidden"/>
+<div id="menu">
+	<a href="https://suckless.org/">home</a>
+	<a href="https://dwm.suckless.org/">dwm</a>
+	<a href="https://st.suckless.org/">st</a>
+	<a href="https://core.suckless.org/">core</a>
+	<a href="https://surf.suckless.org/">surf</a>
+	<a href="../../../index.html"><b>tools</b></a>
+	<a href="https://libs.suckless.org/">libs</a>
+	<a href="https://ev.suckless.org/">e.V.</a>
+	<span class="right">
+		<a href="https://dl.suckless.org/">download</a>
+		<a href="https://git.suckless.org/">source</a>
+	</span>
+</div>
+<hr class="hidden"/>
+<div id="content">
+<div id="nav">
+	<ul>
+	<li><a href="../../../index.html">about</a></li>
+	<li><a href="../../../9base/index.html">9base/</a></li>
+	<li><a href="../../../blind/index.html">blind/</a></li>
+	<li><a href="../../../dmenu/index.html">dmenu/</a></li>
+	<li><a href="../../../farbfeld/index.html">farbfeld/</a></li>
+	<li><a href="../../../ii/index.html">ii/</a></li>
+	<li><a href="../../../lchat/index.html">lchat/</a></li>
+	<li><a href="../../../quark/index.html">quark/</a></li>
+	<li><a href="../../../scroll/index.html">scroll/</a></li>
+	<li><a href="../../../sent/index.html">sent/</a></li>
+	<li><a href="../../../sic/index.html">sic/</a></li>
+	<li><a href="../../../slock/index.html">slock/</a></li>
+	<li><a href="../../../slstatus/index.html">slstatus/</a></li>
+	<li><a href="../../index.html"><b>tabbed/</b></a>
+		<ul>
+		<li><a href="../index.html"><b>patches/</b></a>
+			<ul>
+			<li><a href="../alpha/index.html">alpha/</a></li>
+			<li><a href="../autohide/index.html">autohide/</a></li>
+			<li><a href="../bar-height/index.html">bar height/</a></li>
+			<li><a href="../basenames/index.html">basenames/</a></li>
+			<li><a href="../clientnumber/index.html">clientnumber/</a></li>
+			<li><a href="../cwd/index.html">cwd/</a></li>
+			<li><a href="../drag/index.html">drag/</a></li>
+			<li><a href="../hidetabs/index.html">hidetabs/</a></li>
+			<li><a href="../icon/index.html">icon/</a></li>
+			<li><a href="../keycode/index.html">keycode/</a></li>
+			<li><a href="../keyrelease/index.html">keyrelease/</a></li>
+			<li><a href="../move-clamped/index.html">move clamped/</a></li>
+			<li><a href="../separator/index.html">separator/</a></li>
+			<li><a href="../ungrabkey/index.html">ungrabkey/</a></li>
+			<li><a href="index.html"><b>unix socket control/</b></a></li>
+			<li><a href="../xft/index.html">xft/</a></li>
+			<li><a href="../xresources/index.html">xresources/</a></li>
+			<li><a href="../xresources-with-reload-signal/index.html">xresources with reload signal/</a></li>
+			<li><a href="../xtheme/index.html">xtheme/</a></li>
+			</ul>
+		</li>
+		</ul>
+	</li>
+	<li><a href="../../../x/index.html">x/</a></li>
+	</ul>
+</div>
+<hr class="hidden"/>
+<div id="main">
+
+<h1>UNIX Socket Control</h1>
+<h2>Description</h2>
+<p>This patch removes the built-in keybinds and instead replaces them with a UNIX socket and protocol for input.
+The idea is essentially the same as how bspwm uses bspc for controlling the windows and sxkhd to bind the bspc
+commands to keys.</p>
+<p>The UNIX socket path is <code>/tmp/tabbed_$WINID-socket</code> where <code>WINID</code> is the tabbed window id in decimal format.
+The protocol uses the same names and arguments as the internal functions separated by <code>\0</code>.</p>
+<p>For example, to select the next tab, you would use: <code>printf "%s\0%s\0" "rotate" "1" | nc -U "/tmp/tabbed_$WINID-socket"</code></p>
+<p>I have also created two scripts to be used in conjunction with this patch: <code>tabc</code> and <code>bspctab</code>.
+The <code>tabc</code> script allows more easy access to common actions like changing tabs, moving tabs, etc.
+For example, the above command to select the next tab using <code>tabc</code> would be simply: <code>tabc tabnext "$WINID"</code></p>
+<p>The <code>bspctab</code> uses <code>tabc</code> to making using tabs as seamless as possible in bspwm. The intent was for tabs in bspwm
+to feel much like using tabs in i3 as that was the only feature I missed when switching to bspwm.
+Details on how to implement <code>bspctab</code> in your <code>sxhkdrc</code> can be found along side the scripts in my repo listed below.</p>
+<p><a href="https://github.com/Jaywalker/tabbed-unix-socket-scripts">Helper Scripts Repo</a></p>
+<h2>Download</h2>
+<ul>
+<li><a href="tabbed-unix-socket-control-20240319.diff">tabbed-unix-socket-control-20240319.diff</a></li>
+</ul>
+<h2>Authors</h2>
+<ul>
+<li>Justin Williams</li>
+</ul>
+</div>
+
+</div>
+
+</html>

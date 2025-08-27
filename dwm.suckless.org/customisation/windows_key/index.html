@@ -1,0 +1,109 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>dwm - dynamic window manager | suckless.org software that sucks less</title>
+	<link rel="stylesheet" type="text/css" href="https://suckless.org/pub/style.css"/>
+</head>
+
+<div id="header">
+	<a href="https://suckless.org/"><img src="https://suckless.org/logo.svg" alt=""/></a>&nbsp;
+	<a id="headerLink" href="https://suckless.org/">suckless.org</a>
+	<span class="hidden"> - </span>
+	<span id="headerSubtitle">dwm - dynamic window manager</span>
+</div>
+<hr class="hidden"/>
+<div id="menu">
+	<a href="https://suckless.org/">home</a>
+	<a href="../../index.html"><b>dwm</b></a>
+	<a href="https://st.suckless.org/">st</a>
+	<a href="https://core.suckless.org/">core</a>
+	<a href="https://surf.suckless.org/">surf</a>
+	<a href="https://tools.suckless.org/">tools</a>
+	<a href="https://libs.suckless.org/">libs</a>
+	<a href="https://ev.suckless.org/">e.V.</a>
+	<span class="right">
+		<a href="https://dl.suckless.org/">download</a>
+		<a href="https://git.suckless.org/">source</a>
+	</span>
+</div>
+<hr class="hidden"/>
+<div id="content">
+<div id="nav">
+	<ul>
+	<li><a href="../../index.html">about</a></li>
+	<li><a href="../index.html"><b>customisation/</b></a>
+		<ul>
+		<li><a href="../customfuncs/index.html">customfuncs/</a></li>
+		<li><a href="../font/index.html">font/</a></li>
+		<li><a href="../noapps/index.html">noapps/</a></li>
+		<li><a href="../patches_in_git/index.html">patches in git/</a></li>
+		<li><a href="../rules/index.html">rules/</a></li>
+		<li><a href="../tagmask/index.html">tagmask/</a></li>
+		<li><a href="index.html"><b>windows key/</b></a></li>
+		</ul>
+	</li>
+	<li><a href="../../dynamic_window_management/index.html">dynamic window management/</a></li>
+	<li><a href="../../faq/index.html">faq/</a></li>
+	<li><a href="../../multi-monitor/index.html">multi monitor/</a></li>
+	<li><a href="../../multi-pointer/index.html">multi pointer/</a></li>
+	<li><a href="../../patches/index.html">patches/</a></li>
+	<li><a href="../../screenshots/index.html">screenshots/</a></li>
+	<li><a href="../../status_monitor/index.html">status monitor/</a></li>
+	<li><a href="../../tutorial/index.html">tutorial/</a></li>
+	</ul>
+</div>
+<hr class="hidden"/>
+<div id="main">
+
+<h1>Change Mod1 key to the Windows key in config.h</h1>
+<p>dwm's documentation refers to Mod1 as the modifier key that you must press to
+issue commands to it. On most keyboards, Mod1 is mapped to the left Alt key.
+Most new keyboards now come equipped with the <em>Windows</em> key. Since no known
+UNIX/X applications are known to use the Windows key, it is an excellent
+alternative mapping to issue commands to dwm.</p>
+<p>In config.h, under the comment <code>/* key definitions */</code>, you can find the line</p>
+<pre><code>#define MODKEY Mod1Mask
+</code></pre>
+<p>In order to change dwm's modifier key to the Windows key, you can simply change
+its value definition to Mod4Mask.</p>
+<pre><code>#define MODKEY Mod4Mask
+</code></pre>
+<p>The following patch also produces the same result:</p>
+<pre><code>--- a/config.def.h      Sun Jul 27 03:34:57 2008 +0100
++++ b/config.def.h      Sun Jul 27 23:04:57 2008 +0100
+@@ -35,7 +35,7 @@
+ };
+
+ /* key definitions */
+-#define MODKEY Mod1Mask
++#define MODKEY Mod4Mask
+ #define TAGKEYS(KEY,TAG) \
+        { MODKEY,                       KEY,      view,           {.ui = 1 &lt;&lt; TAG} }, \
+        { MODKEY|ControlMask,           KEY,      toggleview,     {.ui = 1 &lt;&lt; TAG} }, \
+</code></pre>
+<h2>Can I use any other modifier key?</h2>
+<p>Yes. There are 5 modifiers, Mod1Mask to Mod5Mask. They are associated to up-to
+three keysyms (keycodes) from the X window server. To show the current
+association on your keyboard, run <code>xmodmap</code> with no arguments. It will show
+something like:</p>
+<pre><code>$ xmodmap 
+xmodmap:  up to 3 keys per modifier, (keycodes in parentheses):
+
+shift       Shift_L (0x32),  Shift_R (0x3e)
+lock        Caps_Lock (0x42)
+control     Control_L (0x25),  Control_R (0x6d)
+mod1        Alt_L (0x40),  Alt_L (0x7d),  Meta_L (0x9c)
+mod2        Num_Lock (0x4d)
+mod3      
+mod4        Super_L (0x7f),  Hyper_L (0x80)
+mod5        Mode_switch (0x5d),  ISO_Level3_Shift (0x7c)
+</code></pre>
+<p>Using <code>xev</code>, a utility to show X events, such as key presses, we can quickly
+identify which keysym (keycode) combination a particular key has, and associate
+that to a modifier using <code>xmodmap</code>.</p>
+</div>
+
+</div>
+
+</html>

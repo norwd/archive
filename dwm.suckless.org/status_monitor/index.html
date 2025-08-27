@@ -1,0 +1,210 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>dwm - dynamic window manager | suckless.org software that sucks less</title>
+	<link rel="stylesheet" type="text/css" href="https://suckless.org/pub/style.css"/>
+</head>
+
+<div id="header">
+	<a href="https://suckless.org/"><img src="https://suckless.org/logo.svg" alt=""/></a>&nbsp;
+	<a id="headerLink" href="https://suckless.org/">suckless.org</a>
+	<span class="hidden"> - </span>
+	<span id="headerSubtitle">dwm - dynamic window manager</span>
+</div>
+<hr class="hidden"/>
+<div id="menu">
+	<a href="https://suckless.org/">home</a>
+	<a href="../index.html"><b>dwm</b></a>
+	<a href="https://st.suckless.org/">st</a>
+	<a href="https://core.suckless.org/">core</a>
+	<a href="https://surf.suckless.org/">surf</a>
+	<a href="https://tools.suckless.org/">tools</a>
+	<a href="https://libs.suckless.org/">libs</a>
+	<a href="https://ev.suckless.org/">e.V.</a>
+	<span class="right">
+		<a href="https://dl.suckless.org/">download</a>
+		<a href="https://git.suckless.org/">source</a>
+	</span>
+</div>
+<hr class="hidden"/>
+<div id="content">
+<div id="nav">
+	<ul>
+	<li><a href="../index.html">about</a></li>
+	<li><a href="../customisation/index.html">customisation/</a></li>
+	<li><a href="../dynamic_window_management/index.html">dynamic window management/</a></li>
+	<li><a href="../faq/index.html">faq/</a></li>
+	<li><a href="../multi-monitor/index.html">multi monitor/</a></li>
+	<li><a href="../multi-pointer/index.html">multi pointer/</a></li>
+	<li><a href="../patches/index.html">patches/</a></li>
+	<li><a href="../screenshots/index.html">screenshots/</a></li>
+	<li><a href="index.html"><b>status monitor/</b></a>
+		<ul>
+		<li><a href="email_notifications/index.html">email notifications/</a></li>
+		</ul>
+	</li>
+	<li><a href="../tutorial/index.html">tutorial/</a></li>
+	</ul>
+</div>
+<hr class="hidden"/>
+<div id="main">
+
+<h1>status monitor</h1>
+<p>The status bar text of dwm is stored in the WM_NAME X11 property of the
+root window, which is managed by dwm.</p>
+<p>It can be easily set and retrieved using standard Unix tools.</p>
+<pre><code>xsetroot -name $status
+</code></pre>
+<pre><code>xprop -root -notype -f WM_NAME "8u" \
+	| sed -n -r 's/WM_NAME = \"(.*)\"/\1/p'
+</code></pre>
+<p>Alternatively, instead of xsetroot also xprop can be used to set the
+status-bar-text.</p>
+<pre><code>xprop -root -set WM_NAME $status
+</code></pre>
+<h2>Set The Status Using A Shell Script</h2>
+<pre><code>while true; do
+	xsetroot -name "$(date)"
+	sleep 2
+done
+</code></pre>
+<h2>Set The Status Using Other Methods</h2>
+<p>There are two status monitors maintained at suckless:</p>
+<h2>slstatus - suckless status</h2>
+<p>A somewhat complex status monitor which includes all batteries.</p>
+<p>You can read more <a href="https://tools.suckless.org/slstatus/">on the project page</a>.</p>
+<h2>dwmstatus</h2>
+<p>Barebone status monitor with basic functions written in C. This follows the
+suckless philosophy, to give you an easy way to extend the source code to your
+needs. See the helper functions for C below, to extend it to your needs. Just
+check it out and keep on hacking.</p>
+<pre><code>git clone git://git.suckless.org/dwmstatus
+cd dwmstatus
+make
+make PREFIX=/usr install
+# add »dwmstatus 2&gt;&amp;1 &gt;/dev/null &amp;« to your .xinitrc
+</code></pre>
+<h2>Status Monitors Submitted By Others</h2>
+<p>Feel free to add your own status monitors here (keeping the list sorted).</p>
+<ul>
+<li><a href="https://gitlab.com/narvin/avd">akuma-v-dwm</a> - event driven, modular,
+and extensible with date/time, all batteries, volume (amixer), backlight,
+memory and cpu usage out of the box.</li>
+<li><a href="https://github.com/perpen/babashka-status-bar">babashka-status-bar</a> - dynamic
+status bar for dwm/tmux/etc, written in clojure. Supports external triggers.</li>
+<li><a href="barM.c">barM</a> - can display all, time/date, ram usage, output of commands (the New BarMonitor).</li>
+<li><a href="https://github.com/ashish-yadav11/dsblocks">dsblocks</a> - modular status
+monitor, written and meant to be configured in C, with support for signaling,
+clickability, cursor hinting and color.</li>
+<li><a href="https://www.umaxx.net/dl">dstat</a>
+<a href="https://www.umaxx.net/dstat.png">Screenshot</a> - displays the current network
+throughput, CPU usage, performance settings, battery status, temperature,
+volume settings, as well as the current date and time (OpenBSD only, no support
+for Linux).</li>
+<li><a href="https://github.com/joestandring/dwm-bar">dwm-bar</a> - modular status bar.
+modules for date/time, alsa volume, cmus track, countdown timer,
+current keyboard layout, mail count, system resources, and weather.</li>
+<li><a href="https://github.com/torrinfail/dwmblocks">dwmblocks</a> - i3blocks-like
+status bar where you can refresh each "block" independently by update time
+or signal.</li>
+<li><a href="https://github.com/ashish-yadav11/dwmblocks">dwmblocks</a> - rewrite of
+dwmblocks with added features including clickability, cursor hinting and
+color.</li>
+<li><a href="https://github.com/UtkarshVerma/dwmblocks-async">dwmblocks-async</a> - Asynchronous version of
+dwmblocks with support for clickability. Unlike dwmblocks, each block is executed
+asynchronously so that the status bar never goes stale when a block takes time to execute.</li>
+<li><a href="https://github.com/ianremmler/dwms">dwms</a> - displays time, network, audio,
+and battery status, written in Go using XGB.</li>
+<li><a href="https://github.com/johnko/dwmsd">dwmsd</a> - a daemon that listens on localhost
+tcp (may be useful as a base for asynchronous updates)</li>
+<li><a href="https://github.com/roadkillcat/dwm_sss">dwm-sss</a> - shell script providing
+date, time and CPU temperature</li>
+<li><a href="https://notabug.org/kl3/dwmstat">dwmstat</a> - small and simple | IP, CPU
+temperature, system volume, current local time (and more) | config.h | OpenBSD</li>
+<li><a href="https://lee-phillips.org/estadobarpage/">estadobar</a> - Volume, CPU load, Wifi, free memory, battery charge, +
+colored icon warnings on high temperature, high load, and low or charging battery. Needs
+'statuscolors' patch; written in Python.</li>
+<li><a href="https://github.com/Stargarth/Goblocks">goblocks</a> - Partially inspired by dwmblocks,
+Go status bar that allows you to refresh each block independently. Includes built in
+features for frequently refreshed blocks.</li>
+<li><a href="https://github.com/lordrusk/gocaudices">gocaudices</a> - dwmblocks alternative written in go,
+Gocaudices is a dwmblocks replacement meant to be simple, fast, and elegant. It tries to
+adhere to the suckless philosophy.</li>
+<li><a href="https://github.com/oniichaNj/go-dwmstatus">go-dwmstatus</a> - A Go bar that
+prints current MPD song, load averages, time/date and battery percentage.</li>
+<li><a href="https://github.com/schachmat/gods">gods</a> - implemented in Go. prints network
+speed, cpu, ram, date/time</li>
+<li><a href="../patches/integrated-status-text/index.html">integrated-status-text</a> - A patch to have
+dwm itself handle the blocks asynchronously: this way we can handle mouse
+clicks, colors, etc. much easier.</li>
+<li><a href="https://gitlab.com/mhdy/mblocks">mblocks</a> - A multi-threaded, memory-safe and elegant status monitor written in Rust.</li>
+<li><a href="https://github.com/shirozuki/modbar">modbar</a> - A modular status bar. Each module can be updated independently of the others based on a given time interval or by passing module name to a named pipe. Simple and cpu-efficient. Linux-only (for now).</li>
+<li><a href="https://gitlab.com/mhdy/mtstatus">mtstatus</a> - A multi-threaded status monitor for X written in C.</li>
+<li><a href="profil-dwmstatus-1.0.c">profil-dwmstatus-1.0.c</a> - cpufreq, battery percent
+and date/time</li>
+<li><a href="https://github.com/MustafaSalih1993/rsblocks">rsblocks</a> - A fast multi threaded status bar written in Rust, configurable with a yaml file.</li>
+<li><a href="https://git.ckyln.com/sb/log.html">sb</a> - another modular bar written in POSIX
+shell</li>
+<li><a href="https://github.com/sakhmatd/sdwmbar">sdwmbar</a> - Simple DWM Bar written in 
+pure C; written for FreeBSD and OpenBSD, can be easily modified to work for
+Linux</li>
+<li><a href="https://git.2f30.org/spoon/">spoon</a> - set dwm status. Supports battery,
+cpu freq, date, file, load avg, keyboard layout, mpd, network speed,
+screen brightness, temperature, wifi, volume mixer.
+Works well on OpenBSD and Linux.</li>
+<li><a href="https://github.com/snobb/dwm-statusbar">suspend-statusbar.c</a> - date,
+loadavg, battery and more. If battery goes below threshold - run suspend
+command</li>
+<li><a href="https://github.com/blmayer/sysmon">sysmon</a> - Net in/out, mem, swap, CPU and
+date info. Written in go using xgb and xproto to not spawn other processes.</li>
+<li><a href="https://github.com/lordrusk/zara">zara</a> - Extremely simple status bar modeled after <a href="https://github.com/lordrusk/gocaudices">gocaudices</a> expandable in Go through an interface. Modules include, beyond the basics, corona stats, weather, cpubars, network traffic, moonphase, and many more.</li>
+<li><a href="https://git.noxz.tech/ztatus/log.html">ztatus</a> - simple statusbar and
+notification daemon (through fifo). Displays only date and time normally.
+Configured to work with 'statuscolors' patch by default.</li>
+</ul>
+<h2>Helper Functions In The Shell</h2>
+<ul>
+<li><a href="https://notabug.org/kl3/scripts">posix scripts</a> - basic collection of simple, fully POSIX sh compliant scripts to get various system information</li>
+<li><a href="https://github.com/vivien/i3blocks-contrib">i3blocks-contrib</a> - collection of python, perl and shell scripts</li>
+<li>Free memory: <code>free -h | awk '(NR==2){ print $4 }'</code></li>
+<li>Volume (device Master): <code>amixer get Master | awk -F'[][]' 'END{ print $4":"$2 }'</code></li>
+<li>Keyboard layout: <code>setxkbmap -query | awk '/layout/{ print $2 }'</code></li>
+<li>Empty disk space (mountpoint /home): <code>df -h | awk '{ if ($6 == "/home") print $4 }'</code></li>
+<li>wifi status (interface wlp3s0): <code>cat /sys/class/net/wlp3s0/operstate</code></li>
+<li>CPU temperature: <code>sed 's/000$/°C/' /sys/class/thermal/thermal_zone0/temp</code>.
+Alternatively you can use <code>acpi -t</code> or <code>sensors</code> from lm-sensors package. For
+older systems you can get the cpu temperature from
+<code>/proc/acpi/thermal_zone/THM0/temperature</code></li>
+<li>Remaining battery: <code>cat /sys/class/power_supply/BAT0/capacity</code>. Alternatively
+you can use <code>acpi -b</code>. For older systems you can get the battery capacity from
+<code>/proc/acpi/battery/BAT0/state</code>.</li>
+</ul>
+<p>Using shell scripts very well leads to big scripts, which pull in unneeded
+dependencies. One solution for this is to write everything in C, which is much
+more efficient.</p>
+<h2>Helper Functions In C (for dwmstatus or slstatus etc.)</h2>
+<p>If you have simple C functions for gathering system information, feel free to
+add them here (keeping the list sorted).</p>
+<ul>
+<li><a href="new-acpi-battery.c">ACPI battery status on Linux</a></li>
+<li><a href="batterystatus.c">Battery on Linux</a>: Battery percentage and status. + if
+charging, - if discharging, = if full.</li>
+<li><a href="dwmstatus-mitm.c">Detecting Man-In-The-Middle</a></li>
+<li><a href="diskspace_timechk.c">Disk usage and execute some check at different moments</a></li>
+<li><a href="fifo.c">FIFO info</a>: Replaces dynamic_info.</li>
+<li><a href="dynamic_info.c">Line per line the content of a file</a>: See
+tmpinfo function. It prints line after line the content of
+/tmp/dwmbuf.</li>
+<li><a href="mpdstatus.c">MPD title/artist</a></li>
+<li><a href="mail_counter.c">Number of new mails in a Maildir</a></li>
+<li><a href="dwmstatus-temperature.c">Temperature from /sys on Linux</a></li>
+<li><a href="uptime.c">Uptime</a></li>
+<li><a href="dwmstatus-netusage.c">Up-, and downspeeds of all network interfaces from /proc/net on Linux</a></li>
+<li><a href="getvol.c">Volume via ALSA API</a></li>
+</ul>
+</div>
+
+</div>
+
+</html>
