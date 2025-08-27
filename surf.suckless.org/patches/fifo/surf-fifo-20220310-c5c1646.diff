@@ -1,0 +1,309 @@
+From c5c1646470c4a278a9e44dc3934b4e0346518d40 Mon Sep 17 00:00:00 2001
+From: avalonwilliams <avalonwilliams@protonmail.com>
+Date: Wed, 9 Mar 2022 23:53:08 -0500
+Subject: [PATCH] fifo patch
+
+Adds a small command language for remote control of surf through
+a fifo pipe, allowing for more complex scripts and features to be
+added through shell scripts. Also adds a javascript injection function
+that you can bind keys to.
+---
+ config.def.h |   1 +
+ surf.c       | 210 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 211 insertions(+)
+
+diff --git a/config.def.h b/config.def.h
+index 1355ba3..dcc8d64 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -6,6 +6,7 @@ static char *styledir       = "~/.surf/styles/";
+ static char *certdir        = "~/.surf/certificates/";
+ static char *cachedir       = "~/.surf/cache/";
+ static char *cookiefile     = "~/.surf/cookies.txt";
++static char *fifodir        = "~/.surf/fifo/";
+ 
+ /* Webkit default features */
+ /* Highest priority value will be used.
+diff --git a/surf.c b/surf.c
+index 03d8242..327698e 100644
+--- a/surf.c
++++ b/surf.c
+@@ -17,6 +17,8 @@
+ #include <stdlib.h>
+ #include <string.h>
+ #include <unistd.h>
++#include <sys/types.h>
++#include <sys/stat.h>
+ 
+ #include <gdk/gdk.h>
+ #include <gdk/gdkkeysyms.h>
+@@ -141,6 +143,24 @@ typedef struct {
+ 	regex_t re;
+ } SiteSpecific;
+ 
++typedef enum {
++	ARGTYPE_INT,
++	ARGTYPE_FLT,
++	ARGTYPE_STR,
++	ARGTYPE_NIL,
++} ArgType;
++
++typedef struct {
++	char *cmd;
++	void (*func)(Client *c, const Arg *a);
++	ArgType t;
++} Cmd;
++
++typedef struct {
++	char *p;
++	ParamName pv;
++} ParamMap;
++
+ /* Surf */
+ static void die(const char *errstr, ...);
+ static void usage(void);
+@@ -239,6 +259,13 @@ static void clicknavigate(Client *c, const Arg *a, WebKitHitTestResult *h);
+ static void clicknewwindow(Client *c, const Arg *a, WebKitHitTestResult *h);
+ static void clickexternplayer(Client *c, const Arg *a, WebKitHitTestResult *h);
+ 
++static gboolean init_fifo(Client *c);
++static gboolean start_fifo(Client *c, char *path);
++static void fifo_read_cb(GObject *f, GAsyncResult *r, gpointer d);
++static void dispatchcmd(Client *c, char *cmd, char *a);
++static void injectjs(Client *c, const Arg *a);
++static void togglewrapper(Client *c, const Arg *a);
++
+ static char winid[64];
+ static char togglestats[11];
+ static char pagestats[2];
+@@ -255,6 +282,7 @@ static Parameter *curconfig;
+ static int modparams[ParameterLast];
+ static int spair[2];
+ char *argv0;
++static GFile *fifof;
+ 
+ static ParamName loadtransient[] = {
+ 	Certificate,
+@@ -298,6 +326,45 @@ static ParamName loadfinished[] = {
+ 	ParameterLast
+ };
+ 
++static ParamMap paramnames[] = {
++	{ "autoplay",     MediaManualPlay  },
++	{ "caret",        CaretBrowsing    },
++	{ "frameflat",    FrameFlattening  },
++	{ "geolocation",  Geolocation      },
++	{ "hidebg",       HideBackground   },
++	{ "images",       LoadImages       },
++	{ "indicators",   ShowIndicators   },
++	{ "java",         Java             },
++	{ "js",           JavaScript       },
++	{ "kiosk",        KioskMode        },
++	{ "microphone",   AccessMicrophone },
++	{ "scrollbars",   ScrollBars       },
++	{ "smoothscroll", SmoothScrolling  },
++	{ "spellcheck",   SpellChecking    },
++	{ "stricttls",    StrictTLS        },
++	{ "style",        Style            },
++	{ "webcam",       AccessWebcam     },
++	{ "webgl",        WebGL            },
++};
++
++static Cmd commands[] = {
++	{ "clipboard",        clipboard,          ARGTYPE_INT },
++	{ "find",             find,               ARGTYPE_INT },
++	{ "inject",           injectjs,           ARGTYPE_STR },
++	{ "loaduri",          loaduri,            ARGTYPE_STR },
++	{ "reload",           reload,             ARGTYPE_INT },
++	{ "scrollh",          scrollh,            ARGTYPE_INT },
++	{ "scrollv",          scrollv,            ARGTYPE_INT },
++	{ "showcert",         showcert,           ARGTYPE_NIL },
++	{ "spawn",            spawn,              ARGTYPE_STR },
++	{ "stop",             stop,               ARGTYPE_NIL },
++	{ "toggle",           togglewrapper,      ARGTYPE_STR },
++	{ "togglecookies",    togglecookiepolicy, ARGTYPE_NIL },
++	{ "togglefullscreen", togglefullscreen,   ARGTYPE_NIL },
++	{ "toggleinspector",  toggleinspector,    ARGTYPE_NIL },
++	{ "zoom",             zoom,               ARGTYPE_INT },
++};
++
+ /* configuration, allows nested code to access above variables */
+ #include "config.h"
+ 
+@@ -351,6 +418,7 @@ setup(void)
+ 	cookiefile = buildfile(cookiefile);
+ 	scriptfile = buildfile(scriptfile);
+ 	certdir    = buildpath(certdir);
++	fifodir    = buildpath(fifodir);
+ 	if (curconfig[Ephemeral].val.i)
+ 		cachedir = NULL;
+ 	else
+@@ -1080,9 +1148,15 @@ destroyclient(Client *c)
+ void
+ cleanup(void)
+ {
++	GError *error = NULL;
++
+ 	while (clients)
+ 		destroyclient(clients);
+ 
++	if (fifof != NULL)
++		if (!g_file_delete(fifof, NULL, &error))
++			g_warning("cleanup: couldn't delete fifo: %s\n", error->message);
++
+ 	close(spair[0]);
+ 	close(spair[1]);
+ 	g_free(cookiefile);
+@@ -1874,6 +1948,141 @@ msgext(Client *c, char type, const Arg *a)
+ 		        c->pageid, type, a->i, ret);
+ }
+ 
++gboolean
++init_fifo(Client *c)
++{
++	gboolean r = FALSE;
++	char *path = g_strconcat(fifodir, "/", winid, NULL);
++
++	if (path) {
++		if (g_file_test(path, G_FILE_TEST_EXISTS) && unlink(path))
++			fprintf(stderr, "surf: couldn't unlink old fifo: %s\n", path);
++
++		if (!mkfifo(path, 0600)) {
++			r = start_fifo(c, path);
++		} else {
++			fprintf(stderr, "init_fifo: couldn't create fifo: %s\n", path);
++			r = FALSE;
++		}
++	}
++
++
++	// fifo info no longer needed
++	g_free(fifodir);
++	if (path)
++		g_free(path);
++
++	return r;
++}
++
++gboolean
++start_fifo(Client *c, char *path)
++{
++	GError *error = NULL;
++	GFileIOStream *fs;
++	GOutputStream *os;
++	GDataInputStream *is;
++	fifof = g_file_new_for_path (path);
++
++	/* open in read/write so no blocking occurs */
++	fs = g_file_open_readwrite(fifof, NULL, &error);
++	if (!fs) {
++		fprintf(stderr, "surf: can't open: %s\n", error->message);
++		g_error_free(error);
++		return FALSE;
++	}
++
++	os = g_io_stream_get_output_stream(G_IO_STREAM(fs));
++	if (!g_output_stream_close(os, NULL, &error)) {
++		fprintf(stderr, "start_fifo: failed to close write end: %s\n",
++		          error->message);
++		g_error_free(error);
++		return FALSE;
++	}
++
++	is = g_data_input_stream_new(g_io_stream_get_input_stream(G_IO_STREAM(fs)));
++
++	g_data_input_stream_read_line_async(is, G_PRIORITY_DEFAULT, NULL,
++	                                    &fifo_read_cb, c);
++
++	g_setenv("SURF_FIFO", path, TRUE);
++
++	return TRUE;
++}
++
++void
++fifo_read_cb(GObject *f, GAsyncResult *r, gpointer d)
++{
++	Client *c = (Client *)d;
++	GDataInputStream *s = (GDataInputStream *)f;
++	GError *error = NULL;
++	gsize length;
++	gchar *rest;
++
++	gchar *line = g_data_input_stream_read_line_finish(s, r, &length, &error);
++	if (error) {
++		fprintf(stderr, "fifo_read_cb: error reading: %s\n", error->message);
++		return;
++	}
++
++	if (!line)
++		return;
++
++	line = strtok_r(line, " ", &rest);
++
++	dispatchcmd(c, line, rest);
++
++	g_data_input_stream_read_line_async(s, G_PRIORITY_DEFAULT, NULL,
++	                                    &fifo_read_cb, c);
++}
++
++void
++dispatchcmd(Client *c, char *cmd, char *a)
++{
++	Arg arg;
++	int i;
++
++	for (i = 0; i < LENGTH(commands); i++) {
++		if (strcmp(cmd, commands[i].cmd) == 0) {
++			switch (commands[i].t) {
++			case ARGTYPE_STR: arg = (Arg)(const void *)a; break;
++			case ARGTYPE_INT: arg = (Arg)atoi(a);         break;
++			case ARGTYPE_FLT: arg = (Arg)(float)atof(a);  break;
++			case ARGTYPE_NIL: arg = (Arg)0;               break;
++			}
++
++			if (commands[i].t == ARGTYPE_INT) {
++				printf("%i\n", arg.i);
++			}
++			commands[i].func(c, (const Arg *)&arg);
++			return;
++		}
++	}
++
++	fprintf(stderr, "%s: no such command\n", cmd);
++}
++
++void
++injectjs(Client *c, const Arg *a)
++{
++	evalscript(c, "%s", (char *)a->v);
++}
++
++void
++togglewrapper(Client *c, const Arg *a)
++{
++	int i;
++
++	for (i = 0; i < LENGTH(paramnames); i++) {
++		if (strcmp(paramnames[i].p, (char *)a->v) == 0) {
++			Arg targ = (Arg)(const void *)paramnames[i].pv;
++			return toggle(c, &targ);
++		}
++	}
++
++	fprintf(stderr, "toggle: no such setting '%s'", (char *)a->v);
++}
++
+ void
+ scrollv(Client *c, const Arg *a)
+ {
+@@ -2123,6 +2332,7 @@ main(int argc, char *argv[])
+ 	setup();
+ 	c = newclient(NULL);
+ 	showview(NULL, c);
++	init_fifo(c);
+ 
+ 	loaduri(c, &arg);
+ 	updatetitle(c);
+-- 
+2.35.1
+
