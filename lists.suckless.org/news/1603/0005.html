@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="generator" content="hypermail 2.3.0, see http://www.hypermail-project.org/" />
+<title>[news] [libzahl] 1.0 release from Mattias Andrée on 2016-03-06 (news mail list archive)</title>
+<meta name="Author" content="Mattias Andrée (maandree_AT_kth.se)" />
+<meta name="Subject" content="[news] [libzahl] 1.0 release" />
+<meta name="Date" content="2016-03-06" />
+<style type="text/css">
+/*<![CDATA[*/
+/* To be incorporated in the main stylesheet, don't code it in hypermail! */
+body {color: black; background: #ffffff}
+dfn {font-weight: bold;}
+pre { background-color:inherit;}
+.head { border-bottom:1px solid black;}
+.foot { border-top:1px solid black;}
+th {font-style:italic;}
+table { margin-left:2em;}map ul {list-style:none;}
+#mid { font-size:0.9em;}
+#received { float:right;}
+address { font-style:inherit ;}
+/*]]>*/
+.quotelev1 {color : #990099}
+.quotelev2 {color : #ff7700}
+.quotelev3 {color : #007799}
+.quotelev4 {color : #95c500}
+.period {font-weight: bold}
+</style>
+</head>
+<body>
+<div class="head">
+<h1>[news] [libzahl] 1.0 release</h1>
+<!-- received="Sun, 6 Mar 2016 10:22:51 +0100" -->
+<!-- isoreceived="20160306092251" -->
+<!-- sent="Sun, 6 Mar 2016 10:22:51 +0100" -->
+<!-- isosent="20160306092251" -->
+<!-- name="Mattias Andrée" -->
+<!-- email="maandree_AT_kth.se" -->
+<!-- subject="[news] [libzahl] 1.0 release" -->
+<!-- id="20160306102251.08e4cf01.maandree_AT_kth.se" -->
+<!-- charset="UTF-8" -->
+<!-- expires="-1" -->
+<map id="navbar" name="navbar">
+<ul class="links">
+<li>
+<dfn>This message</dfn>:
+[ <a href="0005.html#start5" name="options1" id="options1" tabindex="1">Message body</a> ]
+ [ More options (<a href="0005.html#options2">top</a>, <a href="0005.html#options3">bottom</a>) ]
+</li>
+<li>
+<dfn>Related messages</dfn>:
+<!-- unext="start" -->
+[ <a href="0006.html" title="Boruch Baum: &quot;[news] morc_menu for i3wm (and others) using dmenu (or others)&quot;">Next message</a> ]
+[ <a href="../1601/0004.html" title="FRIGN: &quot;[news] [farbfeld] version 1 release&quot;">Previous message</a> ]
+<!-- unextthread="start" -->
+<!-- ureply="end" -->
+</li>
+</ul>
+</map>
+<ul class="links">
+<li><a name="options2" id="options2"></a><dfn>Contemporary messages sorted</dfn>: [ <a href="date.html#msg5" title="Contemporary messages by date">by date</a> ] [ <a href="index.html#msg5" title="Contemporary discussion threads">by thread</a> ] [ <a href="subject.html#msg5" title="Contemporary messages by subject">by subject</a> ] [ <a href="author.html#msg5" title="Contemporary messages by author">by author</a> ] [ <a href="attachment.html" title="Contemporary messages by attachment">by messages with attachments</a> ]</li>
+</ul>
+</div>
+<!-- body="start" -->
+<div class="mail">
+<address class="headers">
+<span id="from">
+<dfn>From</dfn>: Mattias Andrée &lt;<a href="mailto:maandree_AT_kth.se?Subject=Re%3A%20%5Bnews%5D%20%5Blibzahl%5D%201.0%20release">maandree_AT_kth.se</a>&gt;
+</span><br />
+<span id="date"><dfn>Date</dfn>: Sun, 6 Mar 2016 10:22:51 +0100</span><br />
+</address>
+<br />
+Greetings everyone!
+<br />
+<br />I am happy to announce the first release of libzahl:
+<br />
+version 1.0 [1].
+<br />
+<br />libzahl is an integer-only bignum library. And this
+<br />
+release contains all functions that I hope to implement
+<br />
+in it:
+<br />
+<br />* Basic bitwise operations.
+<br />
+* Basic arithmetic functions.
+<br />
+* Modular multiplication and modular exponentiation.
+<br />
+* Random number generation.
+<br />
+* Some basic number theoretical functions:
+<br />
+&nbsp;&nbsp;- Comparison.
+<br />
+&nbsp;&nbsp;- Odd–even test.
+<br />
+&nbsp;&nbsp;- Calculation of the greatest common divisor.
+<br />
+&nbsp;&nbsp;- Primality test.
+<br />
+* Error handling.
+<br />
+* Conversion from and to strings.
+<br />
+* Marshalling.
+<br />
+* Swapping
+<br />
+* The obvious functions:
+<br />
+&nbsp;&nbsp;- Assignment.
+<br />
+&nbsp;&nbsp;- Initialisation.
+<br />
+&nbsp;&nbsp;- Deallocation.
+<br />
+<br />libzahl depends only on libc. However, unless you
+<br />
+are running the Linux kernel you may have to edit
+<br />
+config.mk according to the instructions included
+<br />
+in that file. I hope to make this more automated
+<br />
+in a future release.
+<br />
+<br />libzahl has barely been optimised, thus it performance
+<br />
+is not too great just yet. This will be the primary
+<br />
+goal of future releases.
+<br />
+<br />libzahl is not thread-safe, this may or may not
+<br />
+change in the future. It is however possible to
+<br />
+fork(3p) the process and use the marshalling functions
+<br />
+to send values between the processes efficiently.
+<br />
+<br />And now to its API design...
+<br />
+<br />Before libzahl can be used it has to be initialised.
+<br />
+This is the using the setjmp(3p) and zsetup(3) function:
+<br />
+<br />&nbsp;&nbsp;jmp_buf env;
+<br />
+&nbsp;&nbsp;if (setjmp(env)) {
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;goto zahl_failure;
+<br />
+&nbsp;&nbsp;}
+<br />
+&nbsp;&nbsp;zsetup(env);
+<br />
+<br />As implied by this example code. If an operation cannot
+<br />
+be performed, libzahl performs a long jump to a specified
+<br />
+location. There are a few exceptions where the returned
+<br />
+value of the functions shall be checked instead. This
+<br />
+eliminates the need to clutter the code with if-statements
+<br />
+at every operation, and reduces unnecessary conditional
+<br />
+branching events. zsetup(3) also initialises some temporary
+<br />
+variables use by libzahl's functions.
+<br />
+<br />For all functions that have at least two big integer
+<br />
+parameters, the output parameters are places in the front,
+<br />
+before the input parameters.
+<br />
+<br />All functions support passing non-unique pointers, as
+<br />
+long as they are of the same type and the output parameters
+<br />
+are unique to each other. For example zdivmod(a, b, a, b)
+<br />
+and zdivmod(a, b, b, b) is safe, but not zdivmod(a, a, a,
+<br />
+b), where the first two parameters are output parameters
+<br />
+and the last two parameters are input parameters.
+<br />
+<br />libzahl's big integer data type is defined as
+<br />
+typedef struct { /*....*/ } z_t[1];
+<br />
+<br /><br />Ex animo,
+<br />
+Mattias Andrée
+<br />
+<br />[1] <a href="http://git.suckless.org/libzahl/tag/?id=1.0">http://git.suckless.org/libzahl/tag/?id=1.0</a>
+<br />
+<br /><div>
+<ul>
+<li>application/pgp-signature attachment: <a href="../att-0005/01-part">OpenPGP digital signature</a></li>
+</ul>
+<!-- attachment="01-part" -->
+</div>
+<span id="received"><dfn>Received on</dfn> Sun Mar 06 2016 - 10:22:51 CET</span>
+</div>
+<!-- body="end" -->
+<div class="foot">
+<map id="navbarfoot" name="navbarfoot" title="Related messages">
+<ul class="links">
+<li><dfn>This message</dfn>: [ <a href="0005.html#start5">Message body</a> ]</li>
+<!-- lnext="start" -->
+<li><dfn>Next message</dfn>: <a href="0006.html" title="Next message in the list">Boruch Baum: "[news] morc_menu for i3wm (and others) using dmenu (or others)"</a></li>
+<li><dfn>Previous message</dfn>: <a href="../1601/0004.html" title="Previous message in the list">FRIGN: "[news] [farbfeld] version 1 release"</a></li>
+<!-- lnextthread="start" -->
+<!-- lreply="end" -->
+</ul>
+<ul class="links">
+<li><a name="options3" id="options3"></a><dfn>Contemporary messages sorted</dfn>: [ <a href="date.html#msg5" title="Contemporary messages by date">by date</a> ] [ <a href="index.html#msg5" title="Contemporary discussion threads">by thread</a> ] [ <a href="subject.html#msg5" title="Contemporary messages by subject">by subject</a> ] [ <a href="author.html#msg5" title="Contemporary messages by author">by author</a> ] [ <a href="attachment.html" title="Contemporary messages by attachment">by messages with attachments</a> ]</li>
+</ul>
+</map>
+</div>
+<!-- trailer="footer" -->
+<p><small><em>
+This archive was generated by <a href="http://www.hypermail-project.org/">hypermail 2.3.0</a>
+: Sun Mar 06 2016 - 10:24:20 CET
+</em></small></p>
+</body>
+</html>
