@@ -1,0 +1,84 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+	<title>PCE-HT71 programmer/downloader for GNU/Linux</title>
+</head>
+
+<body>
+<h1>PCE-HT71 programmer/downloader for GNU/Linux</h1>
+
+<p>
+Here I publish the code for the PCE-HT71 programmer/downloader for libusb.
+I use it only on GNU/Linux but I imagine it may work also on other systems where
+libusb works.
+</p>
+
+<p align=center>
+<img src="https://viric.name/soft/pce/pce-ht71-blau.jpg"></img>
+</p>
+
+<p>
+The PCE-HT71 device allows recording temperature and humidity for long times,
+once programming it to do so at a specific rate of seconds between samples, and
+a limited amount of samples. This software allows programming it and later
+downloading the data it recorded. I acquired mine from <a
+href="http://www.pce-iberica.es/medidor-detalles-tecnicos/logger-de-datos/registrador-climatologico-pce-ht71.htm">PCE
+ibérica</a>, because I wanted to monitor temperature and humidity in some places
+of my house, usually not very accessible. I considered I needed humidity
+recording too, because I imagine the feeling of cold or warm depends a lot on it.
+</p>
+<p>
+I used a windows xp in a qemu-kvm with the PCE-HT71 Datalogger windows programs,
+all running in a Linux 2.6.35 with usbmon. I used
+<a href="http://wiki.wireshark.org/CaptureSetup/USB">wireshark</a> to grab and decode
+the USB traffic, and I then looked for correspondences between the values I set
+on the windows program, and the usb frames. Additionally, I noticed that the
+computers I had with VIA USB controllers did not negotiate USB properly. So it
+works for me only in computers with USB controllers from other manufacturers.
+</p>
+
+<h2>Features</h2>
+
+<p><strong>Programming</strong>:</p>
+<ul>
+<li>It sets the current local date/time to the device.
+<li>Number of seconds between samples
+<li>Maximum number of samples to record
+<li>Instant start of recording or manual start with the button on te device
+</ul>
+
+<p>It then allows <strong>downloading</strong> the data into a text file appropiate for
+gnuplot</p>
+
+<p>I still have not managed to set properly the LED alarms on temperature and
+humidity.</p>
+
+<h2>Download</h2>
+
+<p>Download the latest version (GPLv3+ licensed):
+<a href="https://viric.name/soft/pce/pce-0.2.tar.gz">pce-0.2.tar.gz</a> - v0.2 - 24/10/2010 - This program
+comes with ABSOLUTELY NO WARRANTY.</p>
+
+<p>Look at the
+<a href="../../wsgi-bin/hgweb.wsgi/pce">version repository</a> if you are
+interested in its development.</p>
+
+<h2>Manual</h2>
+<p>Here is the usage help of pce v0.2:</p>
+<pre>
+usage: pce [-n nsamples] [-t timepersample] [-i] &lt;-d downloadfile | -s&gt;
+</pre>
+
+<h2>Thanks</h2>
+<ul>
+<li>To Werner Almesberger, that helped me find the datasheets for the integrated
+circuits on board, through <em>#qi-hardware@freenode.net</em>.
+<li>To the useful, although sometimes uncomfortable, UNIX interface.
+<li>To GNU, an ugly but working and helpful ol' UNIX implementation.
+</ul>
+
+<address>Author:
+<a href="http://vicerveza.homeunix.net/~viric/">Lluís Batlle i Rossell</a>,
+viric_at_vicerveza_dot_homeunix_dot_net</address>
+</body>

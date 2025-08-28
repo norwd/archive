@@ -1,0 +1,118 @@
+<?xml version="1.0"?>
+<rss version="2.0"
+     xmlns:dc="http://purl.org/dc/elements/1.1/"
+     xmlns:dcterms="http://purl.org/dc/terms/" >
+<channel>
+<title>tags/nix</title>
+<link>http://vicerveza.homeunix.net/~viric/bloc/tags/nix/</link>
+<description>viricbloc</description>
+<item>
+
+	<title>Programant a nixos</title>
+
+
+	<guid>http://vicerveza.homeunix.net/~viric/bloc/posts/Programant_a_nixos/</guid>
+
+	<link>http://vicerveza.homeunix.net/~viric/bloc/posts/Programant_a_nixos/</link>
+
+
+	<category>nix</category>
+
+
+	<pubDate>Tue, 30 Mar 2010 19:08:41 +0200</pubDate>
+	<dcterms:modified>2010-03-30T19:31:05Z</dcterms:modified>
+
+	<description>&lt;p&gt;Una manera típica de programar coses en un entorn linux consisteix en demanar a
+la distribució que ens instal·li les dependències que volem. Per exemple:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;gcc&lt;/li&gt;
+&lt;li&gt;libpng&lt;/li&gt;
+&lt;li&gt;libjpeg&lt;/li&gt;
+&lt;li&gt;qt&lt;/li&gt;
+&lt;li&gt;etc.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;I tot el que demanem a la distribució va a &lt;code&gt;/usr&lt;/code&gt;, que és on els compiladors i els
+enllaçadors busquen.&lt;/p&gt;
+
+&lt;p&gt;Però a nixos no hi ha pas &lt;code&gt;/usr&lt;/code&gt;. Hi ha els
+&lt;a href=&quot;http://hydra.nixos.org/view/nix/trunk/latest/tarball/download-by-type/doc/manual#sec-profiles&quot;&gt;perfils&lt;/a&gt;
+de cada usuari, el perfil
+del sistema, i altres perfils, si volem. Cada perfil d&#39;aquests té l&#39;aspecte del
+contingut d&#39;un &lt;code&gt;/usr&lt;/code&gt;, però amb un inconvenient: no és a &lt;code&gt;/usr&lt;/code&gt;, i per tant els
+compiladors i els enllaçadors no hi van a buscar res.&lt;/p&gt;
+
+&lt;p&gt;Una pràctica utilitzada per alguns que programen amb el gestor de paquets
+&lt;a href=&quot;http://nixos.org/nix&quot;&gt;nix&lt;/a&gt;
+consisteix en instal·lar-se les dependències en algun perfil (per exemple, el
+personal), inclòs el gcc. Llavors estableixen les variables
+&lt;code&gt;LIBRARY_PATH=~/.nix-profile/lib&lt;/code&gt; i &lt;code&gt;CPATH=~/.nix-profile/include&lt;/code&gt;, i el
+compilador i l&#39;enllaçador queden contents.&lt;/p&gt;
+
+&lt;p&gt;La pràctica que segueixo jo fa ús del sistema &lt;code&gt;myEnv&lt;/code&gt; ideat per en Marc Weber, que
+consisteix en una expressió nix que crea un script que establirà les variables
+d&#39;entorn de tal manera com es faria en una construcció feta per nix. Aquest
+sistema esborra algunes variables com PATH i d&#39;altres, i per això la càrrega
+dels scripts no és totalment trivial. El &lt;code&gt;myEnv&lt;/code&gt; posa els scripts a
+&lt;code&gt;&amp;#036;out/dev-envs/scriptname&lt;/code&gt;, així que podem instal·lar-los al perfil perfectament
+sense que xoquin amb res més.&lt;/p&gt;
+
+&lt;p&gt;Concretament, per exemple per desenvolupar el &lt;a href=&quot;http://dwm.suckless.org/&quot;&gt;dwm&lt;/a&gt;,
+el meu &lt;code&gt;~/.nixpkgs/config.nix&lt;/code&gt; inclou:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;{
+  packageOverrides = pkgs : with pkgs; rec {
+    dwmEnv = pkgs.myEnvFun {
+      name = &quot;dwm&quot;;
+      buildInputs = [ stdenv xlibs.libX11 xlibs.libXinerama ];
+    };
+  };
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Això permet instal·lar al perfil la derivació &lt;code&gt;env-dwm&lt;/code&gt;, que ens donarà el
+fitxer &lt;code&gt;&amp;#036;out/dev-envs/dwm&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Alhora, faig servir un script per carregar els entorns de desenvolupament
+aquests, &lt;code&gt;loadenv&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;#!/bin/sh
+
+OLDPATH=&quot;&amp;#036;PATH&quot;
+source &amp;#036;HOME/.nix-profile/dev-envs/&amp;#036;1
+PATH=&quot;&amp;#036;PATH:&amp;#036;OLDPATH&quot;
+export out=/doesnotexist
+export PS1=&quot;\n&amp;#036;1:[\u@\h:\w]\&amp;#036; &quot;
+export buildNativeInputs
+export NIX_STRIP_DEBUG=0
+
+/var/run/current-system/sw/bin/bash --norc
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Això em permet tenir una sessió com la següent:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;viric@bergamota:~&amp;#036; cd ~/dwm-5.7.2
+viric@bergamota:~/dwm-5.7.2&amp;#036; loadenv dwm
+dwm:[viric@bergamota:~/dwm-5.7.2]&amp;#036; make
+...
+dwm:[viric@bergamota:~/dwm-5.7.2]&amp;#036; exit
+viric@bergamota:~/dwm-5.7.2&amp;#036;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Tinc el meu &lt;code&gt;~/.nixpkgs/config.nix&lt;/code&gt; amb entorns per diferents coses que
+desenvolupo; així no empleno el perfil personal amb altres coses que no siguin
+programes que vull al PATH, i a més l&#39;entorn de construcció s&#39;assembla al del
+&lt;a href=&quot;http://hydra.nixos.org/view/nix/trunk/latest/tarball/download-by-type/doc/manual#sec-standard-environment&quot;&gt;constructor genèric de
+nix&lt;/a&gt;,
+mantenint només les mínimes dependències especificades a l&#39;abast dels compilador
+i enllaçador.&lt;/p&gt;
+</description>
+
+
+	<comments>http://vicerveza.homeunix.net/~viric/bloc/posts/Programant_a_nixos/#comments</comments>
+
+</item>
+
+</channel>
+</rss>

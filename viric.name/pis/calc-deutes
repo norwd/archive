@@ -1,0 +1,178 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+	<title>Ètxelon - Deutes finals</title>
+	<meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1">
+</head>
+
+<body>
+
+<H1 ALIGN=center>Ètxelon</H1>
+
+
+<?php
+	include("getdb.inc");
+	
+	// Fem la connexió
+	$connexio = mysql_connect($mysql_server, $mysql_user, $mysql_password);
+	mysql_select_db($mysql_db, $connexio);
+
+	// Crides a funcions per obtenir parametres
+	$habitants = obtenir_habitants($connexio);
+	$num_habitants = count($habitants);
+	$altres = obtenir_altres($connexio);
+	$gent = obtenir_gent($connexio);
+
+	// Iniciem els deutes de cadascun
+	foreach($gent as $id => $persona)
+	{
+		$deutes[$id]["pagat"] = 0;
+		$deutes[$id]["toca_pagar"] = 0;
+		$deutes[$id]["pagaments"] = 0;
+	}
+	$total_a_pagar = 0;
+
+	// Obtenim totes les compres i pagaments
+	$compres = obtenir_compres($connexio);
+	$pagaments = obtenir_pagaments($connexio);
+	// Per cada compra...
+	foreach($compres as $data => $compra)
+	{
+		$compradors = obtenir_compradors($data, $connexio);
+
+		// Calcul dels compradors globals
+		foreach($compradors as $persona => $dades)
+		{
+			$deutes[$persona]["pagat"] += $dades["pagat"];
+			$deutes[$persona]["toca_pagar"] += $dades["toca_pagar"];
+			$total_a_pagar += $dades["toca_pagar"];
+		}
+
+		$excepcions = obtenir_excepcions($data, $connexio);
+
+		$max_compradors_ex = 0;
+		if ($excepcions != 0)
+			foreach($excepcions as $key => $value)
+			{
+				$compradors_excepcions[$key] = obtenir_compradors_excepcions($key, $connexio);
+				foreach($compradors_excepcions[$key] as $persona => $dades)
+				{
+					$deutes[$persona]["toca_pagar"] += $dades["toca_pagar"];
+					$total_a_pagar += $dades["toca_pagar"];
+				}
+			}
+	}
+	if ($pagaments != 0)
+		foreach($pagaments as $data => $pagament)
+		{
+			$pagadors = obtenir_pagadors($data,$connexio);
+			// Els cobraments seran 'pagaments' negatius.
+			foreach($pagadors as $persona => $dades)
+				$deutes[$persona]["pagaments"] += $dades["pagat"] - $dades["cobrat"];
+		}
+?>
+
+<H2>Deutes finals</H2>
+
+<!-- Taula de compradors globals -->
+<TABLE BORDER=1>
+<CAPTION>Deutes finals</CAPTION>
+<TR>
+	<TH>Persona
+	<TH>Pagat
+	<TH>Toca pagar
+	<TH>Percentatge a pagar
+	<TH>Balanç
+	<TH>Pagaments
+	<TH>Balanç amb pagaments
+<?php
+	$suma_pagat = 0;
+	$suma_toca_pagar = 0;
+	$suma_percentatge = 0;
+	$suma_balans = 0;
+	$suma_pagaments = 0;
+	$suma_balans_pagaments = 0;
+	foreach($gent as $key => $value)
+	{
+		if ($deutes[$key]["pagat"] != 0 || $deutes[$key]["toca_pagar"] != 0 ||
+			$deutes[$key]["pagaments"] != 0)
+		{
+			// Serveix per calcular el preu que toca pagar a cada un realment
+			echo "<TR>\n\t<TD>";
+			echo "<A HREF=\"list-persona.php?user_id=$key\">";
+			echo strtohtml($gent[$key]["nom"]) . "</A>\n";
+
+			printf("\t<TD align=right>%s\n", pricetohtml($deutes[$key]["pagat"]));
+			printf("\t<TD align=right>%s\n", pricetohtml($deutes[$key]["toca_pagar"]));
+			printf("\t<TD align=right>%s\n", pricetohtml($deutes[$key]["toca_pagar"]
+				/ $total_a_pagar * 100));
+			printf("\t<TD align=right>%s\n", pricetohtml($deutes[$key]["pagat"]
+				- $deutes[$key]["toca_pagar"]));
+			printf("\t<TD align=right>%s\n", pricetohtml($deutes[$key]["pagaments"]));
+			printf("\t<TD align=right>%s\n", pricetohtml($deutes[$key]["pagat"]
+				- $deutes[$key]["toca_pagar"] + $deutes[$key]["pagaments"]));
+
+			//echo "\t<TD>" . $deutes[$key]["pagat"] . "\n";
+			//echo "\t<TD>" . $deutes[$key]["toca_pagar"] . "\n";
+			//echo "\t<TD>" . ($deutes[$key]["toca_pagar"] / $total_a_pagar * 100) . "\n";
+
+			//echo "\t<TD>" . ($deutes[$key]["pagat"] - $deutes[$key]["toca_pagar"]) . "\n";
+			//echo "\t<TD>" . $deutes[$key]["pagaments"] . "\n";
+			//echo "\t<TD>" . ($deutes[$key]["pagat"] - $deutes[$key]["toca_pagar"] + $deutes[$key]["pagaments"]) . "\n";
+
+			$suma_pagat += $deutes[$key]["pagat"];
+			$suma_toca_pagar += $deutes[$key]["toca_pagar"];
+			$suma_percentatge += ($deutes[$key]["toca_pagar"] / $total_a_pagar * 100);
+			$suma_balans += $deutes[$key]["pagat"] - $deutes[$key]["toca_pagar"];
+			$suma_pagaments += $deutes[$key]["pagaments"];
+			$suma_balans_pagaments += $deutes[$key]["pagat"] - $deutes[$key]["toca_pagar"] + $deutes[$key]["pagaments"];
+		}
+	}
+
+	printf("<TR>\n\t<TH>Total\n");
+	printf("\t<TD align=right>%s\n", pricetohtml($suma_pagat));
+		// La suma ha de ser lo mateix que total_a_pagar
+	printf("\t<TD align=right>%s\n", pricetohtml($suma_toca_pagar));
+	printf("\t<TD align=right>%s\n", pricetohtml($suma_percentatge));
+	printf("\t<TD align=right>%s\n", pricetohtml($suma_balans));
+	printf("\t<TD align=right>%s\n", pricetohtml($suma_pagaments));
+	printf("\t<TD align=right>%s\n", pricetohtml($suma_balans_pagaments));
+	/*
+	echo "<TR>\n\t<TH>Total\n" .
+		"\t<TD>" . $suma_pagat . "\n" .
+		// La suma ha de ser lo mateix que total_a_pagar
+		"\t<TD>" . $suma_toca_pagar ."\n" .
+		"\t<TD>" . $suma_percentatge . "\n" .
+		"\t<TD>" . $suma_balans . "\n" .
+		"\t<TD>" . $suma_pagaments . "\n" .
+		"\t<TD>" . $suma_balans_pagaments . "\n";
+	*/
+?>
+</TABLE>
+
+<HR WIDTH="70%">
+
+<H2>Llegenda</H2>
+
+<ul>
+<li>El percentatge es calcula segons el que <em>toca pagar</em> respecte al
+	<em>total a pagar</em>.
+<li>Els pagaments negatius són cobraments del grup. Els positius són pagaments
+	al grup.
+<li>La suma del <em>percentatge</em> ha de ser <strong>100</strong>.
+<li>El <em>total pagat</em> ha de ser igual al <em>total a pagar</em>.
+<li>La suma dels pagaments ha de ser <strong>0</strong>
+	(pagaments = cobraments).
+<li>El <em>balanç positiu</em> indica diners que s'han de cobrar en un futur,
+	i el <em>negatiu</em> diners que s'han de pagar.
+<LI>És important <strong>no confondre</strong> el que s'ha <em>pagat</em> (que
+	fa referència a les <em>compres</em>), i els <em>pagaments</em>, que fan
+	referència als préstecs o saldades de deutes.
+</ul>
+
+<HR WIDTH="70%">
+<BR>
+<A HREF="index">Tornar al menú d'inici</A>
+
+</body>
+</html>

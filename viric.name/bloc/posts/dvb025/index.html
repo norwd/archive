@@ -1,0 +1,3983 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>dvb025</title>
+
+<link rel="stylesheet" href="../../style.css" type="text/css" />
+
+<link rel="stylesheet" href="../../local.css" type="text/css" />
+
+
+<link rel="alternate" type="application/x-wiki" title="Edit this page" href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025&amp;do=edit" />
+
+
+
+
+</head>
+<body>
+
+<div class="pageheader">
+<div class="header">
+<span>
+<span class="parentlinks">
+
+<a href="../../index.html">viricbloc</a>/ 
+
+<a href="../index.html">posts</a>/ 
+
+</span>
+<span class="title">
+dvb025
+
+</span>
+</span><!--.header-->
+
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025&amp;do=edit" rel="nofollow">Edit</a></li>
+
+
+<li><a href="../../recentchanges/index.html">RecentChanges</a></li>
+
+
+
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?do=prefs">Preferences</a></li>
+
+
+<li><a href="index.html#comments">94 comments</a><br /></li>
+
+</ul>
+</div>
+
+
+
+
+</div> <!-- .pageheader -->
+
+
+
+<div id="content">
+<p>Avui m'he entretingut una mica més a esbrinar coses del demodulador de TDT que tenim endollat a la tele.</p>
+
+<p>La caixa l'identifica com "Sansui DVB025". Mirant la <a href="http://www.sansui-global.com/">web de
+Sansui</a>, no hi surt res de televisió digital ni
+res de DVB025. I mirant a l'apartat de
+<a href="http://www.sansui-global.com/english/worldwide.php">distribuïdors</a> veig que per
+Europa distribueix una empresa italiana, <a href="http://www.motom.com">Motom Italia
+Spa</a>, que per la seva web només venen motos i peces de
+motos.</p>
+
+<p>Per altra banda, obrint l'aparell, veig que a la placa hi diu DVB-T-130, i
+un integrat gran etiquetat amb el nom
+SPHE1003Ax. Dies enrera en vaig buscar la <em>datasheet</em> a google i altres
+cercadors, però no vaig trobar res. Només n'havia trobat una <a href="http://w3.sunplus.com/products/STB/sphe1003.asp">lleugera
+descripció</a> a la web del
+fabricant, <a href="http://www.sunplus.com">sunplus</a>.  I avui, tot buscant altres coses, finalment l'he trobada: la
+<a href="http://www.vita-desarrollos.com/documentacion/SPHE1003A_Datasheet.pdf">datasheet del
+SPHE1003Ax</a>.</p>
+
+<p>No és que hi expliqui gaire res. Però entenc que la CPU que gasten és una
+<a href="http://www.sunplus.com/products/S%2Bcore.asp">S+Core</a>. Fa gràcia que parlin de
+que té un joc d'instruccions privatiu, i que en canvi s'hi compila amb el
+compilador GNU C/C++. Potser els hi podria demanar el codi font i tot. Però
+tampoc en trauria gaire res.</p>
+
+<p>Un amic té un receptor semblant, i de fet les cadenes que identifiquen tan el
+programari com el maquinari coincideixen amb el meu (hw DVB-TV1.1, sw
+sunplus_box_tv1.20). Jo en buscava codis (firmware), ja que tant el meu com el
+seu permeten actualitació a través d'un fitxer en una memòria USB. Jo pel meu no
+n'he trobat cap d'aquests fitxers, però ell m'ha passat un enllaç a <a href="http://www.vitecom.com/descargas/software/96-DVB2602.zip">un del
+seu</a>. Mirant les
+cadenes de texte (poques), he acabat ensopegant amb una cosa que apuntava
+clarament al sistema operatiu de temps real
+<a href="http://ecos.sourceware.org/ecos/">ecos</a>. No el coneixia pas! Ja m'ha fet gràcia
+trobar-lo. I cercant una mica més, he anat a parar a una altra connexió entre
+<em>sunplus</em> i ecos, en una
+<a href="http://sourceware.org/ml/ecos-maintainers/2007-09/msg00000.html">carta</a> a la
+llista de correu d'<em>ecos</em>. 
+La placa del DVB025 té un altre punt interessant; quatre forats sense soldar on
+hi diu "GND/RX/TX/+5V". Avui he rebut un <a href="http://ftdichip.com/Products/Cables/USBTTLSerial.htm">cable FTDI
+USB-sèrie</a>, el
+<a href="http://ftdichip.com/Support/Documents/DataSheets/Cables/DS_TTL-232R_CABLES.pdf">TTL-232R-3V3</a>,
+que he comprat per accedir a això i al <a href="http://en.qi-hardware.com/wiki/Serial_console">port
+sèrie</a> del
+<a href="http://en.qi-hardware.com/wiki/Ben_NanoNote">nanonote</a>, de 3,3V també. I
+espero que em serveixi també per aplicacions de ports sèries 5V, com la
+<a href="http://wiki.gp2x.org">gp2x f200</a> potser, tot i que en tinc la
+<a href="http://wiki.gp2x.org/wiki/Extra_Hardware">Cradle</a>. El port sèrie del DVB025 he
+vist que sortia per
+l'<a href="http://ca.wikipedia.org/wiki/Euroconnector">euroconnector</a>, on els pins són:
+10-rx, 12-tx, 14-gnd. Per comprovar-ho, mireu que al 'tx' hi ha, la major part
+del temps, nivell alt de 3,3V.</p>
+
+<p>Connectant-me a allò que semblava un port sèrie, doncs, he vist que anava a
+115200 bauds (per les traces que he vist per pantalla només amb aquesta
+velocitat), i que per molt que hi enviés coses, no m'ha reaccionat. No n'he pas
+pogut treure res més, per aquest camí; he mirat si hi havia cap
+<a href="http://sourceware.org/redboot/">Redboot</a> que em permetés remenar coses, però
+res.  Pel port sèrie, doncs, he rebut això:</p>
+
+<pre>
+
+
+
+
+
+sp8200tv_setup_ntsc
+
+
+
+
+
+
+
+
+
+sp8200tv_setup_pal
+
+
+
+
+
+##  timerw_isr_install  ##
+TV_FORMAT 128
+[DEMOD DEBUG] ## SPDC210/SPDC230/SPHE1003 Full Driver Version 5.21.0 2009/05/06 
+[DEMOD DEBUG] ## RF_MODULE: NXP TDA18218 
+[DEMOD DEBUG] TS output [F7:0xA0] [F8:0x19] [F9:0x0C]
+[DEMOD DEBUG] ## Demod Init OK!! (1003)
+[DEMOD DEBUG] TDA18218_TunerChipProgramming: SAW_8MHz!!!
+[DEMOD DEBUG] tmTDA18218Init!!!
+[DEMOD DEBUG] TDA18218_TunerChipProgramming: IF_FREQ = [3880000] [DEMOD DEBUG] ## Tuner Init OK!! ## [DEMOD DEBUG] TS output [F7:0xA0] [F8:0x19] [F9:0x0C]
+TV_FORMAT 128
+[DEMOD DEBUG] 
+## tuner_connect_signal  594000000 Hz ... 
+[DEMOD DEBUG] SPDC_SetBandwidth: IF_4MHz!!!
+[DEMOD DEBUG] TDA18218_TunerChipProgramming: SAW_8MHz!!!
+[DEMOD DEBUG] tmTDA18218Init!!!
+[DEMOD DEBUG] TDA18218_TunerChipProgramming: IF_FREQ = [3880000]
+[DEMOD DEBUG] ====&gt; Fail!!
+</pre>
+
+<p>No hi tenia pas ni l'antena ni la tele endollada. Potser per això les traces
+sembla que indiquin desgràcies.</p>
+
+</div>
+
+
+<div id="comments">
+<div id="feedlink">
+
+<a class="feedbutton" type="application/rss+xml" href="comments.rss">RSS</a>
+
+
+<a class="feedbutton" type="application/atom+xml" href="comments.atom">Atom</a>
+
+</div>
+<div class="comment" id="comment-815215dc8153b54bacafa2a3dc4534e5">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-815215dc8153b54bacafa2a3dc4534e5">SkcbaDZfMPlFhGZY</a>
+
+</div>
+
+<div class="inlinecontent">
+KTQfJr  <a href="http://bumxvldelgvv.com/">bumxvldelgvv</a>, [url=http://vbbisxumirdp.com/]vbbisxumirdp[/url], [link=http://gctrixmncket.com/]gctrixmncket[/link], http://xicbunyuohpb.com/
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 95.66.6.106">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Sun Oct  2 18:46:01 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_1_b092f02ef92027bcd5b2e36fd8c46333&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-5bbbc17923c18d257f5a46a3dae72ba2">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-5bbbc17923c18d257f5a46a3dae72ba2">BEbmUXvUlCcalEqWO</a>
+
+</div>
+
+<div class="inlinecontent">
+comment3, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 193.86.95.58">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Sat Oct  8 06:36:52 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_2_e4229217d3f91956fb53fdaff546046c&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-4dcf5491b7d918957c266995b25a0c6e">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-4dcf5491b7d918957c266995b25a0c6e">nPmJLbSfRdLdBnbvt</a>
+
+</div>
+
+<div class="inlinecontent">
+comment1, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 64.88.160.4">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Sat Oct  8 07:19:09 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_3_f4e5c862811e899aca529c7bf346bb73&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-8ee3ce43e3ce3740503dd16ad0fc3b57">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-8ee3ce43e3ce3740503dd16ad0fc3b57">FFZtjLGKJquPcDjw</a>
+
+</div>
+
+<div class="inlinecontent">
+comment6, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 216.64.207.132">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Sat Oct  8 08:01:46 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_4_e0a59b0082c462828dc0700a71186efb&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-4c5f028f17fbd7c4268a9037ba56eb90">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-4c5f028f17fbd7c4268a9037ba56eb90">ucgkMIlzbGKo</a>
+
+</div>
+
+<div class="inlinecontent">
+comment3, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 50.19.208.90">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Sat Oct  8 09:29:10 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_5_dc91d9a23cde7cb5e1933da6919c1666&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-89f5eaa999bac39ecd643bd2c4a081cb">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-89f5eaa999bac39ecd643bd2c4a081cb">GxdasPnFgUtfJPs</a>
+
+</div>
+
+<div class="inlinecontent">
+comment1, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 89.207.56.71">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Sat Oct  8 10:12:42 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_6_b4e6128e453bacb1bbcc0c225bed4489&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-79e4df57715e2f8a0d2aee9e43587052">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-79e4df57715e2f8a0d2aee9e43587052">vfgPOEInxPTZ</a>
+
+</div>
+
+<div class="inlinecontent">
+comment6, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 112.184.203.66">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Sat Oct  8 10:56:09 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_7_a6c57737802d60a2df233888c0c644aa&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-cf6cde202a1798bffe5854bfe9395ad5">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-cf6cde202a1798bffe5854bfe9395ad5">auyQiYSBtZkKC</a>
+
+</div>
+
+<div class="inlinecontent">
+comment3, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 66.46.186.170">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Sat Oct  8 11:40:31 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_8_df0b168ec2e6d10a2a2f88885ecb87ed&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-c8c6c0113ca12e1a52e34c19768bf946">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-c8c6c0113ca12e1a52e34c19768bf946">auyQiYSBtZkKC</a>
+
+</div>
+
+<div class="inlinecontent">
+comment3, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 207.75.158.200">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Sat Oct  8 11:41:54 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_9_08901e60c26ac48debd82fbb7ec3d345&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-44cb97f5f33e9a52f355806635eb01b9">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-44cb97f5f33e9a52f355806635eb01b9">urhTryxCxZqZ</a>
+
+</div>
+
+<div class="inlinecontent">
+comment4, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 67.192.109.169">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Sat Oct  8 12:23:43 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_10_6ffac24d4f4339589317faa077e406cf&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-538a180967aae85bb5c49431221e5df4">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-538a180967aae85bb5c49431221e5df4">dpaozIiKKoetuQl</a>
+
+</div>
+
+<div class="inlinecontent">
+comment4, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 118.104.31.131">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Sat Oct  8 13:06:59 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_11_ca66891c39a516315e9130a2fe18193b&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-f18852e8923ba3f78714f65eb70d53a3">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-f18852e8923ba3f78714f65eb70d53a3">dpaozIiKKoetuQl</a>
+
+</div>
+
+<div class="inlinecontent">
+comment4, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 195.229.241.177">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Sat Oct  8 13:07:57 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_12_8e026bf44924fead06de098d58d9e765&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-239ecec6d7cd148a57546bb0b5c39552">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-239ecec6d7cd148a57546bb0b5c39552">dpaozIiKKoetuQl</a>
+
+</div>
+
+<div class="inlinecontent">
+comment4, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 74.203.81.38">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Sat Oct  8 13:08:54 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_13_82994ac3d7a0dfc3fc5d1408ca52b283&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-f1f8f5bf9cc28145cf211b43d7acd889">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-f1f8f5bf9cc28145cf211b43d7acd889">dpaozIiKKoetuQl</a>
+
+</div>
+
+<div class="inlinecontent">
+comment4, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 159.220.30.223">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Sat Oct  8 13:09:50 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_14_c10522ce98aa1d6a170813162ef5a425&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-ffc2c1e15d0dec2ee50c4404f54ec7ff">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-ffc2c1e15d0dec2ee50c4404f54ec7ff">ytmAyRqiKFu</a>
+
+</div>
+
+<div class="inlinecontent">
+comment1, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 146.243.4.157">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Sun Oct  9 22:31:18 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_15_211c226104aede7b781a991f3910064f&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-14f9cdedb7dcb79bb51d242e49438d98">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-14f9cdedb7dcb79bb51d242e49438d98">IabyZXADEbHRsEabejk</a>
+
+</div>
+
+<div class="inlinecontent">
+comment1, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 210.172.123.50">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Sun Oct  9 23:13:12 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_16_94694cbf5f20f85ebfa85f37db9f33f5&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-2769d6fffa8c014f9448ac81cfc4c3e4">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-2769d6fffa8c014f9448ac81cfc4c3e4">FMVQnYJcrZsqHBM</a>
+
+</div>
+
+<div class="inlinecontent">
+comment2, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 146.243.4.157">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Mon Oct 10 00:01:31 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_17_e1c8088b94a0c2ed51fe91bfdc99ac05&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-cfca8144c92ac338e449e5ace6723082">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-cfca8144c92ac338e449e5ace6723082">VPkFDFimuhGsGqWI</a>
+
+</div>
+
+<div class="inlinecontent">
+comment6, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 146.243.4.157">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Mon Oct 10 00:47:45 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_18_7205736f0070897aef2e859c57847906&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-25b1e3f7ec2f004d7e735af46ef712f4">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-25b1e3f7ec2f004d7e735af46ef712f4">RFxeJGMIWzr</a>
+
+</div>
+
+<div class="inlinecontent">
+comment6, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 57.90.36.29">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Mon Oct 10 01:57:27 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_19_dfbf982ed98e59e3a690e57c50038883&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-ca4e1780112eee1ca499b8a80f70547d">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-ca4e1780112eee1ca499b8a80f70547d">UWpPDmbenk</a>
+
+</div>
+
+<div class="inlinecontent">
+comment5, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 146.243.4.157">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Mon Oct 10 02:32:26 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_20_75739149500fe5146e9e3b4554e91c3d&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-362efcfb62e09181f851edf79ca0ab5c">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-362efcfb62e09181f851edf79ca0ab5c">MvZwMyxZYjttsuv</a>
+
+</div>
+
+<div class="inlinecontent">
+comment5, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 146.243.4.157">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Mon Oct 10 03:08:11 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_21_a19e327397ff2ae1fb14f317454e3928&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-0e6561eb6876c590106bec575c9aa56d">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-0e6561eb6876c590106bec575c9aa56d">crmFBMfpxjAB</a>
+
+</div>
+
+<div class="inlinecontent">
+comment4, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 146.243.4.157">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Mon Oct 10 03:44:18 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_22_38eecd8054a2d6b50b6ee6322dd7a201&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-10114a2a7cfde08a2a0b5bf6a04a386a">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-10114a2a7cfde08a2a0b5bf6a04a386a">gYTIQIojSYbTs</a>
+
+</div>
+
+<div class="inlinecontent">
+comment3, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 146.243.4.157">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Mon Oct 10 04:20:02 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_23_cd78b05979439e80234e7a62c34c40d3&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-08b31e1863801d7b11d818d0115fd2c8">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-08b31e1863801d7b11d818d0115fd2c8">oaioETfJfkLt</a>
+
+</div>
+
+<div class="inlinecontent">
+comment5, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 178.255.99.11">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Thu Oct 13 22:21:04 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_24_d8a83ec9625a4e4064554f074304fbee&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-b3b4add678860bb131bacc07aec53c1e">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-b3b4add678860bb131bacc07aec53c1e">RZcWtcvxIfhIzJW</a>
+
+</div>
+
+<div class="inlinecontent">
+comment2, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 89.175.187.72">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Thu Oct 13 23:10:43 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_25_c176b7d44f3fc587a68a6b0bf3054d48&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-fcd4a5e2e56ea2a60fdddfed87524d1f">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-fcd4a5e2e56ea2a60fdddfed87524d1f">jsODlsGUSD</a>
+
+</div>
+
+<div class="inlinecontent">
+comment5, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 88.153.10.81">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Thu Oct 13 23:59:37 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_26_c835bf884b2fc824ff627ef705a4022d&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-831e9abc6f101e5a0c1decfd39e97782">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-831e9abc6f101e5a0c1decfd39e97782">OqHOQjEEUoRs</a>
+
+</div>
+
+<div class="inlinecontent">
+comment4, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 188.75.127.82">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Fri Oct 14 00:49:53 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_27_77e8b639324549e6a18dcf92dc16691f&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-7ca094375ccd833fed27a64cf040c0cf">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-7ca094375ccd833fed27a64cf040c0cf">OsUUTloNDrQzReRsc</a>
+
+</div>
+
+<div class="inlinecontent">
+comment1, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 64.187.124.19">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Fri Oct 14 01:39:45 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_28_6ab5afe51539bba325c65410319885a2&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-baafc4d23b7c90d25f6b7ce1ed472515">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-baafc4d23b7c90d25f6b7ce1ed472515">cbOXFpootiw</a>
+
+</div>
+
+<div class="inlinecontent">
+comment3, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 188.126.79.73">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Sat Oct 15 07:40:24 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_29_f024130557c72ef5d21dd738a58be04d&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-e3f61afb649ae8fc4e2322fc513bfabb">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-e3f61afb649ae8fc4e2322fc513bfabb">jMFTtQzSLYtCoyleqq</a>
+
+</div>
+
+<div class="inlinecontent">
+comment1, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 205.168.84.133">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Sat Oct 15 08:30:07 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_30_39c28b21f8e5c86d04f769fb338626f5&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-c0df3baeb8d98c3d4ceb994501660fe7">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-c0df3baeb8d98c3d4ceb994501660fe7">qkkHeJArzsu</a>
+
+</div>
+
+<div class="inlinecontent">
+comment3, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 184.106.64.48">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Sat Oct 15 09:19:57 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_31_f5b4d286aef570d87d5a22fe3d6d2117&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-4ff931813a4e5634324309c0e41629c1">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-4ff931813a4e5634324309c0e41629c1">TCTNompKcATKeI</a>
+
+</div>
+
+<div class="inlinecontent">
+comment4, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 87.211.61.78">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Sat Oct 15 10:10:56 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_32_86157e533a52b2ee197e32855abdd665&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-683065aa3dbaa4f6276d2df12b5541b6">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-683065aa3dbaa4f6276d2df12b5541b6">aaxVXcTVzbtpIx</a>
+
+</div>
+
+<div class="inlinecontent">
+comment6, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 195.140.254.62">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Sat Oct 15 11:01:55 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_33_48ee26e0622845a60c16a503f8b88ee1&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-d28379d5bb99f17b44cfa55208660270">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-d28379d5bb99f17b44cfa55208660270">yEVeEvtbACC</a>
+
+</div>
+
+<div class="inlinecontent">
+comment4, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 188.126.79.73">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Sat Oct 15 11:52:51 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_34_83efe9989c844c1890645e82e1bc4085&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-c104348fca9e13ae74545be9159ed031">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-c104348fca9e13ae74545be9159ed031">gsdcJOzqYbSXrSAsjd</a>
+
+</div>
+
+<div class="inlinecontent">
+comment1, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 178.238.133.62">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Sat Oct 15 13:36:16 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_35_44702e660586a62be47ee2df249bf42c&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-409400ba386fea2d9f4e445adb197b0a">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-409400ba386fea2d9f4e445adb197b0a">FPEMOSnnMVXI</a>
+
+</div>
+
+<div class="inlinecontent">
+comment3, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 188.126.79.73">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Sat Oct 15 14:28:01 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_36_918da0f0850611afa44a30e2a78cffd0&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-03c3e95e7673f1f07429ce8ec54ab445">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-03c3e95e7673f1f07429ce8ec54ab445">jBNwVwcMOPpBzxqNXB</a>
+
+</div>
+
+<div class="inlinecontent">
+comment1, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 62.84.59.195">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Sat Oct 15 15:19:14 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_37_ea9a702b776a7c230aa1602aa57f0881&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-5952c2ccb59dc49abe2be964244ae5eb">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-5952c2ccb59dc49abe2be964244ae5eb">ACxHmnRPMCqda</a>
+
+</div>
+
+<div class="inlinecontent">
+comment4, <a href="http://stsfrancisandclarenj.org/stromectol.html">ivermectin</a>,  542193, <a href="http://july17action.org/erythromycin.html">erythromycin online</a>,  ysmhl, <a href="http://havyourcake.com/retin-a.html">cheap retin a</a>,  =-))), <a href="http://hilalaviv.com/mobic.html">mobic</a>,  anbdd, <a href="http://primitivebusinessjunction.com/tamiflu.html">shortage of tamiflu</a>,  iafto, <a href="http://hilalaviv.com/viagra.html">viagra.com</a>,  571, <a href="http://keybusinesstips.info/prednisone.html">prednisone.com</a>,  255434, <a href="http://havyourcake.com/furosemide.html">torsemide vs furosemide in chf</a>,  909, <a href="http://july17action.org/fluoxetine.html">fluoxetine</a>,  &gt;:[, <a href="http://hilalaviv.com/stromectol.html">stromectol online</a>,  8PP, <a href="http://agencia.biz/augmentin.html">augmentin birth control</a>,  sqb, <a href="http://killshot-film.com/avodart.html">avodart for hairloss</a>,  min, <a href="http://killshot-film.com/bactrim.html">sulfatrim</a>,  fae, <a href="http://realestatetraining.biz/tetracycline.html">tetracycline intermittent nausea</a>,  896, <a href="http://itsmedsmiley.com/vermox.html">vermox</a>,  :))), <a href="http://keybusinesstips.info/levaquin.html">levaquin 500mg side effects</a>,  483738, <a href="http://findaddress.biz/tetracycline.html">cheap online tetracycline</a>,  467, <a href="http://keybusinesstips.info/augmentin.html">augmentin with diflucan</a>,  flogy, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 91.198.61.11">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Tue Oct 18 01:27:24 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_38_3c039c42887a01406b36b2e9abe2557d&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-7c7103b008bdf049db0d56733cf698ce">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-7c7103b008bdf049db0d56733cf698ce">ACxHmnRPMCqda</a>
+
+</div>
+
+<div class="inlinecontent">
+comment4, <a href="http://stsfrancisandclarenj.org/stromectol.html">ivermectin</a>,  542193, <a href="http://july17action.org/erythromycin.html">erythromycin online</a>,  ysmhl, <a href="http://havyourcake.com/retin-a.html">cheap retin a</a>,  =-))), <a href="http://hilalaviv.com/mobic.html">mobic</a>,  anbdd, <a href="http://primitivebusinessjunction.com/tamiflu.html">shortage of tamiflu</a>,  iafto, <a href="http://hilalaviv.com/viagra.html">viagra.com</a>,  571, <a href="http://keybusinesstips.info/prednisone.html">prednisone.com</a>,  255434, <a href="http://havyourcake.com/furosemide.html">torsemide vs furosemide in chf</a>,  909, <a href="http://july17action.org/fluoxetine.html">fluoxetine</a>,  &gt;:[, <a href="http://hilalaviv.com/stromectol.html">stromectol online</a>,  8PP, <a href="http://agencia.biz/augmentin.html">augmentin birth control</a>,  sqb, <a href="http://killshot-film.com/avodart.html">avodart for hairloss</a>,  min, <a href="http://killshot-film.com/bactrim.html">sulfatrim</a>,  fae, <a href="http://realestatetraining.biz/tetracycline.html">tetracycline intermittent nausea</a>,  896, <a href="http://itsmedsmiley.com/vermox.html">vermox</a>,  :))), <a href="http://keybusinesstips.info/levaquin.html">levaquin 500mg side effects</a>,  483738, <a href="http://findaddress.biz/tetracycline.html">cheap online tetracycline</a>,  467, <a href="http://keybusinesstips.info/augmentin.html">augmentin with diflucan</a>,  flogy, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 50.18.120.63">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Tue Oct 18 01:27:39 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_39_42dc402fddbf63d78153b9ea8a14f557&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-4e5af094f796de60a5c18a6912943f0b">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-4e5af094f796de60a5c18a6912943f0b">oreByTEpISbk</a>
+
+</div>
+
+<div class="inlinecontent">
+comment4, <a href="http://highplainsgospel.com/celebrex.html">buy celebrex</a>,  ccxhvq, <a href="http://stsfrancisandclarenj.org/zoloft.html">zoloft</a>,  %)), <a href="http://killshot-film.com/propranolol.html">pregnancy propranolol</a>,  riipz, <a href="http://ramboestrada.com/indocin.html">indocin.com</a>,  cjbok, <a href="http://henriettasgotagreatass.com/mobic.html">mobic</a>,  domdto, <a href="http://july17action.org/amoxil.html">order amoxil</a>,  kseqd, <a href="http://alfredtonhairandbeauty.com/celebrex.html">celebrex and ibuprofen</a>,  6442, <a href="http://ramboestrada.com/celexa.html">alternative celexa</a>,  6337, <a href="http://hilalaviv.com/benicar.html">benicar patent expiration</a>,  =((, <a href="http://primitivebusinessjunction.com/celexa.html">buy generic celexa</a>,  4593, <a href="http://highplainsgospel.com/amoxil.html">buy amoxil</a>,  jibl, <a href="http://findaddress.biz/inderal.html">inderal france</a>,  014420, <a href="http://grantham.biz/lasix.html">lasix</a>,  687, <a href="http://grantham.biz/lipitor.html">alcohol lipitor</a>,  5367, <a href="http://hilalaviv.com/metformin.html">metformin.com</a>,  jey, <a href="http://grantham.biz/levaquin.html">ortho drug levaquin</a>,  otrnei, <a href="http://havyourcake.com/levaquin.html">effects levaquin side</a>,  9866, <a href="http://alfredtonhairandbeauty.com/ampicillin.html">ampicillin sulbactam</a>,  rglua, <a href="http://bethgiacummo.org/lipitor.html">lipitor</a>,  %<span class="createlink"><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=__44_____60__a_href__61____34__http%3A%2F%2Ffindaddress.biz%2Fprednisolone.html__34____62__predalone_50__60__%2Fa__62____44____%3A-d__44_____60__a_href__61____34__http%3A%2F%2Fhavyourcake.com%2Fplavix.html__34____62__plavix__60__%2Fa__62____44____%3A__40____40____44_____60__a_href__61____34__http%3A%2F%2Fprimitivebusinessjunction.com%2Fzoloft.html__34____62__zoloft__60__%2Fa__62____44____%3A&amp;from=posts%2Fdvb025%2Fcomment_40_8c8ca3d229b47fb4bf9a25cfaeac4482&amp;do=create" rel="nofollow">?</a>a&#62;&#44;  :</span>, <a href="http://bethgiacummo.org/acomplia.html">buy acomplia generic</a>,  zrgx, <a href="http://highplainsgospel.com/acyclovir.html">acyclovir</a>,  5555, <a href="http://amortization-schedules-free.info/amoxil.html">Pondocillin</a>,  %D, <a href="http://bethgiacummo.org/bactrim.html">order bactrim</a>,  xxrxw, <a href="http://alfredtonhairandbeauty.com/zimulti.html">zimulti 90 pills</a>,  &gt;:[[, <a href="http://hilalaviv.com/viagra.html">prescription viagra</a>,  %((, <a href="http://hilalaviv.com/zoloft.html">zoloft withdraw</a>,  ddm, <a href="http://primitivebusinessjunction.com/buspar.html">buy buspar</a>,  kgwpr, <a href="http://grantham.biz/tamiflu.html">cheap tamiflu</a>,  xmgv, <a href="http://itsmedsmiley.com/buspar.html">buspar weight gain</a>,  :OOO, <a href="http://stsfrancisandclarenj.org/levitra.html">levitra viagra vs</a>,  =-PPP, <a href="http://primitivebusinessjunction.com/seroquel.html">seroquel</a>,  =P, <a href="http://amortization-schedules-free.info/tamiflu.html">tamiflu.com</a>,  %OO, <a href="http://realestatetraining.biz/tetracycline.html">tetracycline acne treatment</a>,  8602, <a href="http://ramboestrada.com/acyclovir.html">acyclovir haas</a>,  9815, <a href="http://keybusinesstips.info/vermox.html">vermox online</a>,  jvd, <a href="http://itsmedsmiley.com/furosemide.html">furosemide contraindications</a>,  &gt;:-O, <a href="http://findaddress.biz/tetracycline.html">pregnancy tetracycline</a>,  saobw, <a href="http://ramboestrada.com/doxycycline.html">doxycycline doxycyline</a>,  627, <a href="http://hilalaviv.com/nexium.html">canada nexium</a>,  asyec, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 178.255.99.11">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Tue Oct 18 02:22:38 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_40_8c8ca3d229b47fb4bf9a25cfaeac4482&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-e65d7eba5803c4dc8443d3395eb7de52">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-e65d7eba5803c4dc8443d3395eb7de52">OQMjSjoCIzMjlakyDO</a>
+
+</div>
+
+<div class="inlinecontent">
+comment5, <a href="http://july17action.org/erythromycin.html">erythromycin ointment opthalmic</a>,  953810, <a href="http://itsmedsmiley.com/propranolol.html">propranolol side effects</a>,  laa, <a href="http://highplainsgospel.com/doxycycline.html">Atridox</a>,  kvjqvo, <a href="http://july17action.org/strattera.html">strattera and citalapram</a>,  26984, <a href="http://july17action.org/valtrex.html">valtrex</a>,  &gt;:((, <a href="http://highplainsgospel.com/cymbalta.html">cymbalta and migraine</a>,  &gt;:PP, <a href="http://havyourcake.com/xenical.html">canada xenical</a>,  jlhk, <a href="http://amortization-schedules-free.info/amoxil.html">amoxil</a>,  ftzlkx, <a href="http://highplainsgospel.com/female-viagra.html">female leave reply viagra</a>,  1211, <a href="http://july17action.org/fluoxetine.html">order fluoxetine</a>,  275193, <a href="http://keybusinesstips.info/diamox.html">cheap diamox</a>,  qhgb, <a href="http://alfredtonhairandbeauty.com/acomplia.html">acomplia online</a>,  8157, <a href="http://keybusinesstips.info/stromectol.html">stromectol online</a>,  papvsc, <a href="http://arizonaterritory-1878.com/rimonabant.html">rimonabant</a>,  &gt;:-((, <a href="http://itsmedsmiley.com/strattera.html">buy strattera</a>,  %-PPP, <a href="http://alfredtonhairandbeauty.com/cymbalta.html">cymbalta</a>,  kllxo, <a href="http://killshot-film.com/cymbalta.html">commercial cymbalta music</a>,  668, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 168.9.37.254">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Tue Oct 18 03:17:17 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_41_49a4cbed963a4db26022af3de64cf525&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-b7247dd06f3af60a7cc376ebf9343642">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-b7247dd06f3af60a7cc376ebf9343642">gUvZZteQAqifBmzZoQi</a>
+
+</div>
+
+<div class="inlinecontent">
+comment5, <a href="http://stsfrancisandclarenj.org/clomid.html">clomid 50 mg</a>,  2638, <a href="http://henriettasgotagreatass.com/mobic.html">prescription drug mobic</a>,  %DD, <a href="http://arizonaterritory-1878.com/viagra.html">online viagra</a>,  %OO, <a href="http://primitivebusinessjunction.com/celexa.html">affect celexa side withdraw</a>,  565245, <a href="http://grantham.biz/lasix.html">40 buy generic lasix mg</a>,  orvb, <a href="http://havyourcake.com/retin-a.html">retin a china</a>,  vnkpef, <a href="http://grantham.biz/levaquin.html">information on the drug levaquin</a>,  womywr, <a href="http://alfredtonhairandbeauty.com/allopurinol.html">allopurinol clinical trial</a>,  4835, <a href="http://beresexecutive.com/cipro.html">cipro xr</a>,  586, <a href="http://havyourcake.com/levaquin.html">levaquin 500mg uses</a>,  vfii, <a href="http://highplainsgospel.com/acyclovir.html">acyclovir online</a>,  %<span class="createlink"><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=__91____44_____60__a_href__61____34__http%3A%2F%2Fkeybusinesstips.info%2Fprednisone.html__34____62__prednisone.com__60__%2Fa__62____44______38__gt__59__%3A-__91____91____91____44_____60__a_href__61____34__http%3A%2F%2Fhighplainsgospel.com%2Fcafergot.html__34____62__cafergot_generic__60__%2Fa__62____44____8pp__44_____60__a_href__61____34__http%3A%2F%2Fprimitivebusinessjunction.com%2Fcytotec.html__34____62__cytotec__60__%2Fa__62____44____%3A-&amp;from=posts%2Fdvb025%2Fcomment_42_2fd935baf96207c39b3a67b1fae7b357&amp;do=create" rel="nofollow">?</a>a&#62;&#44;  :-</span>, <a href="http://ramboestrada.com/acyclovir.html">zovirax wellstat pac</a>,  unxy, <a href="http://amortization-schedules-free.info/augmentin.html">augmentin es overdose</a>,  %O, <a href="http://alfredtonhairandbeauty.com/cymbalta.html">cymbalta.com</a>,  %-PP, <a href="http://keybusinesstips.info/vermox.html">purchase vermox online</a>,  rxiqki, <a href="http://stsfrancisandclarenj.org/mobic.html">mobic</a>,  atqpru, <a href="http://hilalaviv.com/female-viagra.html">female viagra 60 pills</a>,  &gt;:-[[, <a href="http://july17action.org/cafergot.html">wigraine</a>,  nzeem, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 70.42.22.2">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Tue Oct 18 04:12:03 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_42_2fd935baf96207c39b3a67b1fae7b357&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-a28ccd1c48d413c8d523192e3e863a19">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-a28ccd1c48d413c8d523192e3e863a19">AefwkvXzJQ</a>
+
+</div>
+
+<div class="inlinecontent">
+comment5, <a href="http://hilalaviv.com/augmentin.html">augmentin</a>,  %-), <a href="http://bethgiacummo.org/stromectol.html">stromectol 3mg</a>,  abmdk, <a href="http://ramboestrada.com/indocin.html">indocin pharmakinetics</a>,  9321, <a href="http://itsmedsmiley.com/celexa.html">celexa use</a>,  yajfzm, <a href="http://ramboestrada.com/celexa.html">celexa.com</a>,  74527, <a href="http://findaddress.biz/inderal.html">rx drug inderal</a>,  :[[[, <a href="http://hilalaviv.com/metformin.html">metformin online</a>,  hti, <a href="http://july17action.org/prednisolone.html">effects prednisolone side</a>,  sluhn, <a href="http://agencia.biz/allopurinol.html">allopurinol</a>,  :-PPP, <a href="http://findaddress.biz/valtrex.html">buy valtrex</a>,  5347, <a href="http://havyourcake.com/levaquin.html">drugstore levaquin price</a>,  007201, <a href="http://henriettasgotagreatass.com/nolvadex.html">buy nolvadex</a>,  0977, <a href="http://alfredtonhairandbeauty.com/ampicillin.html">ampicillin side effects</a>,  ctq, <a href="http://arizonaterritory-1878.com/lexapro.html">lexapro</a>,  amvuwy, <a href="http://killshot-film.com/strattera.html">strattera for bipolar</a>,  ijn, <a href="http://keybusinesstips.info/retin-a.html">retin a acne</a>,  0970, <a href="http://primitivebusinessjunction.com/tamiflu.html">tamiflu</a>,  705085, <a href="http://highplainsgospel.com/acyclovir.html">acyclovir for cheap</a>,  %-(((, <a href="http://agencia.biz/stromectol.html">stromectol</a>,  :-[[[, <a href="http://bethgiacummo.org/bactrim.html">cotrim pediatric</a>,  974224, <a href="http://hilalaviv.com/zoloft.html">zoloft generic</a>,  %-[, <a href="http://amortization-schedules-free.info/strattera.html">strattera forums</a>,  24020, <a href="http://grantham.biz/tamiflu.html">buying tamiflu</a>,  29732, <a href="http://realestatetraining.biz/lipitor.html">lipitor bad side effects</a>,  mde, <a href="http://itsmedsmiley.com/buspar.html">buspar</a>,  149, <a href="http://bethgiacummo.org/doxycycline.html">doxycycline 90 pills</a>,  8714, <a href="http://havyourcake.com/bactrim.html">bactrim</a>,  90856, <a href="http://killshot-film.com/avodart.html">how effective is avodart</a>,  13975, <a href="http://highplainsgospel.com/cafergot.html">ergotamine</a>,  :(((, <a href="http://primitivebusinessjunction.com/seroquel.html">seroquel</a>,  66423, <a href="http://keybusinesstips.info/stromectol.html">stromectol for scabies</a>,  &gt;:-)), <a href="http://arizonaterritory-1878.com/rimonabant.html">rimonabant tablets 20mg</a>,  8), <a href="http://keybusinesstips.info/vermox.html">purchase vermox</a>,  sgqx, <a href="http://findaddress.biz/levitra.html">levitra viagra</a>,  %-P, <a href="http://henriettasgotagreatass.com/zimulti.html">zimulti</a>,  8242, <a href="http://keybusinesstips.info/augmentin.html">augmentin es overdose</a>,  46667, <a href="http://stsfrancisandclarenj.org/augmentin.html">augmentin</a>,  328572, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 89.175.187.72">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Tue Oct 18 05:06:39 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_43_48951bd7e0645aea48129c7dc5ed4feb&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-efde1994da6abcf91783a0f3ca974dbf">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-efde1994da6abcf91783a0f3ca974dbf">btuqbxHXKxCg</a>
+
+</div>
+
+<div class="inlinecontent">
+comment5, <a href="http://arizonaterritory-1878.com/buspar.html">buspar withdrawal symptoms</a>,  :<span class="createlink"><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=__44_____60__a_href__61____34__http%3A%2F%2Fhighplainsgospel.com%2Fcelebrex.html__34____62__celebrex__60__%2Fa__62____44______38__gt__59__%3A__91____91____44_____60__a_href__61____34__http%3A%2F%2Fstsfrancisandclarenj.org%2Fclomid.html__34____62__clomid.com__60__%2Fa__62____44______61__ddd__44_____60__a_href__61____34__http%3A%2F%2Frealestatetraining.biz%2Fcipro.html__34____62__cipro_order_consultation__60__%2Fa__62____44____584__44_____60__a_href__61____34__http%3A%2F%2Fhenriettasgotagreatass.com%2Flasix.html__34____62__myrosemide__60__%2Fa__62____44____vnm__44_____60__a_href__61____34__http%3A%2F%2Fstsfrancisandclarenj.org%2Fzoloft.html__34____62__zoloft__60__%2Fa__62____44______38__gt__59__%3A&amp;from=posts%2Fdvb025%2Fcomment_44_88c49cff762b165a8c9635b2d33d50e7&amp;do=create" rel="nofollow">?</a>a&#62;&#44;  &#38;gt&#59;:</span>, <a href="http://highplainsgospel.com/doxycycline.html">doxycycline</a>,  goqcr, <a href="http://killshot-film.com/cytotec.html">cytotec</a>,  pcs, <a href="http://alfredtonhairandbeauty.com/prednisone.html">prednisone dosage</a>,  %))), <a href="http://primitivebusinessjunction.com/celexa.html">celexa</a>,  tprmhq, <a href="http://beresexecutive.com/vermox.html">vermox pills online</a>,  8DDD, <a href="http://ramboestrada.com/levaquin.html">levaquin 500mg side effects</a>,  158993, <a href="http://alfredtonhairandbeauty.com/allopurinol.html">allopurinol 300mg</a>,  gfckas, <a href="http://amortization-schedules-free.info/levaquin.html">levaquin online</a>,  poe, <a href="http://findaddress.biz/lexapro.html">lexapro lamictal pregnancy</a>,  lmdcl, <a href="http://findaddress.biz/valtrex.html">generic for valtrex</a>,  =-O, <a href="http://havyourcake.com/levaquin.html">iquix</a>,  yrz, <a href="http://henriettasgotagreatass.com/nolvadex.html">nolvadex</a>,  80459, <a href="http://realestatetraining.biz/lioresal.html">lioresal side effects</a>,  3216, <a href="http://havyourcake.com/plavix.html">plavix side effects affects</a>,  %-(, <a href="http://havyourcake.com/xenical.html">xenical</a>,  399389, <a href="http://killshot-film.com/strattera.html">side effects strattera</a>,  8-((, <a href="http://keybusinesstips.info/retin-a.html">retin a swell</a>,  %-DDD, <a href="http://primitivebusinessjunction.com/levaquin.html">package insert for levaquin</a>,  %))), <a href="http://primitivebusinessjunction.com/tamiflu.html">oral suspension tamiflu</a>,  528, <a href="http://amortization-schedules-free.info/amoxil.html">beepen-vk</a>,  uvzxa, <a href="http://realestatetraining.biz/female-viagra.html">alternative female viagra viagra</a>,  3491, <a href="http://hilalaviv.com/viagra.html">fake story viagra</a>,  zplub, <a href="http://havyourcake.com/furosemide.html">what does furosemide look like</a>,  62312, <a href="http://realestatetraining.biz/lipitor.html">lipitor and liver</a>,  cvr, <a href="http://arizonaterritory-1878.com/neurontin.html">gabapentin neurontin</a>,  870, <a href="http://amortization-schedules-free.info/cipro.html">cipro</a>,  :-[, <a href="http://keybusinesstips.info/diamox.html">storzolamide</a>,  %-), <a href="http://bethgiacummo.org/doxycycline.html">Apo-Doxy-Tabs</a>,  rvf, <a href="http://primitivebusinessjunction.com/seroquel.html">seroquel.com</a>,  jei, <a href="http://itsmedsmiley.com/fluoxetine.html">fluoxetine</a>,  bjvvm, <a href="http://killshot-film.com/bactrim.html">sulfatrim-ds</a>,  rknweb, <a href="http://havyourcake.com/viagra.html">2006 e followup mail march name post subject viagra</a>,  qxtk, <a href="http://primitivebusinessjunction.com/cytotec.html">cytotec online</a>,  =-DD, <a href="http://alfredtonhairandbeauty.com/cymbalta.html">cymbalta price</a>,  186004, <a href="http://agencia.biz/neurontin.html">neurontin definition</a>,  8-))), <a href="http://killshot-film.com/propecia.html">propecia</a>,  39921, <a href="http://findaddress.biz/augmentin.html">augmentin</a>,  ppwde, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 78.46.95.86">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Tue Oct 18 06:02:05 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_44_88c49cff762b165a8c9635b2d33d50e7&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-f00c50b2119443fb889d80e16dfdb138">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-f00c50b2119443fb889d80e16dfdb138">ZOQezdwfEMsguLh</a>
+
+</div>
+
+<div class="inlinecontent">
+comment2, <a href="http://arizonaterritory-1878.com/buspar.html">buspar withdrawal</a>,  =-DD, <a href="http://realestatetraining.biz/viagra.html">viagra</a>,  016, <a href="http://arizonaterritory-1878.com/tetracycline.html">tetracycline.com</a>,  %-(, <a href="http://realestatetraining.biz/celexa.html">zoloft vs celexa</a>,  8-O, <a href="http://agencia.biz/buspar.html">buspar cheap</a>,  8OOO, <a href="http://realestatetraining.biz/lipitor.html">10 lipitor mg</a>,  pigbyw, <a href="http://arizonaterritory-1878.com/neurontin.html">neurontin</a>,  nxnqkr, <a href="http://killshot-film.com/avodart.html">avodart medication</a>,  gttfkm, <a href="http://itsmedsmiley.com/fluoxetine.html">buy fluoxetine online</a>,  fnukam, <a href="http://amortization-schedules-free.info/tetracycline.html">acne treatment tetracycline</a>,  &gt;:-), 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 213.129.245.213">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Tue Oct 18 06:57:37 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_45_e0e54a7b1801d5e32424e98c0a516fc7&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-6de6eb766cfaaa443033a1b95d615435">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-6de6eb766cfaaa443033a1b95d615435">WoOplmtYdsZDC</a>
+
+</div>
+
+<div class="inlinecontent">
+comment1, <a href="http://stsfrancisandclarenj.org/clomid.html">clomid side effects</a>,  025, <a href="http://henriettasgotagreatass.com/lasix.html">lasix.com</a>,  047, <a href="http://hilalaviv.com/augmentin.html">augmentin es overdose</a>,  %D, <a href="http://killshot-film.com/propranolol.html">apo-propranolol</a>,  &gt;:-))), <a href="http://itsmedsmiley.com/elimite.html">comma delimited</a>,  406, <a href="http://highplainsgospel.com/amoxil.html">Ticar</a>,  &gt;:OO, <a href="http://grantham.biz/lasix.html">lasix</a>,  5209, <a href="http://agencia.biz/allopurinol.html">allopurinol erektile disfunktion</a>,  rckb, <a href="http://grantham.biz/levaquin.html">levaquin and theophylline</a>,  842868, <a href="http://ramboestrada.com/benicar.html">buy benicar</a>,  reei, <a href="http://killshot-film.com/strattera.html">strattera and cymbalta</a>,  lmui, <a href="http://primitivebusinessjunction.com/cipro.html">antibiotic cipro</a>,  %-]], <a href="http://july17action.org/nexium.html">nexium generic</a>,  010340, <a href="http://bethgiacummo.org/acomplia.html">acomplia brand only</a>,  brd, <a href="http://agencia.biz/buspar.html">buspar alcohol</a>,  wujqb, <a href="http://amortization-schedules-free.info/diflucan.html">where to buy diflucan online</a>,  kkqh, <a href="http://primitivebusinessjunction.com/buspar.html">effects of buspar on ejaculation</a>,  8[[, <a href="http://havyourcake.com/furosemide.html">lasix furosemide</a>,  359668, <a href="http://itsmedsmiley.com/buspar.html">buy buspar</a>,  0028, <a href="http://ramboestrada.com/zimulti.html">zimulti</a>,  unbup, <a href="http://arizonaterritory-1878.com/rimonabant.html">rimonabant generic manufacturer</a>,  62964, <a href="http://grantham.biz/celexa.html">buy celexa cheapest</a>,  gbzv, <a href="http://beresexecutive.com/acomplia.html">acomplia</a>,  954045, <a href="http://july17action.org/cafergot.html">cafergot dosing</a>,  2917, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 58.41.93.239">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Tue Oct 18 07:54:24 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_46_ec3eae1a8e72a06627d10f03d36278ea&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-589c15edf653c3da63c85da350d0b10a">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-589c15edf653c3da63c85da350d0b10a">WoOplmtYdsZDC</a>
+
+</div>
+
+<div class="inlinecontent">
+comment1, <a href="http://stsfrancisandclarenj.org/clomid.html">clomid side effects</a>,  025, <a href="http://henriettasgotagreatass.com/lasix.html">lasix.com</a>,  047, <a href="http://hilalaviv.com/augmentin.html">augmentin es overdose</a>,  %D, <a href="http://killshot-film.com/propranolol.html">apo-propranolol</a>,  &gt;:-))), <a href="http://itsmedsmiley.com/elimite.html">comma delimited</a>,  406, <a href="http://highplainsgospel.com/amoxil.html">Ticar</a>,  &gt;:OO, <a href="http://grantham.biz/lasix.html">lasix</a>,  5209, <a href="http://agencia.biz/allopurinol.html">allopurinol erektile disfunktion</a>,  rckb, <a href="http://grantham.biz/levaquin.html">levaquin and theophylline</a>,  842868, <a href="http://ramboestrada.com/benicar.html">buy benicar</a>,  reei, <a href="http://killshot-film.com/strattera.html">strattera and cymbalta</a>,  lmui, <a href="http://primitivebusinessjunction.com/cipro.html">antibiotic cipro</a>,  %-]], <a href="http://july17action.org/nexium.html">nexium generic</a>,  010340, <a href="http://bethgiacummo.org/acomplia.html">acomplia brand only</a>,  brd, <a href="http://agencia.biz/buspar.html">buspar alcohol</a>,  wujqb, <a href="http://amortization-schedules-free.info/diflucan.html">where to buy diflucan online</a>,  kkqh, <a href="http://primitivebusinessjunction.com/buspar.html">effects of buspar on ejaculation</a>,  8[[, <a href="http://havyourcake.com/furosemide.html">lasix furosemide</a>,  359668, <a href="http://itsmedsmiley.com/buspar.html">buy buspar</a>,  0028, <a href="http://ramboestrada.com/zimulti.html">zimulti</a>,  unbup, <a href="http://arizonaterritory-1878.com/rimonabant.html">rimonabant generic manufacturer</a>,  62964, <a href="http://grantham.biz/celexa.html">buy celexa cheapest</a>,  gbzv, <a href="http://beresexecutive.com/acomplia.html">acomplia</a>,  954045, <a href="http://july17action.org/cafergot.html">cafergot dosing</a>,  2917, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 66.162.234.219">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Tue Oct 18 07:55:06 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_47_19f0fb6ca6c451ae2e931738f394946e&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-e63946528e8c77fe14ae5b84d6d0bf75">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-e63946528e8c77fe14ae5b84d6d0bf75">WoOplmtYdsZDC</a>
+
+</div>
+
+<div class="inlinecontent">
+comment1, <a href="http://stsfrancisandclarenj.org/clomid.html">clomid side effects</a>,  025, <a href="http://henriettasgotagreatass.com/lasix.html">lasix.com</a>,  047, <a href="http://hilalaviv.com/augmentin.html">augmentin es overdose</a>,  %D, <a href="http://killshot-film.com/propranolol.html">apo-propranolol</a>,  &gt;:-))), <a href="http://itsmedsmiley.com/elimite.html">comma delimited</a>,  406, <a href="http://highplainsgospel.com/amoxil.html">Ticar</a>,  &gt;:OO, <a href="http://grantham.biz/lasix.html">lasix</a>,  5209, <a href="http://agencia.biz/allopurinol.html">allopurinol erektile disfunktion</a>,  rckb, <a href="http://grantham.biz/levaquin.html">levaquin and theophylline</a>,  842868, <a href="http://ramboestrada.com/benicar.html">buy benicar</a>,  reei, <a href="http://killshot-film.com/strattera.html">strattera and cymbalta</a>,  lmui, <a href="http://primitivebusinessjunction.com/cipro.html">antibiotic cipro</a>,  %-]], <a href="http://july17action.org/nexium.html">nexium generic</a>,  010340, <a href="http://bethgiacummo.org/acomplia.html">acomplia brand only</a>,  brd, <a href="http://agencia.biz/buspar.html">buspar alcohol</a>,  wujqb, <a href="http://amortization-schedules-free.info/diflucan.html">where to buy diflucan online</a>,  kkqh, <a href="http://primitivebusinessjunction.com/buspar.html">effects of buspar on ejaculation</a>,  8[[, <a href="http://havyourcake.com/furosemide.html">lasix furosemide</a>,  359668, <a href="http://itsmedsmiley.com/buspar.html">buy buspar</a>,  0028, <a href="http://ramboestrada.com/zimulti.html">zimulti</a>,  unbup, <a href="http://arizonaterritory-1878.com/rimonabant.html">rimonabant generic manufacturer</a>,  62964, <a href="http://grantham.biz/celexa.html">buy celexa cheapest</a>,  gbzv, <a href="http://beresexecutive.com/acomplia.html">acomplia</a>,  954045, <a href="http://july17action.org/cafergot.html">cafergot dosing</a>,  2917, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 64.187.124.19">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Tue Oct 18 07:55:44 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_48_1e39d8fa5d755d066036a602b829909d&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-c5224614a75812dd7ca3fac7fcfedb5f">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-c5224614a75812dd7ca3fac7fcfedb5f">WoOplmtYdsZDC</a>
+
+</div>
+
+<div class="inlinecontent">
+comment1, <a href="http://stsfrancisandclarenj.org/clomid.html">clomid side effects</a>,  025, <a href="http://henriettasgotagreatass.com/lasix.html">lasix.com</a>,  047, <a href="http://hilalaviv.com/augmentin.html">augmentin es overdose</a>,  %D, <a href="http://killshot-film.com/propranolol.html">apo-propranolol</a>,  &gt;:-))), <a href="http://itsmedsmiley.com/elimite.html">comma delimited</a>,  406, <a href="http://highplainsgospel.com/amoxil.html">Ticar</a>,  &gt;:OO, <a href="http://grantham.biz/lasix.html">lasix</a>,  5209, <a href="http://agencia.biz/allopurinol.html">allopurinol erektile disfunktion</a>,  rckb, <a href="http://grantham.biz/levaquin.html">levaquin and theophylline</a>,  842868, <a href="http://ramboestrada.com/benicar.html">buy benicar</a>,  reei, <a href="http://killshot-film.com/strattera.html">strattera and cymbalta</a>,  lmui, <a href="http://primitivebusinessjunction.com/cipro.html">antibiotic cipro</a>,  %-]], <a href="http://july17action.org/nexium.html">nexium generic</a>,  010340, <a href="http://bethgiacummo.org/acomplia.html">acomplia brand only</a>,  brd, <a href="http://agencia.biz/buspar.html">buspar alcohol</a>,  wujqb, <a href="http://amortization-schedules-free.info/diflucan.html">where to buy diflucan online</a>,  kkqh, <a href="http://primitivebusinessjunction.com/buspar.html">effects of buspar on ejaculation</a>,  8[[, <a href="http://havyourcake.com/furosemide.html">lasix furosemide</a>,  359668, <a href="http://itsmedsmiley.com/buspar.html">buy buspar</a>,  0028, <a href="http://ramboestrada.com/zimulti.html">zimulti</a>,  unbup, <a href="http://arizonaterritory-1878.com/rimonabant.html">rimonabant generic manufacturer</a>,  62964, <a href="http://grantham.biz/celexa.html">buy celexa cheapest</a>,  gbzv, <a href="http://beresexecutive.com/acomplia.html">acomplia</a>,  954045, <a href="http://july17action.org/cafergot.html">cafergot dosing</a>,  2917, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 89.248.248.152">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Tue Oct 18 07:56:04 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_49_731b7e1653002ca0f611ddb9ccf01387&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-166dbf4bf0a36af6876dbd177d6c7d0e">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-166dbf4bf0a36af6876dbd177d6c7d0e">dYbjWtJciDF</a>
+
+</div>
+
+<div class="inlinecontent">
+comment6, <a href="http://killshot-film.com/cytotec.html">aborto con cytotec</a>,  fmanl, <a href="http://henriettasgotagreatass.com/mobic.html">mobic</a>,  vnjlqd, <a href="http://july17action.org/amoxil.html">apo-ampi</a>,  =-((, <a href="http://alfredtonhairandbeauty.com/celebrex.html">celebrex online</a>,  ijrwv, <a href="http://agencia.biz/avodart.html">avodart</a>,  niu, <a href="http://havyourcake.com/retin-a.html">retin a side effects</a>,  516, <a href="http://beresexecutive.com/cipro.html">cipro</a>,  oxdpp, <a href="http://realestatetraining.biz/viagra.html">fake story viagra</a>,  8842, <a href="http://bethgiacummo.org/lipitor.html">lipitor.com</a>,  qaaj, <a href="http://findaddress.biz/prednisolone.html">methylprednisolone</a>,  8P, <a href="http://stsfrancisandclarenj.org/levitra.html">levitra buy levitra online viagra</a>,  8848, <a href="http://keybusinesstips.info/stromectol.html">stromectol.com</a>,  shbqs, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 87.211.61.78">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Tue Oct 18 08:49:25 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_50_4724a15acad0304ce6d165f055daa677&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-2ad7b30fc5b09e5b0a518f3425f20af8">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-2ad7b30fc5b09e5b0a518f3425f20af8">dYbjWtJciDF</a>
+
+</div>
+
+<div class="inlinecontent">
+comment6, <a href="http://killshot-film.com/cytotec.html">aborto con cytotec</a>,  fmanl, <a href="http://henriettasgotagreatass.com/mobic.html">mobic</a>,  vnjlqd, <a href="http://july17action.org/amoxil.html">apo-ampi</a>,  =-((, <a href="http://alfredtonhairandbeauty.com/celebrex.html">celebrex online</a>,  ijrwv, <a href="http://agencia.biz/avodart.html">avodart</a>,  niu, <a href="http://havyourcake.com/retin-a.html">retin a side effects</a>,  516, <a href="http://beresexecutive.com/cipro.html">cipro</a>,  oxdpp, <a href="http://realestatetraining.biz/viagra.html">fake story viagra</a>,  8842, <a href="http://bethgiacummo.org/lipitor.html">lipitor.com</a>,  qaaj, <a href="http://findaddress.biz/prednisolone.html">methylprednisolone</a>,  8P, <a href="http://stsfrancisandclarenj.org/levitra.html">levitra buy levitra online viagra</a>,  8848, <a href="http://keybusinesstips.info/stromectol.html">stromectol.com</a>,  shbqs, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 107.20.40.118">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Tue Oct 18 08:49:52 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_51_8791e7108efa5d63b4717ce6ae3ffcc0&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-c727e04d145382cc2da75d149d0c9eea">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-c727e04d145382cc2da75d149d0c9eea">dYbjWtJciDF</a>
+
+</div>
+
+<div class="inlinecontent">
+comment6, <a href="http://killshot-film.com/cytotec.html">aborto con cytotec</a>,  fmanl, <a href="http://henriettasgotagreatass.com/mobic.html">mobic</a>,  vnjlqd, <a href="http://july17action.org/amoxil.html">apo-ampi</a>,  =-((, <a href="http://alfredtonhairandbeauty.com/celebrex.html">celebrex online</a>,  ijrwv, <a href="http://agencia.biz/avodart.html">avodart</a>,  niu, <a href="http://havyourcake.com/retin-a.html">retin a side effects</a>,  516, <a href="http://beresexecutive.com/cipro.html">cipro</a>,  oxdpp, <a href="http://realestatetraining.biz/viagra.html">fake story viagra</a>,  8842, <a href="http://bethgiacummo.org/lipitor.html">lipitor.com</a>,  qaaj, <a href="http://findaddress.biz/prednisolone.html">methylprednisolone</a>,  8P, <a href="http://stsfrancisandclarenj.org/levitra.html">levitra buy levitra online viagra</a>,  8848, <a href="http://keybusinesstips.info/stromectol.html">stromectol.com</a>,  shbqs, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 85.30.246.4">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Tue Oct 18 08:50:17 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_52_a54ce8d6b969363cb8f28a586ca41075&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-81c3a22da4ce4d65e9e744c3c742afbb">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-81c3a22da4ce4d65e9e744c3c742afbb">berTMfTLKeVhTnQlpD</a>
+
+</div>
+
+<div class="inlinecontent">
+comment5, <a href="http://hilalaviv.com/augmentin.html">buy generic augmentin</a>,  lmjl, <a href="http://alfredtonhairandbeauty.com/elimite.html">elimite 5 cream</a>,  8-))), <a href="http://alfredtonhairandbeauty.com/celebrex.html">buy celebrex online</a>,  mvpl, <a href="http://july17action.org/amoxil.html">amoxil.com</a>,  23863, <a href="http://hilalaviv.com/benicar.html">benicar cost</a>,  0403, <a href="http://alfredtonhairandbeauty.com/prednisone.html">meticorten</a>,  20424, <a href="http://july17action.org/prednisolone.html">Depo-Predate</a>,  8], <a href="http://grantham.biz/lipitor.html">lipitor pregnancy</a>,  xeydcy, <a href="http://beresexecutive.com/cipro.html">cipro 500 mg</a>,  &gt;:O, <a href="http://bethgiacummo.org/lipitor.html">lipitor vs zocor</a>,  cje, <a href="http://bethgiacummo.org/acomplia.html">acomplia</a>,  947397, <a href="http://primitivebusinessjunction.com/tamiflu.html">tamiflu capsule</a>,  %D, <a href="http://agencia.biz/stromectol.html">stromectol 30 pills</a>,  lmsl, <a href="http://havyourcake.com/viagra.html">viagra type products</a>,  706606, <a href="http://itsmedsmiley.com/vermox.html">vermox 90 pills</a>,  859, <a href="http://bethgiacummo.org/prednisone.html">prednisone shot</a>,  nsdgqj, <a href="http://itsmedsmiley.com/strattera.html">what is a strattera</a>,  kxua, <a href="http://findaddress.biz/tetracycline.html">pharmacy online tetracycline</a>,  :))), <a href="http://henriettasgotagreatass.com/zimulti.html">zimulti</a>,  &gt;:O, <a href="http://killshot-film.com/propecia.html">propecia</a>,  197397, <a href="http://highplainsgospel.com/tamiflu.html">tamiflu</a>,  265, <a href="http://beresexecutive.com/acomplia.html">acomplia.com</a>,  aeyyn, <a href="http://july17action.org/cafergot.html">cafergot online</a>,  ybmyad, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 196.46.241.127">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Tue Oct 18 09:45:28 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_53_ac7c28b3398a5638cf9c42f1d55a36cd&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-95e247a1acd32512ff9ee2361cb67ac1">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-95e247a1acd32512ff9ee2361cb67ac1">yATkhIQHBewMtprmND</a>
+
+</div>
+
+<div class="inlinecontent">
+comment4, <a href="http://henriettasgotagreatass.com/mobic.html">mobic definition</a>,  35561, <a href="http://bethgiacummo.org/retin-a.html">retin a renova</a>,  dyly, <a href="http://grantham.biz/lasix.html">lasix drug</a>,  zjp, <a href="http://beresexecutive.com/cipro.html">cipro</a>,  8870, <a href="http://havyourcake.com/levaquin.html">lupus levaquin seizures</a>,  050, <a href="http://primitivebusinessjunction.com/cipro.html">cipro 500 mg</a>,  &gt;:))), <a href="http://amortization-schedules-free.info/diflucan.html">diflucan oral tablets</a>,  vnepo, <a href="http://highplainsgospel.com/retin-a.html">retin-a</a>,  alc, <a href="http://july17action.org/fluoxetine.html">fluoxetine prices</a>,  045353, <a href="http://ramboestrada.com/doxycycline.html">doxycycline</a>,  %-))), <a href="http://stsfrancisandclarenj.org/augmentin.html">augmentin.com</a>,  009, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 189.126.254.157">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Wed Oct 19 15:43:15 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_54_6758135d6fd44a3a59dd3dae621fd5ef&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-b36baefad422fcd013e3dcb83c92b655">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-b36baefad422fcd013e3dcb83c92b655">yATkhIQHBewMtprmND</a>
+
+</div>
+
+<div class="inlinecontent">
+comment4, <a href="http://henriettasgotagreatass.com/mobic.html">mobic definition</a>,  35561, <a href="http://bethgiacummo.org/retin-a.html">retin a renova</a>,  dyly, <a href="http://grantham.biz/lasix.html">lasix drug</a>,  zjp, <a href="http://beresexecutive.com/cipro.html">cipro</a>,  8870, <a href="http://havyourcake.com/levaquin.html">lupus levaquin seizures</a>,  050, <a href="http://primitivebusinessjunction.com/cipro.html">cipro 500 mg</a>,  &gt;:))), <a href="http://amortization-schedules-free.info/diflucan.html">diflucan oral tablets</a>,  vnepo, <a href="http://highplainsgospel.com/retin-a.html">retin-a</a>,  alc, <a href="http://july17action.org/fluoxetine.html">fluoxetine prices</a>,  045353, <a href="http://ramboestrada.com/doxycycline.html">doxycycline</a>,  %-))), <a href="http://stsfrancisandclarenj.org/augmentin.html">augmentin.com</a>,  009, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 178.88.164.152">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Wed Oct 19 15:43:39 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_55_71ab506865b559559df78eda3c93e74f&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-49c07f4f429af1105fffa60c86543510">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-49c07f4f429af1105fffa60c86543510">yATkhIQHBewMtprmND</a>
+
+</div>
+
+<div class="inlinecontent">
+comment4, <a href="http://henriettasgotagreatass.com/mobic.html">mobic definition</a>,  35561, <a href="http://bethgiacummo.org/retin-a.html">retin a renova</a>,  dyly, <a href="http://grantham.biz/lasix.html">lasix drug</a>,  zjp, <a href="http://beresexecutive.com/cipro.html">cipro</a>,  8870, <a href="http://havyourcake.com/levaquin.html">lupus levaquin seizures</a>,  050, <a href="http://primitivebusinessjunction.com/cipro.html">cipro 500 mg</a>,  &gt;:))), <a href="http://amortization-schedules-free.info/diflucan.html">diflucan oral tablets</a>,  vnepo, <a href="http://highplainsgospel.com/retin-a.html">retin-a</a>,  alc, <a href="http://july17action.org/fluoxetine.html">fluoxetine prices</a>,  045353, <a href="http://ramboestrada.com/doxycycline.html">doxycycline</a>,  %-))), <a href="http://stsfrancisandclarenj.org/augmentin.html">augmentin.com</a>,  009, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 159.220.30.191">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Wed Oct 19 15:44:03 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_56_8dd2cf088321a64d7a9bf786e445e450&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-89e69e94eeaa07690c3f7b5abaf10e0d">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-89e69e94eeaa07690c3f7b5abaf10e0d">CWUkcgchZROcoMJRE</a>
+
+</div>
+
+<div class="inlinecontent">
+comment6, <a href="http://killshot-film.com/propranolol.html">propranolol.com</a>,  7336, <a href="http://bethgiacummo.org/stromectol.html">stromectol 3 mg</a>,  84108, <a href="http://itsmedsmiley.com/celexa.html">celexa and pregnancy</a>,  &gt;:]], <a href="http://grantham.biz/tetracycline.html">tetracycline.com</a>,  %-<span class="createlink"><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=__91____44_____60__a_href__61____34__http%3A%2F%2Fagencia.biz%2Fallopurinol.html__34____62__online_allopurinol__60__%2Fa__62____44____%3A-ddd__44_____60__a_href__61____34__http%3A%2F%2Falfredtonhairandbeauty.com%2Fampicillin.html__34____62__ampicillin__60__%2Fa__62____44____%3Add__44_____60__a_href__61____34__http%3A%2F%2Fjuly17action.org%2Fnexium.html__34____62__nexium__60__%2Fa__62____44____rtd__44_____60__a_href__61____34__http%3A%2F%2Fjuly17action.org%2Ffluoxetine.html__34____62__ic_fluoxetine_hcl__60__%2Fa__62____44____360757__44_____60__a_href__61____34__http%3A%2F%2Fberesexecutive.com%2Fseroquel.html__34____62__seroquel__60__%2Fa__62____44____3641__44_____60__a_href__61____34__http%3A%2F%2Farizonaterritory-1878.com%2Fneurontin.html__34____62__neurontin__60__%2Fa__62____44____dsbm__44_____60__a_href__61____34__http%3A%2F%2Fgrantham.biz%2Fpropranolol.html__34____62__propranolol__60__%2Fa__62____44____781244__44_____60__a_href__61____34__http%3A%2F%2Fprimitivebusinessjunction.com%2Fcytotec.html__34____62__cytotec_use__60__%2Fa__62____44____nmisf__44_____60__a_href__61____34__http%3A%2F%2Fkillshot-film.com%2Fpropecia.html__34____62__less_propecia__60__%2Fa__62____44____azufu__44_____60__a_href__61____34__http%3A%2F%2Fhenriettasgotagreatass.com%2Fzimulti.html__34____62__slimona__60__%2Fa__62____44______37__&amp;from=posts%2Fdvb025%2Fcomment_57_d2f6fa15bd761167da18702b71b7abc5&amp;do=create" rel="nofollow">?</a>a&#62;&#44;  &#37;</span>, <a href="http://stsfrancisandclarenj.org/mobic.html">hydrocodone apap mobic</a>,  :(((, <a href="http://stsfrancisandclarenj.org/augmentin.html">augmentin</a>,  htaspo, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 189.126.254.137">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Wed Oct 19 16:37:41 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_57_d2f6fa15bd761167da18702b71b7abc5&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-f560f4fb198495ab2e29b418c92c44ac">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-f560f4fb198495ab2e29b418c92c44ac">CWUkcgchZROcoMJRE</a>
+
+</div>
+
+<div class="inlinecontent">
+comment6, <a href="http://killshot-film.com/propranolol.html">propranolol.com</a>,  7336, <a href="http://bethgiacummo.org/stromectol.html">stromectol 3 mg</a>,  84108, <a href="http://itsmedsmiley.com/celexa.html">celexa and pregnancy</a>,  &gt;:]], <a href="http://grantham.biz/tetracycline.html">tetracycline.com</a>,  %-<span class="createlink"><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=__91____44_____60__a_href__61____34__http%3A%2F%2Fagencia.biz%2Fallopurinol.html__34____62__online_allopurinol__60__%2Fa__62____44____%3A-ddd__44_____60__a_href__61____34__http%3A%2F%2Falfredtonhairandbeauty.com%2Fampicillin.html__34____62__ampicillin__60__%2Fa__62____44____%3Add__44_____60__a_href__61____34__http%3A%2F%2Fjuly17action.org%2Fnexium.html__34____62__nexium__60__%2Fa__62____44____rtd__44_____60__a_href__61____34__http%3A%2F%2Fjuly17action.org%2Ffluoxetine.html__34____62__ic_fluoxetine_hcl__60__%2Fa__62____44____360757__44_____60__a_href__61____34__http%3A%2F%2Fberesexecutive.com%2Fseroquel.html__34____62__seroquel__60__%2Fa__62____44____3641__44_____60__a_href__61____34__http%3A%2F%2Farizonaterritory-1878.com%2Fneurontin.html__34____62__neurontin__60__%2Fa__62____44____dsbm__44_____60__a_href__61____34__http%3A%2F%2Fgrantham.biz%2Fpropranolol.html__34____62__propranolol__60__%2Fa__62____44____781244__44_____60__a_href__61____34__http%3A%2F%2Fprimitivebusinessjunction.com%2Fcytotec.html__34____62__cytotec_use__60__%2Fa__62____44____nmisf__44_____60__a_href__61____34__http%3A%2F%2Fkillshot-film.com%2Fpropecia.html__34____62__less_propecia__60__%2Fa__62____44____azufu__44_____60__a_href__61____34__http%3A%2F%2Fhenriettasgotagreatass.com%2Fzimulti.html__34____62__slimona__60__%2Fa__62____44______37__&amp;from=posts%2Fdvb025%2Fcomment_58_c1ce1e7e2366c5b37a14884e1a3c508c&amp;do=create" rel="nofollow">?</a>a&#62;&#44;  &#37;</span>, <a href="http://stsfrancisandclarenj.org/mobic.html">hydrocodone apap mobic</a>,  :(((, <a href="http://stsfrancisandclarenj.org/augmentin.html">augmentin</a>,  htaspo, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 177.72.132.3">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Wed Oct 19 16:39:01 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_58_c1ce1e7e2366c5b37a14884e1a3c508c&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-767461fe1a84c675b9ad39ea1449ce49">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-767461fe1a84c675b9ad39ea1449ce49">CWUkcgchZROcoMJRE</a>
+
+</div>
+
+<div class="inlinecontent">
+comment6, <a href="http://killshot-film.com/propranolol.html">propranolol.com</a>,  7336, <a href="http://bethgiacummo.org/stromectol.html">stromectol 3 mg</a>,  84108, <a href="http://itsmedsmiley.com/celexa.html">celexa and pregnancy</a>,  &gt;:]], <a href="http://grantham.biz/tetracycline.html">tetracycline.com</a>,  %-<span class="createlink"><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=__91____44_____60__a_href__61____34__http%3A%2F%2Fagencia.biz%2Fallopurinol.html__34____62__online_allopurinol__60__%2Fa__62____44____%3A-ddd__44_____60__a_href__61____34__http%3A%2F%2Falfredtonhairandbeauty.com%2Fampicillin.html__34____62__ampicillin__60__%2Fa__62____44____%3Add__44_____60__a_href__61____34__http%3A%2F%2Fjuly17action.org%2Fnexium.html__34____62__nexium__60__%2Fa__62____44____rtd__44_____60__a_href__61____34__http%3A%2F%2Fjuly17action.org%2Ffluoxetine.html__34____62__ic_fluoxetine_hcl__60__%2Fa__62____44____360757__44_____60__a_href__61____34__http%3A%2F%2Fberesexecutive.com%2Fseroquel.html__34____62__seroquel__60__%2Fa__62____44____3641__44_____60__a_href__61____34__http%3A%2F%2Farizonaterritory-1878.com%2Fneurontin.html__34____62__neurontin__60__%2Fa__62____44____dsbm__44_____60__a_href__61____34__http%3A%2F%2Fgrantham.biz%2Fpropranolol.html__34____62__propranolol__60__%2Fa__62____44____781244__44_____60__a_href__61____34__http%3A%2F%2Fprimitivebusinessjunction.com%2Fcytotec.html__34____62__cytotec_use__60__%2Fa__62____44____nmisf__44_____60__a_href__61____34__http%3A%2F%2Fkillshot-film.com%2Fpropecia.html__34____62__less_propecia__60__%2Fa__62____44____azufu__44_____60__a_href__61____34__http%3A%2F%2Fhenriettasgotagreatass.com%2Fzimulti.html__34____62__slimona__60__%2Fa__62____44______37__&amp;from=posts%2Fdvb025%2Fcomment_59_34529b89a9d23512fccf9005da394436&amp;do=create" rel="nofollow">?</a>a&#62;&#44;  &#37;</span>, <a href="http://stsfrancisandclarenj.org/mobic.html">hydrocodone apap mobic</a>,  :(((, <a href="http://stsfrancisandclarenj.org/augmentin.html">augmentin</a>,  htaspo, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 152.149.145.190">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Wed Oct 19 16:39:52 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_59_34529b89a9d23512fccf9005da394436&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-7932a2983c645d437b6deb0addb9708b">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-7932a2983c645d437b6deb0addb9708b">CWUkcgchZROcoMJRE</a>
+
+</div>
+
+<div class="inlinecontent">
+comment6, <a href="http://killshot-film.com/propranolol.html">propranolol.com</a>,  7336, <a href="http://bethgiacummo.org/stromectol.html">stromectol 3 mg</a>,  84108, <a href="http://itsmedsmiley.com/celexa.html">celexa and pregnancy</a>,  &gt;:]], <a href="http://grantham.biz/tetracycline.html">tetracycline.com</a>,  %-<span class="createlink"><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=__91____44_____60__a_href__61____34__http%3A%2F%2Fagencia.biz%2Fallopurinol.html__34____62__online_allopurinol__60__%2Fa__62____44____%3A-ddd__44_____60__a_href__61____34__http%3A%2F%2Falfredtonhairandbeauty.com%2Fampicillin.html__34____62__ampicillin__60__%2Fa__62____44____%3Add__44_____60__a_href__61____34__http%3A%2F%2Fjuly17action.org%2Fnexium.html__34____62__nexium__60__%2Fa__62____44____rtd__44_____60__a_href__61____34__http%3A%2F%2Fjuly17action.org%2Ffluoxetine.html__34____62__ic_fluoxetine_hcl__60__%2Fa__62____44____360757__44_____60__a_href__61____34__http%3A%2F%2Fberesexecutive.com%2Fseroquel.html__34____62__seroquel__60__%2Fa__62____44____3641__44_____60__a_href__61____34__http%3A%2F%2Farizonaterritory-1878.com%2Fneurontin.html__34____62__neurontin__60__%2Fa__62____44____dsbm__44_____60__a_href__61____34__http%3A%2F%2Fgrantham.biz%2Fpropranolol.html__34____62__propranolol__60__%2Fa__62____44____781244__44_____60__a_href__61____34__http%3A%2F%2Fprimitivebusinessjunction.com%2Fcytotec.html__34____62__cytotec_use__60__%2Fa__62____44____nmisf__44_____60__a_href__61____34__http%3A%2F%2Fkillshot-film.com%2Fpropecia.html__34____62__less_propecia__60__%2Fa__62____44____azufu__44_____60__a_href__61____34__http%3A%2F%2Fhenriettasgotagreatass.com%2Fzimulti.html__34____62__slimona__60__%2Fa__62____44______37__&amp;from=posts%2Fdvb025%2Fcomment_60_28e4a7f17d4c9533aa25f1bed8bdaed9&amp;do=create" rel="nofollow">?</a>a&#62;&#44;  &#37;</span>, <a href="http://stsfrancisandclarenj.org/mobic.html">hydrocodone apap mobic</a>,  :(((, <a href="http://stsfrancisandclarenj.org/augmentin.html">augmentin</a>,  htaspo, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 200.146.77.228">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Wed Oct 19 16:40:18 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_60_28e4a7f17d4c9533aa25f1bed8bdaed9&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-72cbfa10ca66002cd3bd8499edd4add1">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-72cbfa10ca66002cd3bd8499edd4add1">DPMUSKmvmVAYkGBnlE</a>
+
+</div>
+
+<div class="inlinecontent">
+comment3, <a href="http://agencia.biz/cipro.html">cipro</a>,  8]], <a href="http://stsfrancisandclarenj.org/clomid.html">effects of clomid</a>,  674375, <a href="http://itsmedsmiley.com/propranolol.html">propranolol used for</a>,  161, <a href="http://hilalaviv.com/benicar.html">buy benicar</a>,  9402, <a href="http://havyourcake.com/retin-a.html">buy cheap retin a</a>,  4665, <a href="http://grantham.biz/lipitor.html">lipitor antifungal</a>,  71799, <a href="http://arizonaterritory-1878.com/lexapro.html">medication called lexapro</a>,  8-[, <a href="http://keybusinesstips.info/retin-a.html">minoxidil retin a</a>,  ketr, <a href="http://bethgiacummo.org/acomplia.html">acomplia sanofi</a>,  ezo, <a href="http://havyourcake.com/acomplia.html">acomplia</a>,  85623, <a href="http://henriettasgotagreatass.com/neurontin.html">snorting neurontin</a>,  36705, <a href="http://july17action.org/fluoxetine.html">fluoxetine hot flashes</a>,  %]]], <a href="http://grantham.biz/tamiflu.html">oral suspension tamiflu</a>,  gqxfxh, <a href="http://realestatetraining.biz/lipitor.html">mevacor vs lipitor</a>,  lnno, <a href="http://havyourcake.com/erythromycin.html">antibiotiky erythromycin innenohr sche4den</a>,  173, <a href="http://amortization-schedules-free.info/tamiflu.html">mauritius tamiflu</a>,  250, <a href="http://itsmedsmiley.com/nolvadex.html">buy nolvadex online</a>,  yiiptf, <a href="http://killshot-film.com/bactrim.html">novo-trimel</a>,  jmdmms, <a href="http://arizonaterritory-1878.com/rimonabant.html">rimonabant buy online</a>,  36356, <a href="http://highplainsgospel.com/tamiflu.html">tamiflu</a>,  612877, <a href="http://beresexecutive.com/stromectol.html">stromectol side effects</a>,  %-(((, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 85.39.37.84">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Wed Oct 19 22:11:20 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_61_f64bd335efdf84520ff457ea1e71c3f1&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-5c46c00005ea79725628d251546d6519">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-5c46c00005ea79725628d251546d6519">DPMUSKmvmVAYkGBnlE</a>
+
+</div>
+
+<div class="inlinecontent">
+comment3, <a href="http://agencia.biz/cipro.html">cipro</a>,  8]], <a href="http://stsfrancisandclarenj.org/clomid.html">effects of clomid</a>,  674375, <a href="http://itsmedsmiley.com/propranolol.html">propranolol used for</a>,  161, <a href="http://hilalaviv.com/benicar.html">buy benicar</a>,  9402, <a href="http://havyourcake.com/retin-a.html">buy cheap retin a</a>,  4665, <a href="http://grantham.biz/lipitor.html">lipitor antifungal</a>,  71799, <a href="http://arizonaterritory-1878.com/lexapro.html">medication called lexapro</a>,  8-[, <a href="http://keybusinesstips.info/retin-a.html">minoxidil retin a</a>,  ketr, <a href="http://bethgiacummo.org/acomplia.html">acomplia sanofi</a>,  ezo, <a href="http://havyourcake.com/acomplia.html">acomplia</a>,  85623, <a href="http://henriettasgotagreatass.com/neurontin.html">snorting neurontin</a>,  36705, <a href="http://july17action.org/fluoxetine.html">fluoxetine hot flashes</a>,  %]]], <a href="http://grantham.biz/tamiflu.html">oral suspension tamiflu</a>,  gqxfxh, <a href="http://realestatetraining.biz/lipitor.html">mevacor vs lipitor</a>,  lnno, <a href="http://havyourcake.com/erythromycin.html">antibiotiky erythromycin innenohr sche4den</a>,  173, <a href="http://amortization-schedules-free.info/tamiflu.html">mauritius tamiflu</a>,  250, <a href="http://itsmedsmiley.com/nolvadex.html">buy nolvadex online</a>,  yiiptf, <a href="http://killshot-film.com/bactrim.html">novo-trimel</a>,  jmdmms, <a href="http://arizonaterritory-1878.com/rimonabant.html">rimonabant buy online</a>,  36356, <a href="http://highplainsgospel.com/tamiflu.html">tamiflu</a>,  612877, <a href="http://beresexecutive.com/stromectol.html">stromectol side effects</a>,  %-(((, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 168.87.10.53">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Wed Oct 19 22:12:17 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_62_99531a62c62acd46fcda31bd1accfc10&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-d5fe7f5117680f1e463c232251413e53">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-d5fe7f5117680f1e463c232251413e53">DPMUSKmvmVAYkGBnlE</a>
+
+</div>
+
+<div class="inlinecontent">
+comment3, <a href="http://agencia.biz/cipro.html">cipro</a>,  8]], <a href="http://stsfrancisandclarenj.org/clomid.html">effects of clomid</a>,  674375, <a href="http://itsmedsmiley.com/propranolol.html">propranolol used for</a>,  161, <a href="http://hilalaviv.com/benicar.html">buy benicar</a>,  9402, <a href="http://havyourcake.com/retin-a.html">buy cheap retin a</a>,  4665, <a href="http://grantham.biz/lipitor.html">lipitor antifungal</a>,  71799, <a href="http://arizonaterritory-1878.com/lexapro.html">medication called lexapro</a>,  8-[, <a href="http://keybusinesstips.info/retin-a.html">minoxidil retin a</a>,  ketr, <a href="http://bethgiacummo.org/acomplia.html">acomplia sanofi</a>,  ezo, <a href="http://havyourcake.com/acomplia.html">acomplia</a>,  85623, <a href="http://henriettasgotagreatass.com/neurontin.html">snorting neurontin</a>,  36705, <a href="http://july17action.org/fluoxetine.html">fluoxetine hot flashes</a>,  %]]], <a href="http://grantham.biz/tamiflu.html">oral suspension tamiflu</a>,  gqxfxh, <a href="http://realestatetraining.biz/lipitor.html">mevacor vs lipitor</a>,  lnno, <a href="http://havyourcake.com/erythromycin.html">antibiotiky erythromycin innenohr sche4den</a>,  173, <a href="http://amortization-schedules-free.info/tamiflu.html">mauritius tamiflu</a>,  250, <a href="http://itsmedsmiley.com/nolvadex.html">buy nolvadex online</a>,  yiiptf, <a href="http://killshot-film.com/bactrim.html">novo-trimel</a>,  jmdmms, <a href="http://arizonaterritory-1878.com/rimonabant.html">rimonabant buy online</a>,  36356, <a href="http://highplainsgospel.com/tamiflu.html">tamiflu</a>,  612877, <a href="http://beresexecutive.com/stromectol.html">stromectol side effects</a>,  %-(((, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 168.9.37.254">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Wed Oct 19 22:13:23 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_63_e4d0072376ce045b1e4ca56ecc9e8842&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-d0266c25ec33e0196d0e72bb0f8d33c5">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-d0266c25ec33e0196d0e72bb0f8d33c5">DPMUSKmvmVAYkGBnlE</a>
+
+</div>
+
+<div class="inlinecontent">
+comment3, <a href="http://agencia.biz/cipro.html">cipro</a>,  8]], <a href="http://stsfrancisandclarenj.org/clomid.html">effects of clomid</a>,  674375, <a href="http://itsmedsmiley.com/propranolol.html">propranolol used for</a>,  161, <a href="http://hilalaviv.com/benicar.html">buy benicar</a>,  9402, <a href="http://havyourcake.com/retin-a.html">buy cheap retin a</a>,  4665, <a href="http://grantham.biz/lipitor.html">lipitor antifungal</a>,  71799, <a href="http://arizonaterritory-1878.com/lexapro.html">medication called lexapro</a>,  8-[, <a href="http://keybusinesstips.info/retin-a.html">minoxidil retin a</a>,  ketr, <a href="http://bethgiacummo.org/acomplia.html">acomplia sanofi</a>,  ezo, <a href="http://havyourcake.com/acomplia.html">acomplia</a>,  85623, <a href="http://henriettasgotagreatass.com/neurontin.html">snorting neurontin</a>,  36705, <a href="http://july17action.org/fluoxetine.html">fluoxetine hot flashes</a>,  %]]], <a href="http://grantham.biz/tamiflu.html">oral suspension tamiflu</a>,  gqxfxh, <a href="http://realestatetraining.biz/lipitor.html">mevacor vs lipitor</a>,  lnno, <a href="http://havyourcake.com/erythromycin.html">antibiotiky erythromycin innenohr sche4den</a>,  173, <a href="http://amortization-schedules-free.info/tamiflu.html">mauritius tamiflu</a>,  250, <a href="http://itsmedsmiley.com/nolvadex.html">buy nolvadex online</a>,  yiiptf, <a href="http://killshot-film.com/bactrim.html">novo-trimel</a>,  jmdmms, <a href="http://arizonaterritory-1878.com/rimonabant.html">rimonabant buy online</a>,  36356, <a href="http://highplainsgospel.com/tamiflu.html">tamiflu</a>,  612877, <a href="http://beresexecutive.com/stromectol.html">stromectol side effects</a>,  %-(((, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 64.187.124.19">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Wed Oct 19 22:14:18 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_64_30cabd52ea011fc1add5c73d39d21400&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-8c7bcc6aedc64b8434285334b20d2084">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-8c7bcc6aedc64b8434285334b20d2084">gKJhOvxwaHRdhbJBJuk</a>
+
+</div>
+
+<div class="inlinecontent">
+comment4, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 213.188.29.4">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Thu Oct 20 16:50:33 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_65_6ae2a9d67373681d017224b948e7e35d&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-f9da3727145aa6e28fa05fb1769b8c19">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-f9da3727145aa6e28fa05fb1769b8c19">gKJhOvxwaHRdhbJBJuk</a>
+
+</div>
+
+<div class="inlinecontent">
+comment4, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 212.150.119.119">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Thu Oct 20 16:51:24 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_66_86a3209499eb61d7d550d604812d9ce3&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-785254e162bca21e89c1902fbdf983c5">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-785254e162bca21e89c1902fbdf983c5">gKJhOvxwaHRdhbJBJuk</a>
+
+</div>
+
+<div class="inlinecontent">
+comment4, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 178.88.164.141">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Thu Oct 20 16:51:49 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_67_87ac81a76747f0aa88b0878cdf8f2cbe&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-9c6056502d96fd076410e58f21810789">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-9c6056502d96fd076410e58f21810789">gKJhOvxwaHRdhbJBJuk</a>
+
+</div>
+
+<div class="inlinecontent">
+comment4, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 217.96.70.146">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Thu Oct 20 16:52:10 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_68_55c3b1c075b7e92c686a92e25287a44d&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-1c19d55bb6c8d2c25748b47f3861feac">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-1c19d55bb6c8d2c25748b47f3861feac">AgfTanhGqUpyv</a>
+
+</div>
+
+<div class="inlinecontent">
+comment6, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 84.45.99.82">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Thu Oct 20 17:47:04 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_69_fd34f376dfc9e10c06dec00accc99885&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-d56b97dec50a8dd581f19bece868797e">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-d56b97dec50a8dd581f19bece868797e">awxxwPnEQYjGBgQh</a>
+
+</div>
+
+<div class="inlinecontent">
+comment1, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 208.74.31.116">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Fri Oct 21 07:34:48 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_70_ee1183f0718e77cfed2ffb9d1bbed6f3&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-fe225eafb28d96c38d7bbab47e09f1c2">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-fe225eafb28d96c38d7bbab47e09f1c2">awxxwPnEQYjGBgQh</a>
+
+</div>
+
+<div class="inlinecontent">
+comment1, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 46.47.1.91">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Fri Oct 21 07:35:13 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_71_c9726f8bda1a20550da699b4825f1771&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-9f6161aeabda9c56f4ff78b8d4d07c67">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-9f6161aeabda9c56f4ff78b8d4d07c67">awxxwPnEQYjGBgQh</a>
+
+</div>
+
+<div class="inlinecontent">
+comment1, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 66.162.234.219">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Fri Oct 21 07:35:35 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_72_66e805a0c6b84974f7b55bf431f5f20e&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-5e33ed9bf963265e6bc52fe270da6edc">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-5e33ed9bf963265e6bc52fe270da6edc">awxxwPnEQYjGBgQh</a>
+
+</div>
+
+<div class="inlinecontent">
+comment1, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 222.66.147.204">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Fri Oct 21 07:35:58 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_73_1b7c6ba94a792d36e6943019df709c25&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-1b67c357317ae10c28a248e6f98cd1c4">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-1b67c357317ae10c28a248e6f98cd1c4">emkucSSAHBMovfmjvRY</a>
+
+</div>
+
+<div class="inlinecontent">
+comment5, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 189.90.195.104">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Fri Oct 21 08:31:52 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_74_4680083146a42c49d93c4ccc5dc1187f&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-ab50757523022e3bff1496004add5128">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-ab50757523022e3bff1496004add5128">UhERIXbNNluCM</a>
+
+</div>
+
+<div class="inlinecontent">
+comment5, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 193.86.95.58">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Fri Oct 21 10:17:23 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_75_b1f8a63a9549b7d60a6cb0256e88e162&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-dd15faeeed879aa70f7504148baf2010">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-dd15faeeed879aa70f7504148baf2010">WslBpYBjvyDVk</a>
+
+</div>
+
+<div class="inlinecontent">
+comment5, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 207.108.251.66">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Fri Oct 21 11:16:27 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_76_c629f98b0f4e266b3b084cf63ae714ec&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-d06da29b0d0ea27e2c622e2c2e7dbbf8">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-d06da29b0d0ea27e2c622e2c2e7dbbf8">lIqMvWmbWxavfgIeiJ</a>
+
+</div>
+
+<div class="inlinecontent">
+comment1, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 168.9.37.254">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Fri Oct 21 12:06:14 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_77_813b6fe91e2e27b7e92a5743d74fb015&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-5cbf111600a121f87a5debdc90542816">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-5cbf111600a121f87a5debdc90542816">lIqMvWmbWxavfgIeiJ</a>
+
+</div>
+
+<div class="inlinecontent">
+comment1, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 61.252.141.84">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Fri Oct 21 12:06:41 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_78_50eea602d7cf9e5af095cfa6fa27a5ec&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-e8ad58313c4b109e3a60fd959291c1e5">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-e8ad58313c4b109e3a60fd959291c1e5">lIqMvWmbWxavfgIeiJ</a>
+
+</div>
+
+<div class="inlinecontent">
+comment1, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 85.195.138.27">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Fri Oct 21 12:07:02 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_79_edbc315310fcf511726031f3749033b5&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-863de5a9b30cc5496bae2f2050e34ba3">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-863de5a9b30cc5496bae2f2050e34ba3">lUkPaJhmFVZEyCHlUE</a>
+
+</div>
+
+<div class="inlinecontent">
+comment1, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 177.72.132.3">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Fri Oct 21 13:00:18 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_80_76fcc8f25c3e84e0fa5ce3559e1e8d75&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-37eb4eec48d9e2e3c47bed8936faca3a">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-37eb4eec48d9e2e3c47bed8936faca3a">lUkPaJhmFVZEyCHlUE</a>
+
+</div>
+
+<div class="inlinecontent">
+comment1, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 186.195.37.10">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Fri Oct 21 13:00:46 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_81_94fec840876e6f4282fc77b590860304&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-069f45be257a43f580d42fe68fd53efd">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-069f45be257a43f580d42fe68fd53efd">WJghVBiilQOSj</a>
+
+</div>
+
+<div class="inlinecontent">
+comment1, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 57.90.36.29">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Fri Oct 21 13:53:28 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_82_d1a825bbd4c1298ecfe2916516726f0b&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-8328058b78e16c51bb4653a0a11b3ef2">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-8328058b78e16c51bb4653a0a11b3ef2">WJghVBiilQOSj</a>
+
+</div>
+
+<div class="inlinecontent">
+comment1, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 114.69.229.2">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Fri Oct 21 13:55:02 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_83_de74b9b501d758c421d117e424119971&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-87d08ff3acbaef04d07840fe576c9889">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-87d08ff3acbaef04d07840fe576c9889">WJghVBiilQOSj</a>
+
+</div>
+
+<div class="inlinecontent">
+comment1, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 76.79.168.210">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Fri Oct 21 13:55:56 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_84_385b803efbb4f24f3100c7fb6b950abe&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-75cdf97de8695d561902e1cf736e2f78">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-75cdf97de8695d561902e1cf736e2f78">WJghVBiilQOSj</a>
+
+</div>
+
+<div class="inlinecontent">
+comment1, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 190.241.40.147">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Fri Oct 21 13:56:49 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_85_27685538ca43bacc5e8b0c02dbd96ffd&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-301c44178486be55865a9fc61dfdda02">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-301c44178486be55865a9fc61dfdda02">ZBqsjXOavTxcpqnqcrQ</a>
+
+</div>
+
+<div class="inlinecontent">
+comment3, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 64.187.124.19">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Fri Oct 21 14:51:38 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_86_0d4d2f86c645074b7514301ee815fbf1&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-b4c13163e183d423162ac5ba81d67d38">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-b4c13163e183d423162ac5ba81d67d38">ZBqsjXOavTxcpqnqcrQ</a>
+
+</div>
+
+<div class="inlinecontent">
+comment3, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 190.241.40.147">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Fri Oct 21 14:52:23 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_87_398598a40a9dd5b53d152e59e690ea9a&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-2711e71521f85061d11a97fba87f965a">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-2711e71521f85061d11a97fba87f965a">ZBqsjXOavTxcpqnqcrQ</a>
+
+</div>
+
+<div class="inlinecontent">
+comment3, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 82.200.101.90">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Fri Oct 21 14:52:48 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_88_718bc9e3728b7c992d9e79a028e2773b&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-66822a7bd95836da7dd6119ee5ee8535">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-66822a7bd95836da7dd6119ee5ee8535">ZBqsjXOavTxcpqnqcrQ</a>
+
+</div>
+
+<div class="inlinecontent">
+comment3, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 207.75.158.200">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Fri Oct 21 14:53:14 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_89_2113e827aa31d461122a0930f24636b4&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-375b80fe2a36387f9dec88718dfe7f54">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-375b80fe2a36387f9dec88718dfe7f54">dAPJYXniSWSYdmCnKNz</a>
+
+</div>
+
+<div class="inlinecontent">
+comment1, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 62.101.84.127">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Fri Oct 21 15:55:00 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_90_5630f8d3e9d416a6a4c37f6b40385131&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-071c20a00085370ea997556e54194c34">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-071c20a00085370ea997556e54194c34">sixKxZTmMP</a>
+
+</div>
+
+<div class="inlinecontent">
+comment1, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 69.162.71.165">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Fri Oct 21 16:45:51 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_91_9811ccca0e23b9fb160418c3474e5dc5&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-616f1be4479456f1a6da69bd7d306267">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-616f1be4479456f1a6da69bd7d306267">sixKxZTmMP</a>
+
+</div>
+
+<div class="inlinecontent">
+comment1, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 94.23.200.91">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Fri Oct 21 16:47:29 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_92_63b5cedb47e9951ba28afb423220d082&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-26ca6d5dd7683ca21a91eca3915107a9">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-26ca6d5dd7683ca21a91eca3915107a9">iamnZrAyTTdyafq</a>
+
+</div>
+
+<div class="inlinecontent">
+comment1, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 186.203.139.133">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Fri Oct 21 17:40:24 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_93_4ae7a3c2676c9e8fd1616178276834ed&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+<div class="comment" id="comment-4226bc9791cbfa857b0e7d8ef6138c39">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/dvb025/#comment-4226bc9791cbfa857b0e7d8ef6138c39">iamnZrAyTTdyafq</a>
+
+</div>
+
+<div class="inlinecontent">
+comment1, 
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+<!-- !COMMENTUSER -->
+
+<span class="author" title="Unauthenticated, from 98.159.71.73">
+
+
+Anonymous
+
+</span>
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">Fri Oct 21 17:41:21 2011</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025%2Fcomment_94_1733c4dad40fbd410058b21d811bef53&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+
+
+
+
+<div class="addcomment">
+<a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2Fdvb025&amp;do=comment">Add a comment</a>
+</div>
+
+</div>
+
+
+<div id="footer" class="pagefooter">
+<div id="pageinfo">
+
+
+<div class="tags">
+Tags:
+
+<a href="../../tags/tech/index.html" rel="tag">tech</a>
+
+</div>
+
+
+
+
+
+
+
+
+<div class="pagedate">
+Last edited <span class="date">Wed Nov  3 22:55:32 2010</span>
+<!-- Created <span class="date">Wed Nov  3 22:47:47 2010</span> -->
+</div>
+
+</div><!-- #pageinfo -->
+
+<!-- from viricbloc -->
+</div><!-- .pagefooter #footer -->
+
+</body>
+</html>

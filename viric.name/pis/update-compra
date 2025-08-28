@@ -1,0 +1,608 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+	<title>Edició de les compres</title>
+	<meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1">
+	<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+</head>
+
+<body>
+
+<H1 ALIGN=center>Ètxelon</H1>
+
+<?php
+	
+	include("getdb.inc");
+
+	// Variables globals
+	$touchdb = 1;	// Tocar la base de dades
+
+	
+	// Fem la connexió
+	$connexio = mysql_connect($mysql_server, $mysql_user, $mysql_password);
+	mysql_select_db($mysql_db, $connexio);
+
+
+	// Crides a funcions per obtenir parametres
+	$habitants = obtenir_habitants($connexio);
+	$num_habitants = count($habitants);
+	$altres = obtenir_altres($connexio);
+	
+if(!isset($_POST["afegir"]) && !isset($_GET["id"]))
+{
+?>
+
+<!-- DEMANAR PER AFEGIR COSES -->
+
+<?php
+	// VARIALBES
+	if(isset($_GET["num_excepcions"]))
+		$num_excepcions= $_GET["num_excepcions"];
+	elseif(isset($_POST["num_excepcions"]))
+		$num_excepcions= $_POST["num_excepcions"];
+	else
+		$num_excepcions=3;
+
+	if(isset($_GET["num_altres"]))
+		$num_altres= $_GET["num_altres"];
+	elseif(isset($_POST["num_altres"]))
+		$num_altres= $_POST["num_altres"];
+	else
+		$num_altres=1;
+
+	if(isset($_GET["num_altres_excepcions"]))
+		$num_altres_excepcions = $_GET["num_altres_excepcions"];
+	elseif(isset($_POST["num_altres_excepcions"]))
+		$num_altres_excepcions = $_POST["num_altres_excepcions"];
+	else
+		$num_altres_excepcions=1;
+
+	// Considerem que estem retocant una compra que volem afegir, si hi ha botiga definit.
+	// Això es fa servir per les checkboxes que per default estan ON, i es vol saber si s'havien desactivat.
+	if(isset($_POST["botiga"]))
+		$retocant=1;
+	else
+		$retocant=0;
+?>
+
+<H2>Afegir nova compra</H2>
+
+<form action="update-compra" method="post">
+
+<input type=hidden name=num_excepcions value=<?php
+	echo $num_excepcions;
+	?>>
+<input type=hidden name=num_altres value=<?php
+	echo $num_altres;
+	?>>
+<input type=hidden name=num_altres_excepcions value=<?php
+	echo $num_altres_excepcions;
+	?>>
+
+<p> Dades de la compra: </p>
+<TABLE BORDER=0>
+<TR>
+	<TH>Data:
+	<TD COLSPAN=<?php echo $num_habitants+$num_altres?> ><input type="text" name="dia"
+		size=2 maxlength=2
+		value="<?php
+			if ($retocant)
+				echo $_POST["dia"];
+			else
+				echo date('d');
+			?>">
+		<input type="text" name="mes" size=2 maxlength=2
+		value="<?php
+			if ($retocant)
+				echo $_POST["mes"];
+			else
+				echo date('m');
+			?>">
+		<input type="text" name="any" size=4 maxlength=4
+		value="<?php
+			if ($retocant)
+				echo $_POST["any"];
+			else
+				echo date('Y');
+			?>">
+
+<TR>
+	<TH>Hora:
+	<TD COLSPAN=<?php echo $num_habitants+$num_altres?> ><input type="text" name="hora"
+		size=2 maxlength=2
+		value="<?php
+			if ($retocant)
+				echo $_POST["hora"];
+			else
+				echo date('H');
+			?>">
+		<input type="text" name="minut" size=2 maxlength=2
+		value="<?php
+			if ($retocant)
+				echo $_POST["minut"];
+			else
+				echo date('i');
+			?>">
+
+<TR>
+	<TH>Botiga:
+	<TD COLSPAN=<?php echo $num_habitants+$num_altres?> ><input type="text" name="botiga" size=30 maxlength=30 value="<?php
+	if(isset($_POST["botiga"]))
+		echo strtohtml($_POST["botiga"]);
+	?>">
+<TR>
+	<TH>Motiu:
+	<TD COLSPAN=<?php echo $num_habitants+$num_altres?> ><input type="text" name="motiu" size=30 maxlength=250 value="<?php
+	if(isset($_POST["motiu"]))
+		echo strtohtml($_POST["motiu"]);
+	?>">
+<TR>
+	<TH>Comentari:
+	<TD COLSPAN=<?php echo $num_habitants+$num_altres?> ><input type="text" name="comentari" size=40 maxlength=250 value="<?php
+	if(isset($_POST["comentari"]))
+		echo strtohtml($_POST["comentari"]);
+	?>">
+<TR>
+	<TH>Preu:
+	<TD COLSPAN=<?php echo $num_habitants+$num_altres?> ><input type="text" name="preu" size=6 maxlength=8 value="<?php
+	if(isset($_POST["preu"]))
+		echo $_POST["preu"];
+	?>">
+<TR>
+	<TH>
+<?php
+		// Imprimim el nom dels habitants
+		foreach($habitants as $i)
+			echo "\t<TH>" . strtohtml($i["nom"]). "\n";
+	for($i=0; $i<$num_altres;$i++)
+		{
+			echo "\t<TH>";
+			if(isset($_POST["altres"][$i]))
+				select_altres("altres[$i]", $_POST["altres"][$i]);
+			else
+				select_altres("altres[$i]");
+			echo "\n";
+		}
+?>
+<TR>
+	<TH>Pagat:
+<?php
+	foreach($habitants as $i)
+	{
+		echo "\t<TD><input type=\"text\" name=\"pagat[" . $i["id"] . "]\" size=6 maxlength=8 value=";
+		if (isset($_POST["pagat"][$i["id"]]))
+			echo $_POST["pagat"][$i["id"]];
+		else
+			echo "0";
+		echo ">\n";
+	}
+?>
+<?php
+	for($i=0; $i<$num_altres;$i++)
+	{
+		echo "\t<TD><input type=\"text\" name=\"pagat_altres[$i]\" size=6 maxlength=8 value=";
+		if (isset($_POST["pagat_altres"][$i]))
+			echo $_POST["pagat_altres"][$i];
+		else
+			echo "0";
+		echo ">\n";
+	}
+?>
+<TR>
+	<TH><input type="radio" name="percentatges" value=checkboxes checked>Parts iguals:
+<?php
+	foreach($habitants as $i)
+	{
+		echo "\t<TD><input type=\"checkbox\" name=\"checkbox[" . $i["id"] . "]\" value=checked ";
+		// Codi raro?
+		if (isset($_POST["checkbox"][$i["id"]]))
+			echo "checked";
+		else
+			if (!$retocant)
+				echo "checked";
+		echo ">\n";
+	}
+?>
+<?php
+	for($i=0; $i<$num_altres;$i++)
+	{
+		echo "\t<TD><input type=\"checkbox\" name=\"checkbox_altres[" . $i. "]\" value=checked ";
+		// Codi raro?
+		if (isset($_POST["checkbox_altres"][$i]))
+			echo "checked";
+		echo ">\n";
+	}
+?>
+<TR>
+	<TH><input type="radio" name="percentatges" value=si>Percentatges:
+<?php
+	foreach($habitants as $i)
+	{
+		echo "\t<TD><input type=\"text\" name=\"percent[" . $i["id"] . "]\" size=3 maxlength=6 value=\"";
+		if (isset($_POST["percent"][$i["id"]]))
+			echo $_POST["percent"][$i["id"]];
+		else
+			echo 100/$num_habitants;
+		echo "\">\n";
+	}
+?>
+<?php
+	for($i=0; $i<$num_altres;$i++)
+	{
+		echo "\t<TD><input type=\"text\" name=\"percent_altres[$i]\" size=3 maxlength=6 value=\"\n";
+		if (isset($_POST["percent_altres"][$i]))
+			echo $_POST["percent_altres"][$i];
+		else
+			echo "0";
+		echo "\">\n";
+	}
+?>
+<TR>
+	<TH><input type="radio" name="percentatges" value=no>Cal pagar:
+<?php
+	foreach($habitants as $i)
+	{
+		echo "\t<TD><input type=\"text\" name=\"tocapagar[" . $i["id"] . "]\" size=6 maxlength=8 value=\"";
+		if (isset($_POST["tocapagar"][$i["id"]]))
+			echo $_POST["tocapagar"][$i["id"]];
+		else
+			echo "0";
+		echo "\">\n";
+	}
+?>
+<?php for($i=0; $i<$num_altres;$i++)
+		{
+			echo "<TD><input type=\"text\" name=\"tocapagar_altres[$i]\" size=6 maxlength=8 value=\"";
+			if (isset($_POST["tocapagar_altres"][$i]))
+				echo $_POST["tocapagar_altres"][$i];
+			else
+				echo "0";
+			echo "\">\n";
+		}
+?>
+</TABLE>
+
+<HR WIDTH="70%">
+
+<H2>Excepcions</H2>
+<p>Empleneu les necessàries. S'agafaran si hi ha algo a
+	<STRONG>Article</STRONG>):</p>
+
+<TABLE BORDER=0>
+<TR>
+	<TH>Excepció
+	<TH>Article
+	<TH>Preu
+	<TH COLSPAN=<?php echo $num_habitants+$num_excepcions;?>>Compradors
+
+<?php
+	// Imprimim les excepcions amb altra gent
+	for ($i=1;$i<=$num_excepcions;$i++)
+	{
+?>
+<TR>
+	<TD COLSPAN=3>
+<?php
+	foreach($habitants as $j)
+		echo "\t<TH>" . strtohtml($j["nom"]) . "\n";
+?>
+<?php
+	for($j=0; $j<$num_altres_excepcions;$j++)
+	{
+		echo "\t<TH>";
+		if(isset($_POST["ealtres"][$i][$j]))
+			select_altres("ealtres[$i][$j]", $_POST["ealtres"][$i][$j]);
+		else
+			select_altres("ealtres[$i][$j]");
+		echo "\n";
+	}
+?>
+<TR>
+	<TH><?php echo $i; ?>
+
+	<TD><input type="text" name="earticle[<?php echo $i;?>]" size=30 maxlength=30 <?php
+		if (isset($_POST["earticle"][$i]))
+			echo "value=\"" . strtohtml($_POST["earticle"][$i]) . "\"";
+		?>>
+	<TD><input type="text" name="epreu[<?php echo $i;?>]" size=6 maxlength=8 <?php
+		if (isset($_POST["epreu"][$i]))
+			echo "value=\"" . $_POST["epreu"][$i] . "\"";
+		?>>
+<?php
+	foreach($habitants as $j)
+	{
+		echo "\t<TD><input type=\"checkbox\" name=\"eparticipat[$i][". $j["id"] . "]\" value=si";
+		if(isset($_POST["eparticipat"][$i][$j["id"]]))
+			if($_POST["eparticipat"][$i][$j["id"]] == "si")
+				echo " checked";
+		echo ">\n";
+	}
+	for ($j=0;$j<$num_altres_excepcions;$j++)
+	{
+		echo "\t<TD><input type=\"checkbox\" name=\"eparticipat_altres[$i][$j]\" value=si";
+		if(isset($_POST["eparticipat_altres"][$i][$j]))
+			if($_POST["eparticipat_altres"][$i][$j] == "si")
+				echo " checked";
+		echo ">\n";
+	}
+}
+?>
+
+</TABLE>
+
+<HR WIDTH="70%">
+<center>
+<input type=submit value="Afegir compra" name=afegir>
+<input type=reset value="Ressetejar formulari">
+</center>
+
+
+<H2>Alterar el formulari</H2>
+
+<p>Seleccionar el número d'excepcions:
+	<input type=text name=num_excepcions size=2 maxlength=2 value=<?php echo $num_excepcions ?>>
+</p>
+
+<p>Seleccionar el número d'altra gent (general) a la compra:
+	<input type=text name=num_altres size=2 maxlength=2 value=<?php echo $num_altres ?>>
+</p>
+
+<p>Seleccionar el número d'altra gent (a les excepcions) a la compra:
+	<input type=text name=num_altres_excepcions size=2 maxlength=2 value=<?php echo $num_altres_excepcions ?>>
+</p>
+
+<p align=center><input type=submit value="Canviar" name=canviar> </p>
+</form>
+
+<HR WIDTH="70%">
+
+<H2>Utilització</H2>
+
+<ul>
+<li>Per evitar que una compra s'inserti dues vegades, és important que aquesta
+tingui la <em>data</em> i la <em>hora</em> del rebut de compra.
+<li>El comentari és totalment opcional. És normal no escriure-hi res.
+<!-- De fet, la opció del comentari va ser afegida més tard -->
+<li>El <em>preu</em> ha de ser la suma del que s'ha <em>pagat</em>.
+<li>Els <em>percentatges</em> han de sumar <strong>100</strong>.
+<li>En cas de <em>no utilitzar percentatges</em>, cal sel·leccionar la opció
+	<em>"Cal pagar"</em>. El contingut d'aquests camps (per raons lògiques) ha
+	de ser el preu que toca pagar a cadascú finalment. Això significa que s'han
+	de tenir en compte les excepcions (i els que les paguen) a l'hora d'utilitzar
+	la opció <em>"Cal pagar"</em>. La suma dels camps <em>"Cal pagar"</em> ha
+	de sumar igualment el <em>preu</em> de la compra.
+<li>S'ha d'anar en compte en no deixar un preu buit en un article (s'assumirà
+	<strong>0</strong>), o en no sel·leccionar cap comprador. Això és típic quan
+	sense voler s'emplena el camp <em>"article"</em> d'una excepció que no volem
+	que es tingui en compte.
+<li>És important saber el número d'excepcions i de gent no-habitant del pis que
+	intervindrà en la compra abans de teclejar-la, ja que alterar qualsevol de
+	les variables que <em>alteren el formulari</em> suposa perdre totes les dades
+	dels camps ja emplenats.
+</ul>
+
+<!-- FI DE DEMANAR PER AFEGIR COSES -->
+
+<?php
+} // Fi del if del 'submit'
+else if(isset($_POST["afegir"]))
+{
+	// Afegir les coses a la base de dades
+
+	// Falta xequejar si les dades estan bé
+
+	if (mysql_select_db($mysql_db,$connexio))
+	{
+		settype($_POST["hora"], "integer");
+		settype($_POST["minut"], "integer");
+		settype($_POST["dia"], "integer");
+		settype($_POST["mes"], "integer");
+		settype($_POST["any"], "integer");
+
+		settype($_POST["preu"], "double"); // Preu=0 ERROR TO HANDLE ***
+
+		// ** El preu ha de ser la suma de lo que ha pagat tothom. O inferior!
+		$data = mktime($_POST["hora"], $_POST["minut"], 0, $_POST["mes"], $_POST["dia"], $_POST["any"]);
+
+		// Inserto la fila a 'compres'
+		$query = "INSERT INTO compres VALUES(FROM_UNIXTIME($data),'" . strtosql($_POST["botiga"]) . "','". strtosql($_POST["motiu"]) . "', ". $_POST["preu"] . ", '" . strtosql($_POST["comentari"]) ."');";
+		$resultat = 1; // Per si no es fa la query, assumim que no hi ha errors
+		if ($touchdb)
+			$resultat = mysql_query($query, $connexio);
+		else
+			echo $query . "<BR>";
+
+
+		// Comprovem el resultat de l'inserció a "compres"
+		if (!$resultat)
+		{
+?>
+			<p> <STRONG>ERROR:</STRONG> Error al actualitzar les dades a
+				<STRONG>compres</STRONG>! </p>
+<?php
+			echo mysql_errno().": ".mysql_error()."<BR>";
+		}
+		else
+		{
+			$preu_per_compradors = $_POST["preu"];
+
+			// Afegim les excepcions
+			for ($i = 1; $i <= $_POST["num_excepcions"]; $i++)
+			{
+				if($_POST["earticle"][$i] != "")
+				{
+					settype($_POST["epreu"][$i], "double"); // Preu=0 ERROR TO HANDLE ***
+
+					$preu_per_compradors -= $_POST["epreu"][$i];
+
+					// ** El preu de l'article ha de ser inferior al preu de la compra!
+
+					// Inserto la fila a 'excepcions'
+					$query = "INSERT INTO excepcions (data,article,preu) VALUES(FROM_UNIXTIME($data),'" . strtosql($_POST["earticle"][$i]) .
+								"',". $_POST["epreu"][$i] . ");";
+					$resultat = 1; // Per si no es fa la query, assumim que no hi ha errors
+					if ($touchdb)
+						$resultat = mysql_query($query, $connexio);
+					else
+						echo $query . "<BR>";
+
+					// Obtenim l'ID de la excepció
+
+					$query = "SELECT id FROM excepcions WHERE data = FROM_UNIXTIME($data) AND article = '" . strtosql($_POST["earticle"][$i]) .
+								"' AND preu = ". $_POST["epreu"][$i] . ";";
+					$resultat = 1; // Per si no es fa la query, assumim que no hi ha errors
+					if ($touchdb)
+					{
+						$resultat = mysql_query($query, $connexio);
+						$ex_id = mysql_result($resultat, 0, "id");
+					}
+					else
+					{
+						echo $query . "<BR>";
+						$ex_id = 255;
+					}
+					
+					// Comptem quants participen
+					$participants = 0;
+					foreach($habitants as $j)
+						if (isset($_POST["eparticipat"][$i][$j["id"]]))
+							$participants++;
+					for ($j=0;$j<$_POST["num_altres_excepcions"];$j++)
+						if (isset($_POST["eparticipat_altres"][$i][$j]))
+							$participants++;
+					$preu_per_cap = $_POST["epreu"][$i] / $participants;
+
+					// Els habitants que compren l'article
+					foreach($habitants as $j)
+					{
+						if (isset($_POST["eparticipat"][$i][$j["id"]]))
+						{
+							$query = "INSERT INTO compradors_excepcions (ex_id,persona,toca_pagar) VALUES($ex_id," . $j["id"] . ",". $preu_per_cap.");";
+							if ($touchdb)
+								$resultat = mysql_query($query, $connexio);
+							else
+								echo $query . "<BR>";
+						}
+					}
+
+					for ($j=0;$j<$_POST["num_altres_excepcions"];$j++)
+					{
+						if (isset($_POST["eparticipat_altres"][$i][$j]))
+						{
+							$persona = $_POST["ealtres"][$i][$j];
+							$query = "INSERT INTO compradors_excepcions (ex_id,persona,toca_pagar) VALUES($ex_id," . $persona . ",". $preu_per_cap.");";
+							if ($touchdb)
+								$resultat = mysql_query($query, $connexio);
+							else
+								echo $query . "<BR>";
+						}
+					}
+				}
+			}	// Fi del for
+			// Afegim el que han pagat i el que els toca pagar a cada habitant
+			// Participen els habitants + $num_altres
+			
+			// Comptem quans participen si hi ha checkboxes
+			if ($_POST["percentatges"] == "checkboxes")
+			{
+				$participants = 0;
+				foreach($habitants as $j)
+					if (isset($_POST["checkbox"][$j["id"]]))
+						$participants++;
+				for ($j=0;$j<$_POST["num_altres"];$j++)
+					if (isset($_POST["checkbox_altres"][$j]))
+						$participants++;
+			}
+							
+			// Els habitants que compren
+			foreach($habitants as $i)
+			{
+				$total_a_pagar = 0;
+				settype($_POST["pagat"][$i["id"]], "double");
+				if ($_POST["percentatges"] == "checkboxes")
+				{	
+					if(isset($_POST["checkbox"][$i["id"]]))
+						$total_a_pagar = $preu_per_compradors / $participants;
+				}
+				elseif ($_POST["percentatges"] == "si")
+				{	
+					settype($_POST["percent"][$i["id"]], "double");
+					$total_a_pagar = $preu_per_compradors * $_POST["percent"][$i["id"]] / 100;
+				}
+				else
+				{
+					settype($_POST["tocapagar"][$i["id"]], "double");
+					$total_a_pagar = $_POST["tocapagar"][$i["id"]];
+				}
+
+				if ($_POST["pagat"][$i["id"]] != 0 || $total_a_pagar != 0)
+				{
+					$query = "INSERT INTO compradors (data,persona,pagat,toca_pagar) VALUES(FROM_UNIXTIME($data)," . $i["id"] . ",".
+						$_POST["pagat"][$i["id"]] . ", $total_a_pagar);";
+					if ($touchdb)
+						$resultat = mysql_query($query, $connexio);
+					else
+						echo $query . "<BR>\n";
+				}
+			}
+
+			// Els altres que compren
+			for($i=0; $i < $_POST["num_altres"]; $i++)
+			{
+				$total_a_pagar = 0;
+				settype($_POST["pagat_altres"][$i], "double");
+				if ($_POST["percentatges"] == "checkboxes")
+				{	
+					if(isset($_POST["checkbox_altres"][$i]))
+						$total_a_pagar = $preu_per_compradors / $participants;
+				}
+				elseif ($_POST["percentatges"] == "si")
+				{	
+					settype($_POST["percent_altres"][$i], "double");
+					$total_a_pagar = $preu_per_compradors * $_POST["percent_altres"][$i] / 100;
+				}
+				else
+				{
+					settype($_POST["tocapagar_altres"][$i], "double");
+					$total_a_pagar = $_POST["tocapagar_altres"][$i];
+				}
+
+				if ($_POST["pagat_altres"][$i] != 0 || $total_a_pagar != 0)
+				{
+					$persona = $_POST["altres"][$i];
+					$query = "INSERT INTO compradors (data,persona,pagat,toca_pagar) VALUES(FROM_UNIXTIME($data)," . $persona . ",".
+						$_POST["pagat_altres"][$i] . ", $total_a_pagar);";
+					if ($touchdb)
+						$resultat = mysql_query($query, $connexio);
+					else
+						echo $query . "<BR>";
+				}
+			}
+			
+
+			// *** No s'hauria de deixar continuar si peta la compra!!!! (de fet és el que fa. O NO?)
+		}	// Fi de si la inserció de compres va bé.
+
+		// Què cutre que és això. **
+		echo "Si no hi ha cap missatge d'error, tot ha anat bé! La compra ha estat afegida.<BR>";
+			
+	}
+	else
+	{
+	?>
+		<p> <STRONG>ERROR:</STRONG> No s'ha pogut connectar a la base de dades!
+		Segurament degut a una contrassenya incorrecta. </p>
+	<?php
+			echo mysql_errno().": ".mysql_error()."<BR>";
+	}
+
+}
+?>
+
+
+<HR WIDTH="70%">
+<BR>
+<A HREF="index">Tornar al menú d'inici</A>
+
+</body>
+</html>

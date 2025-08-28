@@ -1,0 +1,91 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+	<title>Lingvigilo - Frazomontrilo</title>
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+	<META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+	<META HTTP-EQUIV="Expires" CONTENT="-1">
+</head>
+
+<body>
+
+<?php
+include('./getdb.inc');
+
+?>
+
+<h1>Montrilo por programo <em>lingvigilo</em></h1>
+
+<?php
+if (isset($_POST["nova_korekteco"]))
+	$korekteco=$_POST["korekteco"];
+else
+	// Default
+	$korekteco=-2
+?>
+
+<h2>Agordo</h2>
+
+<form action="lingvigilo-montri" method="post">
+<p>Montru frazojn
+<select name="korekteco">
+<option value=0 <?php if ($korekteco==0) echo "selected" ?>>Nekorektitajn
+<option value=1 <?php if ($korekteco==1) echo "selected" ?>>Ĝustajn
+<option value=2 <?php if ($korekteco==2) echo "selected" ?>>Malĝustajn
+<option value=3 <?php if ($korekteco==3) echo "selected" ?>>Nekutimajn
+<option value="-2" <?php if ($korekteco==-2) echo "selected" ?>>Malĝustajn kaj
+nekutimajn
+<option value="-1" <?php if ($korekteco==-1) echo "selected" ?>>Ĉiajn
+</select>
+
+<input type=submit value="Ŝanĝi" name=nova_korekteco>
+</p>
+</form>
+
+<h2>Frazoj</h2>
+
+<?php
+
+if($korekteco >= 0)
+	$korektecoj = array($korekteco);
+elseif ($korekteco == -1)
+	$korektecoj = array(0,1,2,3);
+elseif ($korekteco == -2)
+	$korektecoj = array(2,3);
+
+?>
+<TABLE BORDER=1>
+<TR>
+        <TH>ID
+        <TH>Vorto
+        <TH>Frazo
+	<TH>Korektist(in)o
+        <TH>Korekto
+        <TH>Ekspliko
+
+<?
+
+$konekto=konekti();
+
+foreach($korektecoj as $k)
+{
+	$frazoj = preni_frazojn($konekto,$k);
+	if ($frazoj != 0)
+		foreach($frazoj as $key => $f)
+		{
+			echo "<tr>\n";
+			echo "\t<td>". $key . "\n";
+			echo "\t<td>". $f["vorto"] . "\n";
+			echo "\t<td>". $f["frazo"] . "\n";
+			echo "\t<td>" . $f["korektisto"] . "\n";
+			echo "\t<td>" . teksto_korekto($f["korekta"]) . "\n";
+			echo "\t<td>" . $f["klarigo"] . "\n";
+		}
+}
+
+?>
+</table>
+
+<p>Iru al <a href="index">ĉefa paĝo</a>.</p>
+
+</body>

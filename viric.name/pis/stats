@@ -1,0 +1,165 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+	<title>Ètxelon - Estadístiques</title>
+	<meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1">
+	<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+</head>
+
+<body>
+
+<H1 ALIGN=center>Ètxelon</H1>
+
+
+<?php
+	include("getdb.inc");
+	
+	// Fem la connexió
+	$connexio = mysql_connect($mysql_server, $mysql_user, $mysql_password);
+	mysql_select_db($mysql_db, $connexio);
+
+	// Crides a funcions per obtenir parametres
+	$habitants = obtenir_habitants($connexio);
+	$num_habitants = count($habitants);
+	$altres = obtenir_altres($connexio);
+	$gent = obtenir_gent($connexio);
+
+	if (!isset($_POST["demanar"]))
+	{
+?>
+
+<h2>Estadístiques de consum - Formulari</h2>
+
+<form action="stats" method="post">
+<table>
+<tr>
+<th>Data d'inici:
+<td><input type=text name="data_inici" value="<?php echo date("d/m/Y",
+	time() - 365*24*3600); ?>"size=20>
+<tr>
+<th>Data final:
+<td><input type=text name="data_final" value="<?php echo date("d/m/Y");
+	?>"size=20>
+<tr>
+<th>Usuaris:
+<td><?php select_gent_multi("gent_stats"); ?>
+<tr>
+<th>Botigues:
+<td><?php select_botigues_multi("botigues",$connexio); ?>
+<tr>
+<td>
+<td><input type=submit name="demanar" value="Demanar" size=20>
+</table>
+</form>
+
+
+<?php
+	}
+	else
+	{  // ************** CALCULEM SEGONS L'ENTRAT AL FORMULARI ***********
+		// Dates
+		$i = preg_split("/[^0-9]/", $_POST["data_inici"]);
+		$data_inici = mktime(0,0,0,$i[1],$i[0], $i[2]);
+		$i = preg_split("/[^0-9]/", $_POST["data_final"]);
+		$data_final = mktime(23,59,0,$i[1],$i[0], $i[2]);
+
+		$dies = (int)(($data_final - $data_inici) / (24*3600));
+
+		// Iniciem els deutes de cadascun
+		$total_a_pagar = 0;
+
+		// Obtenim totes les compres
+		$compres = obtenir_compres($connexio);
+
+		// Per cada compra...
+		foreach($compres as $data => $compra)
+		{
+			if ($data > $data_inici and $data < $data_final and
+				in_array($compra["botiga"], $_POST["botigues"]))
+			{
+				$compradors = obtenir_compradors($data, $connexio);
+
+				// Calcul dels compradors globals
+				foreach($compradors as $persona => $dades)
+				{
+					if (in_array($persona, $_POST["gent_stats"]))
+						$total_a_pagar += $dades["toca_pagar"];
+				}
+
+				$excepcions = obtenir_excepcions($data, $connexio);
+
+				$max_compradors_ex = 0;
+				if ($excepcions != 0)
+					foreach($excepcions as $key => $value)
+					{
+						$compradors_excepcions[$key] = obtenir_compradors_excepcions($key, $connexio);
+						foreach($compradors_excepcions[$key] as $persona => $dades)
+						{
+							if (in_array($persona, $_POST["gent_stats"]))
+								$total_a_pagar += $dades["toca_pagar"];
+						}
+					}
+			}
+		}
+?>
+
+<H2>Estadístiques</H2>
+
+<!-- Taula de compradors globals -->
+<TABLE BORDER=1>
+<TR>
+	<TH>Persones
+	<TD><?php
+		foreach ($_POST["gent_stats"] as $id)
+			$gent_stats[] = $gent[$id]["nom"];
+		echo implode(",", $gent_stats); ?>
+<TR>
+	<TH>Botigues
+	<TD><?php
+		echo implode(",", $_POST["botigues"]); ?>
+<TR>
+	<TH>Díes en el període
+	<TD><?php echo $dies;?>
+<TR>
+	<TH>Toca pagar en el període
+	<TD><?php echo $total_a_pagar; ?>
+<TR>
+	<TH>Mitjana de consum al dia
+	<TD><?php echo $total_a_pagar / $dies; ?>
+<TR>
+	<TH>Mitjana de consum en 30 dies
+	<TD><?php echo 30* $total_a_pagar / $dies; ?>
+</TABLE>
+
+<HR WIDTH="70%">
+
+<H2>Llegenda</H2>
+
+<!--
+<ul>
+<li>El percentatge es calcula segons el que <em>toca pagar</em> respecte al
+	<em>total a pagar</em>.
+<li>Els pagaments negatius són cobraments del grup. Els positius són pagaments
+	al grup.
+<li>La suma del <em>percentatge</em> ha de ser <strong>100</strong>.
+<li>El <em>total pagat</em> ha de ser igual al <em>total a pagar</em>.
+<li>La suma dels pagaments ha de ser <strong>0</strong>
+	(pagaments = cobraments).
+<li>El <em>balanç positiu</em> indica diners que s'han de cobrar en un futur,
+	i el <em>negatiu</em> diners que s'han de pagar.
+<LI>És important <strong>no confondre</strong> el que s'ha <em>pagat</em> (que
+	fa referència a les <em>compres</em>), i els <em>pagaments</em>, que fan
+	referència als préstecs o saldades de deutes.
+</ul>
+-->
+
+<?php
+	}
+?>
+
+<HR WIDTH="70%">
+<BR>
+<A HREF="index">Tornar al menú d'inici</A>
+
+</body>
+</html>

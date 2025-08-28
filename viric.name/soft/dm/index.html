@@ -1,0 +1,52 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+	<title>Directory Manager</title>
+</head>
+
+<body>
+<h1>Directory Manager (dm)</h1>
+
+<p><kbd>dm</kbd> is a small tool for managing often-visited directories using a
+shell like <a href="http://www.gnu.org/software/bash/"><kbd>bash</kbd></a>.
+</p>
+
+<p>I offer two new commands: <kbd>dm</kbd> is a manager for a small database,
+where you name directories with a short <em>alias</em>. And <kbd>dmcd</kbd>
+is a function for your current shell, which lets you go to a directory
+given its alias in the database.</p>
+
+<h2>Example of use</h2>
+<pre>
+$ dm 1 /tmp   # Adds the id '1' for /tmp
+$ dm bla .    # Adds the id 'bla' for the current dir
+$ dmcd 1      # Goes to /tmp
+$ dmcd bla    # Goes to what was your current dir
+$ dm -d bla   # Deletes the entry for 'bla'.
+$ dm          # Shows your 'database'
+1     /tmp
+$ dm -h       # Shows help, and defines 'dmcd' for sh.
+</pre>
+
+<h2>Download and installation</h2>
+
+<p>Download the latest version (GPL licensed):
+<a href="dm">dm</a> - v0.9 (The manual is in the header of the
+file). It's a script in <a
+href="http://www.gnu.org/software/bash/"><kbd>bash</kbd></a> - don't look for
+any special filename extension. Put the downloaded <kbd>dm</kbd> in your path.
+
+<p>Install the <kbd>dmcd</kbd> function. <kbd>dm -h</kbd> may give you a clue.
+For instance, for <a
+href="http://www.gnu.org/software/bash/"><kbd>bash</kbd></a>, add the following
+line into your <kbd>.bashrc</kbd> or <kbd>.bash_profile</kbd> (or any system
+wide script for each session):
+<pre>
+function dmcd { dm -t $1 &amp;&amp; cd `dm $1`; }
+</pre>
+
+<address>Author:
+<a href="http://vicerveza.homeunix.net/~viric/">Lluís Batlle i Rossell</a>,
+viric_at_vicerveza_dot_homeunix_dot_net</address>
+</body>

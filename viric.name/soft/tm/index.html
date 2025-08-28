@@ -1,0 +1,154 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+	<title>Terminal Mixer</title>
+</head>
+
+<body>
+
+<h1>Terminal Mixer</h1>
+
+<p>This program can start processes inside a pseudo-terminal, which can be
+accessed through a Unix socket, TCP or even raw ethernet (using the ethernet
+protocol 0xCACA). The programs can be linked to the current terminal, or
+they can be unlinked like in <em>nohup</em>. But even in this latter case you
+can connect to them using the mentioned protocols.</p>
+
+<p><em>tm</em> can also start programs as if they communicate through pipes
+instead of terminals, and this can be quite useful for remote-controlling
+applications.</p>
+
+<p>More than one client can connect to the served pseudo-terminal, either using
+<em>tm</em> as a client or <em>telnet</em> for TCP. You can choose if they
+are only allowed to read, or they can also contribute on input.</p>
+
+<h2>Download</h2>
+
+<p>Download the latest version (GPL 2+ licensed):
+<a href="tm-0.4.1.tar.gz">tm-0.4.1.tar.gz</a> - v0.4.1 - <a
+href="ChangeLog">ChangeLog</a></p>
+
+<p>Look at the
+<a href="../../wsgi-bin/hgweb.wsgi/tm">version repository</a> if you are
+interested in its development. If you can send any bug report, please
+do that at the mail address at the bottom of the page. I'd like this
+program to have as few bugs as possible, sure!</p>
+
+<h2>What can you do with it? Examples of use</h2>
+
+<ul>
+<li><a href="index.html#share">Share a terminal remotely</a>
+<li><a href="index.html#ether">Have an assured way of accessing a host, even if it has no IP address</a>
+<li><a href="index.html#mplayer">Remote control for mplayer</a>
+<li><a href="index.html#telnet">Transfer files through telnet</a>
+<li><a href="index.html#log">Access to a part of an execution log, on demand</a>
+</ul>
+
+<h3><a name="share"></a>Share a terminal remotely</h3>
+Start <em>vim</em> cooperatively, using:
+<pre>
+tm -N 2 -p 3000 -t -x -w vim
+</pre>
+<p>Two [-N 2] users will be able to telnet to the port 3000 [-p 3000], and get
+the same <em>vim</em> terminal [-t] interface as you. They will be able
+to use vim [-w], not only look at it.
+The size of their xterms [-x] will be set accordingly to the size of your
+terminal. A nice feature of xterm!</p>
+
+<blockquote>Attention! <em>vim</em> programs the vt100/xterm input/output codes at start.
+If the clients don't receive those codes, they won't be able to use the Cursor
+Keys effectively, for example. In that case, you may start a bash in tm, and
+when the clients are connected, start vim.</blockquote>
+<h3><a name="ether"></a>Have an assured way of accessing a host, even if it has no IP address</h3>
+<p>Start a remote <em>bash</em> putting this in your start scripts:</p>
+<pre>
+ifconfig eth0 up
+tm -e eth0 -n -w bash &amp;
+</pre>
+<p>Then you can connect to it using another computer (as root), typing
+the MAC address of the serving host:</p>
+<pre>
+tm -e eth0 -c 00:14:85:16:B2:32
+</pre>
+<p>And you will have a non-terminal bash answering your requests. Don't
+<em>exit</em> from it, because the <em>tm</em> server will end.</p>
+<h3><a name="mplayer"></a>Remote control for mplayer</h3>
+<p>Start a <a href="http://www.mplayerhq.hu/">mplayer</a> allowing remote
+commands with:</p>
+<pre>
+tm -w mplayer -slave voice_recording.mp3
+</pre>
+<p>Then you can send orders as simple as these:</p>
+<pre>
+echo pause | tm
+</pre>
+<p>Make your xbindkeys to map to these commands, and you can have a good
+control of your music playing.
+In fact I mapped <em>pause</em> to F1, and <em>go backwards 5 seconds</em>
+to F2, and I use this for transcription of voice recordings.</p>
+<h3><a name="telnet"></a>Transfer files through telnet</h3>
+<p>If you run a telnet client inside <em>tm</em>, you can use a <em>tm</em> client
+to send uuencoded streams. You can look at a
+<a href="http://www.youterm.com/?view=Player&video=tools/tm-telnetfile">Youterm
+podcast</a> for that.</p>
+<h3><a name="log"></a>Access to a part of an execution log, on demand</h3>
+<p>Imagine you want to run the program XXX, which does a lot of debug
+output in stdout. Even without running it through tm,
+you will be able to access the logs <strong>only</strong> when
+you connect to it.</p>
+<pre>
+XXX | tm cat &gt; /tmp/total_log.txt
+</pre>
+<p>You can redirect to /dev/null or use <em>tm</em>'s -n [nohup] if you
+don't want
+to store all the debug info. In any case, you can run a simple
+<kbd>tm</kbd> command with no parameters, and you will be seeing
+the debug info since the connection. Close <em>tm</em> (Control-C) and
+you will not see the info until a new connection is made.</p>
+
+
+<h2>Manual</h2>
+<p>Here you have a copy of the help for v0.4:</p>
+<pre>
+tm v0.4 - terminal mixer,  Copyright (C) 2007  Lluis Batlle i Rossell
+usage: ./tm [opts] [appcommand] [param1] [param2] ...
+ If you give _appcommand_, it starts the application and
+ serves it through a Unix socket on $TM_SOCKET or /tmp/tm-socket.UID,
+ unless '-p' is used.
+ Without _appcomand_, starts a the Unix socket client.
+options: 
+ -h     Show help.
+ -P     Run the child as connected to a pipe (default).
+ -t     Run the child as connected to a terminal (raw mode in client).
+ -n     Unlink the program from the terminal (as 'nohup').
+ -N MAX Serve at most MAX sockets for each transport (1 default).
+ -w     The remote clients can write to the application.
+ -C     The remote clients end will close app's stdin.
+ -p NUM Listen to tcp port NUM for 'telnet', and not listen to any
+        Unix socket.
+ -E     Echo remote input to the server terminal.
+ -e dev Also serve/connect using raw ethernet, device 'dev'.
+ -c adr Connect to address (MAC if eth).
+ -x     Send xterm's resize control string to clients.
+</pre>
+
+<h2>Thanks</h2>
+<ul>
+<li>To Pancake, who gave a spark for the general idea of this program,
+based on an initial <a href="../stdinmix/index.html">stdinmix</a>
+<li>To Raúl Salinas Monteagudo, for his support.
+<li>To the useful, although sometimes uncomfortable, UNIX interface.
+<li>To GNU, an ugly but working and helpful ol' UNIX implementation.
+<li>I took some bits from
+<a href="http://freshmeat.net/projects/cec/">Coraid Ethernet Console</a>
+(BSD license). <a
+href="http://plan9.bell-labs.com/plan9/">Plan 9</a> version at
+<kbd>/n/sources/contrib/quanstro/src/cec/</kbd> - Thanks to Erik Quanstrom. 
+</ul>
+
+<address>Author:
+<a href="http://vicerveza.homeunix.net/~viric/index.html.en">Lluís
+Batlle i Rossell</a>,
+viric_at_vicerveza_dot_homeunix_dot_net</address>
+</body>

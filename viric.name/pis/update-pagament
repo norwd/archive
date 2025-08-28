@@ -1,0 +1,296 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+	<title>Edició dels pagaments</title>
+	<meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1">
+	<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+</head>
+
+<body>
+
+<H1 ALIGN=center>Ètxelon</H1>
+
+<?php
+	include("getdb.inc");
+	// Variables globals
+	$touchdb = 1;	// Tocar la base de dades
+
+	// Considerem que estem retocant un pagament que volem afegir, si hi ha comentari definit.
+	// És per poder donar la data bé.
+	if(isset($_POST["botiga"]))
+		$retocant=1;
+	else
+		$retocant=0;
+
+	// Fem la connexió
+	$connexio = mysql_connect($mysql_server, $mysql_user, $mysql_password);
+	mysql_select_db($mysql_db, $connexio);
+
+	// Crides a funcions per obtenir parametres
+	$habitants = obtenir_habitants($connexio);
+	$num_habitants = count($habitants);
+	$altres = obtenir_altres($connexio);
+	
+if(!isset($_POST["afegir"]) && !isset($_GET["id"]))
+{
+?>
+
+<!-- DEMANAR PER AFEGIR COSES -->
+
+<?php
+	// VARIALBES
+	if(isset($_GET["num_altres"]))
+		$num_altres = $_GET["num_altres"];
+	elseif(isset($_POST["num_altres"]))
+		$num_altres = $_POST["num_altres"];
+	else
+		$num_altres=1;
+?>
+
+<H2>Afegir nou pagament</H2>
+
+<form action="update-pagament" method="post">
+
+<input type=hidden name=num_altres value=<?php
+	echo $num_altres;
+	?>>
+
+<p> Dades del pagament: </p>
+<TABLE BORDER=0>
+<TR>
+	<TH>Data:
+	<TD COLSPAN=<?php echo $num_habitants+$num_altres?> ><input type="text" name="dia"
+		size=2 maxlength=2
+		value="<?php
+			if ($retocant)
+				echo $_POST["dia"];
+			else
+				echo date('d');
+			?>">
+		<input type="text" name="mes" size=2 maxlength=2
+		value="<?php
+			if ($retocant)
+				echo $_POST["mes"];
+			else
+				echo date('m');
+			?>">
+		<input type="text" name="any" size=4 maxlength=4
+		value="<?php
+			if ($retocant)
+				echo $_POST["any"];
+			else
+				echo date('Y');
+			?>">
+
+<TR>
+	<TH>Hora:
+	<TD COLSPAN=<?php echo $num_habitants+$num_altres?> ><input type="text" name="hora"
+		size=2 maxlength=2
+		value="<?php
+			if ($retocant)
+				echo $_POST["hora"];
+			else
+				echo date('H');
+			?>">
+		<input type="text" name="minut" size=2 maxlength=2
+		value="<?php
+			if ($retocant)
+				echo $_POST["minut"];
+			else
+				echo date('i');
+			?>">
+
+<TR>
+	<TH>Comentari:
+	<TD COLSPAN=<?php echo $num_habitants+$num_altres?> ><input type="text" name="comentari" size=40 maxlength=250 <?php
+	if (isset($_POST["comentari"]))
+		echo "value=\"" . strtohtml($_POST["comentari"]) . "\"";
+	?>>
+<TR>
+	<TH>
+<?php
+		// Imprimim el nom dels habitants
+		foreach($habitants as $i)
+			echo "\t<TH>" . strtohtml($i["nom"]) . "\n";
+?>
+<?php 
+	for($i=0; $i<$num_altres;$i++)
+		{
+			echo "\t<TH>";
+			if(isset($_POST["altres"][$i]))
+				select_altres("altres[$i]", $_POST["altres"][$i]);
+			else
+				select_altres("altres[$i]");
+			echo "\n";
+		}
+?>
+<TR>
+	<TH>Pagat:
+<?php
+	foreach($habitants as $i)
+	{
+		echo "\t<TD><input type=\"text\" name=\"pagat[" . $i["id"] . "]\" size=6 maxlength=8 value=";
+		if (isset($_POST["pagat"][$i["id"]]))
+			echo $_POST["pagat"][$i["id"]];
+		else
+			echo "0";
+		echo ">\n";
+	}
+?>
+<?php
+	for($i=0; $i<$num_altres;$i++)
+	{
+		echo "\t<TD><input type=\"text\" name=\"pagat_altres[$i]\" size=6 maxlength=8 value=";
+		if (isset($_POST["pagat_altres"][$i]))
+			echo $_POST["pagat_altres"][$i];
+		else
+			echo "0";
+		echo ">\n";
+	}
+?>
+<TR>
+	<TH>Cobrat:
+<?php
+	foreach($habitants as $i)
+	{
+		echo "\t<TD><input type=\"text\" name=\"cobrat[" . $i["id"] . "]\" size=6 maxlength=8 value=";
+		if (isset($_POST["cobrat"][$i["id"]]))
+			echo $_POST["cobrat"][$i["id"]];
+		else
+			echo "0";
+		echo ">\n";
+	}
+?>
+<?php
+	for($i=0; $i<$num_altres;$i++)
+	{
+		echo "\t<TD><input type=\"text\" name=\"cobrat_altres[" . $i["id"] . "]\" size=6 maxlength=8 value=";
+		if (isset($_POST["cobrat_altres"][$i]))
+			echo $_POST["cobrat_altres"][$i];
+		else
+			echo "0";
+		echo ">\n";
+	}
+?>
+</TABLE>
+
+<HR WIDTH="70%">
+<center>
+<input type=submit value="Afegir pagament" name=afegir>
+<input type=reset value="Ressetejar formulari">
+</center>
+
+
+<H2>Alterar formulari</H2>
+<p>Seleccionar el número d'altra gent al pagament:
+	<input type=text name=num_altres size=2 maxlength=2 value=<?php echo $num_altres ?>>
+</p>
+
+<p align=center><input type=submit value="Canviar" name=canviar> </p>
+</form>
+
+<HR WIDTH="70%">
+
+<H2>Utilització</H2>
+
+<UL>
+<LI>És important escriure el <em>comentari</em> ja que serà amb el que els
+	habitants identifiquin el pagament.
+<LI>La suma del que s'ha <em>pagat</em> ha de ser igual a la suma del que s'ha
+	<em>cobrat</em>.
+<LI><em>Alterar el formulari</em> per afegir altres persones borrarà els
+	camps que ja s'havien emplenat.
+</UL>
+
+<!-- FI DE DEMANAR PER AFEGIR COSES -->
+
+<?php
+} // Fi del if del 'submit'
+else if(isset($_POST["afegir"]))
+{
+	// Afegir les coses a la base de dades
+
+	// Falta xequejar si les dades estan bé
+
+		settype($_POST["hora"], "integer");
+		settype($_POST["minut"], "integer");
+		settype($_POST["dia"], "integer");
+		settype($_POST["mes"], "integer");
+		settype($_POST["any"], "integer");
+
+		// ** El preu ha de ser la suma de lo que ha pagat tothom. O inferior!
+		$data = mktime($_POST["hora"], $_POST["minut"], 0, $_POST["mes"], $_POST["dia"], $_POST["any"]);
+
+		// Inserto la fila a 'pagaments'
+		$query = "INSERT INTO pagaments VALUES(FROM_UNIXTIME($data),'" . strtosql($_POST["comentari"]) ."');";
+		$resultat = 1; // Per si no es fa la query, assumim que no hi ha errors
+		if ($touchdb)
+			$resultat = mysql_query($query, $connexio);
+		else
+			echo $query . "<BR>";
+
+
+		// Comprovem el resultat de l'inserció a "pagaments"
+		if (!$resultat)
+		{
+?>
+			<p> <STRONG>ERROR:</STRONG> Error al actualitzar les dades a
+				<STRONG>pagaments</STRONG>! </p>
+<?php
+			echo mysql_errno().": ".mysql_error()."<BR>";
+		}
+		else
+		{
+			// Afegim el que han pagat i el que els toca pagar a cada habitant
+			// Participen els habitants + $num_altres
+			
+			// Els habitants que paguen
+			foreach($habitants as $i)
+			{
+				settype($_POST["pagat"][$i["id"]], "double");
+				settype($_POST["cobrat"][$i["id"]], "double");
+
+				if ($_POST["pagat"][$i["id"]] != 0 || $_POST["cobrat"][$i["id"]] != 0 )
+				{
+					$query = "INSERT INTO pagadors (data,persona,pagat,cobrat) VALUES(FROM_UNIXTIME($data)," . $i["id"] . ",". $_POST["pagat"][$i["id"]] . ", ". $_POST["cobrat"][$i["id"]] . ");";
+					if ($touchdb)
+						$resultat = mysql_query($query, $connexio);
+					else
+						echo $query . "<BR>\n";
+				}
+			}
+
+			// Els altres que paguen
+			for($i=0; $i < $_POST["num_altres"]; $i++)
+			{
+				settype($_POST["pagat_altres"][$i], "double");
+				settype($_POST["cobrat_altres"][$i], "double");
+
+				if ($_POST["pagat_altres"][$i] != 0 || $_POST["cobrat_altres"][$i] != 0)
+				{
+					$persona = $_POST["altres"][$i];
+					$query = "INSERT INTO pagadors (data,persona,pagat,cobrat) VALUES(FROM_UNIXTIME($data)," . $persona . ",". $_POST["pagat_altres"][$i] . ", " . $_POST["cobrat_altres"][$i] . ");";
+					if ($touchdb)
+						$resultat = mysql_query($query, $connexio);
+					else
+						echo $query . "<BR>";
+				}
+			}
+			
+
+			// *** No s'hauria de deixar continuar si peta el pagament!!!! (de fet és el que fa. O NO?)
+		}	// Fi de si la inserció de pagaments va bé.
+
+		// Què cutre que és això. **
+		echo "Si no hi ha cap missatge d'error, tot ha anat bé! El pagament ha estat afegit.<BR>";
+
+}
+?>
+
+
+<HR WIDTH="70%">
+<BR>
+<A HREF="index">Tornar al menú d'inici</A>
+
+</body>
+</html>

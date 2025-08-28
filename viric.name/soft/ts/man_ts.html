@@ -1,0 +1,430 @@
+Content-type: text/html
+
+<HTML><HEAD><TITLE>Manpage of TS</TITLE>
+</HEAD><BODY>
+<H1>TS</H1>
+Section: User Commands  (1)<BR>Updated: 2008-11<BR><A HREF="man_ts.html#index">Index</A>
+<A HREF="http://localhost/cgi-bin/man/man2html">Return to Main Contents</A><HR>
+
+<A NAME="lbAB">&nbsp;</A>
+<H2>NAME</H2>
+
+ts - task spooler. A simple unix batch system
+<A NAME="lbAC">&nbsp;</A>
+<H2>SYNOPSIS</H2>
+
+<B>ts [</B><I>actions</I><B>] [</B><I>options</I><B>] [</B><I>command...</I><B>]</B>
+
+<P>
+Actions:
+<B>[-KClhV]</B>
+
+<B>[-t [id</B><I>]]</I>
+
+<B>[-c [id</B><I>]]</I>
+
+<B>[-p [id</B><I>]]</I>
+
+<B>[-o [id</B><I>]]</I>
+
+<B>[-s [id</B><I>]]</I>
+
+<B>[-r [id</B><I>]]</I>
+
+<B>[-w [id</B><I>]]</I>
+
+<B>[-u [id</B><I>]]</I>
+
+<B>[-i [id</B><I>]]</I>
+
+<B>[-U &lt;id</B><I>-</I><B>id</B><I>&gt;]</I>
+
+<B>[-S &lt;num</B><I>&gt;]</I>
+
+<P>
+Options:
+<B>[-nfgmd]</B>
+
+<B>[-L &lt;label</B><I>&gt;]</I>
+
+<P>
+<A NAME="lbAD">&nbsp;</A>
+<H2>DESCRIPTION</H2>
+
+<B>ts</B>
+
+will run by default a per user unix task queue. The user can add commands to
+the queue, watch that queue at any moment, and look at the task results
+(actually, standard output and exit error).
+<A NAME="lbAE">&nbsp;</A>
+<H2>SIMPLE USE</H2>
+
+Calling
+<B>ts</B>
+
+with a command will add that command to the queue, and calling it without
+commands or parameters will show the task list.
+<A NAME="lbAF">&nbsp;</A>
+<H2>COMMAND OPTIONS</H2>
+
+When adding a job to ts, we can specify how it will be run and how will the
+results be collected:
+<DL COMPACT>
+<DT><B>-n</B>
+
+<DD>
+Do not store the standard output/error in a file at
+<B>$TMPDIR</B>
+
+- let it use the
+file descriptors decided by the calling process. If it is not used, the
+<B>jobid</B>
+
+for the new task will be outputed to stdout.
+<DT><B>-g</B>
+
+<DD>
+Pass the output through gzip (only if
+<B>-n</B>
+
+). Note that the output files will not
+have a .gz extension.
+<DT><B>-f</B>
+
+<DD>
+Don not put the task into background. Wait the queue and the command run without
+getting detached of the terminal. The exit code will be that of the command, and
+if used together with -n, no result will be stored in the queue.
+<DT><B>-m</B>
+
+<DD>
+Mail the results of the command (output and exit code) to
+<B>$TS_MAILTO</B>
+
+, or to the
+<B>$USER</B>
+
+using
+<B>/usr/sbin/sendmail.</B>
+
+Look at
+<B>ENVIRONMENT.</B>
+
+<DT><B>-L &lt;label&gt;</B>
+
+<DD>
+Add a label to the task, which will appear next to its command when listing
+the queue. It makes more comfortable distinguishing similar commands with
+different goals.
+<DT><B>-d</B>
+
+<DD>
+Run the command only if the command before finished well (errorlevel = 0). This new
+task enqueued depends on the result of the previous command. If the task is not run,
+it is considered as failed for further dependencies.
+</DL>
+<A NAME="lbAG">&nbsp;</A>
+<H2>ACTIONS</H2>
+
+Instead of giving a new command, we can use the parameters for other purposes:
+<DL COMPACT>
+<DT><B>-K</B>
+
+<DD>
+Kill the
+<B>ts</B>
+
+server for the calling client. This will remove the unix socket and
+all the
+<B>ts</B>
+
+processes related to the queue. This will not kill the command being
+run at that time.
+<P>
+It is not reliable to think that
+<B>ts -K</B>
+
+will finish when the server is really killed. By now it is a race condition.
+<DT><B>-C</B>
+
+<DD>
+Clear the results of finished jobs from the queue.
+<DT><B>-l</B>
+
+<DD>
+Show the list of jobs - to be run, running and finished - for the current queue.
+This is the default behaviour if
+<B>ts</B>
+
+is called without options.
+<DT><B>-t [id]</B>
+
+<DD>
+Show the last ten lines of the output file of the named job, or the last
+running/run if not specified. If the job is still running, it will keep on
+showing the additional output until the job finishes. On exit, it returns the
+errorlevel of the job, as in <B>-c</B>.
+<DT><B>-c [id]</B>
+
+<DD>
+Run the system's cat to the output file of the named job, or the last
+running/run if not specified. It will block until all the output can be
+sent to standard output, and will exit with the job errorlevel as in
+<B>-c</B>.
+<DT><B>-p [id]</B>
+
+<DD>
+Show the pid of the named job, or the last running/run if not specified.
+<DT><B>-o [id]</B>
+
+<DD>
+Show the output file name of the named job, or the last running/run 
+if not specified.
+<DT><B>-s [id]</B>
+
+<DD>
+Show the job state of the named job, or the last in the queue.
+<DT><B>-r [id]</B>
+
+<DD>
+Remove the named job, or the last in the queue.
+<DT><B>-w [id]</B>
+
+<DD>
+Wait for the named job, or for the last in the queue.
+<DT><B>-u [id]</B>
+
+<DD>
+Make the named job (or the last in the queue) urgent - this means that it goes
+forward in the queue so it can run as soon as possible.
+<DT><B>-i [id]</B>
+
+<DD>
+Show information about the named job (or the last run). It will show the command line,
+some times related to the task, and also any information resulting from
+<B>TS_ENV</B> (Look at <B>ENVIRONMENT</B>).
+<DT><B>-U &lt;id-id&gt;</B>
+
+<DD>
+Interchange the queue positions of the named jobs (separated by a hyphen and no
+spaces).
+<DT><B>-h</B>
+
+<DD>
+Show help on standard output.
+<DT><B>-V</B>
+
+<DD>
+Show the program version.
+</DL>
+<A NAME="lbAH">&nbsp;</A>
+<H2>MULTI-SLOT</H2>
+
+<B>ts</B>
+
+by default offers a queue where each job runs only after the previous finished.
+Nevertheless, you can change the maximum number of jobs running at once with
+the
+<B>-S &lt;num&gt;</B>
+
+parameter. We call that number the
+<I>amount of slots</I>. You can also set the initial number of jobs with
+the environment variable
+<B>TS_SLOTS.</B>
+
+When increasing this setting, queued waiting jobs will be run
+at once until reaching the maximum set. When decreasing this setting, no other
+job will be run until it can meet the amount of running jobs set.
+<B>When</B>using<B>an</B>amount<B>of</B>slots<B>greater</B>than<B>1,</B>the<B>action</B>of<B>some</B>commands
+
+may change a bit. For example, <B>-t</B> without <I>jobid</I> will tail the first
+job running, and <B>-d</B> will try to set the dependency with the last job added.
+<DL COMPACT>
+<DT><B>-S &lt;num&gt;</B>
+
+<DD>
+Set the maximum amount of running jobs at once.
+</DL>
+<A NAME="lbAI">&nbsp;</A>
+<H2>ENVIRONMENT</H2>
+
+<DL COMPACT>
+<DT><B>TS_MAXFINISHED</B>
+
+<DD>
+Limit the number of job results (finished tasks) you want in the queue. Use this
+option if you are tired of
+<B>-C.</B>
+
+<DT><B>TS_ONFINISH</B>
+
+<DD>
+If the variable exists pointing to an executable, it will be run by the client
+after the queued job. It uses execlp, so
+<B>PATH</B>
+
+is used if there are no slashes in the variable content. The executable is run
+with four parameters:
+<B>jobid</B>
+
+<B>errorlevel</B>
+
+<B>output_filename</B>
+
+and
+<B>command.</B>
+
+<DT><B>TMPDIR</B>
+
+<DD>
+As the program output and the unix socket are thought to be stored in a
+temporary directory, 
+<B>TMPDIR</B>
+
+will be used if defined, or
+<B>/tmp</B>
+
+otherwise.
+<DT><B>TS_SOCKET</B>
+
+<DD>
+Each queue has a related unix socket. You can specify the socket path with this
+environment variable. This way, you can have a queue for your heavy disk
+operations, another for heavy use of ram., and have a simple script/alias
+wrapper over ts for those special queues. If it is not specified, it will be
+<B>$TMPDIR/socket-ts.[uid].</B>
+
+<DT><B>TS_SLOTS</B>
+
+<DD>
+Set the number of slots at the start of the server, similar to
+<B>-S,</B>
+
+but the contents of the variable are read only when running
+the first instance of
+<B>ts.</B>
+
+<DT><B>TS_MAILTO</B>
+
+<DD>
+Send the letters with job results to the address specified in this variable.
+Otherwise, they are sent to
+<B>$USER</B>
+
+or if not defined,
+<B>nobody.</B>
+
+The system
+<B>/usr/sbin/sendmail</B>
+
+is used. The
+job outputs are not sent as an attachment, so understand the consequences if you
+use the
+<B>-gm</B>
+
+flags together.
+<DT><B>USER</B>
+
+<DD>
+As seen above, it is used for the mail destination if
+<B>TS_MAILTO</B>
+
+is not specified.
+<DT><B>TS_SAVELIST</B>
+
+<DD>
+If it is defined when starting the queue server (probably the first
+<B>ts</B>
+
+command run), on SIGTERM the queue status will be saved to the file pointed
+by this environment variable - for example, at system shutdown.
+<DT><B>TS_ENV</B>
+
+<DD>
+This has a command to be run at enqueue time through
+<B>/bin/sh</B>. The output of the command will be readable through the option
+<B>-i</B>. You can use a command which shows relevant environment for the command run.
+For example, you may use <B>TS_ENV='pwd;set;mount'</B>.
+</DL>
+<A NAME="lbAJ">&nbsp;</A>
+<H2>FILES</H2>
+
+<DL COMPACT>
+<DT><B>/tmp/ts.error</B>
+
+<DD>
+if
+<B>ts</B>
+
+finds any internal problem, you should find an error report there.
+Please send this to the author as part of the bug report.
+<P>
+</DL>
+<A NAME="lbAK">&nbsp;</A>
+<H2>BUGS</H2>
+
+<B>ts</B>
+
+expects a simple command line. It does not start a shell parser.
+If you want to run complex shell commands, you may want to run them through
+<B>sh -c 'commands...'</B>
+
+Also, remember that stdin/stdout/stderr will be detached, so
+do not use your shell's redirection operators when you put a job into background.
+You can use them inside the
+<B>sh -c</B>
+
+in order to set redirections to the command run.
+<P>
+If an internal problem is found in runtime, a file
+<B>/tmp/ts.error</B>
+
+is created, which you can submit to the developer in order to fix the bug.
+<P>
+<A NAME="lbAL">&nbsp;</A>
+<H2>SEE ALSO</H2>
+
+<B><A HREF="http://localhost/cgi-bin/man/man2html?1+at">at</A></B>(1)
+
+<A NAME="lbAM">&nbsp;</A>
+<H2>AUTHOR</H2>
+
+Lluis Batlle i Rossell
+<A NAME="lbAN">&nbsp;</A>
+<H2>NOTES</H2>
+
+This page describes
+<B>ts</B>
+
+as in version 0.6.1. Other versions may differ. The file
+<B>TRICKS</B>
+
+found in the distribution package can show some ideas on special uses of
+<B>ts.</B>
+
+<P>
+
+<HR>
+<A NAME="index">&nbsp;</A><H2>Index</H2>
+<DL>
+<DT><A HREF="man_ts.html#lbAB">NAME</A><DD>
+<DT><A HREF="man_ts.html#lbAC">SYNOPSIS</A><DD>
+<DT><A HREF="man_ts.html#lbAD">DESCRIPTION</A><DD>
+<DT><A HREF="man_ts.html#lbAE">SIMPLE USE</A><DD>
+<DT><A HREF="man_ts.html#lbAF">COMMAND OPTIONS</A><DD>
+<DT><A HREF="man_ts.html#lbAG">ACTIONS</A><DD>
+<DT><A HREF="man_ts.html#lbAH">MULTI-SLOT</A><DD>
+<DT><A HREF="man_ts.html#lbAI">ENVIRONMENT</A><DD>
+<DT><A HREF="man_ts.html#lbAJ">FILES</A><DD>
+<DT><A HREF="man_ts.html#lbAK">BUGS</A><DD>
+<DT><A HREF="man_ts.html#lbAL">SEE ALSO</A><DD>
+<DT><A HREF="man_ts.html#lbAM">AUTHOR</A><DD>
+<DT><A HREF="man_ts.html#lbAN">NOTES</A><DD>
+</DL>
+<HR>
+This document was created by
+<A HREF="http://localhost/cgi-bin/man/man2html">man2html</A>,
+using the manual pages.<BR>
+Time: 23:22:46 GMT, November 02, 2008
+</BODY>
+</HTML>

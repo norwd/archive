@@ -1,0 +1,212 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>WebDAV Delta-V</title>
+
+<link rel="stylesheet" href="../../style.css" type="text/css" />
+
+<link rel="stylesheet" href="../../local.css" type="text/css" />
+
+
+<link rel="alternate" type="application/x-wiki" title="Edit this page" href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2FWebDAV_Delta-V&amp;do=edit" />
+
+
+
+
+</head>
+<body>
+
+<div class="pageheader">
+<div class="header">
+<span>
+<span class="parentlinks">
+
+<a href="../../index.html">viricbloc</a>/ 
+
+<a href="../index.html">posts</a>/ 
+
+</span>
+<span class="title">
+WebDAV Delta-V
+
+</span>
+</span><!--.header-->
+
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2FWebDAV_Delta-V&amp;do=edit" rel="nofollow">Edit</a></li>
+
+
+<li><a href="../../recentchanges/index.html">RecentChanges</a></li>
+
+
+
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?do=prefs">Preferences</a></li>
+
+
+<li><a href="index.html#comments">1 comment</a><br /></li>
+
+</ul>
+</div>
+
+
+
+
+</div> <!-- .pageheader -->
+
+
+
+<div id="content">
+<p>Fa uns dies em vaig assabentar del protocol <a href="http://webdav.org/">WebDAV</a>,
+definit a l'<a href="http://tools.ietf.org/html/rfc4918">RFC 4918</a>.</p>
+
+<p>Bàsicament, es tracta d'unes extensions sobre l'HTTP (<em>Web-based Distributed
+Authoring and Versioning</em>) pensades per a accedir un sistema de fitxers. O
+sigui, no només demanant fitxers per URL, sino també podent demanar llistats,
+pujar fitxers, etc.</p>
+
+<p>El WebDAV bàsic inclou les operacions típiques que trobaríem a un FTP, servides
+per HTTP, i a més amb la possibilitat de bloquejar-hi fitxers, a l'estil d'un
+<a href="http://svnbook.red-bean.com/nightly/en/svn.basic.vsn-models.html#svn.basic.vsn-models.lock-unlock">subversion
+lock</a>.
+Això últim és per a permetre el treball en equip sobre un sol sistema de
+fitxers.</p>
+
+<p>L'<a href="http://httpd.apache.org/">Apache</a> pot servir un arbre del sistema de fitxers on corre mitjançant el
+mòdul <a href="http://www.webdav.org/mod_dav/">mod_dav</a>, tot i que no suportarà
+bloquejos si no hi fem participar també el mòdul
+<a href="http://httpd.apache.org/docs/2.2/mod/mod_dav_lock.html">mod_dav_lock</a>.</p>
+
+<p>Alguns navegadors suporten mínimament WebDAV, en bona part perquè està pensat
+per encaixar mínimament amb l'HTTP que parlen els navegadors. Els linux poden
+muntar sistemes de fitxers WebDAV a través del
+<a href="http://savannah.nongnu.org/projects/davfs2">davfs2</a> amb
+<a href="http://fuse.sourceforge.net/">FUSE</a>. I els Windows, des de Windows 98,
+suporten accés WebDAV a través de les seves Carpetes Web (Web Folders). De tota
+manera, els Windows Vista i 7 64-bit sembla ser que tenen alguns problemes,
+sobretot amb WebDAV a través d'HTTPS. A més, també hi ha alguns programes
+client expressos, tal com hi ha clients d'FTP, com el
+<a href="http://www.webdav.org/cadaver/">cadaver</a>, o per Windows <a href="http://www.bitkinex.com/webdavclient/">el de
+BitKinex</a>.</p>
+
+<p>L'estrella de WebDAV és el <a href="http://subversion.org">Subversion</a>, que no només
+parla WebDAV un cop servit amb Apache mitjançant el seu mòdul
+<a href="http://svnbook.red-bean.com/nightly/en/svn.serverconfig.httpd.html">mod_dav_svn</a>
+sino que a més parla una extensió de WebDAV anomenada
+<a href="http://www.ietf.org/rfc/rfc3253.txt">DeltaV</a>, que contempla el sistema de
+fitxers compartit <em>amb control de versions</em>. De fet, els clients de Subversion
+parlen WebDAV+DeltaV amb el seu servidor.</p>
+
+<p>El mòdul <code>mod_dav_svn</code>, a més, suporta el que anomenen <a href="http://svnbook.red-bean.com/nightly/en/svn.webdav.html">versionat
+automàtic</a>. Això vol
+dir que els clients de WebDAV que no suportin DeltaV, cada cop que pugin un
+fitxer al servidor, automàticament suposarà una nova revisió de subversion, una
+nova versió del sistema de fitxers.</p>
+
+<p>Les operacions de Subversion no mapegen una-a-una amb les de WebDAV+DeltaV, com per exemple en el cas de bloquejar fitxers; per això, el mòdul <code>mod_dav_svn</code> no suporta bloquejos, i si de cas, cal muntar-hi en paral·lel un <code>mod_dav_lock</code>.</p>
+
+<p>I tot això està inventat de fa temps, i força suportat de sèrie als sistemes operatius populars. Sembla una manera ideal de tenir un sistema de fitxers compartit, no? La única traba que hi trobo és la complexitat de muntatge lligant-hi bé tots els mòduls d'Apache necessaris. Sort de NixOS!</p>
+
+</div>
+
+
+<div id="comments">
+<div id="feedlink">
+
+<a class="feedbutton" type="application/rss+xml" href="comments.rss">RSS</a>
+
+
+<a class="feedbutton" type="application/atom+xml" href="comments.atom">Atom</a>
+
+</div>
+<div class="comment" id="comment-97be307d1dd0cf8e0dbf44bfbb8eefac">
+
+<div class="comment-subject">
+
+<a href="http://vicerveza.homeunix.net/~viric/bloc/posts/WebDAV_Delta-V/#comment-97be307d1dd0cf8e0dbf44bfbb8eefac">FUSE</a>
+
+</div>
+
+<div class="inlinecontent">
+<p>A linux, davfs2 no funciona pas com a sistema de fitxers a muntar per qualsevol usuari amb la llibreria de FUSE. Per a un client FUSE, cal mirar a <a href="http://noedler.de/projekte/wdfs/">wdfs</a>. Tot i que no ha estat actualitzat recentment, és l'únic que he trobat que m'ha funcionat.</p>
+
+<p>Jo m'havia mirat el <a href="http://0pointer.de/lennart/projects/fusedav/">fusedav</a>, més vell, però a dia d'avui no l'he pas aconseguit fer funcionar. L'he compilat, però no m'ha pas anat bé.</p>
+
+
+</div>
+
+<div class="comment-header">
+Comment by
+
+
+
+<span class="author" title="Signed in">
+
+<a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=viric&amp;do=goto">viric</a>
+
+</span>
+
+<!-- !COMMENTUSER -->
+
+&mdash; <span class="date">dj 01 abr 2010 16:05:48 CEST</span>
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2FWebDAV_Delta-V%2Fcomment_1_d6f27d6af923f75fc37bf16a33e2169e&amp;do=remove" rel="nofollow">Remove comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.comment-->
+
+
+
+
+<div class="addcomment">
+<a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2FWebDAV_Delta-V&amp;do=comment">Add a comment</a>
+</div>
+
+</div>
+
+
+<div id="footer" class="pagefooter">
+<div id="pageinfo">
+
+
+<div class="tags">
+Tags:
+
+<a href="../../tags/tech/index.html" rel="tag">tech</a>
+
+</div>
+
+
+
+
+
+
+
+
+<div class="pagedate">
+Last edited <span class="date">dt 30 mar 2010 21:57:44 CEST</span>
+<!-- Created <span class="date">dt 30 mar 2010 21:57:44 CEST</span> -->
+</div>
+
+</div><!-- #pageinfo -->
+
+<!-- from viricbloc -->
+</div><!-- .pagefooter #footer -->
+
+</body>
+</html>
