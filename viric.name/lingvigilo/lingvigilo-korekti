@@ -1,0 +1,149 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+	<title>Lingvigilo - Korekta kvizo</title>
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+	<META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+	<META HTTP-EQUIV="Expires" CONTENT="-1">
+</head>
+
+<body>
+
+<?php
+include('./getdb.inc');
+
+$konekto=konekti();
+
+$frazoj = preni_frazojn($konekto,0)
+?>
+
+<h1>Korektilo por programo <em>lingvigilo</em></h1>
+
+<?php
+if (isset($_POST["korektu"]))
+{
+
+	// Konservi datumojn.
+	
+	$body = "";
+	// OJU!!!! Aquí falla indentació per mantenir 80 columnes.
+	if ($frazoj != 0)
+	{
+	foreach($frazoj as $key => $f)
+	{
+		//echo "<p> Key: $key. ";
+		if(isset($_POST["korekto"][$key]))
+			//echo "farita.";
+			if($_POST["korekto"][$key] != 0)
+			{
+				$query = "UPDATE " . $frazotablo .
+					" SET korekta=" .
+					$_POST["korekto"][$key] .
+					",klarigo='" .
+					strtosql($_POST["klarigo"][$key]) .
+					"',korektisto='" .
+					strtosql($_POST["korektisto"]) .
+					"' WHERE id=".  $key . ";";
+				mysql_query($query, $konekto);
+				// Por retletero
+				$body = $body .
+					"Vorto: " . $f["vorto"] . "\n" .
+					"Frazo: " . $f["frazo"] . "\n" .
+					"Korekteco: " .
+					teksto_korekto($_POST["korekto"][$key])
+					. "\n" .
+					"Klarigo: " . $_POST["klarigo"][$key] .
+					"\n" .  "Korektist(in)o: " .
+					$_POST["korektisto"] .
+					"\n\n";
+
+				
+
+			}
+		//echo "</p>\n";
+	}
+	// Sendi retleteron
+	mail("viric@vicerveza.homeunix.net","Korektado de frazoj", $body,
+	"Content-Type: text/plain; charset=utf-8\r\n" .
+	"Content-Transfer-Encoding: 8bit");
+	}
+	
+?>
+	<p>Dankon pro la korektado!<p>
+	<p>Vi povas reiri al frazaro korektenda alitage, ĉiam je la
+	<a HREF="http://vicerveza.homeunix.net/~viric/lingvigilo/lingvigilo-korekti">Sama
+	adreso</a>.</p>
+<?php
+}
+else
+{
+?>
+
+<h2>Frazoj korektendaj</h2>
+
+<form action="lingvigilo-korekti" method="post">
+
+<TABLE BORDER=1>
+<TR>
+        <TH>ID
+        <TH>Vorto
+        <TH>Frazo
+        <TH>Korekto
+        <TH>Klarigo
+
+<?php
+
+function select_korekto($id_frazo)
+{
+	echo "<SELECT name=\"korekto[$id_frazo]\">\n";
+	echo "<OPTION value=0 selected>Ne korektita\n";
+	echo "<OPTION value=1>Ĝusta\n";
+	echo "<OPTION value=2>Malĝusta\n";
+	echo "<OPTION value=3>Nekutima\n";
+	echo "</SELECT>\n";
+}
+
+$numfrazoj = 0;
+if ($frazoj != 0)
+	foreach($frazoj as $key => $f)
+	{
+		echo "<tr>\n";
+		echo "\t<td>". $key . "\n";
+		echo "\t<td>". $f["vorto"] . "\n";
+		echo "\t<td>". $f["frazo"] . "\n";
+		echo "\t<td>";
+		select_korekto($key);
+		echo "\t<td><input type=text name=\"klarigo[$key]\" size=30 " .
+			"maxlength=254>";
+		$numfrazoj++;
+	}
+?>
+</table>
+
+<p><strong>Estas <?php echo $numfrazoj;?> nekorektitaj frazoj en datumbazo.
+</strong></p>
+
+<h2>Prepari sendon</h2>
+
+<p>Alklaku <em>Sendu korektaĵojn</em> por sendi ilin. Vi povas igi ĉiujn frazojn
+al elekto <em>Ne korektita</em> kaj forviŝi ĉiujn klarigojn, alklakante butonon
+<em>Forgesu</em>.</p>
+
+<p>Antaŭ enmetu datumojn, bonvolu skribi ian nomon por ke mi sciu kiu korektis
+tion ĉi (t.e. kiun demandi)</p>
+
+<p><strong>Korektist(in)o:</strong>
+<input type=text name=korektisto size=10 maxlength=30>
+</p>
+
+<input type=submit value="Sendu korektaĵojn" name=korektu>
+<input type=reset value="Forgesu">
+</form>
+
+<?php
+} // Fino de normala paĝo
+?>
+
+<p>Iru al <a href="index">ĉefa paĝo</a>.</p>
+
+</body>

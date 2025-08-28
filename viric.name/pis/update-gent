@@ -1,0 +1,110 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+	<title>Edició dels pagaments</title>
+	<meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1">
+	<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+</head>
+
+<body>
+
+<H1 ALIGN=center>Ètxelon</H1>
+
+<?php
+	include("getdb.inc");
+	// Variables globals
+	$touchdb = 1;	// Tocar la base de dades
+
+	// Fem la connexió
+	$connexio = mysql_connect($mysql_server, $mysql_user, $mysql_password);
+	mysql_select_db($mysql_db, $connexio);
+
+	// Crides a funcions per obtenir parametres
+	
+if(!isset($_POST["afegir"]) && !isset($_GET["id"]))
+{
+?>
+
+<!-- DEMANAR PER AFEGIR COSES -->
+
+<H2>Afegir nova persona</H2>
+
+<form action="update-gent" method="post">
+
+<p> Dades de la persona: </p>
+<TABLE BORDER=0>
+<TR>
+	<TH>Nom:
+	<TD><input type="text" name="nom" size=20 maxlength=50>
+<TR>
+	<TH>Habitant:
+	<TD><SELECT name=habitant>
+		<OPTION value=no>No
+		<OPTION value=si>Sí
+		</SELECT>
+</TABLE>
+
+<HR WIDTH="70%">
+<center>
+<input type=submit value="Afegir persona" name=afegir>
+<input type=reset value="Ressetejar formulari">
+</center>
+
+</form>
+
+<H2>Utilització</H2>
+
+<UL>
+<LI>Es permet afegir només una persona a la vegada.
+<LI>Normalment es voldrà que <strong>no sigui habitant</strong>, a part de que
+	algú més comenci a viure al pis. De tota manera, la opció interessa en el
+	cas de <em>crear</em> una nova base de dades.
+</UL>
+
+<!-- FI DE DEMANAR PER AFEGIR COSES -->
+
+<?php
+} // Fi del if del 'submit'
+else if(isset($_POST["afegir"]))
+{
+	// Afegir les coses a la base de dades
+
+	// Falta xequejar si les dades estan bé
+
+		if($_POST["habitant"] == "si")
+			$habitant = 1;
+		else
+			$habitant = 0;
+		// Inserto la fila a 'gent'
+
+		$query = "INSERT INTO gent (nom,habitant) VALUES('" . strtosql($_POST["nom"]) .
+			"'," .strtosql($habitant) . ");";
+		$resultat = 1; // Per si no es fa la query, assumim que no hi ha errors
+		if ($touchdb)
+			$resultat = mysql_query($query, $connexio);
+		else
+			echo $query . "<BR>";
+
+		// Comprovem el resultat de l'inserció a "pagaments"
+		if (!$resultat)
+		{
+?>
+			<p> <STRONG>ERROR:</STRONG> Error al actualitzar les dades a
+				<STRONG>gent</STRONG>! </p>
+<?php
+			echo mysql_errno().": ".mysql_error()."<BR>";
+		}
+
+		// Què cutre que és això. **
+		echo "Si no hi ha cap missatge d'error, tot ha anat bé! La persona ha estat afegida.<BR>";
+
+}
+?>
+
+
+<HR WIDTH="70%">
+<BR>
+<A HREF="index">Tornar al menú d'inici</A>
+
+</body>
+</html>

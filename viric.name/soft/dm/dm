@@ -1,0 +1,123 @@
+#!/bin/sh
+
+# dm 0.9 - Directory Manager
+#  (Instructions below the license)
+# LICENSE
+# Copyright (C) 2007 Lluís Batlle i Rossell
+# 
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# Instructions:
+# 'dm' will manage a list of id-directory. 'dmcd' will allow the current shell
+# to change to the directory given by 'id'.
+#
+# Examples:
+#  $ dm 1 /tmp   # Adds the id '1' for /tmp
+#  $ dm 2 .      # Adds the id '2' for the current dir
+#  $ dmcd 1      # Goes to /tmp
+#  $ dmcd 2      # Goes to what was your current dir
+#  $ dm -d 2     # Deletes the entry for '2'.
+#  $ dm          # Shows your 'database'
+#  1     /tmp
+#  $ dm -h       # Shows help, and defines 'dmcd' for sh.
+#
+# In order to use 'dmcd', you should define the function
+# given by "dm -h" in your shell. Put it in your bashrc or
+# a file like that.
+#
+# Your directory database is stored in ~/.dm .
+
+function showdirs
+{
+    if [ -f ~/.dm ] ; then
+        cat ~/.dm | sort
+    fi
+}
+
+function testdir
+{
+    if [ "$1x" == "x" ]; then
+        echo "Error: You should specify an alias for a directory." 1>&2
+        return 1
+    fi
+    if [ -f ~/.dm ] ; then
+        grep "^$1	" ~/.dm > /dev/null 2> /dev/null
+        if [ $? -ne 0 ]; then
+            echo "Error: There is no directory for '$1'" 1>&2
+            return 1
+        fi
+    else
+        echo "Error: There is no directory for '$1'" 1>&2
+        return 1
+    fi
+}
+
+function deldir
+{
+    # Remove the old def
+    if [ -f ~/.dm ] ; then
+        sed -i "/^$1\t/d" ~/.dm
+    fi
+}
+
+function setdir
+{
+    # Remove the old def
+    deldir $1
+    NEWDIR=`getpath "$2"`
+    # Add new
+    echo "$1	$NEWDIR" >> ~/.dm
+}
+
+function getdir
+{
+    if [ -f ~/.dm ] ; then
+        grep "^$1	" ~/.dm | sed 's/^[^\t]*\t//'
+    else
+        return 1
+    fi
+}
+
+function showhelp
+{
+    echo "usage: $0 [ -l | -d id | -t id | id | id newdir ]"
+    echo 'For sh: function dmcd { dm -t $1 && cd `dm $1`; }'
+}
+
+function getpath
+{
+    OLD=`pwd`
+    cd "$1"
+    pwd
+    cd "$OLD"
+}
+
+# dm -t $1 && cd `dm $1`
+
+if [ $# -lt 1 ]; then
+    showdirs
+elif [ $1 == "-l" ]; then
+    showdirs
+elif [ $1 == "-h" ]; then
+    showhelp
+elif [ $1 == "-d" ]; then
+    deldir $2
+elif [ $1 == "-t" ]; then
+    testdir $2
+elif [ $# -eq 2  ]; then
+    setdir $1 $2
+elif [ $# -eq 1  ]; then
+    getdir $1
+fi

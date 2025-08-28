@@ -1,0 +1,159 @@
+#!/bin/sh
+
+# mman 1.0 - My MANual Pages
+#  (Instructions below the license)
+# LICENSE
+# Copyright (C) 2007 Lluís Batlle i Rossell
+# 
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# Instructions:
+#
+#  This program will store personal manual pages, refered by a section
+# number and a name, similar to the system manual pages.
+#
+#  The user can ask for any page already stored (ex. "mman ps"), or can
+# edit (or create) it (ex. "mman -e ps"), bringing up a text editor.
+# If you know how to write in troff-man, you can use for example
+# "mman -m ps", and you will be editing a page which will be viewed
+# through nroff-man.
+# Use a section number before the page name, and you'll be viewing/editing
+# that of the chosen section.
+
+if [ "x$MMANDIR" == "x" ]; then
+    MMANDIR=~/.mman
+fi
+if [ "x$EDITOR" == "x" ]; then
+    EDITOR="vi"
+fi
+
+SECTION="1 2 3 4 5 6 7 8 9"
+
+function isatty
+{
+    stty 2>&1 > /dev/null 
+    return $?
+}
+
+function edit_man
+{
+    mkdirhier "$MMANDIR"
+    WANTED_EXT=$1
+    OTHER_EXT=$2
+    # Try to look for the file in WANTED format
+    for s in $SECTION; do
+        FILE="$MMANDIR/$3.$s.$WANTED_EXT"
+        if [ -f "$FILE" ]; then
+            "$EDITOR" "$FILE"
+            return $?
+        fi
+    done
+
+    # If we didn't succeded editing the file, we search whether there was a
+    # OTHER file with that name. If there is, we change it to WANTED format.
+    for s in $SECTION; do
+        FILE="$MMANDIR/$3.$s.$OTHER_EXT"
+        if [ -f "$FILE" ]; then
+            mv "$FILE" "$MMANDIR/$3.$s.$WANTED_EXT"
+            FILE="$MMANDIR/$3.$s.$WANTED_EXT"
+            "$EDITOR" "$FILE"
+            return $?
+        fi
+    done
+    for s in $SECTION; do
+        # If we didn't succeded, we create the file in the first
+        # possible section
+        FILE="$MMANDIR/$3.$s.$WANTED_EXT"
+        "$EDITOR" "$FILE"
+        return $?
+    done
+}
+
+function view_page
+{
+    # Try to look for the file
+    for s in $SECTION; do
+        FILE="$MMANDIR/$1.$s.man"
+        if [ -f "$FILE" ]; then
+            if isatty; then
+                cat "$FILE" | nroff -Tascii -c -mandoc | less
+            else
+                cat "$FILE" | nroff -Tascii -c -mandoc
+            fi
+            return 0
+        fi
+        FILE="$MMANDIR/$1.$s.txt"
+        if [ -f "$FILE" ]; then
+            if isatty; then
+                less "$FILE"
+            else
+                cat "$FILE"
+            fi
+            return 0
+        fi
+    done
+
+    # Otherwise... complain
+    echo "The manpage doesn't exist for $1 in section(s) $SECTION."
+    return 1;
+}
+
+if [ $# -eq 0 ]; then
+    echo "usage: $0 [-e|-m] [section] name"
+    echo "   -e   Edit a TEXT man page"
+    echo "   -m   Edit a troff -man man page"
+    echo "What mmanual page you want?"
+fi
+
+ACTION=view
+
+while [ $# -gt 0 ]; do
+    case $1 in
+        -m)
+            ACTION=editman
+            shift
+            ;;
+        -e)
+            ACTION=edittxt
+            shift
+            ;;
+        [123456789])
+            SECTION=$1
+            shift
+            ;;
+        *)
+            if [ $ACTION == view ]; then
+                view_page "$1"
+                exit $?
+            elif [ $ACTION == editman ]; then
+                if ! isatty; then
+                   echo "Not running in a tty"
+                   exit 1
+                fi
+                edit_man man txt "$1"
+                exit $?
+            elif [ $ACTION == edittxt ]; then
+                if ! isatty; then
+                   echo "Not running in a tty"
+                   exit 1
+                fi
+                edit_man txt man "$1"
+                exit $?
+            fi
+            shift
+            ;;
+    esac
+done
+

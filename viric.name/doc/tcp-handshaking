@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>TCP handshaking as application handshaking
+</title>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<!-- Code:
+font-family: fixed,monospace,courier;font-size: 0.8em;border:1px black
+solid;line-height:25px;
+-->
+</head>
+<body>
+<h1>TCP handshaking as application handshaking</h1>
+
+<p>Some protocols use the TCP handshaking as the application handshaking,
+violating the OSI layers. Many of them, handmade. Others, official, as HP 9100.
+For instance, an application may need only control events as <em>Start of
+connection</em> and <em>End of connection</em>, and the programmer may think
+that the TCP similar events will be useful instead of thinking application
+control messages for those events.</p>
+
+<p>If someone follows the
+usual guidelines on TCP connection termination, he may found unexpected problems
+related to data loss. </p>
+
+<h2>Usual connection termination, as in the connection state diagram</h2>
+
+<p>One side <em>active closes</em>, and sends a FIN. The other side sends ACK
+(enters the CLOSE_WAIT state), and then when needed <em>actively closes</em> the
+connection sending a FIN to the termination initiator, waiting its ACK, and then
+considering the connection <em>closed</em> in both sides. On BSD you may think
+of the call <strong>close()</strong> for <em>active close</em>.</p>
+
+<blockquote>First consideration: the <em>state diagram</em> doesn't show the state
+changes related to data transmissions.</blockquote>
+
+<h2>Key sentence in RFC 1122</h2>
+
+<blockquote>From 4.2.2.13: <em>If such a host issues a
+CLOSE call while received data is still pending in TCP, or
+if new data is received after CLOSE is called, its TCP
+SHOULD send a RST to show that data was
+lost.</em>
+
+</blockquote>
+
+<p>This, in fact, means that you will <strong>NOT</strong> receive a FIN, if the
+other side <strong>application</strong> <em>actively closes</em> the connection
+<em>without having received</em> the incoming data. The stack will send a RST.
+This <em>potentially</em> introduces data loss.</p>
+
+<p>You can consider these two possible additional meanings for these sent
+messages:</p>
+<ul>
+<li>RST - Forced connection drop AND <em>the application has not read all
+the data the stack has received</em>.
+<li>FIN - No more data from sender AND <em>the application has read all
+the data the stack has received</em>.
+</ul>
+
+<h2>A program which may find the problem</h2>
+
+<p>Let's assume the programmer wants to rely on the TCP handshake for sending
+some data. <em>He doesn't know if the other side will send anything</em>:</p>
+<ol>
+<li>mysocket = connect(otherhost);
+<li>send(mysocket, mydata);
+<li>close();
+</ol>
+
+<p>The programmer made a big error between the send() and the close() calls: if
+the other side sends some data, and this side doesn't recv() it, it will send a
+RST instead of a FIN. If the other side TCP/IP stack receives that RST, it
+<em>will throw away all the data the application still hasn't recv().</em>. Data
+loss.</p>
+
+<h2>A better program? Not specially.</h2>
+
+<ol>
+<li>mysocket = connect(otherhost);
+<li>send(mysocket, mydata);
+<li>do r = recv(mysocket, tmpbuffer) until r == 0;
+<li>close();
+</ol>
+
+Regardless of some other error control, here we assure that we received a FIN as
+an indicator that <em>the other side application has received all the data we
+sent</em>. But how will the other side program look like?
+
+<ol>
+<li>mysocket = connect(otherhost);
+<li>recv(mysocket, buffer_for_recv_data);
+<li>do r = recv(mysocket, tmpbuffer) until r == 0; /* ?????? */
+<li>close();
+</ol>
+
+You see that the third step has a problem - the sending side will not send a FIN
+until we send a FIN. So, we can only solve this situation using shutdown() and
+<em>half close</em>.
+
+<h2>Lesson</h2>
+
+<p>Don't violate the OSI layers, and think a handshake for your application
+communication.</p>
+
+<address>2007 Lluis Batlle i Rossell (with help from Thomas Wyatt) - viric@vicerveza.homeunix.net</address>
+
+</body>

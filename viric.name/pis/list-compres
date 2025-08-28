@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+	<title>Ètxelon - Consulta de compres</title>
+	<meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1">
+	<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+</head>
+
+<body>
+
+<h1 align=center>Ètxelon</h1>
+<h2>Total de compres</h2>
+
+<?php
+	include("getdb.inc");
+	$connexio = mysql_connect($mysql_server, $mysql_user, $mysql_password);
+	mysql_select_db($mysql_db, $connexio);
+
+
+	// Crides a funcions per obtenir parametres
+	$habitants = obtenir_habitants($connexio);
+	$num_habitants = count($habitants);
+?>
+
+<TABLE BORDER=1>
+<TR>
+	<TH ROWSPAN=2>Data
+	<TH ROWSPAN=2>Botiga
+	<TH ROWSPAN=2>Motiu
+	<TH ROWSPAN=2>Preu
+	<TH COLSPAN=<?php echo $num_habitants?>>Pagat
+	<TH ROWSPAN=2>Excepcions
+	<TH ROWSPAN=2>Eliminiar
+<TR>
+<?php
+		foreach($habitants as $i)
+			echo "\t<TH>" . strtohtml($i["nom"]). "\n";
+?>
+
+<?php
+	$query = "SELECT UNIX_TIMESTAMP(data),botiga,motiu,preu FROM compres ORDER BY data DESC";
+	$resultat = mysql_query($query, $connexio);
+
+	// Per cada compra ...
+	$num_compres = 0;
+	while ($fila = mysql_fetch_row($resultat))
+	{
+		$data = $fila[0];
+		$date_shown = date("d/m/Y H:i",$data);
+		printf("<tr>\n\t<td><A HREF=\"view-compra?id=%s\">%s</A>\n", $data,
+			$date_shown);
+		printf("\t<td>%s\n", strtohtml($fila[1]));
+		printf("\t<td>%s\n", strtohtml($fila[2]));
+		printf("\t<td align=right>%s\n", pricetohtml($fila[3]));
+
+		// Obtenim lo que toca pagar a cadascú
+		$query = "SELECT compradors.persona,compradors.pagat,compradors.toca_pagar FROM compradors,gent WHERE compradors.data = FROM_UNIXTIME($data) AND compradors.persona = gent.id AND gent.habitant = 1 ORDER BY gent.nom;";
+		$resultat2 = mysql_query($query, $connexio);
+		
+		unset($compradors);
+		while ($fila2 = mysql_fetch_row($resultat2))
+		{
+			$compradors[$fila2[0]] = array( "pagat" => $fila2[1],
+											"toca_pagar" => $fila2[2]);
+		}
+		foreach($habitants as $i)
+		{
+			if (isset($compradors[$i["id"]]))
+				printf("\t<td align=right>%s\n", pricetohtml($compradors[$i["id"]]["pagat"]));
+			else
+				printf("\t<td align=right>%s\n", pricetohtml(0));
+		}
+		$excepcions = obtenir_excepcions($data,$connexio);
+		if ($excepcions != 0)
+			printf("\t<td align=right>%d\n", count($excepcions));
+		else
+			printf("\t<td align=right>0\n");
+		printf("\t<td><A HREF=\"delete-compra?id=%s\">Eliminar</A>\n", $data);
+
+		$num_compres++;
+	}
+
+?>
+</TABLE>
+
+<P>Hi ha un total de <?php echo $num_compres ?> compres. </P>
+
+<HR WIDTH="70%">
+<BR>
+<A HREF="index">Tornar al menú d'inici</A>
+
+</body>
+</html>
+

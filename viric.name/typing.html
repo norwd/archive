@@ -1,0 +1,688 @@
+<html>
+
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<title>Typing speed and rollover</title>
+<script type="text/javascript">
+var keys = [];
+var order = [];
+var shift = false;
+var presscount = 0;
+var lettercount = 0;
+var starttime;
+var maxcount = 0;
+var fastestTime = -1;
+var lastTimestamp = 0;
+var timepairs = [];
+
+
+function getkeyname(keycode) {
+	if(keycode >= 65 && keycode <= 90) {
+		return String.fromCharCode(keycode);
+	}
+	if(keycode >= 48 && keycode <= 57) return keycode - 48;
+	if(keycode == 8) return "&lt;BACKSPACE&gt;";
+	if(keycode == 9) return "&lt;TAB&gt;";
+	if(keycode == 12) return "&lt;NUM5&gt;";
+	if(keycode == 13) return "&lt;ENTER&gt;";
+	if(keycode == 16) return "&lt;SHIFT&gt;";
+	if(keycode == 17) return "&lt;CTRL&gt;";
+	if(keycode == 18) return "&lt;ALT&gt;";
+	if(keycode == 19) return "&lt;PAUSE&gt;";
+	if(keycode == 20) return "&lt;CAPSLOCK&gt;";
+	if(keycode == 27) return "&lt;ESC&gt;";
+	if(keycode == 32) return "&lt;SPACE&gt;";
+	if(keycode == 33) return "&lt;PAGEUP&gt;";
+	if(keycode == 34) return "&lt;PAGEDOWN&gt;";
+	if(keycode == 35) return "&lt;END&gt;";
+	if(keycode == 36) return "&lt;HOME&gt;";
+	if(keycode == 37) return "&lt;LEFTARROW&gt;";
+	if(keycode == 38) return "&lt;UPARROW&gt;";
+	if(keycode == 39) return "&lt;RIGHTARROW&gt;";
+	if(keycode == 40) return "&lt;DOWNARROW&gt;";
+	if(keycode == 45) return "&lt;INSERT&gt;";
+	if(keycode == 46) return "&lt;DELETE&gt;";
+	if(keycode == 59) return ";";
+	if(keycode == 91) return "&lt;LEFTWINDOWS&gt;";
+	if(keycode == 92) return "&lt;RIGHTWINDOWS&gt;";
+	if(keycode == 93) return "&lt;MENU&gt;";
+	if(keycode >= 96 && keycode <= 105) return "&lt;NUM" + (keycode - 96) + "&gt;";
+	if(keycode == 106) return "&lt;MULTIPLY&gt;";
+	if(keycode == 107) return "&lt;ADD&gt;";
+	if(keycode == 109) return "&lt;SUBTRACT&gt;";
+	if(keycode == 110) return "&lt;DECIMAL&gt;";
+	if(keycode == 111) return "&lt;DIVIDE&gt;";
+	if(keycode >= 112 && keycode <= 123) return "&lt;F" + (keycode - 111) + "&gt;";
+	if(keycode == 144) return "&lt;NUMLOCK&gt;";
+	if(keycode == 145) return "&lt;SCROLLLOCK&gt;";
+	if(keycode == 186) return "&lt;SEMICOLON&gt;";
+	if(keycode == 187) return "&lt;EQUALS&gt;";
+	if(keycode == 188) return ",";
+	if(keycode == 189) return "&lt;DASH&gt;";
+	if(keycode == 190) return ".";
+	if(keycode == 191) return "/";
+	if(keycode == 192) return "&lt;BACKTICK&gt;";
+	if(keycode == 219) return "[";
+	if(keycode == 220) return "\\";
+	if(keycode == 221) return "]";
+	if(keycode == 222) return "'";
+	return "&lt;" + keycode + "&gt;";
+}
+
+function getkeyvalue(keycode) {
+	if(keycode >= 65 && keycode <= 90) {
+        var letter = String.fromCharCode(keycode);
+        if (shift)
+            return letter;
+        else
+            return letter.toLowerCase();
+	}
+    if(keycode >= 48 && keycode <= 57) {
+        var v = keycode - 48;
+        if (!shift)
+            return v;
+        else {
+            var topval = "=!\"·$%&/()";
+            return topval[v];
+        }
+    }
+	if(keycode == 32) return " ";
+    if(keycode == 13)
+    {
+        return "\n";
+    }
+    var layout = document.getElementById('layout').value
+    if (layout == "es")
+    {
+        if(keycode == 222)
+        {
+            if (shift)
+                return "?";
+            else
+                return "'";
+        }
+        if(keycode == 173)
+        {
+            if (shift)
+                return "_";
+            else
+                return "-";
+        }
+        if(keycode == 171)
+        {
+            if (shift)
+                return "*";
+            else
+                return "+";
+        }
+        if(keycode == 188)
+        {
+            if (shift)
+                return ";";
+            else
+                return ",";
+        }
+        if(keycode == 190)
+        {
+            if (shift)
+                return ":";
+            else
+                return ".";
+        }
+    }
+    else if (layout == "us")
+    {
+        if(keycode == 222)
+        {
+            if (shift)
+                return "_";
+            else
+                return "-";
+        }
+        if(keycode == 173)
+        {
+            if (shift)
+                return "?";
+            else
+                return "/";
+        }
+        if(keycode == 171)
+        {
+            if (shift)
+                return "}";
+            else
+                return "]";
+        }
+        if(keycode == 188)
+        {
+            if (shift)
+                return "<";
+            else
+                return ",";
+        }
+        if(keycode == 190)
+        {
+            if (shift)
+                return ">";
+            else
+                return ".";
+        }
+        if(keycode == ";")
+        {
+            if (shift)
+                return ":";
+            else
+                return ";";
+        }
+    }
+    return "";
+}
+
+//This prototype is provided by the Mozilla foundation and
+//is distributed under the MIT license.
+//http://www.ibiblio.org/pub/Linux/LICENSES/mit.license
+if (!Array.prototype.map)
+{
+  Array.prototype.map = function(fun /*, thisp*/)
+  {
+    var len = this.length;
+    if (typeof fun != "function")
+      throw new TypeError();
+
+    var res = new Array(len);
+    var thisp = arguments[1];
+    for (var i = 0; i < len; i++)
+    {
+      if (i in this)
+        res[i] = fun.call(thisp, this[i], i, this);
+    }
+
+    return res;
+  };
+}
+
+function update() {
+	document.getElementById('disp').innerHTML = order.map(getkeyname).join("");
+    if (order.length > maxcount)
+        maxcount = order.length;
+	document.getElementById('count').innerHTML = order.length + " Max " + maxcount;
+}
+
+function remove(event, which) {
+    tdiff = event.timeStamp - lastTimestamp;
+    lastTimestamp = event.timeStamp;
+    if (which != 27) /* ESC */
+    {
+        timepairs.push({key: which, updown: 1, time: tdiff});
+        updateSeq();
+    }
+
+	if(which == 16)
+        shift = false;
+	for(var i = 0; i < order.length; i++) {
+		if(order[i] == which) {
+			order.splice(i, 1);
+			break;
+		}
+	}
+    update();
+}
+
+function updateTime() {
+    var tdiff = new Date().getTime() - starttime;
+    /* Subtract 1 from presses because it starts when the 1st was pressed */
+    ppm = Math.round((presscount-1) / tdiff * 1000 * 60);
+    document.getElementById('ppm').innerHTML =
+         ppm + " (" + Math.round(ppm/60) + " Hz)";
+    document.getElementById('wpm').innerHTML =
+        Math.round((lettercount-1) / tdiff * 1000 * 60 / 5);
+}
+
+function updateSeq() {
+    var str = "";
+    for(var i=0; i < timepairs.length; i++)
+    {
+        var t = timepairs[i];
+        if (i > 0)
+            str += " - <small>" + Math.round(t.time) + "ms</small>- ";
+        if (t.updown == 0)
+            str += "↓";
+        else
+            str += "↑";
+        str += getkeyname(t.key);
+    }
+    document.getElementById('sequence').innerHTML = str;
+}
+
+function add(event, c) {
+    tdiff = event.timeStamp - lastTimestamp;
+    if (fastestTime == -1 || tdiff < fastestTime)
+    {
+        fastestTime = tdiff;
+        document.getElementById('fastestTime').innerHTML = fastestTime;
+    }
+    else if (tdiff > 100)
+    {
+        fastestTime = -1;
+    }
+    lastTimestamp = event.timeStamp;
+    timepairs.push({key: c, updown: 0, time: tdiff});
+    updateSeq();
+
+    var text = document.getElementById('text');
+
+    if (c == 27) /* ESC */ {
+        presscount = 0;
+        lettercount = 0;
+        maxcount = 0;
+        text.innerHTML = "";
+        timepairs = [];
+        document.getElementById('ppm').innerHTML = "";
+        document.getElementById('wpm').innerHTML = "";
+        document.getElementById('sequence').innerHTML = "";
+    }
+    if(keys[c] == c)
+        return;
+    keys[c] = c;
+    order[order.length] = c;
+    update();
+
+    presscount += 1;
+
+	if(c == 8)
+    {
+        text.innerHTML = text.innerHTML.slice(0, -1);
+        if (lettercount > 0)
+            lettercount -= 1;
+    }
+	else if(c == 16)
+        shift = true;
+    else
+    {
+        var v = getkeyvalue(c);
+        if (v != "")
+        {
+            if (lettercount == 0)
+                starttime = new Date().getTime();
+            else
+                updateTime();
+                lettercount += 1;
+        }
+        text.innerHTML += v;
+    }
+}
+
+function getkeycode(e) {
+	var keycode = 0;
+    /*
+	if (window.event) keycode = window.event.keyCode;
+	else
+        */
+    if (e)
+    {
+        keycode = e.which;
+    }
+	return keycode;
+}
+
+</script>
+</head>
+
+<body onkeydown="c=getkeycode(event); add(event, c); return c==123;" 
+onkeyup="c=getkeycode(event); keys[c] = ''; remove(event, c); ">
+<h1>Keyboards: the computer doesn't write what I typed. Why?</h1>
+<p>Keyboards usually check the key presses by contact of wires in a matrix. The
+controller only sees contacts at matrix coordinates and, therefore, can
+reliably handle in worst case two independent keypresses. Two-key rollover
+(2KRO) means that: minimum two keys at once recognized. 2KRO is a must for fast
+typers that may press the next key before releasing the first. But all gets worse when it comes to typing with Shift pressed for uppercase; while manufacturers should keep the modifiers in separate contact lines to the MCU (Microcontroller Unit), most of them will have the modifiers in the matrix for low quality keyboards. This makes the keyboards type wrong when the fast typist writes uppercase characters with shift pressed, where letters effectively work as a only-one-key-at-once (1KRO) keyboard.</p>
+<p>Also many keyboards sample the key presses at <a
+    href="https://blog.wooting.nl/what-influences-keyboard-speed/">125Hz</a>
+which is quite low for fast typing. Even if sustained typing may be about
+600presses/minute (100Hz) often two specific keys can be pressed in less than
+125Hz period. Then the keyboard doesn't know which key was pressed first.</p>
+<p>Many keyboards also implement only a basic USB keyboard protocol (named boot protocol) that allows reporting at most 6 pressed keys at once (modifiers apart in a bitset), but this is a problem only for gamers, not for fast typers. Keyboards can implement a HID device beyond the boot protocol and report more keys at once.</p>
+<p>One problem is inherent to the USB protocol though; only regular the keypresses are communicated to the computer in order. The press of the modifiers is a bitset that is communicated in every message and, therefore, cannot be ordered with the other keys.</p>
+<hr>
+<h1>Tests to evaluate your keyboard</h1>
+
+Things valuable to test for fast typing.
+
+<h2>Test bad keyboard 1. Press Shift + two letters at once.</h2>
+
+Check if shift + any-two-letters are recognized before releasing them.
+
+<p>Example sequence from Logitech K120. Type TR uppercase like this: </p>
+
+<table border=1>
+    <tr>
+        <th>Step
+        <th>Key change
+        <th>Total pressed
+        <th>Screen
+        <th>Expected
+    <tr>
+        <td>1
+        <td>↓RightShift
+        <td>↓RightShift
+        <td>
+        <td>
+    <tr>
+        <td>2
+        <td>↓T
+        <td>↓RightShift,↓T
+        <td>T
+        <td>T
+    <tr>
+        <td>3
+        <td>↓R
+        <td>↓RightShift,↓T,↓R
+        <td>T
+        <td>TR
+    <tr>
+        <td>4
+        <td>↑RightShift
+        <td>↓T,↓R
+        <td>Tr
+        <td>TR
+</table>
+
+<p>Other keyboards hit this problem in different letter pairs, like BV, FG, etc.
+Some others will be able to respect the uppercase for the second letter.</p>
+
+<h2>Test bad keyboard 2. Press two keys in sequence very fast</h2>
+
+<p>Drop two fingers fast to two letters, caring to know what key you hit first. Repeat it many times and check the reliability changing which you press first.</p>
+
+<p>Example with the Logitech k120:</p>
+<ol>
+<li>Type MK many times in a row, with the two fingers drop down
+<li>Result on screen: mkmkmkmkmkmkmkmkmkmkmk (good)
+<li>Type KM many times in a row, with the two fingers drop down
+<li>Result on screen: mkkmmkmkmkmkmkmkmkmkmk (often swaps to mk)
+</ol>
+
+If you check the timestamp of the key arrival you may notice that both letters arrive at the same timestamp when the keyboard was confused. In the test bench below you will see a "Fastest interkey time" of around 0ms. At least in some firefox on GNU/Linux. Other browsers/OSes can give timestamps taken at other moments.
+
+<h2>Test bad keyboard 3. Check USB HID Report frames</h2>
+
+<p>PS/2 keyboards send key change one after the other, either press or
+releases, so they are always received in a particular order. But unlike the
+PS/2 protocol, the USB messages allow to notify more than one keychange
+(press/release) in a single frame, at the expense of somewhat unclear order.
+Non-modifier presses are always ordered, but releases or modifier press/release
+are optionally without order. Some devices (keyboards or PS/2-USB converters)
+choose to clarify the order by guaranteeing a single key change between any
+message. As a note, most notebook keyboards use a PS/2 link, not USB, so this
+would not apply to them.</p>
+
+<p>Use the GNU/Linux <a
+    href="https://www.systutorials.com/docs/linux/man/8-usbhid-dump/"><tt>usbhid-dump</tt></a>
+program to dump the frames and see if they send a report for every key change
+or they integrate multiple into one. Run it with <tt>timeout 10 usbhid-dump
+--entity=stream</tt> so after 10 seconds you will be able to rule your computer
+again.</p>
+
+<p><a
+    href="https://wiki.osdev.org/USB_Human_Interface_Devices#Report_format">Report
+    format</a>: The first byte indicates the state of modifiers; every bit is a
+modifier. The second byte is reserved. The next bytes indicate keycodes
+pressed, in the order they were pressed.</p>
+
+<p>Example from Logitech K120. Frames at most every ~16ms, unclear order of some key changes.</p>
+<table border=1>
+    <tr>
+        <th>Timestamp
+        <th>Report
+        <th>Key changes
+        <th>Meaning
+    <tr>
+        <td>2.368963
+        <td>00 00 00 00 00 00 00 00
+        <td>No keys pressed
+    <tr>
+        <td>2.857024
+        <td>00 00 13 12 00 00 00 00
+        <td>↓P and then ↓O. Clear order.
+        <td>Text typed: po
+    <tr>
+        <td>3.065040
+        <td>00 00 00 00 00 00 00 00
+        <td>↑P and ↑O. Unclear order.
+    <tr>
+        <td>7.416589
+        <td>20 00 0E 00 00 00 00 00
+        <td>↓Shift, ↓K. Unclear order.
+        <td>Text typed: K
+    <tr>
+        <td>7.600590
+        <td>20 00 00 00 00 00 00 00
+        <td>↑K
+    <tr>
+        <td>8.032190
+        <td>00 00 0C 00 00 00 00 00
+        <td>↑Shift and ↓I. Unclear order.
+        <td>Text typed: i. Some drivers may interpret it as I.
+</table>
+
+<p>Example from Genesis RX55. Frames every ~2ms, clear order of all key changes:</p>
+<table border=1>
+    <tr>
+        <th>Timestamp
+        <th>Report
+        <th>Key changes
+        <th>Meaning
+    <tr>
+        <td>0.000000
+        <td>00 00 00 00 00 00 00 00
+        <td>No keys pressed
+    <tr>
+        <td>0.408564
+        <td>20 00 00 00 00 00 00 00
+        <td>↓Shift
+    <tr>
+        <td>0.432564
+        <td>20 00 0E 00 00 00 00 00
+        <td>↓K
+        <td>Text typed: K
+    <tr>
+        <td>0.520562
+        <td>20 00 0E 0C 00 00 00 00
+        <td>↓I
+        <td>Text typed: I
+    <tr>
+        <td>0.696566
+        <td>00 00 0E 0C 00 00 00 00
+        <td>↑Shift
+    <tr>
+        <td>0.712568
+        <td>00 00 0C 00 00 00 00 00
+        <td>↑K
+    <tr>
+        <td>0.736567
+        <td>00 00 00 00 00 00 00 00
+        <td>↑I
+</table>
+
+<h2>Test yourself</h2>
+
+In the test bench below you can test the speed of your typing. 
+
+<ul>
+    <li>The number of keys you held pressed at once during your typing (Max rollover).
+    <li>The WPM uses the standard of (final letters typed)/5. The more you backspace to correct, the less WPM.
+    <li>The presses/min includes backspaces, shifts, etc. used in your typing.
+    <li>The "fastest interkey time" reports the shortest time you had between two keys pressed.
+</ul>
+
+<h2>Test bench</h2>
+
+<p>Note if you use <a
+    href="https://addons.mozilla.org/en-US/firefox/addon/tridactyl-vim/">Tridactyl</a>:
+Use shift-insert to avoid commands. ESC to reset.</p>
+
+Keyboard: <select id="layout">
+    <option value="es">ES</option>
+    <option value="us">US</option>
+</select>
+
+<table border = 1 width=500>
+<tr><td>
+<p><br></p>
+<b>Keys now pressed:</b> <span id="disp"></span><br>
+<b>Rollover:</b> <span id="count"></span><br>
+<b>Text:</b> <span id="text"></span><br>
+<b>Presses/min:</b> <span id="ppm"></span><br>
+<b>WPM:</b> <span id="wpm"></span><br>
+<b>Fastest interkey time (ms):</b> <span id="fastestTime"></span><br>
+<b>Sequence:</b> <span id="sequence"></span><br>
+<p><br></p>
+
+</td></tr></table>
+
+<noscript>(Javascript is disabled. Enable Javascript to count the number of simultaneously accepted keys)</noscript>
+
+<h2>Reports of what I tested</h2>
+<table border=1>
+    <tr>
+    <th>Keyboard
+    <th>2KRO and Shift (Test 1)
+    <th>Quick two presses (Test 2)
+    <tr>
+    <td><a href="https://www.logitech.com/es-es/keyboards">Logitech K120</a>
+    <td>Shift+RT (T doesn't appear). Shift+RT_ (then releasing, types R_T. ES layout)). Also wrong release of shift: when Shift+TR is pressed and then shift first released, produces Tr.
+    <td>jk fast enough produce kj. s+space produces space+s. 12 produces 21.
+    <tr>
+    <td><a href="https://genesis-zone.com/product/keyboard-genesis-rx55-gaming-us-layout">Genesis RX55</a> (broken link)
+    <td>Shift+FG doesn't type G until F released. Also, Shift+RTE (then release shift and R) types RTe.
+    <td>perfect
+    <tr>
+    <td>Genius Smart KB-100
+    <td>tre (then releasing in order, types tr, forgets e)
+    <td>(not tested)
+    <tr>
+    <td>Cherry Stream 3.0
+    <td>Shift+VB doesn't type B until V released (iirc; if not these, other pairs of letters)
+    <td>km fast enough produce mk (worse than K120)
+    <tr>
+    <td>HP Probook 430 G4 (notebook)
+    <td>good 2KRO; shift allows any two character pairs at once.
+    <td>km fast enough produces mk (like Cherry Stream 3.0)
+    <tr>
+    <td>Toshiba C55 (notebook)
+    <td>perfect
+    <td>perfect
+    <tr>
+    <td>Acer 4810T (notebook)
+    <td>shift+FG accepts G after releasing F.
+    <td>perfect
+    <tr>
+    <td>Dell XPS 15 9550 (notebook)
+    <td>Shift+BV doesn't take the V. Releasing shift types V at least, not v.
+    <td>Pressing km sometimes types mk. Slightly better than K120 though.
+    <tr>
+    <td>Digital RT2158TWSP (PS/2)
+    <td>Shift+BV doesn't take V. Releasing shift types Bv.
+    <td>perfect
+    <tr>
+    <td>Innobo KB-930 (PS/2)
+    <td>Shift+FG doesn't take G. Releasing shift types FG fine.
+    <td>perfect
+    <tr>
+    <td>Logitech G213
+    <td>"rov" all pressed doesn't send the v. "rova" all pressed and
+    released in order sends "roav".
+    <td>perfect
+    <tr>
+    <td>HP H3C52AA
+    <td>Shift-FG doesn't take G. Releasing shift types Fg.
+    <td>km easily types mk
+    <tr>
+    <td>Microsoft Wired 600
+    <td>Shift-BV doesn't take V. Releasing shift types Bv.
+    <td>perfect
+    <tr>
+    <td>Hama Washable Keyboard COVO
+    <td>Shift-FG doesn't take G. Releasing shift types Fg.
+    <td>perfect
+    <tr>
+    <td>Hama Basic Keyboard K212
+    <td>Shift-FG doesn't take G. Releasing shift types Fg.
+    <td>km easily types mk
+    <tr>
+    <td>Cherry RS 6000 M (PS/2)
+    <td>Shift+VB doesn't type B until V released (iirc; if not these, other pairs of letters)
+    <td>km fast enough produce mk (worse than K120)
+    <tr>
+    <td>Labtec Media Keyboard HD844L1 (PS/2)
+    <td>Shift+VB doesn't type B until V released. Releasing first Shift produces Bv.
+    <td>perfect
+    <tr>
+    <td>Logitech Internet Keyboard 867227-0104
+    <td>Shift+Any keypair seems to work fine
+    <td>Fast km writes mk
+    <tr>
+    <td>LG MK101
+    <td>Shift+FG doesn't take G. Releasing shift types Fg.
+    <td>Fast km writes mk
+    <tr>
+    <td>Lenovo Z50 (laptop)
+    <td>Shift+BV doesn't take V. Releasing shift types Bv.
+    <td>perfect
+    <tr>
+    <td>HP PR1101U
+    <td>Shift+GF doesn't take F. Releasing shift types FG.
+    <td>Fast mk writes km
+    <tr>
+    <td>HP KU-1060
+    <td>perfect
+    <td>Fast mk writest km
+    <tr>
+    <td>HP KU-1156
+    <td>perfect
+    <td>Fast mk writest km
+    <tr>
+    <td>Logitech G110 gaming
+    <td>perfect
+    <td>Fast mk writest km
+    <tr>
+    <td><strong>HP 434820 KU-0316 (PS/2)</strong>
+    <td>Shift+BV doesn't take V. Releasing shift types BV. Pressing ROVA and then releasing produces ROAV.
+    <td>perfect
+    <tr>
+    <td>HP 435382 KU-0316 (USB)
+    <td>Shift+BV doesn't take V. Releasing shift types Bv.
+    <td>Fast km writes mk. Worse than K120.
+    <tr>
+    <td>Samsung SEM-DT35 (PS/2)
+    <td>Shift+AB doesn't take S. Releasing shift types AS.
+    <td>perfect
+    <tr>
+    <td>IBM Mechanical 1391405 1990-06-06 (PS/2)
+    <td>Shift+BV doesn't take V. Releasing shift types Bv. All others 2KRO.
+    <td>fast km writes mk. Better than K120.
+    <tr>
+    <td>IBM Membrane 71G4638 1995-09-29 (PS/2)
+    <td>Shift+BV doesn't take V. Releasing shift types Bv. All others 2KRO.
+    <td>fast km writes mk. Better than K120.
+    <tr>
+    <td>HP Compaq nx6325 (laptop)
+    <td>perfect
+    <td>Fast km writes mk
+</table>
+
+<h2>Reports I heard</h2>
+<ul>
+<li>Logitech wireless: ~5KRO even with right shift pressed.
+<li>Apple wired keyboard: 2KRO modifiers apart fine, and proper order on keys pressed quickly..
+<li>HP Slim kbar211, two tests good.
+<li>HP 1156, two tests good. (Unmatches my experience)
+<li>Dell SK-8165, 2KRO with shift fine but bad on fast two keypresses
+<li>Microsoft Natural Ergonomic 4000 v1.0, 2KRO with shift fine and good with fast two keypresses
+<li>Logitech K400, 2KRO with shift fine but bad with fast two keypresses
+</ul>
+
+<hr>
+<p>Based on: <a href="http://gadzikowski.com/nkeyrollover.html">gadzikowski.com/nkeyrollover.html</a></p>
+<p>Also related: <a href="http://blog.seethis.link/scan-rate-estimator/">Scan rate estimator for presses of same key</a></p>
+</body></html>

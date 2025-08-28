@@ -1,0 +1,250 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>nix</title>
+
+<link rel="stylesheet" href="../../style.css" type="text/css" />
+
+<link rel="stylesheet" href="../../local.css" type="text/css" />
+
+
+<link rel="alternate" type="application/x-wiki" title="Edit this page" href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=tags%2Fnix&amp;do=edit" />
+
+<link rel="alternate" type="application/rss+xml" title="viricbloc (RSS)" href="index.rss" /><link rel="alternate" type="application/atom+xml" title="viricbloc (Atom)" href="index.atom" />
+
+
+</head>
+<body>
+
+<div class="pageheader">
+<div class="header">
+<span>
+<span class="parentlinks">
+
+<a href="../../index.html">viricbloc</a>/ 
+
+<a href="../index.html">tags</a>/ 
+
+</span>
+<span class="title">
+nix
+
+</span>
+</span><!--.header-->
+
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=tags%2Fnix&amp;do=edit" rel="nofollow">Edit</a></li>
+
+
+<li><a href="../../recentchanges/index.html">RecentChanges</a></li>
+
+
+
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?do=prefs">Preferences</a></li>
+
+
+
+
+</ul>
+</div>
+
+
+
+
+</div> <!-- .pageheader -->
+
+
+
+<div id="content">
+<p>Coses relacionades amb <a href="http://nixos.org/nix">nix</a>, <a href="http://nixos.org/nixpkgs">nixpkgs</a>, <a href="http://nixos.org">nixos</a>, ...</p>
+
+<div id="feedlink">
+
+<a class="feedbutton" type="application/rss+xml" href="index.rss">RSS</a>
+
+
+<a class="feedbutton" type="application/atom+xml" href="index.atom">Atom</a>
+
+</div>
+<div class="inlinepage">
+
+<div class="inlineheader">
+
+
+<span class="header">
+
+<a href="../../posts/Programant_a_nixos/index.html">Programant a nixos</a>
+
+</span>
+
+</div><!--.inlineheader-->
+
+<div class="inlinecontent">
+<p>Una manera típica de programar coses en un entorn linux consisteix en demanar a
+la distribució que ens instal·li les dependències que volem. Per exemple:</p>
+
+<ul>
+<li>gcc</li>
+<li>libpng</li>
+<li>libjpeg</li>
+<li>qt</li>
+<li>etc.</li>
+</ul>
+
+<p>I tot el que demanem a la distribució va a <code>/usr</code>, que és on els compiladors i els
+enllaçadors busquen.</p>
+
+<p>Però a nixos no hi ha pas <code>/usr</code>. Hi ha els
+<a href="http://hydra.nixos.org/view/nix/trunk/latest/tarball/download-by-type/doc/manual#sec-profiles">perfils</a>
+de cada usuari, el perfil
+del sistema, i altres perfils, si volem. Cada perfil d'aquests té l'aspecte del
+contingut d'un <code>/usr</code>, però amb un inconvenient: no és a <code>/usr</code>, i per tant els
+compiladors i els enllaçadors no hi van a buscar res.</p>
+
+<p>Una pràctica utilitzada per alguns que programen amb el gestor de paquets
+<a href="http://nixos.org/nix">nix</a>
+consisteix en instal·lar-se les dependències en algun perfil (per exemple, el
+personal), inclòs el gcc. Llavors estableixen les variables
+<code>LIBRARY_PATH=~/.nix-profile/lib</code> i <code>CPATH=~/.nix-profile/include</code>, i el
+compilador i l'enllaçador queden contents.</p>
+
+<p>La pràctica que segueixo jo fa ús del sistema <code>myEnv</code> ideat per en Marc Weber, que
+consisteix en una expressió nix que crea un script que establirà les variables
+d'entorn de tal manera com es faria en una construcció feta per nix. Aquest
+sistema esborra algunes variables com PATH i d'altres, i per això la càrrega
+dels scripts no és totalment trivial. El <code>myEnv</code> posa els scripts a
+<code>&#036;out/dev-envs/scriptname</code>, així que podem instal·lar-los al perfil perfectament
+sense que xoquin amb res més.</p>
+
+<p>Concretament, per exemple per desenvolupar el <a href="http://dwm.suckless.org/">dwm</a>,
+el meu <code>~/.nixpkgs/config.nix</code> inclou:</p>
+
+<pre><code>{
+  packageOverrides = pkgs : with pkgs; rec {
+    dwmEnv = pkgs.myEnvFun {
+      name = "dwm";
+      buildInputs = [ stdenv xlibs.libX11 xlibs.libXinerama ];
+    };
+  };
+}
+</code></pre>
+
+<p>Això permet instal·lar al perfil la derivació <code>env-dwm</code>, que ens donarà el
+fitxer <code>&#036;out/dev-envs/dwm</code>.</p>
+
+<p>Alhora, faig servir un script per carregar els entorns de desenvolupament
+aquests, <code>loadenv</code>:</p>
+
+<pre><code>#!/bin/sh
+
+OLDPATH="&#036;PATH"
+source &#036;HOME/.nix-profile/dev-envs/&#036;1
+PATH="&#036;PATH:&#036;OLDPATH"
+export out=/doesnotexist
+export PS1="\n&#036;1:[\u@\h:\w]\&#036; "
+export buildNativeInputs
+export NIX_STRIP_DEBUG=0
+
+/var/run/current-system/sw/bin/bash --norc
+</code></pre>
+
+<p>Això em permet tenir una sessió com la següent:</p>
+
+<pre><code>viric@bergamota:~&#036; cd ~/dwm-5.7.2
+viric@bergamota:~/dwm-5.7.2&#036; loadenv dwm
+dwm:[viric@bergamota:~/dwm-5.7.2]&#036; make
+...
+dwm:[viric@bergamota:~/dwm-5.7.2]&#036; exit
+viric@bergamota:~/dwm-5.7.2&#036;
+</code></pre>
+
+<p>Tinc el meu <code>~/.nixpkgs/config.nix</code> amb entorns per diferents coses que
+desenvolupo; així no empleno el perfil personal amb altres coses que no siguin
+programes que vull al PATH, i a més l'entorn de construcció s'assembla al del
+<a href="http://hydra.nixos.org/view/nix/trunk/latest/tarball/download-by-type/doc/manual#sec-standard-environment">constructor genèric de
+nix</a>,
+mantenint només les mínimes dependències especificades a l'abast dels compilador
+i enllaçador.</p>
+
+</div><!--.inlinecontent-->
+
+<div class="inlinefooter">
+
+<span class="pagedate">
+Posted <span class="date">dt 30 mar 2010 19:08:41 CEST</span>
+</span>
+
+
+<span class="tags">
+Tags:
+
+<span class="selflink">nix</span>
+
+</span>
+
+
+
+
+
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2FProgramant_a_nixos&amp;do=edit" rel="nofollow">Edit</a></li>
+
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2FProgramant_a_nixos&amp;do=comment">Comment</a></li>
+
+</ul>
+</div><!--.actions-->
+
+
+</div><!--.inlinefooter-->
+
+</div><!--.inlinepage-->
+
+
+</div>
+
+
+
+<div id="footer" class="pagefooter">
+<div id="pageinfo">
+
+
+
+
+<div id="backlinks">
+Links:
+
+<a href="../../posts/Programant_a_nixos/index.html">posts/Programant a nixos</a>
+
+
+</div><!-- #backlinks -->
+
+
+
+
+
+
+<div class="pagedate">
+Last edited <span class="date">dt 30 mar 2010 21:01:19 CEST</span>
+<!-- Created <span class="date">dt 30 mar 2010 21:01:19 CEST</span> -->
+</div>
+
+</div><!-- #pageinfo -->
+
+<!-- from viricbloc -->
+</div><!-- .pagefooter #footer -->
+
+</body>
+</html>

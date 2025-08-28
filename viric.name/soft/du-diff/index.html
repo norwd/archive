@@ -1,0 +1,126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+	<title>du-diff</title>
+</head>
+
+<body>
+<h1>du-diff.py</h1>
+
+<p><em>du-diff</em> is a simple tool which compares the output of two
+<em>du</em> commands, usually run on the same filesystem on different dates.
+It shows all the differences between the <em>du</em> results.
+
+<h2>Simple example</h2>
+
+<p>For instance, take the following example outputs. Running
+<code>du -x /var/log</code>:</p>
+<pre>
+12897	log/sa
+1914	log/cups
+0	log/news
+4	log/mysql
+13085	log/samba
+0	log/sandbox
+0	log/iptraf
+537	log/vsftpd
+352	log/apache2
+51605	log
+</pre>
+<p>And the output of the same command a week later:</p>
+<pre>
+12897	log/sa
+1918	log/cups
+0	log/news
+4	log/mysql
+13085	log/samba
+0	log/sandbox
+0	log/iptraf
+537	log/vsftpd
+352	log/apache2
+51789	log
+</pre>
+
+<p><em>du-diff</em> will show:
+<pre>
++       4       1918    log/cups
++       184     51789   log
+</pre>
+<p>This means that <code>log/cups</code> increased (+) in size for 4
+<em>du units</em>, and the final size is <em>1918</em>. Analogously (and partly
+in consequence) the <code>log</code> directory increased in 184.</p>
+
+<h2>Output of <em>du-diff</em></h2>
+
+<p>The meaning of the columns is:</p>
+<ol>
+<li>Change:
+<ul>
+<li><code>+</code> - increased in size
+<li><code>-</code> - decreased in size
+<li><code>N+</code> - new directory, increased in size
+<li><code>D-</code> - deleted directory, decreased in size
+</ul>
+<li>Increment or decrement in size
+<li>Final size of the directory
+<li>Name of the directory
+</ol>
+
+<h2>Applications</h2>
+<p>This may be simple, but it's very useful for managing where the space is
+lost in
+a server. You can have this simple <code>root</code> crontab:</p>
+<pre>
+* 21 * * 1 du -x / |gzip >/hdtmp/du/du-diff-root-`date +%Y%m%d`.txt.gz
+* 22 * * 1 du -x /home |gzip >/hdtmp/du/du-diff-home-`date +%Y%m%d`.txt.gz
+</pre>
+
+<p>For each partition, I have a <em>du</em> dump each week. Those dumps may
+have more than 15000 lines. Even though, comparing two weeks, the
+<em>du-diff</em> output may be:</p>
+<pre>
+-       8       188     /tmp/mailgraph
++       4272    77382   /tmp
++       104     130557  /var/lib
++       888     21067   /var/log
++       441     264941  /var/www
++       4       185495  /var/cache
++       1437    668360  /var
++       773     699000  /usr/src
++       772     2060539 /usr
+-       108     173624  /home/lant
++       48      698623  /home/viric
++       16      37227   /home/cercledeldrac
++       235     22185   /home/health
+-       98106   1402163 /home
++       4       11168   /root
+-       91620   4272196 /
+</pre>
+
+<p>The last output was got by a filter, filtering the <em>du-diff</em> output
+to 2 directory levels.
+The <em>egrep</em> filter can be easily changed to fit your needs:</p>
+<ul>
+<li>1 level - <code>| egrep '^[^/]*(/[^/]*){1,1}$'</code>
+<li>2 levels - <code>| egrep '^[^/]*(/[^/]*){1,2}$' </code>
+<li>3 levels - <code>| egrep '^[^/]*(/[^/]*){1,3}$' </code>
+<li>...
+</ul>
+
+
+<h2>Download</h2>
+
+<p>Download the latest version (GPL licensed):
+<a href="du-diff.py">du-diff.py</a> (It requires <em>python</em>)</p> 
+<pre>
+usage: du-diff.py file1 file2
+</pre>
+
+<h2>Future improvements</h2>
+<p>Write it in another language.</p>
+
+<address>Author:
+<a href="http://vicerveza.homeunix.net/~viric/">Lluís Batlle i Rossell</a>,
+viric_at_vicerveza_dot_homeunix_dot_net</address>
+</body>

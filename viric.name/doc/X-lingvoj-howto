@@ -1,0 +1,140 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>Kiel uzi esperantajn literojn sur X sistemo?
+</title>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<!-- Code:
+font-family: fixed,monospace,courier;font-size: 0.8em;border:1px black
+solid;line-height:25px;
+-->
+</head>
+
+<body>
+
+<h1 align=center>Kiel uzi la esperantajn literojn sur X sistemo?</h1>
+
+<h1>1. Enhavo</h1>
+<ol>
+<li>Enhavo
+<li>Celoj
+<li>Novaj dosieroj
+<li>Ŝanĝoj en agordodosieroj
+<li>Tajpi la korean
+<li>Pri tiu ĉi dokumento
+</ol>
+
+
+<h1>2. Celoj</h1>
+
+<p>
+Mi rakontos kiel ebligi la uzadon de la esperantaj ĉapelitaj literoj en X
+sistemo <a href="http://www.x.org">X.org</a>.
+
+Mi ankaŭ rakontos kiel uzi je kelkaj situacioj la korean. Tiel, mi sukcesas
+tajpi la katalunan (ankaŭ la hispanan), la esperantan, la rusan kaj la korean.
+</p>
+
+<h1>3. Novaj dosieroj</h1>
+
+<p> Por ebligi la ĉapelitajn literojn, oni devas enmeti tiun ĉi dosieron <tt><a
+href="eo">eo</a></tt> en dosierujon de simboloj de <tt>xkb</tt>, kaj ankaŭ en
+dosierujon de simboloj por <tt>pc</tt> (normale tiu estos
+<tt>/etc/X11/xkb/symbols/</tt> kaj <tt>/etc/X11/xkb/symbols/pc/</tt>). La enhavo
+de la dosiero estas jena (La nomo de la dosiero estu <tt>eo</tt>!): </p>
+
+<pre>     
+// $XFree86$
+
+partial alphanumeric_keys 
+xkb_symbols "basic" {
+     // Describes the differences between a very simple en_US
+     // keyboard and a simple Esperanto keyboard
+     // Press AltGr or Windows Menu key together with C, H, J, S, U
+     // to get accented letters. 
+     // 2001 by Radovan Garabik <garabik@melkor.dnp.fmph.uniba.sk>
+
+    // include "pc/latin(type4)"
+    
+    key.type = "FOUR_LEVEL";
+
+    key <AD02>  { [w,W, ubreve,Ubreve ] };
+    key <AD07>  { [u,U, ubreve, Ubreve ] };
+    key <AC02>  { [s,S, scircumflex,    Scircumflex ] };
+    key <AC05>  { [g,G, gcircumflex,Gcircumflex ] };
+    key <AC06>  { [h,H, hcircumflex,Hcircumflex ] };
+    key <AC07>  { [j,J, jcircumflex,Jcircumflex ] };
+    key <AB03>  { [c,C, ccircumflex,Ccircumflex ] };
+
+    // include "level3(ralt_switch)"
+
+    // include "es(basic)"
+};
+</pre>
+
+<p>
+Mi mem ŝanĝis kelkajn liniojn al la originala dosiero de Radovan Garabik.
+</p>
+
+<h1>4. Ŝanĝoj en agordodosieroj</h1>
+
+<p>
+Oni devas ŝanĝi la agordodosieron de <em>X.org</em> (normale
+<tt>/etc/X11/xorg.conf</tt>), tie, kie oni difinas la klavaron. Tie oni devas
+aldoni "+eo" al latina klavara difino. Ekzemple, se oni havas klavaron
+<tt>es</tt>, oni ŝanĝu tion al <tt>es+eo</tt>.
+</p
+
+<p>
+Mi mem uzas ankaŭ grupojn de <tt>xkb</tt>, por tajpi per hispana klavaro, kaj
+per rusa klavaro (mi ŝanĝas la klavojn uzante klavon CAPS_LOCK). Mi uzas la
+saman rusan klavaron kiel vindozistoj. Mia klavaro hispana havas 105 klavojn.
+Do, mia plena agordo estas:
+</p>
+
+<pre>
+Section "InputDevice"
+        Identifier  "KeyboardEsEoRu"
+        Driver      "keyboard"
+        Option      "XkbRules" "xfree86"
+        Option      "XkbModel" "pc105"
+        Option      "XkbLayout" "es+eo,ru(winkeys)"
+        Option      "XkbOptions" "grp:caps_toggle"
+EndSection
+</pre>
+
+Post tio, oni povas tajpi la ĉapelitajn literojn uzante ALT_GR (R_ALT) kaj la
+celatan latinan literon. Ekzemple, <em>ALT_GR + g</em> por tajpi <em>ĝ</em>.
+
+<h1>5. Tajpi la korean</h1>
+
+<p>
+Por tajpi la korean mi uzas programon <a
+href="http://www.freedesktop.org/Software/scim">SCIM</a>. Ĝi ebligas korean
+klavaron por <a href="http://www.gtk.org/">GTK</a> programoj.
+</p>
+
+<p>
+Por <a href="http://www.trolltech.com/products/qt/index.html">QT</a> programoj,
+mi uzas scim-qtimm (ebligante la uzon de IM en QT). Onidire, por <a
+href="http://www.kde.org/">KDE</a> oni povas uzi ankaŭ <a
+href="http://www.freedesktop.org/Software/skim">SKIM</a>.
+</p>
+
+<h1>6. Pri tiu ĉi dokumento</h1>
+
+<p> Mi duafoje skribas tian dokumenton. Antaŭe, mi skribis <a
+href="linukso-lingva-howto.html">longan kaj malfacilan dokumenton</a> por ebligi
+tajpi la Katalunan, la Esperantan kaj la Rusan, uzante malnovajn <a
+href="http://www.xfree86.org">Xfree86</a>. Nun, per <a
+href="http://www.x.org">X.org</a>, ĉio estas multe pli facila.  </p>
+
+<p>
+Se iu volas aldoni iun informon, bonvolu kontakti min retpoŝte.
+</p>
+
+<hr>
+<address><a href="http://vicerveza.homeunix.net/~viric/">Lluís Batlle i
+Rossell</a>, retpoŝto lluis ĉe vicerveza.homeunix.net, 27/11/2004</address>
+
+</html>

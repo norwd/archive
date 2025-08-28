@@ -1,0 +1,181 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Cau d&#39;HTTP</title>
+
+<link rel="stylesheet" href="../../style.css" type="text/css" />
+
+<link rel="stylesheet" href="../../local.css" type="text/css" />
+
+
+<link rel="alternate" type="application/x-wiki" title="Edit this page" href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2FCau_d__39__HTTP&amp;do=edit" />
+
+
+
+
+</head>
+<body>
+
+<div class="pageheader">
+<div class="header">
+<span>
+<span class="parentlinks">
+
+<a href="../../index.html">viricbloc</a>/ 
+
+<a href="../index.html">posts</a>/ 
+
+</span>
+<span class="title">
+Cau d&#39;HTTP
+
+</span>
+</span><!--.header-->
+
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2FCau_d__39__HTTP&amp;do=edit" rel="nofollow">Edit</a></li>
+
+
+<li><a href="../../recentchanges/index.html">RecentChanges</a></li>
+
+
+
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?do=prefs">Preferences</a></li>
+
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2FCau_d__39__HTTP&amp;do=comment">Comment</a><br /></li>
+
+</ul>
+</div>
+
+
+
+
+</div> <!-- .pageheader -->
+
+
+
+<div id="content">
+<p>Ahir em vaig estar barallant amb com funciona l'estalvi de comunicació HTTP (HTTP Cache). Els navegadors utilitzen el protocol de comunicació HTTP per a demanar pàgines web als servidors, i l'estalvi de comunicacions HTTP ha de repercutir en una expriència de navegació més fluïda.</p>
+
+<p>Els mecanismes que hi intervenen els podem trobar descrits a l'<a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html">RFC 2616 Secció
+13</a>.</p>
+
+<p>Pel que he entès, diferencien dos grans parts del procés:</p>
+
+<ul>
+<li>Temps de validesa, edat màxima, tolerància a versions antigues (expire time,
+<code>max-age</code>, <code>max-stale</code>): això acaba determinant, un cop el navegador ha
+demanat una pàgina, quant de temps la considerarà prou recent com per ni
+intentar saber si n'hi ha una versió més nova.</li>
+<li>Revalidació: el navegador pot demanar la pàgina especificant de quan té la
+última còpia, i llavors el servidor pot escollir retornar-ne una còpia nova
+(<em>200 OK</em>) o simplement avisar al navegador de que ja en té una còpia prou
+recent (<em>304 Nothing changed</em>). Fins i tot, amb els <em>ETags</em>, es pot comprovar per contingut i no només per data. El navegador només intenta revalidar si té almenys una còpia de la pàgina a mostrar, clar.</li>
+</ul>
+
+<p>Els paràmetres que determinen els temps involucrats en aquest estalvi de
+transferències els podem establir al navegador (que és el que sol portar un
+sistema cau HTTP - HTTP cache), al servidor, a cada pàgina HTML, etc.</p>
+
+<p>L'Apache serveix contingut estàtic (fitxers de disc) per HTTP per defecte sense
+anunciar cap temps de validesa (<em>Expire time</em>). Això sol voler dir que el
+sistema cau (el navegador, segurament) pot escollir el temps de validesa que
+cregui convenient. Per exemple, Firefox 3 crec que pràcticament dóna validesa
+eterna al contingut HTTP sense temps de validesa associat.</p>
+
+<p>A través del <code>mod_expire</code>, l'Apache pot establir un temps de validesa del
+contingut de manera prou flexible. El contingut d'aquest bloc l'Apache el
+serveix estàticament, i tenia el problema que la gent amb Firefox 3 havia de
+forçar una recàrrega, fins i tot després d'un dia d'haver-lo visitat. Vaig
+utilitzar el <code>mod_expire</code> ahir per a establir un temps de validesa de mitja
+hora, que el firefox respecta perfectament. La petició del contingut de
+l'exemple ha passat a les 15:43:09:</p>
+
+<pre><code>Expires: Thu, 01 Apr 2010 14:13:09 GMT
+Cache-Control: max-age=1800
+</code></pre>
+
+<p>Amb Firefox 3 vaig haver d'instal·lar el mòdul <a href="https://addons.mozilla.org/addon/3829">Live HTTP
+Headers</a> per a comprovar que funcionava
+bé la nova configuració.</p>
+
+<p>Respecte a l'estalvi de transferències HTTP, crec que en els països més
+desenvolupats (en termes d'ample de banda d'accés a Internet) s'ha anat perdent
+el costum de respectar aquests mecanismes, i per totes bandes trobem servidors
+que marquen el seu contingut com <code>must-revalidate</code> (temps de validesa zero), i
+que a més el contingut és servit <em>dinàmicament</em> i lentament per programets
+(PHP, Java, ...). Tot sovint en casos en què les pàgines no canvien.</p>
+
+<p>No hem d'oblidar que el navegador hauría de respectar que l'usuari apretés el
+<em>botó de Recàrrega</em>, perquè això obliga a assumir els temps de validesa zero, i
+a no intentar revalidar el contingut, sino obtenir-lo de nou.</p>
+
+<p>Els navegadors solen tenir un mode de navegació anomenat <em>Desconnectat</em>
+(<em>Offline</em>), on crec que ja només funcionarien els temporitzadors de l'estil
+<code>max-stale</code>, que tenen a veure amb fins a quin punt el navegador ha de tolerar
+contingut caducat. No entenc gaire bé com funciona aquesta part; no hi he pas
+aprofundit. Però almenys el Firefox pot fer l'experiència de treballar
+<em>Desconnectat</em> molt desagradable, no mostrant sovint cap pàgina tot i que es
+tracti d'una pàgina visitada recentment.</p>
+
+<p>Per cert, vaig començar a indagar tot això de l'<em>HTTP cache</em> perquè a l'afegir
+aquest bloc com a entrada de notes a Facebook, vaig fixar-me en que Facebook
+comprobava si hi havia alguna entrada nova al canal de continguts RSS només
+cada 24h. Això podia ser el temps de validesa que ells assignaven a pàgines que
+eren entregades sense cap temps de validesa, com les que el meu servidor
+servia.</p>
+
+</div>
+
+
+<div id="comments">
+
+
+
+
+<div class="addcomment">
+<a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2FCau_d__39__HTTP&amp;do=comment">Add a comment</a>
+</div>
+
+</div>
+
+
+<div id="footer" class="pagefooter">
+<div id="pageinfo">
+
+
+<div class="tags">
+Tags:
+
+<a href="../../tags/tech/index.html" rel="tag">tech</a>
+
+</div>
+
+
+
+
+
+
+
+
+<div class="pagedate">
+Last edited <span class="date">dj 01 abr 2010 16:08:22 CEST</span>
+<!-- Created <span class="date">dj 01 abr 2010 16:01:40 CEST</span> -->
+</div>
+
+</div><!-- #pageinfo -->
+
+<!-- from viricbloc -->
+</div><!-- .pagefooter #footer -->
+
+</body>
+</html>

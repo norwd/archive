@@ -1,0 +1,75 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+	<title>Ètxelon - Llistat de gent</title>
+	<meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1">
+	<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+</head>
+
+<body>
+
+<h1 align=center>Ètxelon</h1>
+<h2>Llistat de gent</h2>
+
+<?php
+	include("getdb.inc");
+	$connexio = mysql_connect($mysql_server, $mysql_user, $mysql_password);
+
+	mysql_select_db($mysql_db, $connexio);
+
+
+	// Crides a funcions per obtenir parametres
+	$altres = obtenir_altres($connexio);
+	$habitants = obtenir_habitants($connexio);
+?>
+
+<TABLE BORDER=0>
+<TR>
+<TD VALIGN=top>
+
+	<TABLE BORDER=1>
+	<CAPTION>Habitants</CAPTION>
+	<TR>
+		<TH>Id
+		<TH>Nom
+<?php
+		foreach($habitants as $i)
+		{
+			echo "<TR>\n";
+			echo "\t<TD>" . $i["id"] . "\n";
+			echo "\t<TD>" . strtohtml($i["nom"]) . "\n";
+		}
+?>
+	</TABLE>
+<TD VALIGN=top>
+
+	<TABLE BORDER=1>
+	<CAPTION>Altres</CAPTION>
+	<TR>
+		<TH>Id
+		<TH>Nom
+<?php
+		foreach($altres as $i)
+		{
+			echo "<TR>\n";
+			echo "\t<TD>" . $i["id"] . "\n";
+			echo "\t<TD>" . strtohtml($i["nom"]) . "\n";
+		}
+?>
+	</TABLE>
+<TD VALIGN=top>
+	<UL>
+	<LI>Els noms estan ordenats alfabèticament
+	<LI>El camp <em>"Id"</em> és l'identificador que té la persona dins la
+		base de dades.
+	</UL>
+
+</TABLE>
+
+<HR WIDTH="70%">
+<BR>
+<A HREF="index">Tornar al menú d'inici</A>
+
+</body>
+</html>
+

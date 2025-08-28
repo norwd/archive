@@ -1,0 +1,139 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>3 a la carta al televisor</title>
+
+<link rel="stylesheet" href="../../style.css" type="text/css" />
+
+<link rel="stylesheet" href="../../local.css" type="text/css" />
+
+
+<link rel="alternate" type="application/x-wiki" title="Edit this page" href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2F3_a_la_carta_al_televisor&amp;do=edit" />
+
+
+
+
+</head>
+<body>
+
+<div class="pageheader">
+<div class="header">
+<span>
+<span class="parentlinks">
+
+<a href="../../index.html">viricbloc</a>/ 
+
+<a href="../index.html">posts</a>/ 
+
+</span>
+<span class="title">
+3 a la carta al televisor
+
+</span>
+</span><!--.header-->
+
+</div>
+
+
+<div class="actions">
+<ul>
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2F3_a_la_carta_al_televisor&amp;do=edit" rel="nofollow">Edit</a></li>
+
+
+<li><a href="../../recentchanges/index.html">RecentChanges</a></li>
+
+
+
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?do=prefs">Preferences</a></li>
+
+
+<li><a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2F3_a_la_carta_al_televisor&amp;do=comment">Comment</a><br /></li>
+
+</ul>
+</div>
+
+
+
+
+</div> <!-- .pageheader -->
+
+
+
+<div id="content">
+<p>L'altre dia ens van deixar un televisor, pel que hem comprat un decodificador de
+TDT (<a href="http://www.ciao.es/Sansui_DVB025__1937969">Sansui DVB025</a> per 35€). Aquest té USB Host i podem connectar-hi un dispositiu USB-Storage, i n'entén les particions FAT.</p>
+
+<p>Pot gravar-hi el que li diem de la TDT (programat amb temps si cal - 2h de pel·lícula del canal <em>8tv</em> hi han ocupat 6GB en MPEG2), i a més reprodueix videos en el contenidor AVI i codificació d'imatge XVID i de so MP3 o MPEG4 AAC.</p>
+
+<p>Amb l'ffmpeg, he vist que només reprodueix el que codifico amb la llibreria <code>libxvid</code>, i no pas res fet amb <code>mpeg4</code> o <code>msmpeg4</code>. De fet, tot i que reprodueix MPEG2 (és el que grava), aquest només el reprodueix en el contenidor MPG.</p>
+
+<p>Com que m'agrada veure programes que han emès per TV3 (per exemple, <a href="http://www.tv3.cat/singulars">Singulars</a>), vull utilitzar el servei de <a href="http://www.tv3.cat/seccio/3alacarta">3 a la carta</a> per a veure'n els videos amb l'aparell Sansui DVB025.</p>
+
+<p>Veient que TV3 dóna els seus videos amb <a href="http://en.wikipedia.org/wiki/RTMP">RTMP</a>, buscant una mica vaig trobar el programa <a href="http://rtmpdump.mplayerhq.hu/">rtmpdump</a> que em permet estirar
+en forma d'AVI (codificats amb h264 a 15fps) el de <em>3 a la carta</em>. Vaig necessitar una mica d'anàlisi de la comunicació HTTP amb el <a href="http://www.wireshark.org/">Wireshark</a> per veure com puc transformar la URL del navegador al mirar un video, a una adreça RTMP.</p>
+
+<p>Al final m'he acabat fent aquest script, que em baixa un video donada una URL de <em>3 a la carta</em>, i me'l passa a video XVID de 500kbps amb l'ffmpeg, tot perfecte per posar-lo a un disc dur amb interfície USB que connecto al Sansui. Li he dit <code>gettv3</code>:</p>
+
+<pre><code>#!/bin/sh
+
+ID=`echo "&#036;1" | sed -e 's,.*/\([0-9]*\)/\?.*&#036;,\1,' `
+if [ -n "&#036;2" ]; then
+    FILE="&#036;2"
+else
+    FILE=`echo "&#036;1" | sed 's|.*/\([^/]*\)&#036;|\1|'`.avi
+fi
+
+URL=`wget -O - 'http://www.tv3.cat/su/tvc/tvcConditionalAccess.jsp?ID='&#036;ID'&amp;QUALITY=H&amp;FORMAT=MP4&amp;rnd='&#036;RANDOM | grep rtmp | sed 's/.*\(rtmp:[^&lt;]*\).*/\1/' `
+
+rtmpdump  -r "&#036;URL" | ffmpeg -i - -b 500000 -vcodec libxvid -acodec copy "&#036;FILE"
+</code></pre>
+
+</div>
+
+
+<div id="comments">
+
+
+
+
+<div class="addcomment">
+<a href="http://vicerveza.homeunix.net/~viric/cgi-bin/ikiwiki.cgi?page=posts%2F3_a_la_carta_al_televisor&amp;do=comment">Add a comment</a>
+</div>
+
+</div>
+
+
+<div id="footer" class="pagefooter">
+<div id="pageinfo">
+
+
+<div class="tags">
+Tags:
+
+<a href="../../tags/tech/index.html" rel="tag">tech</a>
+
+</div>
+
+
+
+
+
+
+
+
+<div class="pagedate">
+Last edited <span class="date">ds 01 mai 2010 16:15:45 CEST</span>
+<!-- Created <span class="date">ds 01 mai 2010 16:00:07 CEST</span> -->
+</div>
+
+</div><!-- #pageinfo -->
+
+<!-- from viricbloc -->
+</div><!-- .pagefooter #footer -->
+
+</body>
+</html>
