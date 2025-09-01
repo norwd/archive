@@ -20,14 +20,20 @@ on:
 
 env:
   GH_TOKEN: ${{ secrets.AUTO_DOWNLOAD_ARCHIVE }}
+  GH_REPO: ${{ github.repository }}
 
 jobs:
   refresh-archive:
     name: "Refresh Archive"
-    uses: ./.github/workflows/archive.yml
-    with:
-      url: '${{ matrix.url }}'
-    secrets: inherit
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: "Run Archive Workflow"
+        run: gh workflow run "${WORKFLOW}" --field "url=${FILE_URL}"
+        env:
+          WORKFLOW: archive.yml
+          FILE_URL: ${{ matrix.url }}
+
     strategy:
       fail-fast: false
       matrix: # this is hard coded for now, as not all websites are straightforward to archive, in the future this might be in file in the repo itself
