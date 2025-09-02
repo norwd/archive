@@ -86,7 +86,7 @@ jobs:
       - name: Mirror Directory
         continue-on-error: true # Don't worry if it could not be mirrored, some individual files may fail but can be manually recovered later
         timeout-minutes: 600
-        run: wget --no-verbose --execute robots=off --random-wait --wait 10 --recursive -level=inf --no-parent --convert-links --page-requisites --content-on-error --content-disposition "${URL}"
+        run: wget --no-verbose --execute robots=off --random-wait --wait 5 --recursive -level=inf --no-parent --convert-links --page-requisites --content-on-error --content-disposition "${URL}"
         env:
           URL: ${{ steps.target.outputs.url }}
 
@@ -192,7 +192,7 @@ jobs:
 
       - name: Download File
         working-directory: ${{ steps.target.outputs.directory }}
-        run: wget --no-verbose --execute robots=off --random-wait --wait 10 --output-document "${FILE}" "${URL}"
+        run: wget --no-verbose --execute robots=off --random-wait --wait 5 --output-document "${FILE}" "${URL}"
         env:
           URL: ${{ steps.target.outputs.url }}
           FILE: ${{ steps.target.outputs.file }}
