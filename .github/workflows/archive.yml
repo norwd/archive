@@ -92,7 +92,7 @@ jobs:
 
       - name: Remove Files Over 100 Megabytes
         working-directory: ${{ steps.target.outputs.directory }}
-        run: find . -size +100M | xargs -IFILE rm -rf FILE
+        run: find . -size +100M | xargs rm -rf
 
       # See also https://gist.github.com/vpadhariya/90ab71c2a6a1203f5f9aa75ad5c5f32a
       - name: Clean up query strings
@@ -203,7 +203,7 @@ jobs:
         run: |
           sudo apt-get install pdftk                                # Install tool to split PDF
           pdftk "${FILE}" burst output "${FILE%%.*}_pg_%04d.pdf"    # Split PDF into one doc per page
-          find . -size +100M | xargs -IFILE rm -rf FILE             # Remove any files over 100M (i.e. original if it was too big)
+          find . -size +100M | xargs rm -rf                         # Remove any files over 100M (i.e. original if it was too big)
         env:
           FILE: ${{ steps.target.outputs.file }}
 
