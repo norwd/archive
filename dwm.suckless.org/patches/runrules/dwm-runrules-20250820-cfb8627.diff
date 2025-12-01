@@ -1,0 +1,104 @@
+From 9a37cd46b9151c0ff28b0f0a17a244fe44fcb1de Mon Sep 17 00:00:00 2001
+From: Ian Laird <irlaird@gmail.com>
+Date: Wed, 20 Aug 2025 18:35:45 -0700
+Subject: [PATCH] Adds 2 methods to reapply rules to existing client windows.
+
+---
+ config.def.h |  2 ++
+ dwm.c        | 32 ++++++++++++++++++++++++++++----
+ 2 files changed, 30 insertions(+), 4 deletions(-)
+
+diff --git a/config.def.h b/config.def.h
+index 9efa774..6b27df6 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -64,6 +64,8 @@ static const Key keys[] = {
+ 	/* modifier                     key        function        argument */
+ 	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },
+ 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
++	{ MODKEY,                       XK_r,      runrulesfocused,{0} },
++	{ MODKEY|ShiftMask,             XK_r,      runrulesall,    {0} },
+ 	{ MODKEY,                       XK_b,      togglebar,      {0} },
+ 	{ MODKEY,                       XK_j,      focusstack,     {.i = +1 } },
+ 	{ MODKEY,                       XK_k,      focusstack,     {.i = -1 } },
+diff --git a/dwm.c b/dwm.c
+index 1443802..bd3bcd5 100644
+--- a/dwm.c
++++ b/dwm.c
+@@ -141,7 +141,7 @@ typedef struct {
+ } Rule;
+ 
+ /* function declarations */
+-static void applyrules(Client *c);
++static void applyrules(Client *c, int default_tags);
+ static int applysizehints(Client *c, int *x, int *y, int *w, int *h, int interact);
+ static void arrange(Monitor *m);
+ static void arrangemon(Monitor *m);
+@@ -193,6 +193,8 @@ static void resizeclient(Client *c, int x, int y, int w, int h);
+ static void resizemouse(const Arg *arg);
+ static void restack(Monitor *m);
+ static void run(void);
++static void runrulesall(const Arg *args);
++static void runrulesfocused(const Arg *args);
+ static void scan(void);
+ static int sendevent(Client *c, Atom proto);
+ static void sendmon(Client *c, Monitor *m);
+@@ -275,7 +277,7 @@ struct NumTags { char limitexceeded[LENGTH(tags) > 31 ? -1 : 1]; };
+ 
+ /* function implementations */
+ void
+-applyrules(Client *c)
++applyrules(Client *c, int default_tags)
+ {
+ 	const char *class, *instance;
+ 	unsigned int i;
+@@ -307,7 +309,7 @@ applyrules(Client *c)
+ 		XFree(ch.res_class);
+ 	if (ch.res_name)
+ 		XFree(ch.res_name);
+-	c->tags = c->tags & TAGMASK ? c->tags & TAGMASK : c->mon->tagset[c->mon->seltags];
++	c->tags = c->tags & TAGMASK ? c->tags & TAGMASK : default_tags ? default_tags : c->mon->tagset[c->mon->seltags];
+ }
+ 
+ int
+@@ -1049,7 +1051,7 @@ manage(Window w, XWindowAttributes *wa)
+ 		c->tags = t->tags;
+ 	} else {
+ 		c->mon = selmon;
+-		applyrules(c);
++		applyrules(c, 0);
+ 	}
+ 
+ 	if (c->x + WIDTH(c) > c->mon->wx + c->mon->ww)
+@@ -1389,6 +1391,28 @@ run(void)
+ 			handler[ev.type](&ev); /* call handler */
+ }
+ 
++static void
++runrulesfocused(const Arg *args)
++{
++	if (selmon->sel) {
++        applyrules(selmon->sel, 0);
++		focus(NULL);
++		arrange(selmon);
++	}
++}
++
++static void
++runrulesall(const Arg *args)
++{
++    for (Monitor *m = selmon; m; m=m->next) {
++        for (Client *c = m->clients; c; c = c->next) {
++            applyrules(c, c->tags);
++        }
++        arrange(m);
++    }
++    focus(NULL);
++}
++
+ void
+ scan(void)
+ {
+-- 
+2.50.1
+
