@@ -1,0 +1,137 @@
+diff -up dwm-6.6-alpha/config.def.h dwm-6.6-flycolors-alpha/config.def.h
+--- dwm-6.6-alpha/config.def.h	2025-12-21 17:07:31.747211857 +0300
++++ dwm-6.6-flycolors-alpha/config.def.h	2025-12-21 17:08:31.403879729 +0300
+@@ -13,11 +13,23 @@ static const char col_gray1[]       = "#
+ static const char col_gray2[]       = "#444444";
+ static const char col_gray3[]       = "#bbbbbb";
+ static const char col_gray4[]       = "#eeeeee";
+-static const char col_cyan[]        = "#005577";
+-static const char *colors[][3]      = {
++static const char default_flycolor[] = "#666666";
++
++static const char *flycolors[] = {
++	"#666666", // gray
++	"#005577", // blue
++	"#117755", // green
++	"#aa7711", // yellow
++	"#771111", // red
++	"#551177", // magenta
++	"#aa1177", // pink
++	NULL // used to count the array size
++};
++
++static const char *colors[][3] = {
+ 	/*               fg         bg         border   */
+ 	[SchemeNorm] = { col_gray3, col_gray1, col_gray2 },
+-	[SchemeSel]  = { col_gray4, col_cyan,  col_cyan  },
++	[SchemeSel]  = { col_gray4, default_flycolor, default_flycolor }, /* [1] and [2] are changed in cycle_flycolors */
+ };
+ 
+ /* tagging */
+@@ -59,13 +71,24 @@ static const Layout layouts[] = {
+ 
+ /* commands */
+ static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
+-static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_cyan, "-sf", col_gray4, NULL };
++static const char *dmenucmd[] = {
++	"dmenu_run",
++	"-m", dmenumon,
++	"-fn", dmenufont,
++	"-nb", col_gray1,
++	"-nf", col_gray3,
++	"-sb", default_flycolor, /* changed as dmenucmd[10] in cycle_flycolors */
++	"-sf", col_gray4,
++	NULL
++};
+ static const char *termcmd[]  = { "st", NULL };
+ 
+ static const Key keys[] = {
+ 	/* modifier                     key        function        argument */
+ 	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },
+ 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
++	{ MODKEY,                       XK_c,      cycle_flycolors, { .i = +1 } },
++	{ MODKEY|ShiftMask,             XK_c,      cycle_flycolors, { .i = -1 } },
+ 	{ MODKEY,                       XK_b,      togglebar,      {0} },
+ 	{ MODKEY,                       XK_j,      focusstack,     {.i = +1 } },
+ 	{ MODKEY,                       XK_k,      focusstack,     {.i = -1 } },
+@@ -75,7 +98,7 @@ static const Key keys[] = {
+ 	{ MODKEY,                       XK_l,      setmfact,       {.f = +0.05} },
+ 	{ MODKEY,                       XK_Return, zoom,           {0} },
+ 	{ MODKEY,                       XK_Tab,    view,           {0} },
+-	{ MODKEY|ShiftMask,             XK_c,      killclient,     {0} },
++	{ MODKEY|ShiftMask,             XK_x,      killclient,     {0} },
+ 	{ MODKEY,                       XK_t,      setlayout,      {.v = &layouts[0]} },
+ 	{ MODKEY,                       XK_f,      setlayout,      {.v = &layouts[1]} },
+ 	{ MODKEY,                       XK_m,      setlayout,      {.v = &layouts[2]} },
+diff -up dwm-6.6-alpha/dwm.1 dwm-6.6-flycolors-alpha/dwm.1
+--- dwm-6.6-alpha/dwm.1	2025-12-18 12:11:49.852471883 +0300
++++ dwm-6.6-flycolors-alpha/dwm.1	2025-12-21 17:08:31.403879729 +0300
+@@ -113,9 +113,15 @@ Decrease master area size.
+ .B Mod1\-Return
+ Zooms/cycles focused window to/from master area (tiled layouts only).
+ .TP
+-.B Mod1\-Shift\-c
++.B Mod1\-Shift\-x
+ Close focused window.
+ .TP
++.B Mod1\-c
++Cycle flycolors.
++.TP
++.B Mod1\-Shift\-c
++Cycle flycolors back.
++.TP
+ .B Mod1\-Shift\-space
+ Toggle focused window between tiled and floating state.
+ .TP
+diff -up dwm-6.6-alpha/dwm.c dwm-6.6-flycolors-alpha/dwm.c
+--- dwm-6.6-alpha/dwm.c	2025-12-21 17:07:31.747211857 +0300
++++ dwm-6.6-flycolors-alpha/dwm.c	2025-12-21 17:09:37.160547712 +0300
+@@ -143,6 +143,8 @@ typedef struct {
+ } Rule;
+ 
+ /* function declarations */
++static void cycle_flycolors(const Arg *arg);
++static void update_scheme();
+ static void applyrules(Client *c);
+ static int applysizehints(Client *c, int *x, int *y, int *w, int *h, int interact);
+ static void arrange(Monitor *m);
+@@ -237,6 +239,7 @@ static void xinitvisual(void);
+ static void zoom(const Arg *arg);
+ 
+ /* variables */
++static unsigned int iflycol = 0;
+ static const char broken[] = "broken";
+ static char stext[256];
+ static int screen;
+@@ -2187,6 +2190,31 @@ zoom(const Arg *arg)
+ 	pop(c);
+ }
+ 
++void
++update_scheme()
++{
++	unsigned int alphas[] = {borderalpha, baralpha, OPAQUE};
++	Client *c = selmon->sel;
++	for (int i = 0; i < LENGTH(colors); i++)
++		scheme[i] = drw_scm_create(drw, colors[i], alphas, 3);
++	focus(c);
++}
++
++void
++cycle_flycolors(const Arg *arg)
++{
++	int flycolors_limit = 256;
++	int i;
++	for(i = 0; flycolors[i] != NULL && i < flycolors_limit; i++)
++		;
++	iflycol += i + arg->i;
++	iflycol %= i;
++	colors[SchemeSel][1] = flycolors[iflycol];
++	colors[SchemeSel][2] = flycolors[iflycol];
++	dmenucmd[10] = flycolors[iflycol];
++	update_scheme();
++}
++
+ int
+ main(int argc, char *argv[])
+ {

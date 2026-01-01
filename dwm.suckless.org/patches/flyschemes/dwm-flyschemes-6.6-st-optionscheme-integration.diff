@@ -1,0 +1,40 @@
+diff -up dwm-6.6-flyschemes/config.def.h dwm-6.6-flyschemes-stoptionschemeintegration/config.def.h
+--- dwm-6.6-flyschemes/config.def.h	2025-12-21 18:53:52.460002790 +0300
++++ dwm-6.6-flyschemes-stoptionschemeintegration/config.def.h	2025-12-23 17:08:52.466681818 +0300
+@@ -116,7 +116,23 @@ static const char *dmenucmd[] = {
+ 	"-sf", "$eeeeee", /* changed as dmenucmd[12] in cycle_flyschemes */
+ 	NULL
+ };
+-static const char *termcmd[]  = { "st", NULL };
++
++static const char *st_optionschemes[] = {
++	"default",
++	"light",
++	"plan9",
++	"dracula",
++	"solarized",
++	"nord",
++	"gruvbox",
++	"cyberpunk"
++};
++
++static const char *termcmd[]  = {
++	"st",
++	"-S", "default", /* changed as termcmd[2] in cycle_flyschemes */
++	NULL
++};
+ 
+ static const Key keys[] = {
+ 	/* modifier                     key        function        argument */
+diff -up dwm-6.6-flyschemes/dwm.c dwm-6.6-flyschemes-stoptionschemeintegration/dwm.c
+--- dwm-6.6-flyschemes/dwm.c	2025-12-21 18:53:52.460002790 +0300
++++ dwm-6.6-flyschemes-stoptionschemeintegration/dwm.c	2025-12-23 17:08:42.620014949 +0300
+@@ -2151,6 +2151,8 @@ update_scheme()
+ 	dmenucmd[8] = flyschemes[iflysch][SchemeNorm][0];
+ 	dmenucmd[10] = flyschemes[iflysch][SchemeSel][1];
+ 	dmenucmd[12] = flyschemes[iflysch][SchemeSel][0];
++	int optschlen = LENGTH(st_optionschemes);
++	termcmd[2] = st_optionschemes[iflysch % optschlen];
+ 	Client *cl = selmon->sel;
+ 	Client *c;
+ 	Monitor *m;
