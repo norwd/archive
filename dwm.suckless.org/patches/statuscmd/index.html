@@ -103,6 +103,7 @@
 		<li><a href="//dwm.suckless.org/patches/clientopacity/">clientopacity/</a></li>
 		<li><a href="//dwm.suckless.org/patches/clientresizehints/">clientresizehints/</a></li>
 		<li><a href="//dwm.suckless.org/patches/clientspertag/">clientspertag/</a></li>
+		<li><a href="//dwm.suckless.org/patches/clkanywhere/">clkanywhere/</a></li>
 		<li><a href="//dwm.suckless.org/patches/cmdcustomize/">cmdcustomize/</a></li>
 		<li><a href="//dwm.suckless.org/patches/colemak_keys/">colemak keys/</a></li>
 		<li><a href="//dwm.suckless.org/patches/colorbar/">colorbar/</a></li>
@@ -236,6 +237,8 @@
 		<li><a href="//dwm.suckless.org/patches/nmaxmaster/">nmaxmaster/</a></li>
 		<li><a href="//dwm.suckless.org/patches/noborder/">noborder/</a></li>
 		<li><a href="//dwm.suckless.org/patches/noborderflicker/">noborderflicker/</a></li>
+		<li><a href="//dwm.suckless.org/patches/nobordermonocle/">nobordermonocle/</a></li>
+		<li><a href="//dwm.suckless.org/patches/nocornermonocle/">nocornermonocle/</a></li>
 		<li><a href="//dwm.suckless.org/patches/notags/">notags/</a></li>
 		<li><a href="//dwm.suckless.org/patches/notallowed/">notallowed/</a></li>
 		<li><a href="//dwm.suckless.org/patches/notitle/">notitle/</a></li>
@@ -293,6 +296,7 @@
 		<li><a href="//dwm.suckless.org/patches/smartborders/">smartborders/</a></li>
 		<li><a href="//dwm.suckless.org/patches/solarized/">solarized/</a></li>
 		<li><a href="//dwm.suckless.org/patches/spawn_cwd/">spawn cwd/</a></li>
+		<li><a href="//dwm.suckless.org/patches/spawn_window_cwd/">spawn window cwd/</a></li>
 		<li><a href="//dwm.suckless.org/patches/spawnprograms/">spawnprograms/</a></li>
 		<li><a href="//dwm.suckless.org/patches/spawntag/">spawntag/</a></li>
 		<li><a href="//dwm.suckless.org/patches/splitstatus/">splitstatus/</a></li>
@@ -388,104 +392,132 @@
 <div id="main">
 
 <h1>statuscmd</h1>
+<p>Add clickable status bar sections.</p>
 <h2>Description</h2>
-<p>This patch adds the ability to signal a status monitor program such as
-<a href="https://github.com/torrinfail/dwmblocks">dwmblocks</a> the location and button
-when clicking on the status bar. Alternatively, there is a version that
-executes shell commands defined in config.h instead of using signals.</p>
+<p>This patch sends mouse button events to a
+<a href="https://dwm.suckless.org/status_monitor/">status monitor</a>. When clicking or
+scrolling on a section, dwm detects the section number and mouse button, then
+sends them to the status monitor via a signal.</p>
+<p>The nosignal version executes shell commands defined in config.h instead of
+using signals.</p>
 <h2>Usage</h2>
-<p>Both the nosignal version and the dwmblocks version will run their respective
-shell commands/scripts with the environment variable BUTTON set to the button
-that was pressed.</p>
+<p>Both the status monitor and nosignal versions will run their respective shell
+commands/scripts with the environment variable <code>BUTTON</code> set to the pressed
+button.</p>
 <h3>With signals</h3>
 <p>Apply the statuscmd patch and set the <code>STATUSBAR</code> macro in config.h
 to the name of the status monitor.</p>
-<p>Apply the corresponding statuscmd patch to your status monitor if there is
-one, or extend the program on your own. Feel free to add patches for other
-status monitors.</p>
+<p>Apply the corresponding statuscmd patch to your status monitor if there is one,
+or create one yourself. Feel free to add patches for other status monitors.</p>
 <h4>Patching status monitors</h4>
-<ul>
+<ol>
 <li>Associate each section with a signal number in the range of 1-31.</li>
-<li>When setting the status text, print each section's respective signal number
-as a raw byte before its text.</li>
-<li>With the 20241009 patch, printing the raw byte again at the end of block</li>
-</ul>
-<pre><code>output will end the clickable region.
-</code></pre>
+<li>Print each section's signal number as a raw byte before its text.
 <ul>
-<li>Create a signal handler:</li>
+<li>Print the signal number again after the text to end the clickable region.</li>
 </ul>
-<pre><code>void sighandler(int signum, siginfo_t *si, void *ucontext)
-{
-	int signal = signum - SIGRTMIN;
-	int button = si-&gt;si_value.sival_int; /* if button is zero, the signal is not from a button press */
-	... /* do whatever you want */
-}
+</li>
+<li><p>Create a signal handler:</p>
+<pre><code> void sighandler(int signum, siginfo_t *si, void *ucontext)
+ {
+     int signal = signum - SIGRTMIN;
+     /* if button is zero, the signal is not from a button press */
+     int button = si-&gt;si_value.sival_int;
+     ... /* do whatever you want */
+ }
 </code></pre>
-<ul>
-<li>Register the signal handler for each section in the following way, with
-'signal' being the same signal from the first step:</li>
-</ul>
-<pre><code>struct sigaction sa = { .sa_sigaction = sighandler, .sa_flags = SA_SIGINFO };
-sigaction(SIGRTMIN+signal, &amp;sa, NULL);
+</li>
+<li><p>Register the signal handler for each section, with <code>signal</code> set to the
+section number:</p>
+<pre><code> struct sigaction sa = {
+     .sa_sigaction = sighandler,
+     .sa_flags = SA_SIGINFO
+ };
+ sigaction(SIGRTMIN+signal, &amp;sa, NULL);
 </code></pre>
+</li>
+</ol>
 <h3>Without signals</h3>
 <p>Apply the statuscmd-nosignal patch and fill the <code>statuscmds</code> array in config.h
 with <code>StatusCmd</code> structs, which take a shell command string and an integer
 identifier.</p>
-<p>When setting the status, print the integer identifier as a raw byte before its
+<p>When setting the status, print the section number as a raw byte before its
 respective text.</p>
 <p>For example, with <code>statuscmds</code> defined as such:</p>
 <pre><code>static const StatusCmd statuscmds[] = {
-	{ "volume",  1 },
-	{ "cpu",     2 },
-	{ "battery", 3 },
+    { "volume",  1 },
+    { "cpu",     2 },
+    { "battery", 3 },
 };
 </code></pre>
 <p>And root name set like this:</p>
-<pre><code>xsetroot -name "$(printf '\x01 Volume \x01|\x02 CPU \x02|\x03 Battery\x03')"
+<pre><code>xsetroot -name "$(printf '\01 Volume \01|\02 CPU \02|\03 Battery \03')"
 </code></pre>
-<p>Clicking on 'Volume |' would run <code>volume</code>, clicking on ' CPU |'
-would run <code>cpu</code> and clicking on ' Battery' would run <code>battery</code>.</p>
+<p>Clicking on ' Volume ' would run <code>volume</code>, clicking on ' CPU '
+would run <code>cpu</code> and clicking on ' Battery ' would run <code>battery</code>.</p>
 <h2>Example</h2>
 <p>A script run from dwm or dwmblocks with this patch might look like this:</p>
 <pre><code>#!/bin/sh
 </code></pre>
 <pre><code>case $BUTTON in
-	1) notify-send "CPU usage" "$(ps axch -o cmd,%cpu --sort=-%cpu | head)" ;;
-	3) st -e htop ;;
+    1) notify-send 'CPU usage' "$(ps axch -o cmd,%cpu --sort=-%cpu | head)" ;;
+    3) st -e htop ;;
 esac
 </code></pre>
-<pre><code>printf '\x01Click Me!\x01'
+<pre><code>printf '\01Click Me!\01'
 </code></pre>
+<ul>
+<li>Handle mouse buttons in a switch statement:
+<ul>
+<li><code>1</code>: left button</li>
+<li><code>2</code>: middle button (pressing the scroll wheel)</li>
+<li><code>3</code>: right button</li>
+<li><code>4</code>: scrolling up</li>
+<li><code>5</code>: scrolling down</li>
+<li><code>6</code>: scrolling left</li>
+<li><code>7</code>: scrolling right</li>
+<li><code>8</code>: 4th button (backward)</li>
+<li><code>9</code>: 5th button (forwards)</li>
+</ul>
+</li>
+<li>Print the status text surrounded by its section number as a raw byte.
+<ul>
+<li>If using printf, use octal codes as they're POSIX compliant. To represent
+signal 30, use <code>\036</code>.</li>
+</ul>
+</li>
+</ul>
 <h2>Notes</h2>
-<p>The signal version is not compatible with OpenBSD since it relies on <code>sigqueue</code>.</p>
-<p>Be careful with newline characters in the status text since '\n' is equal to
-'\x0a', which is a valid signal number. The problem where having certain
-undrawable characters in the status bar can make dwm laggy is fixed since dwm
-will not attempt to draw them with this patch.</p>
+<ul>
+<li>The signal patch doesn't work on OpenBSD since it relies on <code>sigqueue</code>.</li>
+<li>Newline characters (<code>\n</code>, <code>\012</code>, <code>\x0a</code>) get interpreted as a valid signal
+number 10.</li>
+<li>This patch skips over undrawable characters when rendering the status bar
+text, which fixes a problem that makes dwm lag when trying to draw them.</li>
+</ul>
 <h2>Download</h2>
 <h3>dwm patches</h3>
 <ul>
-<li><a href="dwm-statuscmd-20210405-67d76bd.diff">dwm-statuscmd-20210405-67d76bd.diff</a></li>
+<li><a href="./dwm-statuscmd-20260124-a9aa0d8.diff">dwm-statuscmd-20260124-a9aa0d8.diff</a></li>
 <li><a href="./dwm-statuscmd-20241009-8933ebc.diff">dwm-statuscmd-20241009-8933ebc.diff</a></li>
-<li><a href="dwm-statuscmd-nosignal-20210402-67d76bd.diff">dwm-statuscmd-nosignal-20210402-67d76bd.diff</a></li>
+<li><a href="./dwm-statuscmd-20210405-67d76bd.diff">dwm-statuscmd-20210405-67d76bd.diff</a></li>
+<li><a href="./dwm-statuscmd-nosignal-20210402-67d76bd.diff">dwm-statuscmd-nosignal-20210402-67d76bd.diff</a></li>
 </ul>
-<p>If using <a href="https://dwm.suckless.org/patches/status2d/">status2d</a>, use these patches instead of the
-above ones on top of a build already patched with status2d:</p>
+<p>When using <a href="https://dwm.suckless.org/patches/status2d/">status2d</a>, apply these
+patches instead after patching status2d:</p>
 <ul>
-<li><a href="dwm-statuscmd-status2d-20210405-60bb3df.diff">dwm-statuscmd-status2d-20210405-60bb3df.diff</a></li>
-<li><a href="dwm-statuscmd-nosignal-status2d-20210402-60bb3df.diff">dwm-statuscmd-nosignal-status2d-20210402-60bb3df.diff</a></li>
+<li><a href="./dwm-statuscmd-status2d-20210405-60bb3df.diff">dwm-statuscmd-status2d-20210405-60bb3df.diff</a></li>
+<li><a href="./dwm-statuscmd-nosignal-status2d-20210402-60bb3df.diff">dwm-statuscmd-nosignal-status2d-20210402-60bb3df.diff</a></li>
 </ul>
 <h3>Status monitor patches</h3>
 <ul>
-<li><a href="dwmblocks-statuscmd-20210402-96cbb45.diff">dwmblocks-statuscmd-20210402-96cbb45.diff</a></li>
+<li><a href="./dwmblocks-statuscmd-20210402-96cbb45.diff">dwmblocks-statuscmd-20210402-96cbb45.diff</a></li>
 <li><a href="https://github.com/LordRusk/gocaudices/tree/master/patches/statuscmd">gocaudices</a></li>
 </ul>
-<h2>Author</h2>
+<h2>Authors</h2>
 <ul>
 <li>Daniel Bylinka - <a href="&#x6D;&#x61;i&#x6C;&#x74;&#x6F;:&#100;&#97;&#110;&#105;&#101;&#108;&#46;&#98;&#121;&#108;&#105;&#110;&#107;&#97;&#64;&#103;&#109;&#97;&#105;&#108;&#46;&#99;&#111;&#109;">&#100;&#97;&#110;&#105;&#101;&#108;&#46;&#98;&#121;&#108;&#105;&#110;&#107;&#97;&#64;&#103;&#109;&#97;&#105;&#108;&#46;&#99;&#111;&#109;</a></li>
-<li>Justinas Grigas - <a href="&#x6D;&#x61;i&#x6C;&#x74;&#x6F;:&#100;&#101;&#118;&#64;&#106;&#115;&#116;&#110;&#97;&#115;&#46;&#99;&#111;&#109;">&#100;&#101;&#118;&#64;&#106;&#115;&#116;&#110;&#97;&#115;&#46;&#99;&#111;&#109;</a> (20241009)</li>
+<li>Justinas Grigas - <a href="&#x6D;&#x61;i&#x6C;&#x74;&#x6F;:&#100;&#101;&#118;&#64;&#106;&#115;&#116;&#110;&#97;&#115;&#46;&#99;&#111;&#109;">&#100;&#101;&#118;&#64;&#106;&#115;&#116;&#110;&#97;&#115;&#46;&#99;&#111;&#109;</a></li>
 </ul>
 </div>
 
