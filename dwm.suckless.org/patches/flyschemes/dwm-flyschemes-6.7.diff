@@ -1,0 +1,206 @@
+diff -upN dwm-6.7/config.def.h dwm-6.7-patched-flyschemes/config.def.h
+--- dwm-6.7/config.def.h	2026-01-10 13:33:58.160268753 +0300
++++ dwm-6.7-patched-flyschemes/config.def.h	2026-01-12 16:58:40.166555474 +0300
+@@ -7,15 +7,19 @@ static const int showbar            = 1;
+ static const int topbar             = 1;        /* 0 means bottom bar */
+ static const char *fonts[]          = { "monospace:size=10" };
+ static const char dmenufont[]       = "monospace:size=10";
+-static const char col_gray1[]       = "#222222";
+-static const char col_gray2[]       = "#444444";
+-static const char col_gray3[]       = "#bbbbbb";
+-static const char col_gray4[]       = "#eeeeee";
+-static const char col_cyan[]        = "#005577";
+-static const char *colors[][3]      = {
+-	/*               fg         bg         border   */
+-	[SchemeNorm] = { col_gray3, col_gray1, col_gray2 },
+-	[SchemeSel]  = { col_gray4, col_cyan,  col_cyan  },
++
++#include "flyschemes.h"
++
++static const char *(*flyschemes[])[3] = {
++	flyscheme_default,
++	flyscheme_light,
++	flyscheme_plan9,
++	flyscheme_dracula,
++	flyscheme_solarized,
++	flyscheme_nord,
++	flyscheme_gruvbox,
++	flyscheme_cyberpunk,
++	NULL /* used to count the number of flyschemes */
+ };
+ 
+ /* tagging */
+@@ -58,7 +62,16 @@ static const Layout layouts[] = {
+ 
+ /* commands */
+ static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
+-static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_cyan, "-sf", col_gray4, NULL };
++static const char *dmenucmd[] = {
++	"dmenu_run",
++	"-m", dmenumon,
++	"-fn", dmenufont,
++	"-nb", "#222222", /* changed as dmenucmd[6] in cycle_flyschemes */
++	"-nf", "#bbbbbb", /* changed as dmenucmd[8] in cycle_flyschemes */
++	"-sb", "#005577", /* changed as dmenucmd[10] in cycle_flyschemes */
++	"-sf", "#eeeeee", /* changed as dmenucmd[12] in cycle_flyschemes */
++	NULL
++};
+ static const char *termcmd[]  = { "st", NULL };
+ 
+ static const Key keys[] = {
+@@ -74,7 +87,9 @@ static const Key keys[] = {
+ 	{ MODKEY,                       XK_l,      setmfact,       {.f = +0.05} },
+ 	{ MODKEY,                       XK_Return, zoom,           {0} },
+ 	{ MODKEY,                       XK_Tab,    view,           {0} },
+-	{ MODKEY|ShiftMask,             XK_c,      killclient,     {0} },
++	{ MODKEY|ShiftMask,             XK_x,      killclient,     {0} },
++	{ MODKEY,                       XK_c,      cycle_flyschemes, { .i = +1 } },
++	{ MODKEY|ShiftMask,             XK_c,      cycle_flyschemes, { .i = -1 } },
+ 	{ MODKEY,                       XK_t,      setlayout,      {.v = &layouts[0]} },
+ 	{ MODKEY,                       XK_f,      setlayout,      {.v = &layouts[1]} },
+ 	{ MODKEY,                       XK_m,      setlayout,      {.v = &layouts[2]} },
+diff -upN dwm-6.7/dwm.1 dwm-6.7-patched-flyschemes/dwm.1
+--- dwm-6.7/dwm.1	2026-01-10 13:33:58.160268753 +0300
++++ dwm-6.7-patched-flyschemes/dwm.1	2026-01-12 16:55:07.489892340 +0300
+@@ -113,9 +113,15 @@ Decrease master area size.
+ .B Mod1\-Return
+ Zooms/cycles focused window to/from master area (tiled layouts only).
+ .TP
+-.B Mod1\-Shift\-c
++.B Mod1\-Shift\-x
+ Close focused window.
+ .TP
++.B Mod1\-c
++Cycle flyscheme.
++.TP
++.B Mod1\-Shift\-c
++Cycle flyscheme back.
++.TP
+ .B Mod1\-Shift\-space
+ Toggle focused window between tiled and floating state.
+ .TP
+diff -upN dwm-6.7/dwm.c dwm-6.7-patched-flyschemes/dwm.c
+--- dwm-6.7/dwm.c	2026-01-10 13:33:58.160268753 +0300
++++ dwm-6.7-patched-flyschemes/dwm.c	2026-01-12 16:55:45.363225051 +0300
+@@ -141,6 +141,8 @@ typedef struct {
+ } Rule;
+ 
+ /* function declarations */
++static void cycle_flyschemes(const Arg *arg);
++static void update_scheme();
+ static void applyrules(Client *c);
+ static int applysizehints(Client *c, int *x, int *y, int *w, int *h, int interact);
+ static void arrange(Monitor *m);
+@@ -234,6 +236,7 @@ static int xerrorstart(Display *dpy, XEr
+ static void zoom(const Arg *arg);
+ 
+ /* variables */
++static unsigned int iflysch = 0;
+ static const char broken[] = "broken";
+ static char stext[256];
+ static int screen;
+@@ -485,7 +488,7 @@ cleanup(void)
+ 		cleanupmon(mons);
+ 	for (i = 0; i < CurLast; i++)
+ 		drw_cur_free(drw, cursor[i]);
+-	for (i = 0; i < LENGTH(colors); i++)
++	for (i = 0; i < LENGTH(flyscheme_default); i++)
+ 		drw_scm_free(drw, scheme[i], 3);
+ 	free(scheme);
+ 	XDestroyWindow(dpy, wmcheckwin);
+@@ -1584,9 +1587,9 @@ setup(void)
+ 	cursor[CurResize] = drw_cur_create(drw, XC_sizing);
+ 	cursor[CurMove] = drw_cur_create(drw, XC_fleur);
+ 	/* init appearance */
+-	scheme = ecalloc(LENGTH(colors), sizeof(Clr *));
+-	for (i = 0; i < LENGTH(colors); i++)
+-		scheme[i] = drw_scm_create(drw, colors[i], 3);
++	scheme = ecalloc(LENGTH(flyscheme_default), sizeof(Clr *));
++	for (i = 0; i < LENGTH(flyscheme_default); i++)
++		scheme[i] = drw_scm_create(drw, flyscheme_default[i], 3);
+ 	/* init bars */
+ 	updatebars();
+ 	updatestatus();
+@@ -2140,6 +2143,36 @@ zoom(const Arg *arg)
+ 	pop(c);
+ }
+ 
++void
++update_scheme()
++{
++	scheme[SchemeNorm] = drw_scm_create(drw, flyschemes[iflysch][SchemeNorm], 3);
++	scheme[SchemeSel] = drw_scm_create(drw, flyschemes[iflysch][SchemeSel], 3);
++	dmenucmd[6] = flyschemes[iflysch][SchemeNorm][1];
++	dmenucmd[8] = flyschemes[iflysch][SchemeNorm][0];
++	dmenucmd[10] = flyschemes[iflysch][SchemeSel][1];
++	dmenucmd[12] = flyschemes[iflysch][SchemeSel][0];
++	Client *cl = selmon->sel;
++	Client *c;
++	Monitor *m;
++	for (m = mons; m; m = m->next)
++		for (c = m->clients; c; c = c->next)
++			focus(c);
++	focus(cl);
++}
++
++void
++cycle_flyschemes(const Arg *arg)
++{
++	int flyschemes_limit = 256;
++	int i;
++	for(i = 0; flyschemes[i] != NULL && i < flyschemes_limit; i++)
++		;
++	iflysch += i + arg->i;
++	iflysch %= i;
++	update_scheme();
++}
++
+ int
+ main(int argc, char *argv[])
+ {
+diff -upN dwm-6.7/flyschemes.h dwm-6.7-patched-flyschemes/flyschemes.h
+--- dwm-6.7/flyschemes.h	1970-01-01 03:00:00.000000000 +0300
++++ dwm-6.7-patched-flyschemes/flyschemes.h	2026-01-12 16:58:30.953222295 +0300
+@@ -0,0 +1,42 @@
++
++/* loaded on dwm launch, has to be present */
++static const char *flyscheme_default[][3] = {
++	[SchemeNorm] = { "#bbbbbb", "#222222", "#444444" },
++	[SchemeSel]  = { "#eeeeee", "#005577", "#005577" },
++};
++
++static const char *flyscheme_dracula[][3] = {
++	[SchemeNorm] = { "#f8f8f2", "#282a36", "#44475a" },
++	[SchemeSel]  = { "#282a36", "#bd93f9", "#bd93f9" },
++};
++
++static const char *flyscheme_solarized[][3] = {
++	[SchemeNorm] = { "#839496", "#002b36", "#073642" },
++	[SchemeSel]  = { "#002b36", "#2aa198", "#2aa198" },
++};
++
++static const char *flyscheme_nord[][3] = {
++	[SchemeNorm] = { "#d8dee9", "#2e3440", "#4c566a" },
++	[SchemeSel]  = { "#2e3440", "#88c0d0", "#88c0d0" },
++};
++
++static const char *flyscheme_gruvbox[][3] = {
++	[SchemeNorm] = { "#ebdbb2", "#282828", "#3c3836" },
++	[SchemeSel]  = { "#282828", "#fabd2f", "#fabd2f" },
++};
++
++static const char *flyscheme_light[][3] = {
++	[SchemeNorm] = { "#222222", "#eeeeee", "#cccccc" },
++	[SchemeSel]  = { "#ffffff", "#4a90e2", "#4a90e2" },
++};
++
++static const char *flyscheme_plan9[][3] = {
++	[SchemeNorm] = { "#000000", "#ffffea", "#999999" },
++	[SchemeSel]  = { "#000000", "#9ecfff", "#9ecfff" },
++};
++
++static const char *flyscheme_cyberpunk[][3] = {
++	[SchemeNorm] = { "#00ffcc", "#0d0221", "#1d1231" },
++	[SchemeSel]  = { "#0d0221", "#ff00aa", "#ff00aa" },
++};
++

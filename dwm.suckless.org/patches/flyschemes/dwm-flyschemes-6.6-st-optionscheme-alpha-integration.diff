@@ -1,0 +1,47 @@
+diff -up dwm-6.6-flyscheme/config.def.h dwm-6.6-flyscheme-st-optionscheme-alpha-integration/config.def.h
+--- dwm-6.6-flyscheme/config.def.h	2025-12-24 23:06:06.253357321 +0300
++++ dwm-6.6-flyscheme-st-optionscheme-alpha-integration/config.def.h	2025-12-24 23:09:43.483360328 +0300
+@@ -116,7 +116,28 @@ static const char *dmenucmd[] = {
+ 	"-sf", "#eeeeee", /* changed as dmenucmd[12] in cycle_flyschemes */
+ 	NULL
+ };
+-static const char *termcmd[]  = { "st", NULL };
++
++static const char *st_optionschemes[] = {
++	"default",
++	"light",
++	"plan9",
++	"dracula",
++	"solarized",
++	"nord",
++	"gruvbox",
++	"cyberpunk"
++};
++
++static const char *st_alphas[] = {
++	"0.8", "0.7", "0.9", "0.8", "0.9", "0.6", "0.7", "0.8"
++};
++
++static const char *termcmd[]  = {
++	"st",
++	"-S", "default", /* changed as termcmd[2] in cycle_flyschemes */
++	"-A", "0.8", /* changed as termcmd[4] in cycle_flyschemes */
++	NULL
++};
+ 
+ static const Key keys[] = {
+ 	/* modifier                     key        function        argument */
+diff -up dwm-6.6-flyscheme/dwm.c dwm-6.6-flyscheme-st-optionscheme-alpha-integration/dwm.c
+--- dwm-6.6-flyscheme/dwm.c	2025-12-24 23:06:06.256690655 +0300
++++ dwm-6.6-flyscheme-st-optionscheme-alpha-integration/dwm.c	2025-12-24 23:10:07.423360660 +0300
+@@ -2151,6 +2151,10 @@ update_scheme()
+ 	dmenucmd[8] = flyschemes[iflysch][SchemeNorm][0];
+ 	dmenucmd[10] = flyschemes[iflysch][SchemeSel][1];
+ 	dmenucmd[12] = flyschemes[iflysch][SchemeSel][0];
++	int optschlen = LENGTH(st_optionschemes);
++	int alphaslen = LENGTH(st_alphas);
++	termcmd[2] = st_optionschemes[iflysch % optschlen];
++	termcmd[4] = st_alphas[iflysch % alphaslen];
+ 	Client *cl = selmon->sel;
+ 	Client *c;
+ 	Monitor *m;
