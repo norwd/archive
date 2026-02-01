@@ -35,25 +35,25 @@ Content-Type: text/html
 	<div id="content">
 	<div id="nav">
 <ul>
-<li><a href="http://dl.suckless.org/9base">9base</a></li>
-<li><a href="http://dl.suckless.org/blind/" class="thisPage"> blind/</a></li>
-<li><a href="http://dl.suckless.org/dmenu/">dmenu/</a></li>
+<li><a href="../../../9base">9base</a></li>
+<li><a href="../../../blind/index.html" class="thisPage"> blind/</a></li>
+<li><a href="../../../dmenu/index.html">dmenu/</a></li>
 <li><a href="../../../farbfeld/index.html">farbfeld/</a></li>
-<li><a href="http://dl.suckless.org/ii/">ii/</a></li>
-<li><a href="http://dl.suckless.org/quark/">quark/</a></li>
-<li><a href="http://dl.suckless.org/sandy">sandy</a></li>
-<li><a href="http://dl.suckless.org/sent/">sent/</a></li>
-<li><a href="http://dl.suckless.org/sic/">sic/</a></li>
-<li><a href="http://dl.suckless.org/slock/">slock/</a></li>
-<li><a href="http://dl.suckless.org/tabbed/">tabbed/</a></li>
-<li><a href="http://dl.suckless.org/x/">x/</a></li>
+<li><a href="../../../ii/index.html">ii/</a></li>
+<li><a href="../../../quark/index.html">quark/</a></li>
+<li><a href="../../../sandy">sandy</a></li>
+<li><a href="../../../sent/index.html">sent/</a></li>
+<li><a href="../../../sic/index.html">sic/</a></li>
+<li><a href="../../../slock/index.html">slock/</a></li>
+<li><a href="../../../tabbed/index.html">tabbed/</a></li>
+<li><a href="../../../x/index.html">x/</a></li>
 </ul>
 	</div>
 
 	<div id="main">
 
 
-<p><img src="http://dl.suckless.org/htmlout/tools.suckless.org/blind/blind.svg" alt="blind" /></p>
+<p><img src="blind.svg" alt="blind" /></p>
 
 <p>blind is a collection of command line video editing utilities.</p>
 
@@ -100,4 +100,135 @@ unless you know you have room for it, or if it is very
 small segment of your video, which unfortunely becomes a
 bit of a problem when reversing a video. However, when
 possible, feed the resulting video directly to
-<code>blind-to-video</code> to
+<code>blind-to-video</code> to convert it into a compressed,
+lossless video format, if the video is not too large, you
+can choose to compress it with bzip2 instead.</p>
+
+<h3>Does it support farbfeld?</h3>
+
+<p>Of course. If you want to use farbfeld, you can use
+the <code>-f</code> flag for <code>blind-to-image</code> and <code>blind-from-image</code>,
+this will cause the programs to convert directly to
+or from farbfeld without using <code>convert(1)</code>.</p>
+
+<h3>For what kind of video editing is blind designed?</h3>
+
+<p>It is designed for composing new videos. It is not
+designed for making small changes as this can probably
+be done faster with a graphical video editor or with
+ffmpeg which would also be much faster.</p>
+
+<h3>Creating videos without graphics, are you insane?</h3>
+
+<p>Yes, but see the rationale below!</p>
+
+<h3>Why doesn&rsquo;t blind use sRGB?</h3>
+
+<p>If I tell you I use CIE XYZ, you will only have two
+questions: “how are values stored?” and “is Y scaled
+to [0, 100] or [0, 1]?” When I tell you I use sRGB
+your have more questions: “do you support out-of-gamut
+colours?”, “how are values stored?”, “which scale
+do you use?”, and “is the transfer-function applied?”</p>
+
+<p>CIE XYZ also has the advantage of having the brightness
+encoded in one of its parameters, Y, which means that
+operations that want to deal with brightness only or
+chroma only does not need to do any conversions.</p>
+
+<h3>Why does blind use CIE XYZ instead of CIE L*a*b*?</h3>
+
+<p>Because CIE L*a*b* is not linear, meaning that it
+requires unnecessary calculations when working with
+the colours.</p>
+
+<h3>Why does blind use CIE XYZ instead of Y'UV or YUV?</h3>
+
+<p>Because Y'UV, which most videos use (for legacy
+reasons, namely that of black-and-white television)
+is not linear it has the same disadvantages as
+CIE L*a*b*. Y'UV does not have its transfer-function
+applied directly to it&rsquo;s parameters, instead it is a
+linear transformation if the sRGB with its
+transfer-function applied. This means that no performance
+is gained during convertion to or from cooked video
+formates by using YUV. CIE XYZ also has the advantage
+that it is well-known and has a one-step conversion
+to almost all colour models. It also have the advantages
+that it&rsquo;s parameters are named X, Y, Z, which makes it
+very easy to choose parameter when storing points
+instead of colours in a video.</p>
+
+<h3>Doesn&rsquo;t blind have any audio support?</h3>
+
+<p>No, it is not clear that there is actually a need for
+this. There are good tools for editing audio, and
+ffmpeg can be used be used to extract the audio streams
+from a video or add it to a video.</p>
+
+<h2>Rationale</h2>
+
+<ul>
+<li><p>It&rsquo;s source control friendly and it&rsquo;s easy for a user to
+resolve merge conflicts and identify changes.</p></li>
+<li><p>Rendering can take a very long time. With this approach,
+the user can use Make to only rerender parts that have
+been changes.</p></li>
+<li><p>It&rsquo;s possible to distribute the rendering to multiple
+computers, without any built in functionality for this,
+for example using a distributed Make.</p></li>
+<li><p>Parallelism is added for free.</p></li>
+<li><p>No room for buggy GUIs, which currently is a problem on
+the large video editors for Linux.</p></li>
+<li><p>Less chance that the user makes a change by mistake
+without noticing it, such as moving a clip in the editor
+by mistake instead of for example resizing.</p></li>
+<li><p>Even old, crappy computers can be used for large projects.</p></li>
+<li><p>Very easy to utilise command line image editors for modify
+frames, or to add your own tools for custom effects.</p></li>
+</ul>
+
+
+<h2>Development</h2>
+
+<p>You can browse its <a href="http://git.suckless.org/blind">source code repository</a>
+or get a copy using git with the following command:</p>
+
+<pre><code>git clone http://git.suckless.org/blind
+</code></pre>
+
+<h2>Download</h2>
+
+<ul>
+<li><p><a href="../../../tools/blind-1.0.tar.gz">blind-1.0</a> (2017-01-22)</p></li>
+<li><p><a href="../../../tools/blind-1.1.tar.gz">blind-1.1</a> (2017-05-06)</p></li>
+</ul>
+
+
+<h2>Dependencies</h2>
+
+<ul>
+<li><p><a href="https://www.ffmpeg.org/">ffmpeg</a> - for converting from or to other video formats.</p></li>
+<li><p><a href="https://www.imagemagick.org/">imagemagick</a> - for converting regular images to frames.</p></li>
+</ul>
+
+
+<h2>Author</h2>
+
+<ul>
+<li>Mattias Andrée (maandree@kth.se)</li>
+</ul>
+
+
+
+	</div>
+
+	</div>
+
+	<div id="footer">
+	<span class="right">
+	&copy; 2006-2017 suckless.org community | <a href="http://ev.suckless.org/impressum">Impressum</a>
+	</span>
+	</div>
+</body>
+</html>
