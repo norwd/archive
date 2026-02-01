@@ -1,0 +1,559 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<title>stali - static linux</title>
+<!-- metadata -->
+<meta name="generator" content="S5" />
+<meta name="version" content="S5 1.1" />
+<meta name="presdate" content="20100314" />
+<meta name="author" content="Anselm R Garbe" />
+<meta name="company" content="http://sta.li" />
+<!-- configuration parameters -->
+<meta name="defaultView" content="slideshow" />
+<meta name="controlVis" content="hidden" />
+<!-- style sheet links -->
+<link rel="stylesheet" href="ui/default/slides.css" type="text/css" media="projection" id="slideProj" />
+<link rel="stylesheet" href="ui/default/outline.css" type="text/css" media="screen" id="outlineStyle" />
+<link rel="stylesheet" href="ui/default/print.css" type="text/css" media="print" id="slidePrint" />
+<link rel="stylesheet" href="ui/default/opera.css" type="text/css" media="projection" id="operaFix" />
+<!-- S5 JS -->
+<script src="ui/default/slides.js" type="text/javascript"></script>
+</head>
+<body>
+
+<div class="layout">
+<div id="controls"><!-- DO NOT EDIT --></div>
+<div id="currentSlide"><!-- DO NOT EDIT --></div>
+<div id="header"></div>
+<div id="footer">
+<h1>CLT 2010/2010-03-14</h1>
+<h2>stali - static linux</h2>
+</div>
+
+</div>
+
+
+<div class="presentation">
+
+<div class="slide">
+<h1>stali - static linux</h1>
+<h3>Anselm R Garbe</h3>
+<h3>http://sta.li</h3>
+</div>
+
+
+<div class="slide">
+<h1>What's it about?</h1>
+<h2>It's <u><b style="color: red;">not</b></u> about this: <img src="tux_stali.png" height="70%"/></h2>
+</ul>
+</div>
+
+<div class="slide">
+<h1>What's it about?</h1>
+<h2>It's also <b>not</b> about: <img src="schumi.jpg" height="70%"/></h2>
+</ul>
+</div>
+
+<div class="slide">
+<h1>What it is about - intro</h1>
+<ul>
+<li>Linux system (no distro!) that consists of statically linked executables</li>
+<li>It's about <big>sta</big>tic <big>li</big>nking</li>
+<li>A toolchain/simple build system</li>
+<li>Static linking revival?</li>
+<li>A suckless.org production</li>
+</ul>
+</div>
+
+
+<div class="slide">
+<h1>suckless.org</h1>
+<ul>
+<li>Home of dwm / wmii / libixp / surf / dmenu / ...</li>
+</ul>
+<i>
+<ul>
+<li>Ingenious ideas are simple.</li>
+<li>Ingenious software is simple.</li>
+<li>Simplicity is the heart of the Unix philosophy.</li>
+<li>The more code lines you have removed, the more progress you have made.</li>
+<li>As the number of lines of code in your software shrinks, the more skilled you have become and the less your software sucks.</li>
+</ul>
+</i>
+</div>
+
+
+<div class="slide">
+<h1>Why stali, why yet another linux system?</h1>
+<ul>
+<li>Why not?</li>
+<li>Disproving some myths about static linking</li>
+<li>We want a suckless system to play with</li>
+<li>How much time has been wasted with dealing with all the mess?</li>
+<li>How much time have we wasted in configuring linux distros or BSDs?</li>
+<li><big>THIS MUST STOP</big></li>
+</ul>
+
+
+<div class="slide">
+<h1>ELF - Executable and Linking Format</h1>
+<img src="elf.png" height="70%"> (Source: Wikipedia)
+</div>
+
+<div class="slide">
+<h1>Playing with ELF related tools</h1>
+<p>There are some tools to play with, for example:</p>
+<ul>
+<li>readelf</li>
+<li>objdump</li>
+<li>file</li>
+<li>nm</li>
+<li>ldd</li>
+<li>source code of ld and ELF generators</li>
+</ul>
+</div>
+
+<div class="slide">
+<h1>Playing with readelf</h1>
+<p style="font-size: 14pt"><code>
+$ readelf -S lib.o<br/>
+There are 9 section headers, starting at offset 0xa8:<br/>
+<br/>
+Section Headers:<br/>
+[Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al<br/>
+[ 0]                   NULL            00000000 000000 000000 00      0   0  0<br/>
+[ 1] .text             PROGBITS        00000000 000034 00001c 00  AX  0   0  4<br/>
+[ 2] .data             PROGBITS        00000000 000050 000000 00  WA  0   0  4<br/>
+[ 3] .bss              NOBITS          00000000 000050 000000 00  WA  0   0  4<br/>
+[ 4] .comment          PROGBITS        00000000 000050 000012 01  MS  0   0  1<br/>
+[ 5] .note.GNU-stack   PROGBITS        00000000 000062 000000 00      0   0  1<br/>
+[ 6] .shstrtab         STRTAB          00000000 000062 000045 00      0   0  1<br/>
+[ 7] .symtab           SYMTAB          00000000 000210 000090 10      8   7  4<br/>
+[ 8] .strtab           STRTAB          00000000 0002a0 000017 00      0   0  1<br/>
+Key to Flags:<br/>
+W (write), A (alloc), X (execute), M (merge), S (strings)<br/>
+I (info), L (link order), G (group), x (unknown)<br/>
+O (extra OS processing required) o (OS specific), p (processor specific)<br/>
+</code>
+</p>
+</div>
+
+
+<div class="slide">
+<h1>Playing with nm</h1>
+<p style="font-size: 14pt">
+<code>
+$ nm lib_shared.so<br>
+0000147c a _DYNAMIC<br/>
+00001550 a _GLOBAL_OFFSET_TABLE_<br/>
+         w _Jv_RegisterClasses<br/>
+0000146c d __CTOR_END__<br/>
+00001468 d __CTOR_LIST__<br/>
+00001474 d __DTOR_END__<br/>
+00001470 d __DTOR_LIST__<br/>
+00000464 r __FRAME_END__<br/>
+00001478 d __JCR_END__<br/>
+00001478 d __JCR_LIST__<br/>
+00001568 A __bss_start<br/>
+         w __cxa_finalize@@GLIBC_2.1.3<br/>
+00000410 t __do_global_ctors_aux<br/>
+00000330 t __do_global_dtors_aux<br/>
+00001564 d __dso_handle<br/>
+         w __gmon_start__<br/>
+000003e7 t __i686.get_pc_thunk.bx<br/>
+00001568 A _edata<br/>
+00001570 A _end<br/>
+00000448 T _fini<br/>
+000002c8 T _init<br/>
+00001568 b completed.5829<br/>
+0000156c b dtor_idx.5831<br/>
+000003b0 t frame_dummy<br/>
+000003f8 T lib_bar<br/>
+000003ec T lib_foo<br/>
+</code>
+</p>
+</div>
+
+
+<div class="slide">
+<h1>static linking</h1>
+<img src="static-linking.png" height="70%">(Source Prof. Douglas Thain)
+</div>
+
+<div class="slide">
+<h1>Different kinds of static linking</h1>
+<ul>
+<li>Smart static linking
+<ul><li>Linker links/extracts <b>only</b> those object files (from an archive) that expose required symbols</li>
+    <li>This has implications on the size of a static executable</li>
+    <li>This is the usual case nowadays</li>
+</ul></li>
+<li>Dumb static linking
+<ul><li>Linker links full blown archives</li>
+    <li>Very unusual nowadays, was usual back in the 60s when people kept things in simple and clean states due to hardware limitations</li> 
+</ul></li>
+</ul>
+</div>
+
+<div class="slide">
+<h1>dynamic linking</h1>
+<img src="dynamic-linking.png" height="70%">(Source Prof. Douglas Thain)
+</div>
+
+<div class="slide">
+<h1>dynamic linking vs dynamic loading</h1>
+<ul>
+<li>Dynamic linking is not dynamic loading, dynamic loading is:
+<ul>
+	<li>dlopen</li>
+	<li>dlsym</li>
+	<li>dlerror</li>
+	<li>dlcose</li>
+</ul></li>
+<li>OS deals with dynamic linking at execution time</li>
+</li>
+</ul>
+</div>
+
+<div class="slide">
+<h1>Common pitfalls with dynamic linking</h1>
+<p style="font-size: 14pt"><code>
+$ ldd run_dynamic <br/>
+linux-gate.so.1 =>  (0xb77ec000)<br/>
+libc.so.6 => /lib/libc.so.6 (0xb7693000)<br/>
+/lib/ld-linux.so.2 (0xb77ed000)<br/>
+lib_shared.so => <b style="color: red">not found</b><br/>
+libX11.so.6 => <b style="color:red">not found</b><br/>
+libXinerama.so.1 => <b style="color:red">not found</b><br/>
+libxcb.so.1 => <b style="color:red">not found</b><br/>
+libdl.so.2 => <b style="color:red">not found</b><br/>
+libXext.so.6 => <b style="color:red">not found</b><br/>
+libXau.so.6 => <b style="color:red">not found</b><br/>
+libXdmcp.so.6 => <b style="color:red">not found</b><br/>
+</code></p>
+</div>
+
+<div class="slide">
+<h1>Common pitfalls with dynamic linking</h1>
+<p style="font-size: 14pt"><code>
+$ inkscape<br/>
+inkscape: /usr/lib/libxml2.so: no version information available (required by /usr/lib/libxslt.so.1)<br/>
+inkscape: /usr/lib/libxml2.so: no version information available (required by /usr/lib/libxslt.so.1)<br/>
+inkscape: /usr/lib/libxml2.so: no version information available (required by /usr/lib/libxslt.so.1)<br/>
+inkscape: /usr/lib/libxml2.so: no version information available (required by /usr/lib/libxslt.so.1)<br/>
+inkscape: /usr/lib/libxml2.so: no version information available (required by /usr/lib/libxslt.so.1)<br/>
+inkscape: /usr/lib/libxml2.so: no version information available (required by /usr/lib/libxslt.so.1)<br/>
+^C
+</code></p>
+
+<p>etc</p>
+</div>
+
+<div class="slide">
+<h1>Why was dynamic linking invented?</h1>
+<ul>
+<li>To make executables smaller? <b>No, see later</b></li>
+<li>To make executables faster? <b>No, see later</b></li>
+<li>To make executables more secure? <b>Not really, see later</b></li>
+<li>To make the process execution simpler? <b>No, more the opposite ;)</b></li>
+<li>It was invented to change code during runtime</li>
+</ul>
+</div>
+
+<div class="slide">
+<h1>Hacks and quirks with dynamic linking</h1>
+<ul>
+<li>Starting dynamic executables is slower (&rarr; relocation), so LD_PRELOAD was invented</li>
+<li>But LD_PRELOAD doesn't make the OS part of execution simpler, more the contrary</li>
+<li>But LD_PRELOAD introduces nice security problems, for example:
+<ul>
+<li>LD_PRELOAD=/home/foo/ld-linux.so.2 ping google.com</li>
+</ul></li>
+<li>Maintaing library paths is no joy, risking version problems, instabilities</li>
+<li>We don't need dynamic linking to use dynamic loading, you can have your plugins if you really want</li>
+</ul>
+</div>
+
+<div class="slide">
+<h1>What's wrong with all the other mess?</h1>
+<ul>
+<li>Libraries are bloated</li>
+<li>configure hell</li>
+</ul>
+</div>
+
+<div class="slide">
+<h1>Joe sez static executables are huge!</h1>
+<ul>
+<li>Why are static executables huge?</li>
+<li>Library bloat! glibc is a disaster - simple hello world results in 600kb overhead for no reason</li>
+<li>Use less bloated libraries, start here:
+   <ul><li>uClibc</li>
+   <li>dietlibc</li>
+   <li>bionic</li>
+   <li>even BSD libc is a lot better than glibc</li>
+   </ul></li>
+</ul>
+</div>
+
+<div class="slide">
+<h1>Joe sez static executables consume more memory!</h1>
+<ul>
+<li>Really?</li>
+<li>Smart linking makes many static executables very small</li>
+<li>Let's do some maths...
+</ul>
+</div>
+
+<div class="slide">
+<h1>Joe sez static executables consume more memory!</h1>
+<p style="font-size: 14pt">
+<code>
+$ file grep<br/>
+grep: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), statically linked, stripped<br/>
+$ du -h grep<br/>
+<b style="color: red">68K</b>     grep<br/>
+$ file /bin/grep <br/>
+/bin/grep: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), dynamically linked (uses shared libs), for GNU/Linux 2.6.18, stripped<br/>
+$ du -h /bin/grep<br/>
+<b style="color:red">84K</b>     /bin/grep<br/>
+$ ldd /bin/grep<br/>
+linux-gate.so.1 =>  (0xb7850000)<br/>
+libpcre.so.0 => /lib/libpcre.so.0 (0xb780c000)<br/>
+libc.so.6 => /lib/libc.so.6 (0xb76c5000)<br/>
+/lib/ld-linux.so.2 (0xb7851000)<br/>
+$ du -h /lib/libpcre.so.0.0.1 <br/>
+<b style="color:red">216K</b>    /lib/libpcre.so.0.0.1<br/>
+$ du -h /lib/libc-2.11.1.so <br/>
+<b style="color:red">1.5M</b>    /lib/libc-2.11.1.so<br/>
+</code></p>
+</div>
+
+<div class="slide">
+<h1>Joe sez static executables consume more memory!</h1>
+<ul>
+<li>Ok so <b>68K</b> vs 84K+216K+1.5M = <b>1836K</b></li>
+<li>Running multiple static greps still only consumes 68K, since the executable itself isn't loaded into memory twice</li>
+<li>Does this scale? Yes, for most parts it scales very well</li>
+<li>So is Joe wrong? <b>Yes</b></li>
+<li><i>Even if he'd use a browser, compile time smart linking is still better than polluting the memory with dynamic libraries</i></li>
+<li>Hold on, isn't there paging? Isn't there... sorry, won't go there!</li>
+</ul>
+</div>
+
+<div class="slide">
+<h1>Joe sez static executables start slower (huge, eh!)!</h1>
+<ul>
+<li>He is completely wrong.</li>
+<li>Let's do some minimalist example, dynamic hello world vs static hello world, harness <em>fork()/execvp()</em>'s it 10000 times:
+<p style="font-size: 14pt;">
+<code>
+$ LD_LIBRARY_PATH=. ./harness ./run_dynamic <br/>
+execution time: <b>1975592</b> microseconds<br/>
+$ ./harness ./run_static<br/>
+execution time: <b>732704</b> microseconds<br/>
+</code>
+</p></li>
+<li>So starting up performance of this static executable is <b>63%</b> faster than it's dynamic counterpart</li>
+<li>Does it scale? <b>Yes</b></li>
+</ul>
+</div>
+
+<div class="slide">
+<h1>Joe sez static executables are less secure!</h1>
+<ul>
+<li>Presumably he also sez something about <b>a</b>ddress <b>s</b>pace <b>l</b>ayout <b>r</b>andomization (ASLR), eh?</li>
+<li>Come on, is he right? <b>Well</b> ASLR obscures a rather exotic attack vector. Obscurity is not really security.</li>
+<li>Dynamic executables suffer from various attacks that aren't found in static executables:
+<ul><li>If some dynamic library has some vulnerability, this means all executables that depend on it have that vulnerability too. Not so with static executables</li>
+<li>Remember LD_PRELOAD?</li>
+<li>There are ldd exploits and also versioning problems, see the FAQ for details</li>
+<li>The security impact through linking is not really important though, it doesn't make bad code better or worse.</li>
+</ul>
+</div>
+
+<div class="slide">
+<h1>Configure hell / autohell</h1>
+<ul>
+<li>./configure is a big mess</li>
+<li>To cut a long story short:
+<ul><li>It is painfully slow</li>
+    <li>Often it is a lot bigger than the actual source it "configures"</li>
+    <li>It <b red="color: red">fails, fails, fails</b> when cross-compiling</li>
+    <li>It wasted thousands of <b>man years</b>, if it wasn't there we'd saved a lot of time</li>
+    </ul></li>
+<li><b>DON'T USE autohell or libfool!</b></li>
+<li>Of course we don't use it</li>
+</ul>
+</div>
+
+<div class="slide">
+<h1>What's a sane build system then?</h1>
+<ul>
+<li>Remember our philosophy?</li>
+<li><em>make</em> is ok (though not GNU make)</li>
+<li>We use <em>mk</em> from Plan 9 (part of 9base)</li>
+</ul>
+</div>
+
+<div class="slide">
+<h1>How does an mkfile look like?</h1>
+<p style="font-size: 14pt">
+<code>
+< config.mk<br/>
+TARG=lib_static.a lib_shared.so run_static run_dynamic harness<br/>
+default:V: all<br/>
+all:V: $TARG<br/>
+clean:V:<br/>
+rm *.o $TARG<br/>
+%.$O: %.c<br/>
+&nbsp;	&nbsp;	$CC $CFLAGS -c $stem.c -o $target<br/>
+lib_static.a: lib.$O<br/>
+&nbsp;	&nbsp;	$AR $target $prereq<br/>
+lib_shared.so: lib.$O<br/>
+&nbsp;	&nbsp;	$CC -shared -o $target $prereq<br/>
+run_static: run.$O<br/>
+&nbsp;	&nbsp;	$CC_CROSS $STATIC_LDFLAGS -L. -l_static -o $target $prereq<br/>
+run_dynamic: run.$O<br/>
+&nbsp;	&nbsp;	$CC $LDFLAGS -L. -l_shared -o $target $prereq<br/>
+harness: harness.$O<br/>
+&nbsp;	&nbsp;	$CC $LDFLAGS -o $target $prereq
+</code></p>
+</div>
+
+<div class="slide">
+<h1>Why is mk cool?</h1>
+<ul>
+<li>Very clean and simple make language</li>
+<li>Static executable for x86 is <b>100kb</b></li>
+<li>Works the same on every platform, no BSD vs GNU make oddities</li>
+<li>stali build system is completely mk based</li>
+</ul>
+</div>
+
+<div class="slide">
+<h1>Embedded development</h1>
+<ul>
+<li>stali's build system is great for embedded developments</li>
+<li>It completely overcomes autohell and libfail</li>
+</ul>
+</div>
+
+<div class="slide">
+<h1>Stali roadmap</h1>
+<ul>
+<li>stali is still under development, the truth is: I had no time until recently to continue work</li>
+<li>stali toolchain can be cloned:<p><em>hg clone http://hg.suckless.org/stali-toolchain</em></li>
+<li>contains compiler, linker, runtime, and uClibc</li>
+<li>Prio 1: userland (nearly finished, expect  early April)</li>
+<li>Prio 2: complete system (expect late April)</li>
+</ul>
+</div>
+
+<div class="slide">
+<h1>Stali architecture - filesystem</h1>
+<ul><li>/bin - all executables go here</li>
+<li>/bin/kernel - linux kernel</li>
+<li>/dev - devices</li>
+<li>/etc - system config/program config/user setup/network setup</li>
+<li>/etc/rc.{start,stop} - init scripts</li>
+<li>/home/root - root's home</li>
+<li>/home/* - user home dirs</li>
+<li>/include - include files</li>
+<li>/lib - libraries for development</li>
+</ul>
+</div>
+
+
+<div class="slide">
+<h1>Stali architecture - filesystem</h1>
+<ul><li>/local - non default stuff</li>
+<li>/mnt - mount points</li>
+<li>/proc - linux procfs</li>
+<li>/share - man pages, locales ...</li>
+<li>/sys - linux sysfs</li>
+<li>/tmp - permanent storage ;)</li>
+<li>/var - spool, run, log, cache</li>
+<li>/usr - softlink /</li>
+</ul>
+</small>
+</div>
+
+<div class="slide">
+<h1>Stali's linking approach</h1>
+<ul>
+<li>Not every FLOSS program can be linked statically</li>
+<li>Not every FLOSS program can be linked against uClibc and friends</li>
+<li>Our approach is pragmatic:
+<ul><li>Link against smallest [C] library that can be found to suit a program (current selection eglibc, uClibc; future plan: bionic)</li>
+    <li>If there is no way whatsoever, fall back to dynamic linking and bug its creators</li>
+</ul>
+<li>We want a <b>usable</b> system, stali is not intended to be yet another experiment.</li>
+<li><em>ldwrapper</em> idea for GSoC 2010, subject to acceptance</li>
+</div>
+
+<div class="slide">
+<h1>Stali's package system</h1>
+<ul>
+<li>There is no package system. Everything is intended to be <em>rsync</em>'able</li>
+<li>Binary diffing!</li>
+<li>/etc/ and config files have to be edited <em>&lt;config&gt;.def</em> approach</li>
+<li>No fancy installer/helpers, we don't want to waste time "configuring", we have to get work done</li>
+<li>The system just works by default - some open questions though</li>
+</ul>
+</div>
+
+<div class="slide">
+<h1>Stali kernel</h1>
+<ul>
+<li>Specialised monolitic kernels for each device (notebook oriented, community help wanted)</li>
+<li>kernel collection idea:
+<ul><li>/bin/x200s</li>
+<li>/bin/t60</li>
+<li>/bin/eeepc</li>
+</ul></li>
+<li>If you require module support, feel free</li>
+<li>Monolitic kernels boot faster</li>
+<li>Future idea: put stali userland into initrd, network booting and use your disks for data only</li>
+</ul>
+</div>
+
+<div class="slide">
+<h1>Conclusions - nearly there...</h1>
+<ul>
+<li>Stali is a unique approach to a new simple linux system</li>
+<li>Static executables are <b>smaller</b></li>
+<li>Static executables start <b>faster</b></li>
+<li>Static executables are more <b>secure</b></li>
+<li>Static executables consume <b>less</b> memory</li>
+<li>Static linking eases embedded development</li>
+<li>Stali build system can be used for cross-compiling</li>
+</ul>
+</div>
+
+<div class="slide">
+<h1>Get in touch / Question time</h1>
+<ul>
+<li>Help welcome!</li>
+<li>Subscribe <em>dev@suckless.org</em></li>
+<li>Visit <em>http://sta.li</em></li>
+<li>Learn more about static linking and use the tools</li>
+<li>Check out the code and make bug reports</li>
+<li>If you are a student, check GSoC 2010 if we are accepted</li>
+</ul>
+</div>
+
+<div class="slide">
+<h1>Seen this?</h1>
+<center>
+<img src="reflection.jpg" height="70%">
+</center>
+</div>
+
+</div>
+
+</body>
+</html>
