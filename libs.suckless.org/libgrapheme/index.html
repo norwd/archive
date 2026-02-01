@@ -179,18 +179,20 @@ embedded applications.</p>
 <p>The problem can be easily seen when looking at the sizes of the respective
 libraries: The ICU library (libicudata.a, libicui18n.a, libicuio.a,
 libicutest.a, libicutu.a, libicuuc.a) is around 38MB and libunistring
-(libunistring.a) is around 2MB, which is unacceptable for static
-linking. Both take many minutes to compile even on a good computer and
-require a lot of dependencies, including Python for ICU. On
-the other hand libgrapheme (libgrapheme.a) only weighs in at around 300K
-and is compiled (including Unicode data parsing and compression) in
-under a second, requiring nothing but a C99 compiler and POSIX make(1).</p>
-<p>Some libraries, like libutf8proc and libunistring, are incorrect by
-basing their API on assumptions that haven't been true for years
-(e.g. offering stateless grapheme cluster segmentation even though the
-underlying algorithm is not stateless). As an additional factor,
-libutf8proc's UTF-8-decoder is unsafe, as it allows overlong encodings
-that can be easily used for exploits.</p>
+(libunistring.a) is around 2MB. Both take many minutes to compile even on
+a good computer, and ICU depends on Python, among others. On the other hand,
+libgrapheme (libgrapheme.a) only weighs in at around 400K and is compiled
+(including Unicode data parsing and compression) in under a second,
+requiring nothing but a C99 compiler and POSIX make(1).</p>
+<p>Some libraries, like libutf8proc, are incorrect by basing their API on
+assumptions that haven't been true for years (e.g. offering stateless
+grapheme cluster segmentation even though the underlying algorithm is
+not stateless). As an additional factor, libutf8proc's UTF-8-decoder
+is unsafe, as it allows overlong encodings that can be easily used for
+exploits. While libunistring has expanded their API offering e.g.
+u8_grapheme_next() and u8_grapheme_prev() that are standard conformant,
+its API still contains not-explicitly deprecated functions assuming
+an older data model, for instance uc_is_grapheme_break().</p>
 <p>While ICU and libunistring offer a lot of functions and the weight mostly
 comes from locale-data provided by the Unicode standard, which is applied
 implementation-specifically (!) for some things, the same standard always
