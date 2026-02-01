@@ -1,0 +1,185 @@
+From 6316c8cb7b2b92098907943223ffe1a748359146 Mon Sep 17 00:00:00 2001
+From: Madison Lynch <madi@mxdi.xyz>
+Date: Fri, 2 Jan 2026 04:33:17 -0800
+Subject: [PATCH] Code refactor + Improved memory safety
+
+---
+ Makefile                 |   1 +
+ components/dyn_battery.c | 124 +++++++++++++++++++++++++++++++++++++++
+ config.def.h             |   1 +
+ slstatus.h               |   3 +
+ 4 files changed, 129 insertions(+)
+ create mode 100644 components/dyn_battery.c
+
+diff --git a/Makefile b/Makefile
+index 7a18274..d1b24dd 100644
+--- a/Makefile
++++ b/Makefile
+@@ -11,6 +11,7 @@ COM =\
+ 	components/cpu\
+ 	components/datetime\
+ 	components/disk\
++	components/dyn_battery\
+ 	components/entropy\
+ 	components/hostname\
+ 	components/ip\
+diff --git a/components/dyn_battery.c b/components/dyn_battery.c
+new file mode 100644
+index 0000000..cc87fc1
+--- /dev/null
++++ b/components/dyn_battery.c
+@@ -0,0 +1,124 @@
++/* Written by Lukas Lynch <madi@mxdi.xyz> */
++/* Only Linux is supported */
++#include <stdio.h>
++#include <stdlib.h>
++#include <stdbool.h>
++#include <string.h>
++#include <dirent.h>
++
++#include "../util.h"
++#include "../slstatus.h"
++
++#define BAT_PREFIX "BAT"
++#define BAT_DIR "/sys/class/power_supply"
++
++static bool err;
++static const char *err_str = "err";
++
++/**
++* Calculates the number of digits in a given positive integer.
++*/
++static size_t
++count_digits(const unsigned int input) {
++    size_t count = 0;
++    unsigned int n = input;
++
++    while(n/10 != 0)
++        count++;
++
++    return count+1;
++}
++
++/**
++* Counts number of batteries detected by system.
++*
++* @return Unsigned integer denoting the number of detected batteries
++* @author Lukas Lynch
++*/
++static unsigned int
++count_batteries(void) {
++    const size_t bat_prefix_s = strlen(BAT_PREFIX);
++    DIR *dir = opendir(BAT_DIR);
++    if(!dir) {
++        fprintf(stderr, "dyn_battery: Failed to open %s\n", BAT_DIR);
++        err = true;
++        return 0;
++    }
++
++    unsigned int batc = 0;
++    struct dirent *entry;
++    while((entry = readdir(dir)))
++        if(
++            strlen(entry->d_name) > bat_prefix_s &&
++            strncmp(entry->d_name, BAT_PREFIX, bat_prefix_s) == 0
++        ) batc++;
++
++    (void) closedir(dir);
++    return batc;
++}
++
++/**
++* Displays the status and capacity of a dynamic amount of batteries (i.e.
++* laptops may have secondary external batteries).
++*
++* @param  fmt format string to use for each battery display. ordered key:
++*             %u: battery number || %s: battery state || %s battery capacity
++* @return string containing the status and capacities of all detected batteries
++* @author Lukas Lynch
++*/
++const char *
++dyn_battery(const char *fmt) {
++    err = false;
++    const size_t fmt_s = strlen(fmt);
++    const unsigned int batc = count_batteries();
++
++    if(err) // err set by count_batteries()
++        return err_str;
++
++    if(batc == 0) 
++        return NULL;
++
++    // We need the amount of digits in bat_c for displaying it in strings
++    const size_t batc_digits = count_digits(batc);
++
++    char buf[
++          (batc * (fmt_s - 2)) // bat count * (format string - "%u" format specifier)
++        + (batc * batc_digits) // bat count * digits in bat count
++        + 1                    // NULL byte
++    ];
++
++    // Fill buffer with 0s, otherwise displacement calculations below can fail
++    memset(buf, 0, sizeof(buf));
++
++    /*
++    * The displacement variable will be updated with the current string length,
++    * which is independent from the buffer size, in order to allow us to write
++    * to the buffer without overwriting.
++    */
++    unsigned int displacement = 0;
++    for(unsigned int i=0; i<batc; i++) {
++        // Length of BAT_PREFIX + number of digits in bat count + 1 (NULL byte)
++        char bat[strlen(BAT_PREFIX) + batc_digits + 1];
++        (void) sprintf(bat, "%s%u", BAT_PREFIX, i);
++
++        // Add battery info to output buffer
++        displacement += sprintf(
++            buf + displacement, // Write into buffer after previous writes
++            fmt,                // Format string specified by config.h
++            i,
++            battery_state(bat), // See components/battery.c
++            battery_perc(bat)   // See components/battery.c
++        );
++
++        // Add space between battery entries
++        buf[displacement++] = ' ';
++    }
++
++    // Remove extra space after last battery entry
++    buf[--displacement] = '\0';
++
++    return bprintf("%s", buf);
++}
++
++#undef BAT_DIR
++#undef BAT_PREFIX
+\ No newline at end of file
+diff --git a/config.def.h b/config.def.h
+index 100093e..7f26909 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -26,6 +26,7 @@ static const char unknown_str[] = "n/a";
+  * disk_perc           disk usage in percent           mountpoint path (/)
+  * disk_total          total disk space in GB          mountpoint path (/)
+  * disk_used           used disk space in GB           mountpoint path (/)
++ * dyn_battery         displays the name, state and    format string (%u, %s, %s)
+  * entropy             available entropy               NULL
+  * gid                 GID of current user             NULL
+  * hostname            hostname                        NULL
+diff --git a/slstatus.h b/slstatus.h
+index 394281c..6beeaec 100644
+--- a/slstatus.h
++++ b/slstatus.h
+@@ -21,6 +21,9 @@ const char *disk_perc(const char *path);
+ const char *disk_total(const char *path);
+ const char *disk_used(const char *path);
+ 
++/* dyn_battery */
++const char *dyn_battery(const char *fmt);
++
+ /* entropy */
+ const char *entropy(const char *unused);
+ 
+-- 
+2.52.0
+
