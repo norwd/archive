@@ -587,6 +587,9 @@ function start_vm(user, pwd)
     case "x86":
         vm_file = "x86emu";
         break;
+    case "x86_64":
+        vm_file = "x86_64emu";
+        break;
     case "riscv64":
     case "riscv":
         vm_file = "riscvemu64";
