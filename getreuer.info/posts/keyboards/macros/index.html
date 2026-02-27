@@ -1,0 +1,594 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="author" content="Pascal Getreuer, 2021-10-30 (updated 2024-10-16)" />
+  <title>QMK macros 1: intro and assortment of practical examples</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+<link rel="stylesheet" href="../../../site.css" type="text/css" />
+<link rel="icon" href="../../../favicon.ico" type="image/x-icon" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@350&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+<script type="text/javascript" src="../../../site.js" ></script>
+</head>
+<body>
+<div id="navbar">
+<div id="navhold">
+  <a href="https://getreuer.info/index.html">Home</a>
+  <a href="https://getreuer.info/papers/index.html">Papers</a>
+  <a href="https://getreuer.info/posts/index.html">Posts</a>
+</div>
+</div>
+<div id="content">
+<div id="header">
+<h1 class="title">QMK macros 1: intro and assortment of practical
+examples</h1>
+<h2 class="author">Pascal Getreuer, 2021-10-30 (updated 2024-10-16)</h2>
+</div>
+<div id="TOC">
+<ul>
+<li><a href="index.html#overview" id="toc-overview">Overview</a>
+<ul>
+<li><a href="index.html#license" id="toc-license">License</a></li>
+</ul></li>
+<li><a href="index.html#simple-macros" id="toc-simple-macros">Simple macros</a>
+<ul>
+<li><a href="index.html#additional-macros" id="toc-additional-macros">Additional
+macros</a></li>
+<li><a href="index.html#send_string" id="toc-send_string">SEND_STRING</a></li>
+</ul></li>
+<li><a href="index.html#process_record_user-in-depth"
+id="toc-process_record_user-in-depth">process_record_user() in
+depth</a></li>
+<li><a href="index.html#macros-that-respond-to-mods"
+id="toc-macros-that-respond-to-mods">Macros that respond to mods</a>
+<ul>
+<li><a href="index.html#arrow-macro-types---or"
+id="toc-arrow-macro-types---or">Arrow macro, types -&gt; or
+=&gt;</a></li>
+<li><a href="index.html#braces-macro-types-or"
+id="toc-braces-macro-types-or">Braces macro, types [], {}, or
+&lt;&gt;</a></li>
+<li><a href="index.html#custom-shift-keys" id="toc-custom-shift-keys">Custom shift
+keys</a></li>
+</ul></li>
+<li><a href="index.html#macros-with-special-keys"
+id="toc-macros-with-special-keys">Macros with special keys</a>
+<ul>
+<li><a href="index.html#mouse-double-click" id="toc-mouse-double-click">Mouse
+double click</a></li>
+<li><a href="index.html#select-word-macro" id="toc-select-word-macro">Select word
+macro</a></li>
+<li><a href="index.html#select-line-macro" id="toc-select-line-macro">Select line
+macro</a></li>
+<li><a href="index.html#web-search-for-current-selection"
+id="toc-web-search-for-current-selection">Web search for current
+selection</a></li>
+<li><a href="index.html#join-lines" id="toc-join-lines">Join lines</a></li>
+</ul></li>
+<li><a href="index.html#other-cool-ideas" id="toc-other-cool-ideas">Other cool
+ideas</a>
+<ul>
+<li><a href="index.html#next-sentence-macro" id="toc-next-sentence-macro">Next
+sentence macro</a></li>
+<li><a href="index.html#multi-codepoint-emoji"
+id="toc-multi-codepoint-emoji">Multi-codepoint emoji</a></li>
+<li><a href="index.html#more-macros" id="toc-more-macros">More macros</a></li>
+</ul></li>
+</ul>
+</div>
+<p><a href="../index.html">← More about keyboards</a></p>
+<div class="callout" style="border-left-color: #e49f34">
+<div class="callout-header" style="background-color: #fdebd5">
+<p>
+⚠  Warning
+</p>
+</div>
+<p><strong>Don’t use macros to type passwords or credit card
+numbers.</strong> Otherwise if someone has physical access to your
+keyboard, they can access this info.</p>
+</div>
+<h2 id="overview">Overview</h2>
+<p>This post is first in a series on interesting effects in QMK:</p>
+<ol type="1">
+<li><a href="index.html">QMK macros 1: intro and assortment of
+practical examples</a> ← this post</li>
+<li><a href="../triggers/index.html">QMK macros 2: triggers, reacting to
+interesting events</a></li>
+<li><a href="../macros3/index.html">QMK macros 3: advanced
+effects</a></li>
+</ol>
+<p>One of QMK’s most empowering features is the ability to define macro
+buttons: a button, that when pressed, types a sequence of keys. This
+page is an assortment of practical QMK macros, collected from real
+users’ keymaps.</p>
+<h3 id="license">License</h3>
+<p>Code snippets in this post are shared under Apache 2 license.</p>
+<div style="font-size:85%">
+<blockquote>
+<p>Copyright 2021-2024 Google LLC</p>
+<p>Licensed under the Apache License, Version 2.0 (the “License”); you
+may not use this file except in compliance with the License. You may
+obtain a copy of the License at</p>
+<p><a href="https://www.apache.org/licenses/LICENSE-2.0"
+class="uri">https://www.apache.org/licenses/LICENSE-2.0</a></p>
+<p>Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an “AS IS” BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.</p>
+</blockquote>
+</div>
+<h2 id="simple-macros">Simple macros</h2>
+<p>First, to establish the basic pattern, here are instructions for
+implementing an example simple macro.</p>
+<p><strong>Step 1:</strong> In your keymap.c file above the
+<code>keymap</code> definition, add the following to define a custom
+keycode “<code>UPDIR</code>” with the value <code>SAFE_RANGE</code>:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb1-1"><a href="index.html#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">enum</span> custom_keycodes <span class="op">{</span></span>
+<span id="cb1-2"><a href="index.html#cb1-2" aria-hidden="true" tabindex="-1"></a>  UPDIR <span class="op">=</span> SAFE_RANGE<span class="op">,</span></span>
+<span id="cb1-3"><a href="index.html#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span></code></pre></div>
+<p><strong>Step 2:</strong> Use these keycodes in your layout, just as
+you would any other keycode:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb2-1"><a href="index.html#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">[</span>BASE<span class="op">]</span> <span class="op">=</span> LAYOUT<span class="op">(</span></span>
+<span id="cb2-2"><a href="index.html#cb2-2" aria-hidden="true" tabindex="-1"></a>  UPDIR  <span class="op">,</span> KC_1   <span class="op">,</span> KC_2   <span class="op">,</span> KC_3   <span class="op">,</span> KC_4   <span class="op">,</span> KC_5   <span class="op">,</span> <span class="op">...</span></span></code></pre></div>
+<p><strong>Step 3:</strong> Also in keymap.c, create (or add to) your
+<code>process_record_user</code> function to define the behavior for
+these buttons:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb3-1"><a href="index.html#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="dt">bool</span> process_record_user<span class="op">(</span><span class="dt">uint16_t</span> keycode<span class="op">,</span> keyrecord_t<span class="op">*</span> record<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb3-2"><a href="index.html#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">switch</span> <span class="op">(</span>keycode<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb3-3"><a href="index.html#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">case</span> UPDIR<span class="op">:</span>  <span class="co">// Types ../ to go up a directory on the shell.</span></span>
+<span id="cb3-4"><a href="index.html#cb3-4" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> <span class="op">(</span>record<span class="op">-&gt;</span>event<span class="op">.</span>pressed<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb3-5"><a href="index.html#cb3-5" aria-hidden="true" tabindex="-1"></a>        SEND_STRING<span class="op">(</span><span class="st">&quot;../&quot;</span><span class="op">);</span></span>
+<span id="cb3-6"><a href="index.html#cb3-6" aria-hidden="true" tabindex="-1"></a>      <span class="op">}</span></span>
+<span id="cb3-7"><a href="index.html#cb3-7" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb3-8"><a href="index.html#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb3-9"><a href="index.html#cb3-9" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb3-10"><a href="index.html#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>See also the <a href="https://docs.qmk.fm/feature_macros">QMK macros
+documentation</a>.</p>
+<p>With the above implementation, pressing the <kbd>UPDIR</kbd> button
+on the keyboard has the effect of typing <code>../</code>, for “up
+directory” when in the terminal. This is my favorite macro! I can mash
+it a few times (<code>../../../file</code>) to refer to files several
+levels up. It might sound small, but from experience I can say macros
+like this add up when it’s something you use a lot or awkward to type
+manually.</p>
+<h3 id="additional-macros">Additional macros</h3>
+<p>To implement additional macros, extend the
+<code>custom_keycodes</code> enum to define additional keycodes:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb4-1"><a href="index.html#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">enum</span> custom_keycodes <span class="op">{</span></span>
+<span id="cb4-2"><a href="index.html#cb4-2" aria-hidden="true" tabindex="-1"></a>  UPDIR <span class="op">=</span> SAFE_RANGE<span class="op">,</span></span>
+<span id="cb4-3"><a href="index.html#cb4-3" aria-hidden="true" tabindex="-1"></a>  EQ3X<span class="op">,</span></span>
+<span id="cb4-4"><a href="index.html#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Other keycodes...</span></span>
+<span id="cb4-5"><a href="index.html#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span></code></pre></div>
+<p>This defines a keycode called “<code>EQ3X</code>” with value
+<code>(SAFE_RANGE + 1)</code>. Add handlers for the new keycodes in
+<code>process_record_user()</code>:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb5-1"><a href="index.html#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="dt">bool</span> process_record_user<span class="op">(</span><span class="dt">uint16_t</span> keycode<span class="op">,</span> keyrecord_t<span class="op">*</span> record<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb5-2"><a href="index.html#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">switch</span> <span class="op">(</span>keycode<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb5-3"><a href="index.html#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">case</span> UPDIR<span class="op">:</span>  <span class="co">// Types ../ to go up a directory on the shell.</span></span>
+<span id="cb5-4"><a href="index.html#cb5-4" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> <span class="op">(</span>record<span class="op">-&gt;</span>event<span class="op">.</span>pressed<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb5-5"><a href="index.html#cb5-5" aria-hidden="true" tabindex="-1"></a>        SEND_STRING<span class="op">(</span><span class="st">&quot;../&quot;</span><span class="op">);</span></span>
+<span id="cb5-6"><a href="index.html#cb5-6" aria-hidden="true" tabindex="-1"></a>      <span class="op">}</span></span>
+<span id="cb5-7"><a href="index.html#cb5-7" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb5-8"><a href="index.html#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="index.html#cb5-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">case</span> EQ3X<span class="op">:</span>  <span class="co">// Types triple equal ===</span></span>
+<span id="cb5-10"><a href="index.html#cb5-10" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> <span class="op">(</span>record<span class="op">-&gt;</span>event<span class="op">.</span>pressed<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb5-11"><a href="index.html#cb5-11" aria-hidden="true" tabindex="-1"></a>        SEND_STRING<span class="op">(</span><span class="st">&quot;===&quot;</span><span class="op">);</span></span>
+<span id="cb5-12"><a href="index.html#cb5-12" aria-hidden="true" tabindex="-1"></a>      <span class="op">}</span></span>
+<span id="cb5-13"><a href="index.html#cb5-13" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb5-14"><a href="index.html#cb5-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-15"><a href="index.html#cb5-15" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Other macros...</span></span>
+<span id="cb5-16"><a href="index.html#cb5-16" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb5-17"><a href="index.html#cb5-17" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb5-18"><a href="index.html#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<h3 id="send_string">SEND_STRING</h3>
+<p>Use <a
+href="https://docs.qmk.fm/features/send_string">SEND_STRING</a> to type
+a sequence of keys when the macro button is pressed. You can use this to
+blast out programming syntax like <code>-&gt;</code> or <code>===</code>
+or patterns in the languages you use. For instance, typing the C++ scope
+operator <code>::</code> in most keyboard layouts is an uncomfortable
+shifted double tap on a pinky key. So a well-used feature in my QMK
+keymap is a macro that types <code>::</code>.</p>
+<p>Macros are also useful for typing common strings, like your name or
+email. Macros could be used to type commands, say
+<code>SEND_STRING("git status")</code>, but for that I suggest <a
+href="https://tldp.org/LDP/abs/html/aliases.html">shell aliases</a> are
+a better solution. In your .bashrc or .zshrc, add
+<code>alias gs="git status"</code>.</p>
+<p>Again, <strong>don’t use macros to type passwords or credit card
+numbers.</strong> Otherwise if someone has physical access to your
+keyboard, they can access this info.</p>
+<p><code>SEND_STRING</code> has some gotchas when it comes to special
+characters. See <a
+href="../faqs/index.html#send_string-doesnt-work-qmk">SEND_STRING
+doesn’t work</a> for troubleshooting tips.</p>
+<p>You can also use <code>tap_code(kc)</code> to tap an individual key,
+where <code>kc</code> is a <a
+href="https://docs.qmk.fm/keycodes_basic">basic keycode</a>. Or for even
+finer grained control, <code>register_code(kc)</code> and
+<code>unregister_code(kc)</code> to respectively press down and release
+a key.</p>
+<section id="process_record_user-in-depth">
+<section id="process_record_user-in-depth" class="eqwide">
+<h2>process_record_user() in depth</h2>
+</section>
+<h2 class="eqtight">
+process record user in depth
+</h2>
+</section>
+<p>Before we dive into more interesting macros, let’s go over what the
+<code>process_record_user()</code> function is.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb6-1"><a href="index.html#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="dt">bool</span> process_record_user<span class="op">(</span><span class="dt">uint16_t</span> keycode<span class="op">,</span> keyrecord_t<span class="op">*</span> record<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb6-2"><a href="index.html#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Macros...</span></span>
+<span id="cb6-3"><a href="index.html#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb6-4"><a href="index.html#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p><strong>The big picture:</strong> QMK’s main loop scans the <a
+href="../glossary/index.html#matrix-circuit">key matrix</a> to watch for
+changes. When a button is pressed or released, a “keyrecord”
+representing the event is generated. The keyrecord enters a pipeline of
+handlers. A handler function runs for each QMK feature (Mod-Tap, Combos,
+Auto Shift, Tap Dance, …), one after another, so that each feature a
+chance to react. Additionally, handlers may return <code>false</code> to
+block later handlers from running. The
+<code>process_record_user()</code> function is one such handler in the
+pipeline, enabling user code to customize what happens. See also the <a
+href="https://docs.qmk.fm/understanding_qmk">Understanding QMK</a>
+documentation page.</p>
+<p><strong>Function arguments:</strong> The <code>keycode</code> arg is
+the keycode as in your keymap that was pressed or released, like
+<code>UPDIR</code> or <code>KC_A</code>. The <code>record</code> arg
+contains additional information about the event:</p>
+<ul>
+<li><code>record-&gt;event.pressed</code> is true if the event is a
+press (key down), and false if it is a release (key up). In the example
+above, we only take action on the press event.</li>
+<li><code>record-&gt;event.time</code> is a 16-bit timestamp in units of
+milliseconds of when the event occurred (see also <a
+href="https://docs.qmk.fm/ref_functions#software-timers">Software
+Timers</a> and <a
+href="https://docs.qmk.fm/custom_quantum_functions#deferred-execution">Deferred
+Execution</a>).</li>
+<li><code>record-&gt;event.key.row</code> and
+<code>record-&gt;event.key.col</code> are the <a
+href="../glossary/index.html#matrix-circuit">matrix position</a> of the
+key, counting from 0.</li>
+<li>If the event comes from a <a
+href="https://docs.qmk.fm/mod_tap">mod-tap</a> (<code>MT</code>) or
+layer-tap (<code>LT</code>) key, then <code>record-&gt;tap.count</code>
+is zero if the key is considered held, otherwise it is considered tapped
+(see also <a
+href="https://docs.qmk.fm/mod_tap#intercepting-mod-taps">Intercepting
+Mod-Taps</a> and <a href="../achordion/index.html">Achordion</a>).</li>
+</ul>
+<p><strong>Return value:</strong> The return value from
+<code>process_record_user()</code> tells QMK whether to continue
+handling the event. Returning <code>false</code> from
+<code>process_record_user()</code> means the remaining handlers in the
+pipeline should be skipped. We return <code>false</code> for events on
+our macro buttons, since as they are custom keycodes, QMK’s default
+handling will ignore them anyway. Otherwise, we return <code>true</code>
+so that QMK handles the event.</p>
+<p><strong>Other interesting state:</strong></p>
+<ul>
+<li><code>get_mods()</code> returns a bitfield of which modifiers are
+currently active, and similarly <code>get_oneshot_mods()</code> for
+one-shot modifiers (see also <a
+href="https://docs.qmk.fm/feature_advanced_keycodes?id=checking-modifier-state">Checking
+Modifier State</a> and the next section, <a
+href="index.html#macros-that-respond-to-mods">Macros that respond to
+mods</a>).</li>
+<li>Get the layer associated with the key event:<br />
+<code>uint8_t layer = read_source_layers_cache(record-&gt;event.key);</code></li>
+<li><code>IS_LAYER_ON(layer)</code> returns whether <code>layer</code>
+is currently on, and <code>get_highest_layer(layer_state)</code> returns
+the highest layer that is currently on (see also <a
+href="https://docs.qmk.fm/feature_layers?id=functions">Working with
+Layers</a>).</li>
+<li><code>get_repeat_key_count()</code> indicates whether the key is
+being invoked through Repeat Key or Alternate Repeat Key (see also <a
+href="https://docs.qmk.fm/features/repeat_key#functions">Repeat Key
+functions</a>).</li>
+</ul>
+<h2 id="macros-that-respond-to-mods">Macros that respond to mods</h2>
+<h3 id="arrow-macro-types---or">Arrow macro, types -&gt; or =&gt;</h3>
+<p>For extra functionality on one key, you can perform a different
+action when the macro button is pressed with a <a
+href="../glossary/index.html#modifiers">modifier</a>. For instance, the
+following implements an <kbd>ARROW</kbd> button so that <kbd>Shift</kbd>
++ <kbd>ARROW</kbd> types <code>=&gt;</code> and <kbd>ARROW</kbd> by
+itself types <code>-&gt;</code>.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb7-1"><a href="index.html#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Get current mod and one-shot mod states.</span></span>
+<span id="cb7-2"><a href="index.html#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="dt">const</span> <span class="dt">uint8_t</span> mods <span class="op">=</span> get_mods<span class="op">();</span></span>
+<span id="cb7-3"><a href="index.html#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="dt">const</span> <span class="dt">uint8_t</span> oneshot_mods <span class="op">=</span> get_oneshot_mods<span class="op">();</span></span>
+<span id="cb7-4"><a href="index.html#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="index.html#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="cf">switch</span> <span class="op">(</span>keycode<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb7-6"><a href="index.html#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">case</span> ARROW<span class="op">:</span>  <span class="co">// Arrow macro, types -&gt; or =&gt;.</span></span>
+<span id="cb7-7"><a href="index.html#cb7-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>record<span class="op">-&gt;</span>event<span class="op">.</span>pressed<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb7-8"><a href="index.html#cb7-8" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> <span class="op">((</span>mods <span class="op">|</span> oneshot_mods<span class="op">)</span> <span class="op">&amp;</span> MOD_MASK_SHIFT<span class="op">)</span> <span class="op">{</span>  <span class="co">// Is shift held?</span></span>
+<span id="cb7-9"><a href="index.html#cb7-9" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Temporarily delete shift.</span></span>
+<span id="cb7-10"><a href="index.html#cb7-10" aria-hidden="true" tabindex="-1"></a>        del_oneshot_mods<span class="op">(</span>MOD_MASK_SHIFT<span class="op">);</span></span>
+<span id="cb7-11"><a href="index.html#cb7-11" aria-hidden="true" tabindex="-1"></a>        unregister_mods<span class="op">(</span>MOD_MASK_SHIFT<span class="op">);</span>  </span>
+<span id="cb7-12"><a href="index.html#cb7-12" aria-hidden="true" tabindex="-1"></a>        SEND_STRING<span class="op">(</span><span class="st">&quot;=&gt;&quot;</span><span class="op">);</span></span>
+<span id="cb7-13"><a href="index.html#cb7-13" aria-hidden="true" tabindex="-1"></a>        register_mods<span class="op">(</span>mods<span class="op">);</span>            <span class="co">// Restore mods.</span></span>
+<span id="cb7-14"><a href="index.html#cb7-14" aria-hidden="true" tabindex="-1"></a>      <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></span>
+<span id="cb7-15"><a href="index.html#cb7-15" aria-hidden="true" tabindex="-1"></a>        SEND_STRING<span class="op">(</span><span class="st">&quot;-&gt;&quot;</span><span class="op">);</span></span>
+<span id="cb7-16"><a href="index.html#cb7-16" aria-hidden="true" tabindex="-1"></a>      <span class="op">}</span></span>
+<span id="cb7-17"><a href="index.html#cb7-17" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb7-18"><a href="index.html#cb7-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb7-19"><a href="index.html#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>The tricky part is that Shift or any other active mods will apply to
+the keys sent by <code>SEND_STRING</code>. Without treatment, the Shift
+would turn the intended arrow <code>=&gt;</code> into
+<code>+&gt;</code>. We get around this by temporarily deleting Shift
+from the mod state. Or, we could turn off all mods temporarily with</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb8-1"><a href="index.html#cb8-1" aria-hidden="true" tabindex="-1"></a>clear_oneshot_mods<span class="op">();</span></span>
+<span id="cb8-2"><a href="index.html#cb8-2" aria-hidden="true" tabindex="-1"></a>unregister_mods<span class="op">(</span>MOD_MASK_CSAG<span class="op">);</span></span>
+<span id="cb8-3"><a href="index.html#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co">// Do stuff...</span></span>
+<span id="cb8-4"><a href="index.html#cb8-4" aria-hidden="true" tabindex="-1"></a>register_mods<span class="op">(</span>mods<span class="op">);</span></span></code></pre></div>
+<h3 id="braces-macro-types-or">Braces macro, types [], {}, or
+&lt;&gt;</h3>
+<p>From <a
+href="https://github.com/qmk/qmk_firmware/blob/master/users/draevin">draevin’s
+user directory</a>, the following types <code>[</code>, then
+<code>]</code>, and taps the left arrow to position the cursor between
+the <code>[]</code>. Or if shift is held, it does the same but with
+curly braces <code>{}</code>. Or with Ctrl, it does angle brackets
+<code>&lt;&gt;</code>.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb9-1"><a href="index.html#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="dt">const</span> <span class="dt">uint8_t</span> mods <span class="op">=</span> get_mods<span class="op">();</span></span>
+<span id="cb9-2"><a href="index.html#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="dt">const</span> <span class="dt">uint8_t</span> oneshot_mods <span class="op">=</span> get_oneshot_mods<span class="op">();</span></span>
+<span id="cb9-3"><a href="index.html#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="index.html#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="cf">switch</span> <span class="op">(</span>keycode<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb9-5"><a href="index.html#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">case</span> BRACES<span class="op">:</span>  <span class="co">// Types [], {}, or &lt;&gt; and puts cursor between braces.</span></span>
+<span id="cb9-6"><a href="index.html#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>record<span class="op">-&gt;</span>event<span class="op">.</span>pressed<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb9-7"><a href="index.html#cb9-7" aria-hidden="true" tabindex="-1"></a>      clear_oneshot_mods<span class="op">();</span>  <span class="co">// Temporarily disable mods.</span></span>
+<span id="cb9-8"><a href="index.html#cb9-8" aria-hidden="true" tabindex="-1"></a>      unregister_mods<span class="op">(</span>MOD_MASK_CSAG<span class="op">);</span></span>
+<span id="cb9-9"><a href="index.html#cb9-9" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> <span class="op">((</span>mods <span class="op">|</span> oneshot_mods<span class="op">)</span> <span class="op">&amp;</span> MOD_MASK_SHIFT<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb9-10"><a href="index.html#cb9-10" aria-hidden="true" tabindex="-1"></a>        SEND_STRING<span class="op">(</span><span class="st">&quot;{}&quot;</span><span class="op">);</span></span>
+<span id="cb9-11"><a href="index.html#cb9-11" aria-hidden="true" tabindex="-1"></a>      <span class="op">}</span> <span class="cf">else</span> <span class="cf">if</span> <span class="op">((</span>mods <span class="op">|</span> oneshot_mods<span class="op">)</span> <span class="op">&amp;</span> MOD_MASK_CTRL<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb9-12"><a href="index.html#cb9-12" aria-hidden="true" tabindex="-1"></a>        SEND_STRING<span class="op">(</span><span class="st">&quot;&lt;&gt;&quot;</span><span class="op">);</span></span>
+<span id="cb9-13"><a href="index.html#cb9-13" aria-hidden="true" tabindex="-1"></a>      <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></span>
+<span id="cb9-14"><a href="index.html#cb9-14" aria-hidden="true" tabindex="-1"></a>        SEND_STRING<span class="op">(</span><span class="st">&quot;[]&quot;</span><span class="op">);</span></span>
+<span id="cb9-15"><a href="index.html#cb9-15" aria-hidden="true" tabindex="-1"></a>      <span class="op">}</span></span>
+<span id="cb9-16"><a href="index.html#cb9-16" aria-hidden="true" tabindex="-1"></a>      tap_code<span class="op">(</span>KC_LEFT<span class="op">);</span>  <span class="co">// Move cursor between braces.</span></span>
+<span id="cb9-17"><a href="index.html#cb9-17" aria-hidden="true" tabindex="-1"></a>      register_mods<span class="op">(</span>mods<span class="op">);</span>  <span class="co">// Restore mods.</span></span>
+<span id="cb9-18"><a href="index.html#cb9-18" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb9-19"><a href="index.html#cb9-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb9-20"><a href="index.html#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<h3 id="custom-shift-keys">Custom shift keys</h3>
+<p>An especially handy use of <code>get_mods()</code> is to change what
+key is typed when it is shifted. For instance, a key with “inverted”
+shifting such that it types <code>:</code> when pressed normally and
+<code>;</code> when pressed shifted, or implementing “programmer”
+layouts that type symbols normally and digits when shifted. See <a
+href="../custom-shift-keys/index.html">Custom shift keys</a> for an
+implementation.</p>
+<h2 id="macros-with-special-keys">Macros with special keys</h2>
+<p><code>SEND_STRING</code> is not limited to printable characters. To
+tap the left arrow key, for instance, do
+<code>SEND_STRING(SS_TAP(X_LEFT))</code>. Within
+<code>SEND_STRING</code>, the key name begins with <code>X_</code>
+instead of <code>KC_</code>, otherwise keys have the same names as
+elsewhere.</p>
+<p>Modifiers can be applied:</p>
+<ul>
+<li><code>SS_LCTL(string)</code> = left Ctrl</li>
+<li><code>SS_LSFT(string)</code> = left Shift</li>
+<li><code>SS_LALT(string)</code> = left Alt (Option key ⌥ on Mac)</li>
+<li><code>SS_LGUI(string)</code> = left GUI (Win key on Windows, Cmd key
+⌘ on Mac)</li>
+</ul>
+<p>A few examples are described next.</p>
+<h3 id="mouse-double-click">Mouse double click</h3>
+<p>Enable <a href="https://docs.qmk.fm/features/mouse_keys">Mouse
+Keys</a> for this macro with <code>MOUSEKEY_ENABLE = yes</code> in
+rules.mk.</p>
+<p>This macro double clicks the left mouse button:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb10-1"><a href="index.html#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="cf">case</span> DBLCLK<span class="op">:</span>  <span class="co">// Double click the left mouse button.</span></span>
+<span id="cb10-2"><a href="index.html#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="op">(</span>record<span class="op">-&gt;</span>event<span class="op">.</span>pressed<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb10-3"><a href="index.html#cb10-3" aria-hidden="true" tabindex="-1"></a>    SEND_STRING<span class="op">(</span>SS_TAP<span class="op">(</span>X_BTN1<span class="op">)</span> SS_DELAY<span class="op">(</span><span class="dv">50</span><span class="op">)</span> SS_TAP<span class="op">(</span>X_BTN1<span class="op">));</span></span>
+<span id="cb10-4"><a href="index.html#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb10-5"><a href="index.html#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span></code></pre></div>
+<p>The OS might debounce and ignore a double click that is too fast. To
+prevent this, the <code>SS_DELAY(50)</code> defines a delay in
+milliseconds between the clicks.</p>
+<h3 id="select-word-macro">Select word macro</h3>
+<p>Most text editors support Ctrl+left / Ctrl+right to move the cursor
+by words. From <a
+href="https://github.com/qmk/qmk_firmware/tree/master/users/ajp10304">ajp10304’s
+user directory</a>, this macro selects the current word. It types
+Ctrl+right to move to the end of the word, then Ctrl+Shift+left to
+select to the beginning of the word:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb11-1"><a href="index.html#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="cf">case</span> SELWORD<span class="op">:</span>  <span class="co">// Selects the current word under the cursor.</span></span>
+<span id="cb11-2"><a href="index.html#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="op">(</span>record<span class="op">-&gt;</span>event<span class="op">.</span>pressed<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb11-3"><a href="index.html#cb11-3" aria-hidden="true" tabindex="-1"></a>    SEND_STRING<span class="op">(</span>SS_LCTL<span class="op">(</span>SS_TAP<span class="op">(</span>X_RGHT<span class="op">)</span> SS_LSFT<span class="op">(</span>SS_TAP<span class="op">(</span>X_LEFT<span class="op">))));</span></span>
+<span id="cb11-4"><a href="index.html#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Mac users, change LCTL to LALT:</span></span>
+<span id="cb11-5"><a href="index.html#cb11-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">// SEND_STRING(SS_LALT(SS_TAP(X_RGHT) SS_LSFT(SS_TAP(X_LEFT))));</span></span>
+<span id="cb11-6"><a href="index.html#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb11-7"><a href="index.html#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span></code></pre></div>
+<p>See also my <a href="../select-word/index.html">Word Selection</a>
+post for an elaborated version of this macro.</p>
+<h3 id="select-line-macro">Select line macro</h3>
+<p>This macro selects the current line, by tapping the home key and then
+Shift+End:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb12-1"><a href="index.html#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="cf">case</span> SELLINE<span class="op">:</span>  <span class="co">// Selects the current line.</span></span>
+<span id="cb12-2"><a href="index.html#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="op">(</span>record<span class="op">-&gt;</span>event<span class="op">.</span>pressed<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb12-3"><a href="index.html#cb12-3" aria-hidden="true" tabindex="-1"></a>    SEND_STRING<span class="op">(</span>SS_TAP<span class="op">(</span>X_HOME<span class="op">)</span> SS_LSFT<span class="op">(</span>SS_TAP<span class="op">(</span>X_END<span class="op">)));</span></span>
+<span id="cb12-4"><a href="index.html#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Mac users, use:</span></span>
+<span id="cb12-5"><a href="index.html#cb12-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">// SEND_STRING(SS_LCTL(&quot;a&quot; SS_LSFT(&quot;e&quot;)));</span></span>
+<span id="cb12-6"><a href="index.html#cb12-6" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb12-7"><a href="index.html#cb12-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span></code></pre></div>
+<h3 id="web-search-for-current-selection">Web search for current
+selection</h3>
+<p>Suppose you are in a web browser and have selected some text. This
+macro copies the text and does a web search for that text in a new
+tab.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb13-1"><a href="index.html#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="cf">case</span> SRCHSEL<span class="op">:</span>  <span class="co">// Searches the current selection in a new tab.</span></span>
+<span id="cb13-2"><a href="index.html#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="op">(</span>record<span class="op">-&gt;</span>event<span class="op">.</span>pressed<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb13-3"><a href="index.html#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Mac users, change LCTL to LGUI.</span></span>
+<span id="cb13-4"><a href="index.html#cb13-4" aria-hidden="true" tabindex="-1"></a>    SEND_STRING<span class="op">(</span>SS_LCTL<span class="op">(</span><span class="st">&quot;ct&quot;</span><span class="op">)</span> SS_DELAY<span class="op">(</span><span class="dv">200</span><span class="op">)</span> SS_LCTL<span class="op">(</span><span class="st">&quot;v&quot;</span><span class="op">)</span> SS_TAP<span class="op">(</span>X_ENTER<span class="op">));</span></span>
+<span id="cb13-5"><a href="index.html#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb13-6"><a href="index.html#cb13-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span></code></pre></div>
+<p>In detail, it copies the selection (Ctrl+C), opens a new tab
+(Ctrl+T), pastes the selection into the omnibar (Ctrl+V), and finally
+taps enter to do the search. Since the browser might need a moment to
+open the new tab, <code>SS_DELAY</code> is used to wait briefly before
+pasting.</p>
+<h3 id="join-lines">Join lines</h3>
+<p>The following works in most text editors to join the current line
+with the following line, similar to Vim’s “<code>J</code>” command. It
+presses End, Delete, and replaces intermediate whitespace with a
+space:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb14-1"><a href="index.html#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="cf">case</span> JOINLN<span class="op">:</span>  <span class="co">// Join lines like Vim&#39;s `J` command.</span></span>
+<span id="cb14-2"><a href="index.html#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="op">(</span>record<span class="op">-&gt;</span>event<span class="op">.</span>pressed<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb14-3"><a href="index.html#cb14-3" aria-hidden="true" tabindex="-1"></a>    SEND_STRING<span class="op">(</span> <span class="co">// Go to the end of the line and tap delete.</span></span>
+<span id="cb14-4"><a href="index.html#cb14-4" aria-hidden="true" tabindex="-1"></a>        SS_TAP<span class="op">(</span>X_END<span class="op">)</span> SS_TAP<span class="op">(</span>X_DEL<span class="op">)</span></span>
+<span id="cb14-5"><a href="index.html#cb14-5" aria-hidden="true" tabindex="-1"></a>        <span class="co">// In case this has joined two words together, insert one space.</span></span>
+<span id="cb14-6"><a href="index.html#cb14-6" aria-hidden="true" tabindex="-1"></a>        SS_TAP<span class="op">(</span>X_SPC<span class="op">)</span></span>
+<span id="cb14-7"><a href="index.html#cb14-7" aria-hidden="true" tabindex="-1"></a>        SS_LCTL<span class="op">(</span></span>
+<span id="cb14-8"><a href="index.html#cb14-8" aria-hidden="true" tabindex="-1"></a>          <span class="co">// Go to the beginning of the next word.</span></span>
+<span id="cb14-9"><a href="index.html#cb14-9" aria-hidden="true" tabindex="-1"></a>          SS_TAP<span class="op">(</span>X_RGHT<span class="op">)</span> SS_TAP<span class="op">(</span>X_LEFT<span class="op">)</span></span>
+<span id="cb14-10"><a href="index.html#cb14-10" aria-hidden="true" tabindex="-1"></a>          <span class="co">// Select back to the end of the previous word. This should select</span></span>
+<span id="cb14-11"><a href="index.html#cb14-11" aria-hidden="true" tabindex="-1"></a>          <span class="co">// all spaces and tabs between the joined lines from indentation</span></span>
+<span id="cb14-12"><a href="index.html#cb14-12" aria-hidden="true" tabindex="-1"></a>          <span class="co">// or trailing whitespace, including the space inserted earlier.</span></span>
+<span id="cb14-13"><a href="index.html#cb14-13" aria-hidden="true" tabindex="-1"></a>          SS_LSFT<span class="op">(</span>SS_TAP<span class="op">(</span>X_LEFT<span class="op">)</span> SS_TAP<span class="op">(</span>X_RGHT<span class="op">)))</span></span>
+<span id="cb14-14"><a href="index.html#cb14-14" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Replace the selection with a single space.</span></span>
+<span id="cb14-15"><a href="index.html#cb14-15" aria-hidden="true" tabindex="-1"></a>        SS_TAP<span class="op">(</span>X_SPC<span class="op">));</span></span>
+<span id="cb14-16"><a href="index.html#cb14-16" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb14-17"><a href="index.html#cb14-17" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span></code></pre></div>
+<p><strong>Note:</strong> I’ve noticed slight differences between text
+editors in how hotkeys work at the end of the line. This macro might
+produce incorrect results in some editors.</p>
+<h2 id="other-cool-ideas">Other cool ideas</h2>
+<h3 id="next-sentence-macro">Next sentence macro</h3>
+<p>Inspired by <a
+href="https://github.com/precondition/dactyl-manuform-keymap">precondition’s
+keymap</a>, here is a “next sentence” macro. This is useful to flow
+between sentences. Having tried it, I admit it takes some practice to
+incorporate into your typing habits, but it packs a satisfying amount of
+action into a single button press. The macro types a period, space, then
+sets a <a href="https://docs.qmk.fm/one_shot_keys">one-shot mod</a> so
+that the next key typed is shifted, to capitalize the first letter of
+the next sentence:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb15-1"><a href="index.html#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="cf">case</span> NEXTSEN<span class="op">:</span>  <span class="co">// Next sentence macro.</span></span>
+<span id="cb15-2"><a href="index.html#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="op">(</span>record<span class="op">-&gt;</span>event<span class="op">.</span>pressed<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb15-3"><a href="index.html#cb15-3" aria-hidden="true" tabindex="-1"></a>    SEND_STRING<span class="op">(</span><span class="st">&quot;. &quot;</span><span class="op">);</span></span>
+<span id="cb15-4"><a href="index.html#cb15-4" aria-hidden="true" tabindex="-1"></a>    add_oneshot_mods<span class="op">(</span>MOD_BIT<span class="op">(</span>KC_LSFT<span class="op">));</span>  <span class="co">// Set one-shot mod for shift.</span></span>
+<span id="cb15-5"><a href="index.html#cb15-5" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb15-6"><a href="index.html#cb15-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span></code></pre></div>
+<p>See also the approach taken in <a
+href="https://github.com/precondition/dactyl-manuform-keymap">precondition’s
+keymap</a>: there, the next sentence is triggered by double tapping the
+period button through a QMK tap dance, rather than using a macro.</p>
+<p>And see also <a href="../sentence-case/index.html">Sentence Case</a>,
+which detects and capitalizes the first letter of sentences
+automatically.</p>
+<h3 id="multi-codepoint-emoji">Multi-codepoint emoji</h3>
+<p>Enable a Unicode input method for this macro, either Basic Unicode,
+Unicode Map, or UCIS; see <a
+href="https://docs.qmk.fm/features/unicode">Unicode Support</a>. See
+also <a href="../non-english/index.html">Typing non-English
+letters</a>.</p>
+<p><a href="https://docs.juliaebert.com/projects/keyboard">Julia Ebert’s
+blog</a> notes that the only way to type a multi-codepoint emoji is to
+implement it as a macro. The following types a US flag emoji 🇺🇸
+(U+1F1FA, U+1F1F8):</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb16-1"><a href="index.html#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="cf">case</span> US_FLAG<span class="op">:</span>  <span class="co">// Types US flag emoji.</span></span>
+<span id="cb16-2"><a href="index.html#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="op">(</span>record<span class="op">-&gt;</span>event<span class="op">.</span>pressed<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb16-3"><a href="index.html#cb16-3" aria-hidden="true" tabindex="-1"></a>    send_unicode_string<span class="op">(</span><span class="st">&quot;🇺🇸&quot;</span><span class="op">);</span></span>
+<span id="cb16-4"><a href="index.html#cb16-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Or if you prefer ASCII-only source files, use escape codes to</span></span>
+<span id="cb16-5"><a href="index.html#cb16-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">// write the UTF-8 encoding of U+1F1FA, U+1F1F8:</span></span>
+<span id="cb16-6"><a href="index.html#cb16-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">// send_unicode_string(&quot;\xf0\x9f\x87\xba\xf0\x9f\x87\xb8&quot;);</span></span>
+<span id="cb16-7"><a href="index.html#cb16-7" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb16-8"><a href="index.html#cb16-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span></code></pre></div>
+<h3 id="more-macros">More macros</h3>
+<p>See the following posts in this series:</p>
+<ul>
+<li><p><a href="../triggers/index.html">QMK macros 2: triggers, reacting
+to interesting events</a>: react to layer changes, tap vs. long press,
+previously typed keys.</p></li>
+<li><p><a href="../macros3/index.html">QMK macros 3: advanced
+effects</a>: timing effects, random emojis, and more.</p></li>
+</ul>
+<p><a href="../index.html">← More about keyboards</a></p>
+</div>
+
+<div id="footer">
+<p style="text-align:right">
+<a href="https://scholar.google.com/citations?user=G8Yjd9AAAAAJ" target="_blank">Google Scholar</a>
+<a href="http://www.linkedin.com/in/pascalgetreuer" target="_blank">LinkedIn</a>
+</p>
+</div>
+</body>
+</html>
