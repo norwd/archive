@@ -1,26 +1,79 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <title>Index of /images/hackathons/CVS/</title>
-<style type="text/css"><!--
-body { background-color: white; color: black; font-family: sans-serif; }
-hr { border: 0; border-bottom: 1px dashed; }
+<style><!--
+body {
+    background-color: white; 
+    color: black; 
+    font-family: sans-serif;
+    font-variant-emoji: text;
+}
+table {
+    border-collapse: collapse; 
+    border: 1px solid;
+}
+tr.sort th {
+    border-bottom: 1px solid; 
+    font-weight: normal;
+    text-decoration: underline;
+    cursor: pointer;
+}
+tr.sort th.sorted { font-weight: bold; }
+tr.sort th::after { content: "\a0\2195"; }
+tr.dir td:nth-child(2n+1) { 
+    font-weight: bold; 
+}
+td, th { padding: 2pt 2em; }
+td:first-child, th:first-child { padding-left: 5pt; }
+td:last-child, th:last-child { padding-right: 5pt; }
+td:nth-child(n+2) { text-align: end; }
+thead { text-align: left; }
 @media (prefers-color-scheme: dark) {
-body { background-color: #1E1F21; color: #EEEFF1; }
-a { color: #BAD7FF; }
+    body { 
+	background-color: #1E1F21; 
+	color: #EEEFF1; 
+    }
+    a { color: #BAD7FF; }
 }
 --></style>
 </head>
 <body>
 <h1>Index of /images/hackathons/CVS/</h1>
-<hr>
-<pre>
-<a href="../index.html">../</a>                                                10-Nov-2025 02:38                   -
-<a href="Entries">Entries</a>                                            10-Nov-2025 02:38                8007
-<a href="Repository">Repository</a>                                         17-Jan-2022 15:16                  22
-<a href="Root">Root</a>                                               17-Jan-2022 15:16                  14
-</pre>
-<hr>
+<table><thead>
+<tr class="sort"><th class="sorted">Name</th>
+    <th>Date</th><th>Size</th></tr>
+</thead><tbody>
+<tr class="dir"><td><a href="../index.html">../</a></td>
+    <td data-o="1770652105">09-Feb-2026 08:48</td><td>-</td></tr>
+<tr><td><a href="Entries">Entries</a></td>
+    <td data-o="1770652105">09-Feb-2026 08:48</td><td title="8093">7.9K</td></tr>
+<tr><td><a href="Repository">Repository</a></td>
+    <td data-o="1642457804">17-Jan-2022 15:16</td><td title="22">22B</td></tr>
+<tr><td><a href="Root">Root</a></td>
+    <td data-o="1642457804">17-Jan-2022 15:16</td><td title="14">14B</td></tr>
+</tbody></table>
+<script>
+const cellVal = (e) => e.getAttribute('title') || e.getAttribute('data-o') || 
+    e.innerText || e.textContent;
+const rowValue = (tr, idx) => cellVal(tr.children[idx]);
+const compare = (idx, asc) => (a, b) => ((v1, v2) => 
+    v1 !== '' && v2 !== '' && !isNaN(v1) && !isNaN(v2) ? v1 - v2 : v1.toString().localeCompare(v2)
+    )(rowValue(asc ? a : b, idx), rowValue(asc ? b : a, idx));
+
+// set up the listener
+document.querySelectorAll('tr.sort th').forEach(th => th.addEventListener('click', (() => {
+    const table = th.closest('table');
+    // make the sorted column bold
+    table.querySelectorAll('tr.sort th').forEach(th2 => 
+    	th2.className = th2 == th ? 'sorted' : 'unsorted');
+    const body = table.querySelector('tbody');
+    Array.from(body.querySelectorAll('tr'))
+        .sort(compare(Array.from(th.parentNode.children).indexOf(th), this.asc = !this.asc))
+        .forEach(tr => body.appendChild(tr) );
+})))
+
+</script>
 </body>
 </html>
