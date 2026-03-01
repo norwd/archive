@@ -1,0 +1,332 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="author" content="Pascal Getreuer, 2021-11-12 (updated 2026-02-03)" />
+  <title>Word selection QMK macro</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+<link rel="stylesheet" href="../../../site.css" type="text/css" />
+<link rel="icon" href="../../../favicon.ico" type="image/x-icon" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@350&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+<script type="text/javascript" src="../../../site.js" ></script>
+</head>
+<body>
+<div id="navbar">
+<div id="navhold">
+  <a href="https://getreuer.info/index.html">Home</a>
+  <a href="https://getreuer.info/papers/index.html">Papers</a>
+  <a href="https://getreuer.info/posts/index.html">Posts</a>
+</div>
+</div>
+<div id="content">
+<div id="header">
+<h1 class="title">Word selection QMK macro</h1>
+<h2 class="author">Pascal Getreuer, 2021-11-12 (updated 2026-02-03)</h2>
+</div>
+<div id="TOC">
+<ul>
+<li><a href="index.html#overview" id="toc-overview">Overview</a></li>
+<li><a href="index.html#add-it-to-your-keymap" id="toc-add-it-to-your-keymap">Add
+it to your keymap</a></li>
+<li><a href="index.html#mac-hotkeys" id="toc-mac-hotkeys">Mac hotkeys</a></li>
+<li><a href="index.html#functions" id="toc-functions">Functions</a></li>
+<li><a href="index.html#idle-timeout" id="toc-idle-timeout">Idle timeout</a></li>
+<li><a href="index.html#explanation" id="toc-explanation">Explanation</a></li>
+<li><a href="index.html#acknowledgements"
+id="toc-acknowledgements">Acknowledgements</a></li>
+</ul>
+</div>
+<p><a href="../index.html">← More about keyboards</a></p>
+<h2 id="overview">Overview</h2>
+<p>This post describes a QMK macro for a button that selects the current
+word, assuming conventional text editing hotkeys. Press it again to
+extend the selection to the following word. The effect is similar to
+word selection (<code>W</code>) in the <a
+href="https://kakoune.org">Kakoune editor</a>.</p>
+<figure>
+<img src="select-word.gif"
+alt="Effect of pressing the macro repeatedly." />
+<figcaption aria-hidden="true">Effect of pressing the macro
+repeatedly.</figcaption>
+</figure>
+<p><strong>Line selection:</strong> Similarly, press the button with
+shift to select the current line, and press it again to extend the
+selection to the following line.</p>
+<p><strong>Clearing the selection:</strong> During a selection, press
+<kbd>←</kbd> or <kbd>→</kbd> to deselect and choose which selection
+endpoint to jump the cursor to.</p>
+<h2 id="add-it-to-your-keymap">Add it to your keymap</h2>
+<p><strong>Step 1:</strong> Install my <a
+href="../qmk-community-modules/index.html">community modules</a>. Then
+enable module <a
+href="https://github.com/getreuer/qmk-modules/tree/main/select_word">getreuer/select_word</a>
+in your <code>keymap.json</code> file. Or if <code>keymap.json</code>
+does not exist, create it with the following content:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="index.html#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb1-2"><a href="index.html#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;modules&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="st">&quot;getreuer/select_word&quot;</span><span class="ot">]</span></span>
+<span id="cb1-3"><a href="index.html#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Step 2:</strong> Use one or more of the following keycodes in
+your layout. Or alternatively, you may skip this step and use <a
+href="index.html#functions">Select Word’s functions</a> to invoke word and line
+selections programmatically.</p>
+<table>
+<colgroup>
+<col style="width: 22%" />
+<col style="width: 14%" />
+<col style="width: 62%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Keycode</th>
+<th>Short alias</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>SELECT_WORD</code></td>
+<td><code>SELWORD</code></td>
+<td>Forward word selection. Or with Shift, line selection.</td>
+</tr>
+<tr class="even">
+<td><code>SELECT_WORD_BACK</code></td>
+<td><code>SELWBAK</code></td>
+<td>Backward word selection.</td>
+</tr>
+<tr class="odd">
+<td><code>SELECT_LINE</code></td>
+<td><code>SELLINE</code></td>
+<td>Downward line selection.</td>
+</tr>
+<tr class="even">
+<td><code>SELECT_LINE_UP</code></td>
+<td><code>SELLUP</code></td>
+<td>Upward line selection.</td>
+</tr>
+</tbody>
+</table>
+<p>Press <code>SELWORD</code> to select the current word. Press it again
+to extend the selection to the following word. The effect is similar to
+word selection (<code>W</code>) in the <a
+href="https://kakoune.org">Kakoune editor</a>. Or for line selection,
+press <code>SELWORD</code> with shift to select the current line, and
+press it again to extend the selection to the following line.</p>
+<h2 id="mac-hotkeys">Mac hotkeys</h2>
+<p>On Mac OS, different hotkeys are needed for word and line selection
+than are conventional on Windows and Linux. There are several ways that
+Select Word can be configured to send the appropriate hotkeys:</p>
+<ul>
+<li><p>Windows/Linux hotkeys are assumed by default. To default to Mac
+hotkeys instead, define in your <code>config.h</code> file:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode c"><code class="sourceCode c"><span id="cb2-1"><a href="index.html#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#define SELECT_WORD_OS_MAC</span></span></code></pre></div></li>
+<li><p>If <a href="https://docs.qmk.fm/features/os_detection">OS
+Detection</a> is enabled, Select Word uses it determine which kind of
+hotkeys to send. An edge case is that OS Detection is sometimes fails
+(<code>OS_UNSURE</code>). If this happens, Select Word’s logic falls
+back to the previous bullet point.</p></li>
+<li><p>For direct control, define in <code>config.h</code>:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb3-1"><a href="index.html#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#define SELECT_WORD_OS_DYNAMIC</span></span></code></pre></div>
+<p>Then in <code>keymap.c</code>, define the callback
+<code>select_word_host_is_mac()</code>. Return true for Mac hotkeys,
+false for Windows/Linux. If OS Detection is also enabled, the
+<code>select_word_host_is_mac()</code> callback takes precedence.</p>
+<p>For instance, suppose layer 0 is your base layer for Windows and
+layer 1 is your base layer for Mac. Indicate this by adding in
+<code>keymap.c</code>:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb4-1"><a href="index.html#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="dt">bool</span> select_word_host_is_mac<span class="op">(</span><span class="dt">void</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb4-2"><a href="index.html#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> IS_LAYER_ON<span class="op">(</span><span class="dv">1</span><span class="op">);</span>  <span class="co">// Layer 1 on =&gt; Mac.</span></span>
+<span id="cb4-3"><a href="index.html#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>Another possibility: suppose you use <a
+href="https://docs.qmk.fm/keycodes_magic">Magic Keys</a>
+<code>QK_MAGIC_TOGGLE_CTL_GUI</code> to swap Ctrl and GUI keys when on
+Mac. This can be indicated to Select Word with</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode c"><code class="sourceCode c"><span id="cb5-1"><a href="index.html#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="dt">bool</span> select_word_host_is_mac<span class="op">(</span><span class="dt">void</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb5-2"><a href="index.html#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> mod_config<span class="op">(</span>MOD_LGUI<span class="op">)</span> <span class="op">==</span> MOD_LCTL<span class="op">;</span>  <span class="co">// GUI/Ctrl swapped =&gt; Mac.</span></span>
+<span id="cb5-3"><a href="index.html#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div></li>
+</ul>
+<h2 id="functions">Functions</h2>
+<p>For more flexibility, Select Word’s word and line selection may be
+invoked programmatically. This way you can control what manner of input
+triggers these selection actions, for instance, invoking line selection
+from a tap dance.</p>
+<table>
+<colgroup>
+<col style="width: 41%" />
+<col style="width: 58%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>select_word_register(action)</code></td>
+<td>Register (press) selection <code>action</code>.</td>
+</tr>
+<tr class="even">
+<td><code>select_word_unregister()</code></td>
+<td>Unregister (release) selection hotkey.</td>
+</tr>
+<tr class="odd">
+<td><code>select_word_tap(action)</code></td>
+<td>Register and unregister selection <code>action</code>.</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>action</code> argument in these functions specifies the
+type of selection:</p>
+<ul>
+<li><code>'W'</code> = word selection</li>
+<li><code>'B'</code> = backward word selection, left of the cursor</li>
+<li><code>'L'</code> = line selection</li>
+<li><code>'U'</code> = upward line selection</li>
+</ul>
+<p>Repeating or holding these actions extends the selection.</p>
+<p>The functions follow the pattern of QMK’s
+<code>register_code()</code> and <code>unregister_code()</code>. A
+selection hotkey is first “registered” or pressed with
+<code>select_word_register(action)</code>. This should be followed by a
+call to <code>select_word_unregister()</code> to “unregister” or release
+the hotkeys. The point of these separate register and unregister calls
+is to enable holding the hotkey as a means to extend the selection
+range.</p>
+<div class="callout" style="border-left-color: #e49f34">
+<div class="callout-header" style="background-color: #fdebd5">
+<p>
+⚠  Warning
+</p>
+</div>
+<p><strong>Forgetting to unregister results in stuck keys:</strong>
+<code>select_word_register(action)</code> must be followed by
+<code>select_word_unregister()</code>.</p>
+</div>
+<p>Alternatively, function <code>select_word_tap(action)</code> may be
+used to register and then immediately unregister (“tap”) selection
+<code>action</code>. This is a simpler method of invoking word and line
+selection with the caveat that it does not perform hotkey holding.</p>
+<p>If you use <a
+href="https://docs.qmk.fm/features/repeat_key#alternate-repeating">Alternate
+Repeat Key</a>, <code>SELWBAK</code> may be defined as the alternate
+repeat of <code>SELWORD</code>, and vice versa, with</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb6-1"><a href="index.html#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="dt">uint16_t</span> get_alt_repeat_key_keycode_user<span class="op">(</span><span class="dt">uint16_t</span> keycode<span class="op">,</span> <span class="dt">uint8_t</span> mods<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb6-2"><a href="index.html#cb6-2" aria-hidden="true" tabindex="-1"></a>   <span class="cf">switch</span> <span class="op">(</span>keycode<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb6-3"><a href="index.html#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">case</span> SELWBAK<span class="op">:</span> <span class="cf">return</span> SELWORD<span class="op">;</span></span>
+<span id="cb6-4"><a href="index.html#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">case</span> SELWORD<span class="op">:</span> <span class="cf">return</span> SELWBAK<span class="op">;</span></span>
+<span id="cb6-5"><a href="index.html#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ...</span></span>
+<span id="cb6-6"><a href="index.html#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb6-7"><a href="index.html#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> KC_TRNS<span class="op">;</span> </span>
+<span id="cb6-8"><a href="index.html#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<h2 id="idle-timeout">Idle timeout</h2>
+<p>By default, Select Word clears its internal state after 5 keconds.
+This is useful to improve behavior when using Select Word and a mouse
+together. To configure, define <code>SELECT_WORD_TIMEOUT</code> in
+<code>config.h</code> with a time in milliseconds:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb7-1"><a href="index.html#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#define SELECT_WORD_TIMEOUT </span><span class="dv">2000</span><span class="pp">  </span><span class="co">// When idle, clear state after 2 seconds.</span></span></code></pre></div>
+<p>If <code>SELECT_WORD_TIMEOUT</code> is set to 0, it never times
+out.</p>
+<h2 id="explanation">Explanation</h2>
+<p>The macro checks for events involving
+<code>SELECT_WORD_KEYCODE</code>. For word selection, the first press of
+the macro sends the keys <strong>Ctrl+→</strong>,
+<strong>Ctrl+←</strong> to move the cursor to the beginning of the word,
+then holds <strong>Ctrl+Shift+→</strong> to select to the end of the
+word. On subsequent presses, <strong>Ctrl+Shift+→</strong> is pressed
+again to extend the selection to the next word.</p>
+<p>For line selection, the macro sends <strong>Home</strong>,
+<strong>Shift+End</strong> on the first press, then <strong>↓</strong>
+on subsequent presses.</p>
+<p>The <code>state</code> variable keeps track of whether the macro has
+done the initial press and whether it is making a word vs. line
+selection.</p>
+<h2 id="acknowledgements">Acknowledgements</h2>
+<p>Thanks to <span class="citation"
+data-cites="Regnareb">@Regnareb</span>, <span class="citation"
+data-cites="arkanoryn">@arkanoryn</span>, and <span class="citation"
+data-cites="fuesec">@fuesec</span> on GitHub for helpful feedback and
+suggestions to make Select Word better.</p>
+<p><a href="../index.html">← More about keyboards</a></p>
+</div>
+
+<div id="footer">
+<p style="text-align:right">
+<a href="https://scholar.google.com/citations?user=G8Yjd9AAAAAJ" target="_blank">Google Scholar</a>
+<a href="http://www.linkedin.com/in/pascalgetreuer" target="_blank">LinkedIn</a>
+</p>
+</div>
+</body>
+</html>

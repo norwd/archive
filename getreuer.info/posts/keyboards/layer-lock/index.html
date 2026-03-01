@@ -1,0 +1,428 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="author" content="Pascal Getreuer, 2022-02-01 (updated 2025-07-24)" />
+  <title>QMK: Layer Lock key</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+<link rel="stylesheet" href="../../../site.css" type="text/css" />
+<link rel="icon" href="../../../favicon.ico" type="image/x-icon" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@350&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+<script type="text/javascript" src="../../../site.js" ></script>
+</head>
+<body>
+<div id="navbar">
+<div id="navhold">
+  <a href="https://getreuer.info/index.html">Home</a>
+  <a href="https://getreuer.info/papers/index.html">Papers</a>
+  <a href="https://getreuer.info/posts/index.html">Posts</a>
+</div>
+</div>
+<div id="content">
+<div id="header">
+<h1 class="title">QMK: Layer Lock key</h1>
+<h2 class="author">Pascal Getreuer, 2022-02-01 (updated 2025-07-24)</h2>
+</div>
+<div id="TOC">
+<ul>
+<li><a href="index.html#overview" id="toc-overview">Overview</a></li>
+<li><a href="index.html#add-it-to-your-keymap" id="toc-add-it-to-your-keymap">Add
+it to your keymap</a></li>
+<li><a href="index.html#example-use" id="toc-example-use">Example use</a></li>
+<li><a href="index.html#customization-options"
+id="toc-customization-options">Customization options</a>
+<ul>
+<li><a href="index.html#idle-timeout" id="toc-idle-timeout">Idle timeout</a></li>
+<li><a href="index.html#functions" id="toc-functions">Functions</a></li>
+<li><a href="index.html#representing-the-current-layer-lock-state"
+id="toc-representing-the-current-layer-lock-state">Representing the
+current Layer Lock state</a></li>
+<li><a href="index.html#combine-layer-lock-with-a-mod-tap"
+id="toc-combine-layer-lock-with-a-mod-tap">Combine Layer Lock with a
+mod-tap</a></li>
+<li><a href="index.html#interoperation-with-tri-layer"
+id="toc-interoperation-with-tri-layer">Interoperation with tri
+layer</a></li>
+</ul></li>
+<li><a href="index.html#compared-to-dflayer" id="toc-compared-to-dflayer">Compared
+to <code>DF(layer)</code></a></li>
+<li><a href="index.html#explanation" id="toc-explanation">Explanation</a></li>
+<li><a href="index.html#acknowledgements"
+id="toc-acknowledgements">Acknowledgements</a></li>
+</ul>
+</div>
+<p><a href="../index.html">← More about keyboards</a></p>
+<div class="callout">
+<div class="callout-header">
+<p>
+🚀  Launched
+</p>
+</div>
+<p><strong>Layer Lock is now a core QMK feature!</strong> It was
+released on 2024-11-27. <a
+href="https://docs.qmk.fm/newbs_git_using_your_master_branch#updating-your-master-branch">Update
+your QMK set up</a> and see <a
+href="https://docs.qmk.fm/features/layer_lock">QMK Layer Lock</a>.</p>
+</div>
+<div class="callout">
+<div class="callout-header">
+<p>
+🚀  Launched
+</p>
+</div>
+<p><strong>Layer Lock is available for ZSA keyboards in Oryx!</strong>
+Edit a non-base layer <a href="https://configure.zsa.io/">in Oryx</a>
+and assign <em>Lock Layer</em> to a key (<a
+href="https://blog.zsa.io/layer-lock/">announcement</a>).</p>
+</div>
+<div class="callout">
+<div class="callout-header">
+<p>
+🚀  Launched
+</p>
+</div>
+<p><strong>Layer Lock in <a
+href="https://get.vial.today/changelog/release-0.7.4.html">Vial
+0.7.4</a>!</strong> Assign a <em>Layer Lock</em> key from the Layers
+keycode tab.</p>
+</div>
+<h2 id="overview">Overview</h2>
+<p>Layers are often accessed by holding a button, using a momentary
+layer switch <code>MO(layer)</code> or layer tap
+<code>LT(layer, key)</code> key. But you may sometimes want to “lock” or
+“toggle” the layer so that it stays on without having to continue to
+hold the button. One way to do that is with a tap-toggle <code>TT</code>
+layer key, but here is an alternative.</p>
+<p>This post describes a <strong>Layer Lock</strong> key. When tapped,
+it “locks” the highest layer to stay active, assuming the layer was
+activated by one of the following keys:</p>
+<ul>
+<li><code>MO(layer)</code> momentary layer switch</li>
+<li><code>LT(layer, key)</code> layer tap</li>
+<li><code>OSL(layer)</code> one-shot layer</li>
+<li><code>TT(layer)</code> layer tap toggle</li>
+<li><code>LM(layer, mod)</code> layer-mod key (the layer is locked, but
+not the mods)</li>
+</ul>
+<p>Tapping Layer Lock again unlocks and turns off the layer.
+Additionally, when a layer is “locked,” other layer keys such as
+<code>TO(layer)</code> will override and unlock the layer.</p>
+<p>(Side note: This is not to be confused with another meaning of “layer
+lock,” which refers to a bugged keymap in which it is impossible to
+switch layers.)</p>
+<h2 id="add-it-to-your-keymap">Add it to your keymap</h2>
+<p>If you are new to QMK macros, see my <a
+href="../macros/index.html">macro buttons</a> post for an intro.</p>
+<p><strong>Step 1:</strong> In your <code>keymap.c</code>, add a custom
+keycode for the Layer Lock key and use the new keycode somewhere in your
+layout. I’ll name it <code>LLOCK</code>, but you can call it anything
+you like.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb1-1"><a href="index.html#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">enum</span> custom_keycodes <span class="op">{</span></span>
+<span id="cb1-2"><a href="index.html#cb1-2" aria-hidden="true" tabindex="-1"></a>  LLOCK <span class="op">=</span> SAFE_RANGE<span class="op">,</span></span>
+<span id="cb1-3"><a href="index.html#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Other custom keys...</span></span>
+<span id="cb1-4"><a href="index.html#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span></code></pre></div>
+<p><strong>Step 2:</strong> Handle Layer Lock from your
+<code>process_record_user()</code> function by calling
+<code>process_layer_lock()</code>, passing your custom keycode as the
+third argument:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb2-1"><a href="index.html#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&quot;features/layer_lock.h&quot;</span></span>
+<span id="cb2-2"><a href="index.html#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="index.html#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="dt">bool</span> process_record_user<span class="op">(</span><span class="dt">uint16_t</span> keycode<span class="op">,</span> keyrecord_t<span class="op">*</span> record<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb2-4"><a href="index.html#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="op">(!</span>process_layer_lock<span class="op">(</span>keycode<span class="op">,</span> record<span class="op">,</span> LLOCK<span class="op">))</span> <span class="op">{</span> <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span> <span class="op">}</span></span>
+<span id="cb2-5"><a href="index.html#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Your macros ...</span></span>
+<span id="cb2-6"><a href="index.html#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="index.html#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb2-8"><a href="index.html#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p><strong>Step 3:</strong> In your <code>rules.mk</code> file, add</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode mk"><code class="sourceCode makefile"><span id="cb3-1"><a href="index.html#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="dt">SRC</span> <span class="ch">+=</span><span class="st"> features/layer_lock.c</span></span></code></pre></div>
+<p><strong>Step 4:</strong> In the directory containing your
+<code>keymap.c</code>, create a <code>features</code> subdirectory and
+copy <a
+href="https://raw.githubusercontent.com/getreuer/qmk-keymap/main/features/layer_lock.h">layer_lock.h</a>
+and <a
+href="https://raw.githubusercontent.com/getreuer/qmk-keymap/main/features/layer_lock.c">layer_lock.c</a>
+there.</p>
+<p><strong>Troubleshooting:</strong> If your keymap fails to build, a
+likely reason is that your QMK installation needs to be updated. If you
+have the qmk_firmware git repo cloned locally, do a
+<code>git pull</code>. Or see <a
+href="https://docs.qmk.fm/newbs_git_using_your_master_branch#updating-your-master-branch">Updating
+your master branch</a> for more details.</p>
+<h2 id="example-use">Example use</h2>
+<p>Consider a keymap with the following base layer.</p>
+<figure>
+<img src="example-base.png" alt="Base layer." />
+<figcaption aria-hidden="true">Base layer.</figcaption>
+</figure>
+<p>The highlighted key is a momentary layer switch <code>MO(NAV)</code>.
+Holding it accesses a navigation layer.</p>
+<figure>
+<img src="example-nav.png" alt="Navigation layer." />
+<figcaption aria-hidden="true">Navigation layer.</figcaption>
+</figure>
+<p>Holding the NAV key is fine for brief use, but awkward to continue
+holding when using these functions continuously. The <strong>Layer
+Lock</strong> key comes to the rescue:</p>
+<ol type="1">
+<li><p>Hold the NAV key, activating the navigation layer.</p></li>
+<li><p>Tap Layer Lock.</p></li>
+<li><p>Release NAV. The navigation layer stays on.</p></li>
+<li><p>Make use of the arrow keys, etc.</p></li>
+<li><p>Tap Layer Lock or NAV again to turn the navigation layer back
+off.</p></li>
+</ol>
+<p>A variation that would also work is to put the Layer Lock key on the
+base layer and make other layers transparent (<code>KC_TRNS</code>) in
+that position. Pressing the Layer Lock key locks (or unlocks) the
+<em>highest</em> layer, regardless of which layer the Layer Lock key is
+on.</p>
+<h2 id="customization-options">Customization options</h2>
+<h3 id="idle-timeout">Idle timeout</h3>
+<p>Optionally, Layer Lock may be configured to deactivate if the
+keyboard is idle for some time. This is useful to avoid confusion if you
+get interrupted and step away from your desk while a layer is locked. In
+your config.h, define <code>LAYER_LOCK_IDLE_TIMEOUT</code>:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb4-1"><a href="index.html#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#define LAYER_LOCK_IDLE_TIMEOUT </span><span class="dv">60000</span><span class="pp">  </span><span class="co">// Turn off after 60 seconds.</span></span></code></pre></div>
+<p>where the time is in units of milliseconds. Then in your keymap.c,
+define (or add to) <code>housekeeping_task_user()</code> as</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb5-1"><a href="index.html#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> housekeeping_task_user<span class="op">(</span><span class="dt">void</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb5-2"><a href="index.html#cb5-2" aria-hidden="true" tabindex="-1"></a>  layer_lock_task<span class="op">();</span></span>
+<span id="cb5-3"><a href="index.html#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Other tasks...</span></span>
+<span id="cb5-4"><a href="index.html#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>The default behavior (when <code>LAYER_LOCK_IDLE_TIMEOUT</code> isn’t
+set, or set to 0) is that Layer Lock never times out, and in this case
+it isn’t necessary to call <code>layer_lock_task()</code>.</p>
+<h3 id="functions">Functions</h3>
+<p>Use the following functions to query and manipulate the layer lock
+state.</p>
+<div class="eqscroll">
+<table>
+<thead>
+<tr class="header">
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>is_layer_locked(layer)</code></td>
+<td>Checks whether <code>layer</code> is locked.</td>
+</tr>
+<tr class="even">
+<td><code>layer_lock_on(layer)</code></td>
+<td>Locks and turns on <code>layer</code>.</td>
+</tr>
+<tr class="odd">
+<td><code>layer_lock_off(layer)</code></td>
+<td>Unlocks and turns off <code>layer</code>.</td>
+</tr>
+<tr class="even">
+<td><code>layer_lock_invert(layer)</code></td>
+<td>Toggles whether <code>layer</code> is locked.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="representing-the-current-layer-lock-state">Representing the
+current Layer Lock state</h3>
+<p>There is an optional callback <code>layer_lock_set_user()</code> that
+gets called when a layer is locked or unlocked. This is useful to
+represent the current lock state for instance by setting an LED. In your
+keymap, define</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb6-1"><a href="index.html#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> layer_lock_set_user<span class="op">(</span>layer_state_t locked_layers<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb6-2"><a href="index.html#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Do something like `set_led(is_layer_locked(NAV));`</span></span>
+<span id="cb6-3"><a href="index.html#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<h3 id="combine-layer-lock-with-a-mod-tap">Combine Layer Lock with a
+mod-tap</h3>
+<p>You may want to combine the Layer Lock key with a <a
+href="https://docs.qmk.fm/mod_tap">mod-tap MT key</a> that acts as a
+modifier on hold and Layer Lock on tap, for instance to make double-duty
+use of a comfortable key position.</p>
+<p>Since custom keycodes (<code>&gt;= SAFE_RANGE</code>) are not <a
+href="https://docs.qmk.fm/keycodes_basic">basic keycodes</a>, attempting
+“<code>MT(mod, LLOCK)</code>” is invalid does not work directly. This
+effect can nevertheless be achieved through <a
+href="https://docs.qmk.fm/mod_tap#changing-tap-function">changing the
+tap function</a>. The following demonstrates a <code>SFTLLCK</code> key
+that acts as Shift on hold and Layer Lock on tap:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb7-1"><a href="index.html#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#define SFTLLCK </span>LSFT_T<span class="op">(</span><span class="pp">KC_0</span><span class="op">)</span></span>
+<span id="cb7-2"><a href="index.html#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="index.html#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co">// Use SFTLLCK in your keymap...</span></span>
+<span id="cb7-4"><a href="index.html#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="index.html#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="dt">bool</span> process_record_user<span class="op">(</span><span class="dt">uint16_t</span> keycode<span class="op">,</span> keyrecord_t<span class="op">*</span> record<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb7-6"><a href="index.html#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="op">(!</span>process_layer_lock<span class="op">(</span>keycode<span class="op">,</span> record<span class="op">,</span> KC_NO<span class="op">))</span> <span class="op">{</span> <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span> <span class="op">}</span></span>
+<span id="cb7-7"><a href="index.html#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-8"><a href="index.html#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">switch</span> <span class="op">(</span>keycode<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb7-9"><a href="index.html#cb7-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">case</span> SFTLLCK<span class="op">:</span>  <span class="co">// Shift on hold, Layer Lock on tap.</span></span>
+<span id="cb7-10"><a href="index.html#cb7-10" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> <span class="op">(</span>record<span class="op">-&gt;</span>tap<span class="op">.</span>count<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb7-11"><a href="index.html#cb7-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(</span>record<span class="op">-&gt;</span>event<span class="op">.</span>pressed<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb7-12"><a href="index.html#cb7-12" aria-hidden="true" tabindex="-1"></a>          <span class="co">// Toggle the lock on the highest layer.</span></span>
+<span id="cb7-13"><a href="index.html#cb7-13" aria-hidden="true" tabindex="-1"></a>          layer_lock_invert<span class="op">(</span>get_highest_layer<span class="op">(</span>layer_state<span class="op">));</span></span>
+<span id="cb7-14"><a href="index.html#cb7-14" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb7-15"><a href="index.html#cb7-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span>  <span class="co">// Skip default handling on tap.</span></span>
+<span id="cb7-16"><a href="index.html#cb7-16" aria-hidden="true" tabindex="-1"></a>      <span class="op">}</span></span>
+<span id="cb7-17"><a href="index.html#cb7-17" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span> <span class="kw">true</span><span class="op">;</span>  <span class="co">// Continue default handling on hold.</span></span>
+<span id="cb7-18"><a href="index.html#cb7-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-19"><a href="index.html#cb7-19" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Other macros...</span></span>
+<span id="cb7-20"><a href="index.html#cb7-20" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb7-21"><a href="index.html#cb7-21" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb7-22"><a href="index.html#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>In the above, <code>KC_0</code> is an arbitrary placeholder for the
+tapping keycode. This keycode will never be sent, so any basic keycode
+will do. In <code>process_record_user()</code>, the tap press event is
+changed to to toggle the lock on the highest layer.</p>
+<p>Layer Lock can be combined with a <a
+href="https://docs.qmk.fm/feature_layers#switching-and-toggling-layers">layer-tap
+LT key</a> similarly. See <a
+href="../faqs/index.html#mt-doesnt-work-with-this-keycode-qmk">MT
+doesn’t work with this keycode</a> for further examples of combining
+<code>MT</code> and <code>LT</code> with non-basic keycodes.</p>
+<h3 id="interoperation-with-tri-layer">Interoperation with tri
+layer</h3>
+<p>If you use tri layer, a tweak is needed to make the third layer
+lockable by Layer Lock. The <a
+href="https://docs.qmk.fm/ref_functions#update-tri-layer-state-state-x-y-z">update_tri_layer_state</a>
+function is usually called from keymap.c in the form</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb8-1"><a href="index.html#cb8-1" aria-hidden="true" tabindex="-1"></a>layer_state_t layer_state_set_user<span class="op">(</span>layer_state_t state<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb8-2"><a href="index.html#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> update_tri_layer_state<span class="op">(</span>state<span class="op">,</span> _LOWER<span class="op">,</span> _RAISE<span class="op">,</span> _ADJUST<span class="op">);</span></span>
+<span id="cb8-3"><a href="index.html#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>Change this to update the state only when the third layer is
+unlocked:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb9-1"><a href="index.html#cb9-1" aria-hidden="true" tabindex="-1"></a>layer_state_t layer_state_set_user<span class="op">(</span>layer_state_t state<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb9-2"><a href="index.html#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="op">(!</span>is_layer_locked<span class="op">(</span>_ADJUST<span class="op">))</span> <span class="op">{</span></span>
+<span id="cb9-3"><a href="index.html#cb9-3" aria-hidden="true" tabindex="-1"></a>    state <span class="op">=</span> update_tri_layer_state<span class="op">(</span>state<span class="op">,</span> _LOWER<span class="op">,</span> _RAISE<span class="op">,</span> _ADJUST<span class="op">);</span></span>
+<span id="cb9-4"><a href="index.html#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb9-5"><a href="index.html#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> state<span class="op">;</span></span>
+<span id="cb9-6"><a href="index.html#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<h2 id="compared-to-dflayer">Compared to <code>DF(layer)</code></h2>
+<p>Another way to set a layer to be always on is to set it as the
+default layer with <a href="https://docs.qmk.fm/feature_layers">the
+<code>DF(layer)</code> keycode</a>, comparable to Layer Lock:</p>
+<ul>
+<li><p><code>DF(layer)</code> sets exactly one layer to be always on,
+changing the base layer to that layer. The <a
+href="https://docs.qmk.fm/feature_layers#intermediate-users">intended
+use</a> is that “When you have multiple base layers you should always
+treat them as mutually exclusive.”</p></li>
+<li><p>Layer Lock on the other hand does not change the base layer. The
+idea is to enable locking a partially transparent layer above the
+existing base layer. Also, it is easy to “break the lock” with Layer
+Lock, for instance a <code>TO(layer)</code> keycode or user code calling
+<code>layer_off(layer)</code> will override and unlock the layer, but
+neither of these things change the default layer. This helps avoid
+getting into a situation where a layer gets stuck on and makes other
+layers impossible to reach.</p></li>
+</ul>
+<h2 id="explanation">Explanation</h2>
+<p>Internally, a variable <code>locked_layers</code> tracks the lock
+state for each layer. It is a bitfield where the <code>k</code>th bit is
+on if layer <code>k</code> is locked.</p>
+<p>On an <code>MO(layer)</code>, <code>TT(layer)</code>,
+<code>LM(layer, mod)</code>, or <code>LT(layer, key)</code> event, the
+layer is extracted from the keycode and checked against
+<code>locked_layers</code>. Since the normal release event handling for
+these keys is to turn the layer off, we indicate that this handling
+should be skipped (return false) if the layer is locked to keep the
+layer on.</p>
+<p>For one-shot layer <code>OSL(layer)</code> keys, we check when
+locking whether the layer being locked is
+<code>get_oneshot_layer()</code>. If so, we call
+<code>reset_oneshot_layer()</code> to forget the OSL state. This way the
+OSL handling doesn’t turn the layer off after the next keypress.</p>
+<p>Even when a layer is nominally “locked,” it is possible and expected
+that other features may nevertheless turn the layer off. To account for
+this, we compare <code>locked_layers</code> vs. the layer state on each
+key event and set layers with broken locks to be unlocked.</p>
+<h2 id="acknowledgements">Acknowledgements</h2>
+<p>Thank you to <span class="citation"
+data-cites="mwpardue">@mwpardue</span>, <span class="citation"
+data-cites="drashna">@drashna</span>, <span class="citation"
+data-cites="ujl123">@ujl123</span>, <span class="citation"
+data-cites="sporkus">@sporkus</span>, <span class="citation"
+data-cites="EdenEast">@EdenEast</span>, <span class="citation"
+data-cites="Dimagog">@Dimagog</span> on GitHub and u/DB_Cooper75 on
+Reddit for contributions and feedback to improve this feature. And
+special thanks to <span class="citation"
+data-cites="drashna">@drashna</span> for getting Layer Lock added to QMK
+core.</p>
+<p><a href="../index.html">← More about keyboards</a></p>
+</div>
+
+<div id="footer">
+<p style="text-align:right">
+<a href="https://scholar.google.com/citations?user=G8Yjd9AAAAAJ" target="_blank">Google Scholar</a>
+<a href="http://www.linkedin.com/in/pascalgetreuer" target="_blank">LinkedIn</a>
+</p>
+</div>
+</body>
+</html>
