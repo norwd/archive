@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="hypermail 2.3.0, see http://www.hypermail-project.org/" />
+<title>[scc-dev] [PATCH scc] fix syscalls on OpenBSD from Lennart Jablonka on 2026-04-09 (scc-dev)</title>
+<meta name="Author" content="Lennart Jablonka (humm_at_ljabl.com)" />
+<meta name="Subject" content="[scc-dev] [PATCH scc] fix syscalls on OpenBSD" />
+<meta name="Date" content="2026-04-09" />
+<style type="text/css">
+/*<![CDATA[*/
+/* To be incorporated in the main stylesheet, don't code it in hypermail! */
+body {color: black; background: #ffffff}
+dfn {font-weight: bold;}
+pre { background-color:inherit;}
+.head { border-bottom:1px solid black;}
+.foot { border-top:1px solid black;}
+th {font-style:italic;}
+table { margin-left:2em;}map ul {list-style:none;}
+#mid { font-size:0.9em;}
+#received { float:right;}
+address { font-style:inherit ;}
+/*]]>*/
+.quotelev1 {color : #990099}
+.quotelev2 {color : #ff7700}
+.quotelev3 {color : #007799}
+.quotelev4 {color : #95c500}
+.period {font-weight: bold}
+</style>
+</head>
+<body>
+<div class="head">
+<h1>[scc-dev] [PATCH scc] fix syscalls on OpenBSD</h1>
+<!-- received="Thu, 9 Apr 2026 14:03:49 +0000" -->
+<!-- isoreceived="20260409140349" -->
+<!-- sent="Thu, 9 Apr 2026 14:03:49 +0000" -->
+<!-- isosent="20260409140349" -->
+<!-- name="Lennart Jablonka" -->
+<!-- email="humm_at_ljabl.com" -->
+<!-- subject="[scc-dev] [PATCH scc] fix syscalls on OpenBSD" -->
+<!-- id="447b5280485b8b01982947e0770c87ce73496d39.1775743160.git.humm_at_ljabl.com" -->
+<!-- charset="utf-8" -->
+<!-- expires="-1" -->
+<map id="navbar" name="navbar">
+<ul class="links">
+<li>
+<dfn>This message</dfn>:
+[ <a href="0108.html#start108" name="options1" id="options1" tabindex="1">Message body</a> ]
+ [ More options (<a href="0108.html#options2">top</a>, <a href="0108.html#options3">bottom</a>) ]
+</li>
+<li>
+<dfn>Related messages</dfn>:
+<!-- unext="start" -->
+[ <a href="../202603/0107.html" title="Roberto E. Vargas Caballero: &quot;[scc-dev] Release of scc-0.1&quot;">Previous message</a> ]
+<!-- unextthread="start" -->
+<!-- ureply="end" -->
+</li>
+</ul>
+</map>
+<ul class="links">
+<li><a name="options2" id="options2"></a><dfn>Contemporary messages sorted</dfn>: [ <a href="date.html#msg108" title="Contemporary messages by date">by date</a> ] [ <a href="index.html#msg108" title="Contemporary discussion threads">by thread</a> ] [ <a href="subject.html#msg108" title="Contemporary messages by subject">by subject</a> ] [ <a href="author.html#msg108" title="Contemporary messages by author">by author</a> ] [ <a href="attachment.html" title="Contemporary messages by attachment">by messages with attachments</a> ]</li>
+</ul>
+</div>
+<!-- body="start" -->
+<div class="mail">
+<address class="headers">
+<span id="from">
+<dfn>From</dfn>: Lennart Jablonka &lt;<a href="mailto:humm_at_ljabl.com?Subject=Re%3A%20%5Bscc-dev%5D%20%5BPATCH%20scc%5D%20fix%20syscalls%20on%20OpenBSD">humm_at_ljabl.com</a>&gt;
+</span><br />
+<span id="date"><dfn>Date</dfn>: Thu, 9 Apr 2026 14:03:49 +0000</span><br />
+</address>
+<br />
+* sys_lseek got a new syscall number in revision 1.221 of
+<br />
+/usr/src/sys/kern/syscalls.master (2021-12-23); the old one was
+<br>
+dropped in 1.241 (2023-02-11).  Oh, but the old syscall number was
+<br />
+199, not 198, so I don't think this ever worked.
+<br />
+<br />* For some time now, locations doing syscalls have to be marked using
+<br />
+either pinsyscalls(2) or .openbsd.syscalls sections, otherwise the
+<br />
+process is killed.  For comparison, see the PINSYSCALL macro in
+<br />
+/usr/src/lib/libc/arch/DEFS.h and its use in the SYSTRAP macro in
+<br>
+/usr/src/lib/libc/arch/amd64/SYS.h (for example).
+<br>
+<pre>
+---
+ src/libc/arch/amd64/openbsd/gensys.sh   | 10 +++++++---
+ src/libc/arch/amd64/openbsd/syscall.lst |  2 +-
+ 2 files changed, 8 insertions(+), 4 deletions(-)
+diff --git a/src/libc/arch/amd64/openbsd/gensys.sh b/src/libc/arch/amd64/openbsd/gensys.sh
+index e44380bc..7fc52af4 100755
+--- a/src/libc/arch/amd64/openbsd/gensys.sh
++++ b/src/libc/arch/amd64/openbsd/gensys.sh
+_at_&#64; -20,12 +20,16 &#64;&#64; $name:
+ 		;;
+ 	esac`
+ 	movq	\$$num,%rax
+-	syscall
+-	jb	1f
++1:	syscall
++	jb	2f
+ 	retq
+ 
+-1:	movq	%rax,(errno)
++2:	movq	%rax,(errno)
+ 	movq	\$-1,%rax
+ 	retq
++
++	.section .openbsd.syscalls, &quot;a&quot;, _at_progbits
++	.long 1b
++	.long $num
+ EOF
+ done
+diff --git a/src/libc/arch/amd64/openbsd/syscall.lst b/src/libc/arch/amd64/openbsd/syscall.lst
+index 9b06ffca..ac647f8c 100644
+--- a/src/libc/arch/amd64/openbsd/syscall.lst
++++ b/src/libc/arch/amd64/openbsd/syscall.lst
+_at_&#64; -17,4 +17,4 &#64;&#64;
+ 67	_gettimeofday	2
+ 122	_kill	2
+ 128	_rename	2
+-198	_lseek	3
++166	_lseek	3
+-- 
+2.53.0
+--
+To unsubscribe send a mail to scc-dev+unsubscribe_at_simple-cc.org
+</pre>
+<span id="received"><dfn>Received on</dfn> Thu 09 Apr 2026 - 16:03:49 CEST</span>
+</div>
+<!-- body="end" -->
+<div class="foot">
+<map id="navbarfoot" name="navbarfoot" title="Related messages">
+<ul class="links">
+<li><dfn>This message</dfn>: [ <a href="0108.html#start108">Message body</a> ]</li>
+<!-- lnext="start" -->
+<li><dfn>Previous message</dfn>: <a href="../202603/0107.html" title="Previous message in the list">Roberto E. Vargas Caballero: "[scc-dev] Release of scc-0.1"</a></li>
+<!-- lnextthread="start" -->
+<!-- lreply="end" -->
+</ul>
+<ul class="links">
+<li><a name="options3" id="options3"></a><dfn>Contemporary messages sorted</dfn>: [ <a href="date.html#msg108" title="Contemporary messages by date">by date</a> ] [ <a href="index.html#msg108" title="Contemporary discussion threads">by thread</a> ] [ <a href="subject.html#msg108" title="Contemporary messages by subject">by subject</a> ] [ <a href="author.html#msg108" title="Contemporary messages by author">by author</a> ] [ <a href="attachment.html" title="Contemporary messages by attachment">by messages with attachments</a> ]</li>
+</ul>
+</map>
+</div>
+<!-- trailer="footer" -->
+<p><small><em>
+This archive was generated by <a href="http://www.hypermail-project.org/">hypermail 2.3.0</a>
+: Thu 09 Apr 2026 - 16:10:01 CEST
+</em></small></p>
+</body>
+</html>
