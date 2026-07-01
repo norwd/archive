@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=us-ascii" />
+<meta name="generator" content="hypermail 2.3.0, see http://www.hypermail-project.org/" />
+<title>Re: [scc-dev] Wrong type loaded when struct field increments from Roberto E. Vargas Caballero on 2026-06-23 (scc-dev)</title>
+<meta name="Author" content="Roberto E. Vargas Caballero (k0ga_at_shike2.net)" />
+<meta name="Subject" content="Re: [scc-dev] Wrong type loaded when struct field increments" />
+<meta name="Date" content="2026-06-23" />
+<style type="text/css">
+/*<![CDATA[*/
+/* To be incorporated in the main stylesheet, don't code it in hypermail! */
+body {color: black; background: #ffffff}
+dfn {font-weight: bold;}
+pre { background-color:inherit;}
+.head { border-bottom:1px solid black;}
+.foot { border-top:1px solid black;}
+th {font-style:italic;}
+table { margin-left:2em;}map ul {list-style:none;}
+#mid { font-size:0.9em;}
+#received { float:right;}
+address { font-style:inherit ;}
+/*]]>*/
+.quotelev1 {color : #990099}
+.quotelev2 {color : #ff7700}
+.quotelev3 {color : #007799}
+.quotelev4 {color : #95c500}
+.period {font-weight: bold}
+</style>
+</head>
+<body>
+<div class="head">
+<h1>Re: [scc-dev] Wrong type loaded when struct field increments</h1>
+<!-- received="Tue, 23 Jun 2026 14:40:36 +0200" -->
+<!-- isoreceived="20260623124036" -->
+<!-- sent="Tue, 23 Jun 2026 14:40:36 +0200" -->
+<!-- isosent="20260623124036" -->
+<!-- name="Roberto E. Vargas Caballero" -->
+<!-- email="k0ga_at_shike2.net" -->
+<!-- subject="Re: [scc-dev] Wrong type loaded when struct field increments" -->
+<!-- id="ajp-xBiGqaArx0ql_at_simple-cc.org" -->
+<!-- charset="us-ascii" -->
+<!-- inreplyto="ajjdO3BbXCX7cU6f_at_chenw.lan" -->
+<!-- expires="-1" -->
+<map id="navbar" name="navbar">
+<ul class="links">
+<li>
+<dfn>This message</dfn>:
+[ <a href="0123.html#start123" name="options1" id="options1" tabindex="1">Message body</a> ]
+ [ More options (<a href="0123.html#options2">top</a>, <a href="0123.html#options3">bottom</a>) ]
+</li>
+<li>
+<dfn>Related messages</dfn>:
+<!-- unext="start" -->
+[ <a href="0124.html" title="Zhaoming Luo: &quot;[scc-dev] [PATCH] cc2/qbe: Fix post increment and decrement&quot;">Next message</a> ]
+[ <a href="0122.html" title="Zhaoming Luo: &quot;[scc-dev] Wrong type loaded when struct field increments&quot;">Previous message</a> ]
+[ <a href="0122.html" title="Zhaoming Luo: &quot;[scc-dev] Wrong type loaded when struct field increments&quot;">In reply to</a> ]
+[ <a href="0122.html" title="Message to which this message replies: &quot;Zhaoming Luo&quot;">[scc-dev] Wrong type loaded when struct field increments</a> ]
+<!-- unextthread="start" -->
+ [ <a href="0124.html" title="Zhaoming Luo: &quot;[scc-dev] [PATCH] cc2/qbe: Fix post increment and decrement&quot;">Next in thread</a> ]
+ [ <a href="0123.html#replies">Replies</a> ]
+<!-- ureply="end" -->
+</li>
+</ul>
+</map>
+<ul class="links">
+<li><a name="options2" id="options2"></a><dfn>Contemporary messages sorted</dfn>: [ <a href="date.html#msg123" title="Contemporary messages by date">by date</a> ] [ <a href="index.html#msg123" title="Contemporary discussion threads">by thread</a> ] [ <a href="subject.html#msg123" title="Contemporary messages by subject">by subject</a> ] [ <a href="author.html#msg123" title="Contemporary messages by author">by author</a> ] [ <a href="attachment.html" title="Contemporary messages by attachment">by messages with attachments</a> ]</li>
+</ul>
+</div>
+<!-- body="start" -->
+<div class="mail">
+<address class="headers">
+<span id="from">
+<dfn>From</dfn>: Roberto E. Vargas Caballero &lt;<a href="mailto:k0ga_at_shike2.net?Subject=Re%3A%20%5Bscc-dev%5D%20Wrong%20type%20loaded%20when%20struct%20field%20increments">k0ga_at_shike2.net</a>&gt;
+</span><br />
+<span id="date"><dfn>Date</dfn>: Tue, 23 Jun 2026 14:40:36 +0200</span><br />
+</address>
+<br />
+Hi,
+<br />
+<br />On Mon, Jun 22, 2026 at 06:59:22AM +0000, Zhaoming Luo wrote:
+<br />
+<em class="quotelev1">&gt; After digging into the qbe and assembly code, I found the wrong
+</em><br><em class="quotelev1">&gt; type is loaded:
+</em><br><em class="quotelev1">&gt; 
+</em><br><em class="quotelev1">&gt; ```
+</em><br><em class="quotelev1">&gt; 	%.L15 =l        loadl   %.L14
+</em><br><em class="quotelev1">&gt; ```
+</em><br><em class="quotelev1">&gt; 
+</em><br><em class="quotelev1">&gt; L14 points to the address of `s.b`, and the type of `s.b` is `int`.
+</em><br><a href="0122.html#0123qlink1">&gt; In QBE, type 'l' refers to 64-bit integers, but `s.b` is a 32-bit
+</a><br>
+<em class="quotelev1">&gt; type integer, so an undefined value is loaded to L15.
+</em><br><br />Yes, but the main problem here is that we are doing a unaligned access
+<br />
+because we use an address to a 32 bit value to get a 64 bits, this is
+<br />
+why we get the bus error.
+<br />
+<br /><em class="quotelev1">&gt; I found the issue is in src/cmd/scc-cc/cc2/qbe/cgen.c line 485:
+</em><br><em class="quotelev1">&gt; ```
+</em><br><em class="quotelev1">&gt; 	ret = load(&amp;l-&gt;type, l);
+</em><br><em class="quotelev1">&gt; ```
+</em><br><em class="quotelev1">&gt; Before line 484 `lhs_rhs(&amp;l, &amp;r);`, variable `l` is:
+</em><br><em class="quotelev1">&gt; ```
+</em><br><a href="0122.html#0123qlink2">&gt; {op = 46 '.', type = {size = 4, align = 4, id = 0, flags = 3}...
+</a><br>
+<em class="quotelev1">&gt; ```
+</em><br><em class="quotelev1">&gt; However, because `l` is `struct field access`, the value of `l`
+</em><br><em class="quotelev1">&gt; changes after lhs_rhs():
+</em><br><br />Yeah, after the call to lhs_rhs() which calls lhs() l is a pointer
+<br />
+to the adress that we have to load, and obviously that is going
+<br />
+to be a 64 bit value. I think we have the same problem with arrays
+<br />
+too.
+<br />
+<br /><a href="0122.html#0123qlink3">&gt; The optimal method I come up with is storing `l-&gt;type` before
+</a><br>
+<em class="quotelev1">&gt; lhs_rhs() and pass it to load(), but I'm not sure if it's indeed
+</em><br><em class="quotelev1">&gt; the best, so I report this finding here.
+</em><br><br />I think we have to understand a bit better the issue, because we
+<br />
+have 3 calls to lhs_rhs() and I think all of them have the same
+<br />
+problem (from current master):
+<br />
+<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;484                     lhs_rhs(&amp;l, &amp;r);
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;496                             lhs_rhs(&amp;l, &amp;r);
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;519                     lhs_rhs(&amp;l, &amp;r);
+<br />
+<br />After reviewing every one of them I think the best solution is
+<br />
+to change:
+<br />
+<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lhs_rhs(&amp;l, &amp;r);
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ret = load(&amp;l-&gt;type, l);
+<br />
+<br />to
+<br />
+<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lhs_rhs(&amp;l, &amp;r);
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ret = load(&amp;r-&gt;type, l);
+<br />
+<br />because the type of both operands must be the same (otherwise they
+<br />
+cannot be operands of the same expression). This trick is used in
+<br />
+other place:
+<br />
+<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;495                     if (r-&gt;type.size &lt; 4) {
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;496                             lhs_rhs(&amp;l, &amp;r);
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;497                             aux.op = np-&gt;u.subop;
+<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;498                             aux.left = load(&amp;r-&gt;type, l);
+<br />
+<br />I didn't test it, but I think it should work. Do you want to try the
+<br />
+patch and the tests for struct (the one you already got) and for array?
+<br />
+<br />Regards,
+<br />
+<pre>
+--
+To unsubscribe send a mail to scc-dev+unsubscribe_at_simple-cc.org
+</pre>
+<span id="received"><dfn>Received on</dfn> Tue 23 Jun 2026 - 14:40:36 CEST</span>
+</div>
+<!-- body="end" -->
+<div class="foot">
+<map id="navbarfoot" name="navbarfoot" title="Related messages">
+<ul class="links">
+<li><dfn>This message</dfn>: [ <a href="0123.html#start123">Message body</a> ]</li>
+<!-- lnext="start" -->
+<li><dfn>Next message</dfn>: <a href="0124.html" title="Next message in the list">Zhaoming Luo: "[scc-dev] [PATCH] cc2/qbe: Fix post increment and decrement"</a></li>
+<li><dfn>In reply to</dfn> <a href="0122.html" title="Message to which this message replies">Zhaoming Luo: "[scc-dev] Wrong type loaded when struct field increments"</a></li>
+<!-- lnextthread="start" -->
+<li><dfn>Next in thread</dfn>: <a href="0124.html" title="Next message in this discussion thread">Zhaoming Luo: "[scc-dev] [PATCH] cc2/qbe: Fix post increment and decrement"</a></li>
+<li><a name="replies" id="replies"></a><dfn>Reply</dfn>:  <a href="0124.html" title="Message sent in reply to this message">Zhaoming Luo: "[scc-dev] [PATCH] cc2/qbe: Fix post increment and decrement"</a></li>
+<!-- lreply="end" -->
+</ul>
+<ul class="links">
+<li><a name="options3" id="options3"></a><dfn>Contemporary messages sorted</dfn>: [ <a href="date.html#msg123" title="Contemporary messages by date">by date</a> ] [ <a href="index.html#msg123" title="Contemporary discussion threads">by thread</a> ] [ <a href="subject.html#msg123" title="Contemporary messages by subject">by subject</a> ] [ <a href="author.html#msg123" title="Contemporary messages by author">by author</a> ] [ <a href="attachment.html" title="Contemporary messages by attachment">by messages with attachments</a> ]</li>
+</ul>
+</map>
+</div>
+<!-- trailer="footer" -->
+<p><small><em>
+This archive was generated by <a href="http://www.hypermail-project.org/">hypermail 2.3.0</a>
+: Tue 23 Jun 2026 - 14:50:01 CEST
+</em></small></p>
+</body>
+</html>
