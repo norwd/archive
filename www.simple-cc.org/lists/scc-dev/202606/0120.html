@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="generator" content="hypermail 2.3.0, see http://www.hypermail-project.org/" />
+<title>[scc-dev] [PATCH] Make it easier to configure the name of the QBE binary from soeren_at_soeren-tempel.net on 2026-06-09 (scc-dev)</title>
+<meta name="Author" content="soeren_at_soeren-tempel.net (soeren_at_soeren-tempel.net)" />
+<meta name="Subject" content="[scc-dev] [PATCH] Make it easier to configure the name of the QBE binary" />
+<meta name="Date" content="2026-06-09" />
+<style type="text/css">
+/*<![CDATA[*/
+/* To be incorporated in the main stylesheet, don't code it in hypermail! */
+body {color: black; background: #ffffff}
+dfn {font-weight: bold;}
+pre { background-color:inherit;}
+.head { border-bottom:1px solid black;}
+.foot { border-top:1px solid black;}
+th {font-style:italic;}
+table { margin-left:2em;}map ul {list-style:none;}
+#mid { font-size:0.9em;}
+#received { float:right;}
+address { font-style:inherit ;}
+/*]]>*/
+.quotelev1 {color : #990099}
+.quotelev2 {color : #ff7700}
+.quotelev3 {color : #007799}
+.quotelev4 {color : #95c500}
+.period {font-weight: bold}
+</style>
+</head>
+<body>
+<div class="head">
+<h1>[scc-dev] [PATCH] Make it easier to configure the name of the QBE binary</h1>
+<!-- received="Tue,  9 Jun 2026 14:23:28 +0200" -->
+<!-- isoreceived="20260609122328" -->
+<!-- sent="Tue,  9 Jun 2026 14:23:28 +0200" -->
+<!-- isosent="20260609122328" -->
+<!-- name="soeren_at_soeren-tempel.net" -->
+<!-- email="soeren_at_soeren-tempel.net" -->
+<!-- subject="[scc-dev] [PATCH] Make it easier to configure the name of the QBE binary" -->
+<!-- id="20260609122327.18826-2-soeren_at_soeren-tempel.net" -->
+<!-- charset="UTF-8" -->
+<!-- inreplyto="soeren&#64;soeren-tempel.net" -->
+<!-- expires="-1" -->
+<map id="navbar" name="navbar">
+<ul class="links">
+<li>
+<dfn>This message</dfn>:
+[ <a href="0120.html#start120" name="options1" id="options1" tabindex="1">Message body</a> ]
+ [ More options (<a href="0120.html#options2">top</a>, <a href="0120.html#options3">bottom</a>) ]
+</li>
+<li>
+<dfn>Related messages</dfn>:
+<!-- unext="start" -->
+[ <a href="0121.html" title="Roberto E. Vargas Caballero: &quot;Re: [scc-dev] [PATCH] Make it easier to configure the name of the QBE binary&quot;">Next message</a> ]
+[ <a href="0119.html" title="Roberto E. Vargas Caballero: &quot;Re: [scc-dev] [PATCH] cc1: Try parsing specifiers after struct/union/enum&quot;">Previous message</a> ]
+<!-- unextthread="start" -->
+ [ <a href="0121.html" title="Roberto E. Vargas Caballero: &quot;Re: [scc-dev] [PATCH] Make it easier to configure the name of the QBE binary&quot;">Next in thread</a> ]
+ [ <a href="0120.html#replies">Replies</a> ]
+<!-- ureply="end" -->
+</li>
+</ul>
+</map>
+<ul class="links">
+<li><a name="options2" id="options2"></a><dfn>Contemporary messages sorted</dfn>: [ <a href="date.html#msg120" title="Contemporary messages by date">by date</a> ] [ <a href="index.html#msg120" title="Contemporary discussion threads">by thread</a> ] [ <a href="subject.html#msg120" title="Contemporary messages by subject">by subject</a> ] [ <a href="author.html#msg120" title="Contemporary messages by author">by author</a> ] [ <a href="attachment.html" title="Contemporary messages by attachment">by messages with attachments</a> ]</li>
+</ul>
+</div>
+<!-- body="start" -->
+<div class="mail">
+<address class="headers">
+<span id="from">
+<dfn>From</dfn>: &lt;<a href="mailto:soeren_at_soeren-tempel.net?Subject=Re%3A%20%5Bscc-dev%5D%20%5BPATCH%5D%20Make%20it%20easier%20to%20configure%20the%20name%20of%20the%20QBE%20binary">soeren_at_soeren-tempel.net</a>&gt;
+</span><br />
+<span id="date"><dfn>Date</dfn>: Tue,  9 Jun 2026 14:23:28 +0200</span><br />
+</address>
+<br />
+<a name="0121qlink1">From: Sören Tempel &lt;soeren_at_soeren-tempel.net&gt;
+<br />
+<br />While it is already possible to configure the as(1) and ld(1) binary
+<br />
+name through C macros, the QBE binary name is itself currently
+<br />
+hardcoded.  However, for distribution following the functional software
+<br />
+deployment model (e.g., Guix or Nix), it is useful to also make the
+<br />
+name of the QBE binary configurable. This is implemented here through
+<br />
+the addition of a QBEBIN macro.
+<br />
+<pre>
+---
+ README                          | 2 ++
+</a> include/scc/bits/scc/sys-musl.h | 1 +
+ include/scc/bits/scc/sys-scc.h  | 1 +
+ src/cmd/scc-cc/posix/cc.c       | 4 ++--
+ 4 files changed, 6 insertions(+), 2 deletions(-)
+diff --git a/README b/README
+index 4edc19d2..de10ab7c 100644
+--- a/README
++++ b/README
+_at_&#64; -208,6 +208,8 &#64;&#64; file `include/bits/scc/sys&#46;<!--nospam-->h` and it included basically 5 elements:
+ 
+ 	- ASBIN: macro with the name of the assembler binary.
+ 
++	- QBEBIN: macro with the name of the qbe binary.
++
+ 	- sysincludes: It is a list of diretories used to locate
+ 	  the system headers
+ 
+diff --git a/include/scc/bits/scc/sys-musl.h b/include/scc/bits/scc/sys-musl.h
+index 1cb1a12d..31267125 100644
+--- a/include/scc/bits/scc/sys-musl.h
++++ b/include/scc/bits/scc/sys-musl.h
+_at_&#64; -1,5 +1,6 &#64;&#64;
+ #define LDBIN &quot;ld&quot;
+ #define ASBIN &quot;as&quot;
++#define QBEBIN &quot;qbe&quot;
+ 
+ /* configure below your system linker command line */
+ #define GCCLIBPATH &quot;/usr/lib/gcc/x86_64-unknown-linux-gnu/10.2/&quot;
+diff --git a/include/scc/bits/scc/sys-scc.h b/include/scc/bits/scc/sys-scc.h
+index 9d6ae86b..2948c5b2 100644
+--- a/include/scc/bits/scc/sys-scc.h
++++ b/include/scc/bits/scc/sys-scc.h
+_at_&#64; -1,5 +1,6 &#64;&#64;
+ #define LDBIN &quot;ld&quot;
+ #define ASBIN &quot;as&quot;
++#define QBEBIN &quot;qbe&quot;
+ 
+ /* configure below your standard sys include paths */
+ char *sysincludes[] = {
+diff --git a/src/cmd/scc-cc/posix/cc.c b/src/cmd/scc-cc/posix/cc.c
+index 2758d006..7abd0f3f 100644
+--- a/src/cmd/scc-cc/posix/cc.c
++++ b/src/cmd/scc-cc/posix/cc.c
+_at_&#64; -53,7 +53,7 &#64;&#64; static struct tool {
+ 	[TEEIR]  = {.bin = &quot;tee&quot;},
+ 	[CC2]    = {.bin = &quot;cc2&quot;},
+ 	[TEEQBE] = {.bin = &quot;tee&quot;},
+-	[QBE]    = {.bin = &quot;qbe&quot;},
++	[QBE]    = {.bin = QBEBIN},
+ 	[TEEAS]  = {.bin = &quot;tee&quot;},
+ 	[AS]     = {.bin = ASBIN},
+ 	[LD]     = {.bin = LDBIN},
+_at_&#64; -242,7 +242,7 &#64;&#64; settool(int tool, char *infile, int nexttool)
+ 			die(&quot;scc-cc: target tool path is too long&quot;);
+ 		break;
+ 	case QBE:
+-		strcpy(t-&gt;cmd, &quot;qbe&quot;);
++		strcpy(t-&gt;cmd, QBEBIN);
+ 
+ 		if (!strcmp(arch, &quot;amd64&quot;) &amp;&amp; !strcmp(abi, &quot;sysv&quot;))
+ 			fmt = &quot;amd64_sysv&quot;;
+--
+To unsubscribe send a mail to scc-dev+unsubscribe_at_simple-cc.org
+</pre>
+<span id="received"><dfn>Received on</dfn> Tue 09 Jun 2026 - 14:23:28 CEST</span>
+</div>
+<!-- body="end" -->
+<div class="foot">
+<map id="navbarfoot" name="navbarfoot" title="Related messages">
+<ul class="links">
+<li><dfn>This message</dfn>: [ <a href="0120.html#start120">Message body</a> ]</li>
+<!-- lnext="start" -->
+<li><dfn>Next message</dfn>: <a href="0121.html" title="Next message in the list">Roberto E. Vargas Caballero: "Re: [scc-dev] [PATCH] Make it easier to configure the name of the QBE binary"</a></li>
+<li><dfn>Previous message</dfn>: <a href="0119.html" title="Previous message in the list">Roberto E. Vargas Caballero: "Re: [scc-dev] [PATCH] cc1: Try parsing specifiers after struct/union/enum"</a></li>
+<!-- lnextthread="start" -->
+<li><dfn>Next in thread</dfn>: <a href="0121.html" title="Next message in this discussion thread">Roberto E. Vargas Caballero: "Re: [scc-dev] [PATCH] Make it easier to configure the name of the QBE binary"</a></li>
+<li><a name="replies" id="replies"></a><dfn>Reply</dfn>:  <a href="0121.html" title="Message sent in reply to this message">Roberto E. Vargas Caballero: "Re: [scc-dev] [PATCH] Make it easier to configure the name of the QBE binary"</a></li>
+<!-- lreply="end" -->
+</ul>
+<ul class="links">
+<li><a name="options3" id="options3"></a><dfn>Contemporary messages sorted</dfn>: [ <a href="date.html#msg120" title="Contemporary messages by date">by date</a> ] [ <a href="index.html#msg120" title="Contemporary discussion threads">by thread</a> ] [ <a href="subject.html#msg120" title="Contemporary messages by subject">by subject</a> ] [ <a href="author.html#msg120" title="Contemporary messages by author">by author</a> ] [ <a href="attachment.html" title="Contemporary messages by attachment">by messages with attachments</a> ]</li>
+</ul>
+</map>
+</div>
+<!-- trailer="footer" -->
+<p><small><em>
+This archive was generated by <a href="http://www.hypermail-project.org/">hypermail 2.3.0</a>
+: Tue 09 Jun 2026 - 14:30:01 CEST
+</em></small></p>
+</body>
+</html>

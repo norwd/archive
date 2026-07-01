@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=us-ascii" />
+<meta name="generator" content="hypermail 2.3.0, see http://www.hypermail-project.org/" />
+<title>Re: [scc-dev] Fail to compile with 'make config-musl' from Roberto E. Vargas Caballero on 2026-06-01 (scc-dev)</title>
+<meta name="Author" content="Roberto E. Vargas Caballero (k0ga_at_shike2.net)" />
+<meta name="Subject" content="Re: [scc-dev] Fail to compile with 'make config-musl'" />
+<meta name="Date" content="2026-06-01" />
+<style type="text/css">
+/*<![CDATA[*/
+/* To be incorporated in the main stylesheet, don't code it in hypermail! */
+body {color: black; background: #ffffff}
+dfn {font-weight: bold;}
+pre { background-color:inherit;}
+.head { border-bottom:1px solid black;}
+.foot { border-top:1px solid black;}
+th {font-style:italic;}
+table { margin-left:2em;}map ul {list-style:none;}
+#mid { font-size:0.9em;}
+#received { float:right;}
+address { font-style:inherit ;}
+/*]]>*/
+.quotelev1 {color : #990099}
+.quotelev2 {color : #ff7700}
+.quotelev3 {color : #007799}
+.quotelev4 {color : #95c500}
+.period {font-weight: bold}
+</style>
+</head>
+<body>
+<div class="head">
+<h1>Re: [scc-dev] Fail to compile with 'make config-musl'</h1>
+<!-- received="Mon, 1 Jun 2026 23:12:44 +0200" -->
+<!-- isoreceived="20260601211244" -->
+<!-- sent="Mon, 1 Jun 2026 23:12:44 +0200" -->
+<!-- isosent="20260601211244" -->
+<!-- name="Roberto E. Vargas Caballero" -->
+<!-- email="k0ga_at_shike2.net" -->
+<!-- subject="Re: [scc-dev] Fail to compile with 'make config-musl'" -->
+<!-- id="ah31zGGF8rcD839t_at_simple-cc.org" -->
+<!-- charset="us-ascii" -->
+<!-- inreplyto="ahjpuasPvEIAvG6q_at_chenw.lan" -->
+<!-- expires="-1" -->
+<map id="navbar" name="navbar">
+<ul class="links">
+<li>
+<dfn>This message</dfn>:
+[ <a href="0111.html#start111" name="options1" id="options1" tabindex="1">Message body</a> ]
+ [ More options (<a href="0111.html#options2">top</a>, <a href="0111.html#options3">bottom</a>) ]
+</li>
+<li>
+<dfn>Related messages</dfn>:
+<!-- unext="start" -->
+[ <a href="0112.html" title="Roberto E. Vargas Caballero: &quot;Re: [scc-dev] Whether other specifiers are allowed after a struct/unions/enums&quot;">Next message</a> ]
+[ <a href="0110.html" title="Zhaoming Luo: &quot;[scc-dev] Whether other specifiers are allowed after a struct/unions/enums&quot;">Previous message</a> ]
+[ <a href="../202605/0109.html" title="Zhaoming Luo: &quot;[scc-dev] Fail to compile with 'make config-musl'&quot;">In reply to</a> ]
+[ <a href="../202605/0109.html" title="Message to which this message replies: &quot;Zhaoming Luo&quot;">[scc-dev] Fail to compile with 'make config-musl'</a> ]
+<!-- unextthread="start" -->
+<!-- ureply="end" -->
+</li>
+</ul>
+</map>
+<ul class="links">
+<li><a name="options2" id="options2"></a><dfn>Contemporary messages sorted</dfn>: [ <a href="date.html#msg111" title="Contemporary messages by date">by date</a> ] [ <a href="index.html#msg111" title="Contemporary discussion threads">by thread</a> ] [ <a href="subject.html#msg111" title="Contemporary messages by subject">by subject</a> ] [ <a href="author.html#msg111" title="Contemporary messages by author">by author</a> ] [ <a href="attachment.html" title="Contemporary messages by attachment">by messages with attachments</a> ]</li>
+</ul>
+</div>
+<!-- body="start" -->
+<div class="mail">
+<address class="headers">
+<span id="from">
+<dfn>From</dfn>: Roberto E. Vargas Caballero &lt;<a href="mailto:k0ga_at_shike2.net?Subject=Re%3A%20%5Bscc-dev%5D%20Fail%20to%20compile%20with%20'make%20config-musl'">k0ga_at_shike2.net</a>&gt;
+</span><br />
+<span id="date"><dfn>Date</dfn>: Mon, 1 Jun 2026 23:12:44 +0200</span><br />
+</address>
+<br />
+Hi,
+<br />
+<br />On Fri, May 29, 2026 at 01:20:05AM +0000, Zhaoming Luo wrote:
+<br />
+<em class="quotelev1">&gt; It seems to me `make config-musl` refers to using musl as the
+</em><br><a href="../202605/0109.html#0111qlink1">&gt; standard C library. The ctype.c file mentioned in the message
+</a><br>
+<em class="quotelev1">&gt; is the scc internal libc. In commit 1e0f1124, src/libc/rules.mk
+</em><br><em class="quotelev1">&gt; CPPINCLUDES was removed so the required header
+</em><br><em class="quotelev1">&gt; file(include/scc/ctype.h) is not included while compiling scc
+</em><br><em class="quotelev1">&gt; internal libc with LIBPROFILE=musl. I can see the compilation
+</em><br><em class="quotelev1">&gt; works when LIBPROFILE=scc, because 'include/scc/bits/scc/sys-scc.h'
+</em><br><em class="quotelev1">&gt; adds path &quot;%p/include/scc/&quot;. The optimal method may be skip
+</em><br><em class="quotelev1">&gt; compiling src/libc when LIBPROFILE=musl.
+</em><br><br />Good catch. It seems that I had the libc already compiled when
+<br />
+I tested that patch. I tried your approach to skip the libc build
+<br />
+for LIBPROFILE=musl but that generates other problem because
+<br />
+the proto files used in the install target require the different
+<br />
+libcs. I pushed a change taking back CPPINCLUDES even when it is
+<br />
+not needed in the configs that use the scc libc, but it is required
+<br />
+for the musl configurations. I while try think a bit more about
+<br />
+this topic and see if I can get a better solution.
+<br />
+<br />Regards,
+<br />
+<pre>
+--
+To unsubscribe send a mail to scc-dev+unsubscribe_at_simple-cc.org
+</pre>
+<span id="received"><dfn>Received on</dfn> Mon 01 Jun 2026 - 23:12:44 CEST</span>
+</div>
+<!-- body="end" -->
+<div class="foot">
+<map id="navbarfoot" name="navbarfoot" title="Related messages">
+<ul class="links">
+<li><dfn>This message</dfn>: [ <a href="0111.html#start111">Message body</a> ]</li>
+<!-- lnext="start" -->
+<li><dfn>Next message</dfn>: <a href="0112.html" title="Next message in the list">Roberto E. Vargas Caballero: "Re: [scc-dev] Whether other specifiers are allowed after a struct/unions/enums"</a></li>
+<li><dfn>Previous message</dfn>: <a href="0110.html" title="Previous message in the list">Zhaoming Luo: "[scc-dev] Whether other specifiers are allowed after a struct/unions/enums"</a></li>
+<li><dfn>In reply to</dfn>: <a href="../202605/0109.html" title="Message to which this message replies">Zhaoming Luo: "[scc-dev] Fail to compile with 'make config-musl'"</a></li>
+<li><dfn>In reply to</dfn> <a href="../202605/0109.html" title="Message to which this message replies">Zhaoming Luo: "[scc-dev] Fail to compile with 'make config-musl'"</a></li>
+<!-- lnextthread="start" -->
+<!-- lreply="end" -->
+</ul>
+<ul class="links">
+<li><a name="options3" id="options3"></a><dfn>Contemporary messages sorted</dfn>: [ <a href="date.html#msg111" title="Contemporary messages by date">by date</a> ] [ <a href="index.html#msg111" title="Contemporary discussion threads">by thread</a> ] [ <a href="subject.html#msg111" title="Contemporary messages by subject">by subject</a> ] [ <a href="author.html#msg111" title="Contemporary messages by author">by author</a> ] [ <a href="attachment.html" title="Contemporary messages by attachment">by messages with attachments</a> ]</li>
+</ul>
+</map>
+</div>
+<!-- trailer="footer" -->
+<p><small><em>
+This archive was generated by <a href="http://www.hypermail-project.org/">hypermail 2.3.0</a>
+: Mon 01 Jun 2026 - 23:20:01 CEST
+</em></small></p>
+</body>
+</html>
