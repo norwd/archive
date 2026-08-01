@@ -90,6 +90,7 @@
 		<li><a href="//dwm.suckless.org/patches/bulkill/">bulkill/</a></li>
 		<li><a href="//dwm.suckless.org/patches/canfocusfloating/">canfocusfloating/</a></li>
 		<li><a href="//dwm.suckless.org/patches/canfocusrule/">canfocusrule/</a></li>
+		<li><a href="//dwm.suckless.org/patches/canvas/">canvas/</a></li>
 		<li><a href="//dwm.suckless.org/patches/center/">center/</a></li>
 		<li><a href="//dwm.suckless.org/patches/center_first_window/">center first window/</a></li>
 		<li><a href="//dwm.suckless.org/patches/centered_tags/">centered tags/</a></li>
@@ -111,6 +112,7 @@
 		<li><a href="//dwm.suckless.org/patches/columngaps/">columngaps/</a></li>
 		<li><a href="//dwm.suckless.org/patches/columns/">columns/</a></li>
 		<li><a href="//dwm.suckless.org/patches/combo/">combo/</a></li>
+		<li><a href="//dwm.suckless.org/patches/conditional/">conditional/</a></li>
 		<li><a href="//dwm.suckless.org/patches/cool_autostart/">cool autostart/</a></li>
 		<li><a href="//dwm.suckless.org/patches/cropwindows/">cropwindows/</a></li>
 		<li><a href="//dwm.suckless.org/patches/current_desktop/">current desktop/</a></li>
@@ -157,6 +159,7 @@
 		<li><a href="//dwm.suckless.org/patches/flyschemes/">flyschemes/</a></li>
 		<li><a href="//dwm.suckless.org/patches/focusadjacenttag/">focusadjacenttag/</a></li>
 		<li><a href="//dwm.suckless.org/patches/focusbynum/">focusbynum/</a></li>
+		<li><a href="//dwm.suckless.org/patches/focusedborder/">focusedborder/</a></li>
 		<li><a href="//dwm.suckless.org/patches/focusfullscreen/">focusfullscreen/</a></li>
 		<li><a href="//dwm.suckless.org/patches/focusmaster/">focusmaster/</a></li>
 		<li><a href="//dwm.suckless.org/patches/focusmonmouse/">focusmonmouse/</a></li>
@@ -272,6 +275,7 @@
 		<li><a href="//dwm.suckless.org/patches/rotatestack/">rotatestack/</a></li>
 		<li><a href="//dwm.suckless.org/patches/rotatetags/">rotatetags/</a></li>
 		<li><a href="//dwm.suckless.org/patches/rulerefresher/">rulerefresher/</a></li>
+		<li><a href="//dwm.suckless.org/patches/ruleregex/">ruleregex/</a></li>
 		<li><a href="//dwm.suckless.org/patches/runrules/">runrules/</a></li>
 		<li><a href="//dwm.suckless.org/patches/save_floats/">save floats/</a></li>
 		<li><a href="//dwm.suckless.org/patches/scheme_switch/">scheme switch/</a></li>
@@ -371,6 +375,7 @@
 		<li><a href="//dwm.suckless.org/patches/windowmap/">windowmap/</a></li>
 		<li><a href="//dwm.suckless.org/patches/winicon/">winicon/</a></li>
 		<li><a href="//dwm.suckless.org/patches/winview/">winview/</a></li>
+		<li><a href="//dwm.suckless.org/patches/workspaces/">workspaces/</a></li>
 		<li><a href="//dwm.suckless.org/patches/xcursor/">xcursor/</a></li>
 		<li><a href="//dwm.suckless.org/patches/xfce4-panel/">xfce4 panel/</a></li>
 		<li><a href="//dwm.suckless.org/patches/xinerama-monitors-xorder/">xinerama monitors xorder/</a></li>
@@ -393,21 +398,40 @@
 
 <h1>Keychord</h1>
 <h2>Description</h2>
-<p>A patch that change the Key struct to Keychord, letting user map a sequence of key instead of one singular keystroke.</p>
+<p>A patch that change the Key struct to Keychord, letting user map a sequence of
+key instead of one singular keystroke.</p>
 <p>*update 01/19/2022:
-change implementation to use array and pointer instead of dynamic heap allocation to minimize crash due heap allocation being too slow.</p>
+change implementation to use array and pointer instead of dynamic heap
+allocation to minimize crash due heap allocation being too slow.</p>
 <p>*update 07/19/2023:
-changed grabkeys function to match the changes made in dwm-6.4.<br />  </p>
+changed grabkeys function to match the changes made in dwm-6.4.</p>
+<p>*update 2026-07-17:
+rebased onto <code>dwm</code> 6.8 and fixed event loss in the chord wait loop. While
+waiting for the next key of a chord, every event that was not a <code>KeyPress</code>
+was discarded. Discarding a <code>ButtonPress</code> that activated the <code>GrabModeSync</code>
+passive grab from <code>grabbuttons()</code> left pointer and keyboard frozen: only
+<code>buttonpress()</code>'s <code>XAllowEvents</code> can release that grab, and the loop cannot
+exit on its own, because the frozen keyboard delivers no further
+<code>KeyPress</code>. Ordinary input, <code>XTEST</code> and <code>xdotool</code> cannot break it; recovery
+needs a synthetic <code>KeyPress</code> sent with <code>XSendEvent event_mask=0</code> to the
+<code>_NET_SUPPORTING_WM_CHECK</code> window (<code>event_mask=0</code> delivers to the window's
+creator, bypassing the fact that <code>dwm</code> selects no <code>KeyPressMask</code>), followed
+by a synthetic <code>ButtonPress</code> to make <code>buttonpress()</code> run <code>XAllowEvents</code>.
+Absent such a tool the session is lost. A <code>MapRequest</code> arriving mid-chord
+was dropped the same way, leaving the window unmanaged. Events are now
+dispatched through <code>handler[]</code> as <code>run()</code> does.</p>
 <h2>Download</h2>
 <ul>
 <li><a href="dwm-keychord-20211210-a786211.diff">dwm-keychord-20211210-a786211.diff</a> (10/12/2021)</li>
 <li><a href="dwm-keychord-6.2.diff">dwm-keychord-6.2.diff</a> (01/19/2022)</li>
-<li><a href="dwm-keychord-6.4.diff">dwm-keychord-6.4.diff</a> (07/19/2023) (latest version)</li>
+<li><a href="dwm-keychord-6.4.diff">dwm-keychord-6.4.diff</a> (07/19/2023) (applies to dwm 6.5-6.8, not 6.4)</li>
+<li><a href="dwm-keychord-20260717-f63cde9.diff">dwm-keychord-20260717-f63cde9.diff</a> (2026-07-17) (latest version, dwm 6.8)</li>
 </ul>
 <h2>Authors</h2>
 <ul>
 <li>Hai Nguyen - <a href="&#x6D;&#x61;i&#x6C;&#x74;&#x6F;:&#104;&#104;&#97;&#105;&#50;&#49;&#48;&#53;&#64;&#103;&#109;&#97;&#105;&#108;&#46;&#99;&#111;&#109;">&#104;&#104;&#97;&#105;&#50;&#49;&#48;&#53;&#64;&#103;&#109;&#97;&#105;&#108;&#46;&#99;&#111;&#109;</a></li>
 <li>Aaron Züger - <a href="&#x6D;&#x61;i&#x6C;&#x74;&#x6F;:&#99;&#111;&#110;&#116;&#97;&#99;&#116;&#64;&#97;&#122;&#117;&#114;&#101;&#111;&#114;&#97;&#110;&#103;&#101;&#46;&#120;&#121;&#122;">&#99;&#111;&#110;&#116;&#97;&#99;&#116;&#64;&#97;&#122;&#117;&#114;&#101;&#111;&#114;&#97;&#110;&#103;&#101;&#46;&#120;&#121;&#122;</a></li>
+<li>Lukasz Kasprzak - <a href="&#x6D;&#x61;i&#x6C;&#x74;&#x6F;:&#108;&#117;&#107;&#97;&#115;&#64;&#108;&#97;&#98;&#117;&#110;&#105;&#120;&#46;&#120;&#121;&#122;">&#108;&#117;&#107;&#97;&#115;&#64;&#108;&#97;&#98;&#117;&#110;&#105;&#120;&#46;&#120;&#121;&#122;</a></li>
 </ul>
 </div>
 

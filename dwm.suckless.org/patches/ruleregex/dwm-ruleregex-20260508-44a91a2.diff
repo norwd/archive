@@ -1,0 +1,56 @@
+From 44a91a205ebd86a5be6648a1e4a4a8f24aea2dd5 Mon Sep 17 00:00:00 2001
+From: hamster3332 <malic.s@gmx.de>
+Date: Fri, 8 May 2026 18:51:42 +0200
+Subject: [PATCH] Dwm patch for using regular expressions for window rules
+
+---
+ dwm.c | 19 ++++++++++++++++---
+ 1 file changed, 16 insertions(+), 3 deletions(-)
+
+diff --git a/dwm.c b/dwm.c
+index ab3a84c..0cb186c 100644
+--- a/dwm.c
++++ b/dwm.c
+@@ -28,6 +28,7 @@
+ #include <stdlib.h>
+ #include <string.h>
+ #include <unistd.h>
++#include <regex.h>
+ #include <sys/types.h>
+ #include <sys/wait.h>
+ #include <X11/cursorfont.h>
+@@ -273,6 +274,18 @@ static Window root, wmcheckwin;
+ /* compile-time check if all tags fit into an unsigned int bit array. */
+ struct NumTags { char limitexceeded[LENGTH(tags) > 31 ? -1 : 1]; };
+ 
++/* applying extended regex to string */
++int applyregex(const char *str, const char *pattern) {
++    regex_t re;
++    int res = regcomp(&re, pattern, REG_EXTENDED | REG_NOSUB);
++    if (res != 0) return strstr(str, pattern) != NULL;
++
++    res = regexec(&re, str, 0, NULL, 0);
++    regfree(&re);
++
++    return !res;
++}
++
+ /* function implementations */
+ void
+ applyrules(Client *c)
+@@ -292,9 +305,9 @@ applyrules(Client *c)
+ 
+ 	for (i = 0; i < LENGTH(rules); i++) {
+ 		r = &rules[i];
+-		if ((!r->title || strstr(c->name, r->title))
+-		&& (!r->class || strstr(class, r->class))
+-		&& (!r->instance || strstr(instance, r->instance)))
++		if ((!r->title || applyregex(c->name, r->title))
++		&& (!r->class || applyregex(class, r->class))
++		&& (!r->instance || applyregex(instance, r->instance)))
+ 		{
+ 			c->isfloating = r->isfloating;
+ 			c->tags |= r->tags;
+-- 
+2.54.0
+
