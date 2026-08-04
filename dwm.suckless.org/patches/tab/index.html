@@ -90,6 +90,7 @@
 		<li><a href="//dwm.suckless.org/patches/bulkill/">bulkill/</a></li>
 		<li><a href="//dwm.suckless.org/patches/canfocusfloating/">canfocusfloating/</a></li>
 		<li><a href="//dwm.suckless.org/patches/canfocusrule/">canfocusrule/</a></li>
+		<li><a href="//dwm.suckless.org/patches/canvas/">canvas/</a></li>
 		<li><a href="//dwm.suckless.org/patches/center/">center/</a></li>
 		<li><a href="//dwm.suckless.org/patches/center_first_window/">center first window/</a></li>
 		<li><a href="//dwm.suckless.org/patches/centered_tags/">centered tags/</a></li>
@@ -111,6 +112,7 @@
 		<li><a href="//dwm.suckless.org/patches/columngaps/">columngaps/</a></li>
 		<li><a href="//dwm.suckless.org/patches/columns/">columns/</a></li>
 		<li><a href="//dwm.suckless.org/patches/combo/">combo/</a></li>
+		<li><a href="//dwm.suckless.org/patches/conditional/">conditional/</a></li>
 		<li><a href="//dwm.suckless.org/patches/cool_autostart/">cool autostart/</a></li>
 		<li><a href="//dwm.suckless.org/patches/cropwindows/">cropwindows/</a></li>
 		<li><a href="//dwm.suckless.org/patches/current_desktop/">current desktop/</a></li>
@@ -157,6 +159,7 @@
 		<li><a href="//dwm.suckless.org/patches/flyschemes/">flyschemes/</a></li>
 		<li><a href="//dwm.suckless.org/patches/focusadjacenttag/">focusadjacenttag/</a></li>
 		<li><a href="//dwm.suckless.org/patches/focusbynum/">focusbynum/</a></li>
+		<li><a href="//dwm.suckless.org/patches/focusedborder/">focusedborder/</a></li>
 		<li><a href="//dwm.suckless.org/patches/focusfullscreen/">focusfullscreen/</a></li>
 		<li><a href="//dwm.suckless.org/patches/focusmaster/">focusmaster/</a></li>
 		<li><a href="//dwm.suckless.org/patches/focusmonmouse/">focusmonmouse/</a></li>
@@ -272,6 +275,7 @@
 		<li><a href="//dwm.suckless.org/patches/rotatestack/">rotatestack/</a></li>
 		<li><a href="//dwm.suckless.org/patches/rotatetags/">rotatetags/</a></li>
 		<li><a href="//dwm.suckless.org/patches/rulerefresher/">rulerefresher/</a></li>
+		<li><a href="//dwm.suckless.org/patches/ruleregex/">ruleregex/</a></li>
 		<li><a href="//dwm.suckless.org/patches/runrules/">runrules/</a></li>
 		<li><a href="//dwm.suckless.org/patches/save_floats/">save floats/</a></li>
 		<li><a href="//dwm.suckless.org/patches/scheme_switch/">scheme switch/</a></li>
@@ -371,6 +375,7 @@
 		<li><a href="//dwm.suckless.org/patches/windowmap/">windowmap/</a></li>
 		<li><a href="//dwm.suckless.org/patches/winicon/">winicon/</a></li>
 		<li><a href="//dwm.suckless.org/patches/winview/">winview/</a></li>
+		<li><a href="//dwm.suckless.org/patches/workspaces/">workspaces/</a></li>
 		<li><a href="//dwm.suckless.org/patches/xcursor/">xcursor/</a></li>
 		<li><a href="//dwm.suckless.org/patches/xfce4-panel/">xfce4 panel/</a></li>
 		<li><a href="//dwm.suckless.org/patches/xinerama-monitors-xorder/">xinerama monitors xorder/</a></li>
@@ -392,6 +397,47 @@
 <div id="main">
 
 <h1>tab</h1>
+<h2>Description</h2>
+<p>This patch transforms the monocle layout into a tabbed layout whenever more
+than one window is present in the current view. The tabs are displayed in a
+dedicated bar at either the top or bottom of the screen.</p>
+<p>In addition to monocle mode, the tab bar can also be enabled for all layouts
+through configuration options in config.h or config.def.h.</p>
+<h2>Usage</h2>
+<p>Navigation between windows can be performed using the usual Modkey-j and
+Modkey-k keybindings, or by clicking directly on a window tab.</p>
+<p>The tab bar can be toggled using Modkey-w by default. This keybinding can be
+changed through the configuration options in config.h or config.def.h.</p>
+<h2>Installation</h2>
+<ul>
+<li>Make sure the directory where you build dwm does not contain a config.h file;</li>
+<li>Apply the patch;</li>
+<li>Run make and make install.</li>
+</ul>
+<h2>Configuration </h2>
+<ul>
+<li>To change the position of the tab bar use :- </li>
+</ul>
+<p><code>`c 
+static const int toptab             = 0;        /* 1 means top tab bar */
+</code>` </p>
+<ul>
+<li>To use tab bar for all layouts :-</li>
+</ul>
+<p><code>`c 
+static const int alltab             = 0;        /* 0 means no tabbar for all layouts */
+</code>`</p>
+<h2>Download</h2>
+<ul>
+<li>Tab patch alone</li>
+</ul>
+<p> * <a href="dwm-tab-20260512-44dbc68.diff">dwm-tab-20260512-44dbc68.diff</a></p>
+<ul>
+<li>Tab patch with pertag support; 
+  apply it on top of an already patched pertag build.</li>
+</ul>
+<p> * <a href="dwm-tab_pertag-20260512-44dbc68.diff">dwm-tab_pertag-20260512-44dbc68.diff</a></p>
+<p>check below for the original code.</p>
 <h2>Description</h2>
 <p>Transforms the monocle layout into a ''tabbed'' layout if more than one window
 is present on the monocle view. Navigating from window to window is done by
@@ -505,6 +551,10 @@ credits. The possibility to define the default layout per view has been added.</
 </ul>
 <h2>Change log</h2>
 <ul>
+<li>Fixed bugs in the pertag-tab integration that caused the tab patch to behave
+like the normal tab patch without proper pertag support. These issues are
+ resolved in dwm-tab_pertag-20260512-44dbc68.diff.</li>
+<li>Simplified the tab-related code. Simplified the three tab mode.</li>
 <li>Add i3 like tabs that cover whole screen width</li>
 <li>Fixed the standalone tab patch not applying to the current git master.</li>
 <li><strong>v2b</strong> Fixed in the pertag-tab patch the support for per-tag default layout
@@ -517,6 +567,7 @@ fixed this issue.</li>
 </ul>
 <h2>Authors</h2>
 <ul>
+<li>Kanishk Saini - <code>&lt;saini07kanishk@gmail.com&gt;</code></li>
 <li>Philippe Gras - <code>&lt;philippe dot gras at free dot fr&gt;</code></li>
 <li>Varun Iyer (6.2 ver) - <code>&lt;varun_iyer@protonmail.com&gt;</code></li>
 <li>howoz - <code>&lt;howoz@airmail.cc&gt;</code></li>

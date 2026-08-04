@@ -1,0 +1,45 @@
+From c8db7977d3d9332ca71987d2e0833a81e4fb2b99 Mon Sep 17 00:00:00 2001
+From: venus brock <venus@brock-v.dev>
+Date: Sun, 15 Feb 2026 16:11:13 -0600
+Subject: [PATCH] only display border on focused window
+
+This patch removes the borders on all unfocused windows, and resizes
+windows to use the space left behind.
+---
+ dwm.c | 13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
+
+diff --git a/dwm.c b/dwm.c
+index 53b393e..0ea2e9a 100644
+--- a/dwm.c
++++ b/dwm.c
+@@ -800,6 +800,12 @@ focus(Client *c)
+ 		detachstack(c);
+ 		attachstack(c);
+ 		grabbuttons(c, 1);
++		if (!c->bw) {
++			c->bw = borderpx;
++			c->w -= borderpx * 2;
++			c->h -= borderpx * 2;
++			resizeclient(c, c->x, c->y, c->w, c->h);
++		}
+ 		XSetWindowBorder(dpy, c->win, scheme[SchemeSel][ColBorder].pixel);
+ 		setfocus(c);
+ 	} else {
+@@ -1768,7 +1774,12 @@ unfocus(Client *c, int setfocus)
+ 	if (!c)
+ 		return;
+ 	grabbuttons(c, 0);
+-	XSetWindowBorder(dpy, c->win, scheme[SchemeNorm][ColBorder].pixel);
++	if (c->bw) {
++		c->bw = 0;
++		c->w += borderpx * 2;
++		c->h += borderpx * 2;
++		resizeclient(c, c->x, c->y, c->w, c->h);
++	}
+ 	if (setfocus) {
+ 		XSetInputFocus(dpy, root, RevertToPointerRoot, CurrentTime);
+ 		XDeleteProperty(dpy, root, netatom[NetActiveWindow]);
+-- 
+2.53.0
+

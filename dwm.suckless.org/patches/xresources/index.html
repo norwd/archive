@@ -90,6 +90,7 @@
 		<li><a href="//dwm.suckless.org/patches/bulkill/">bulkill/</a></li>
 		<li><a href="//dwm.suckless.org/patches/canfocusfloating/">canfocusfloating/</a></li>
 		<li><a href="//dwm.suckless.org/patches/canfocusrule/">canfocusrule/</a></li>
+		<li><a href="//dwm.suckless.org/patches/canvas/">canvas/</a></li>
 		<li><a href="//dwm.suckless.org/patches/center/">center/</a></li>
 		<li><a href="//dwm.suckless.org/patches/center_first_window/">center first window/</a></li>
 		<li><a href="//dwm.suckless.org/patches/centered_tags/">centered tags/</a></li>
@@ -111,6 +112,7 @@
 		<li><a href="//dwm.suckless.org/patches/columngaps/">columngaps/</a></li>
 		<li><a href="//dwm.suckless.org/patches/columns/">columns/</a></li>
 		<li><a href="//dwm.suckless.org/patches/combo/">combo/</a></li>
+		<li><a href="//dwm.suckless.org/patches/conditional/">conditional/</a></li>
 		<li><a href="//dwm.suckless.org/patches/cool_autostart/">cool autostart/</a></li>
 		<li><a href="//dwm.suckless.org/patches/cropwindows/">cropwindows/</a></li>
 		<li><a href="//dwm.suckless.org/patches/current_desktop/">current desktop/</a></li>
@@ -157,6 +159,7 @@
 		<li><a href="//dwm.suckless.org/patches/flyschemes/">flyschemes/</a></li>
 		<li><a href="//dwm.suckless.org/patches/focusadjacenttag/">focusadjacenttag/</a></li>
 		<li><a href="//dwm.suckless.org/patches/focusbynum/">focusbynum/</a></li>
+		<li><a href="//dwm.suckless.org/patches/focusedborder/">focusedborder/</a></li>
 		<li><a href="//dwm.suckless.org/patches/focusfullscreen/">focusfullscreen/</a></li>
 		<li><a href="//dwm.suckless.org/patches/focusmaster/">focusmaster/</a></li>
 		<li><a href="//dwm.suckless.org/patches/focusmonmouse/">focusmonmouse/</a></li>
@@ -272,6 +275,7 @@
 		<li><a href="//dwm.suckless.org/patches/rotatestack/">rotatestack/</a></li>
 		<li><a href="//dwm.suckless.org/patches/rotatetags/">rotatetags/</a></li>
 		<li><a href="//dwm.suckless.org/patches/rulerefresher/">rulerefresher/</a></li>
+		<li><a href="//dwm.suckless.org/patches/ruleregex/">ruleregex/</a></li>
 		<li><a href="//dwm.suckless.org/patches/runrules/">runrules/</a></li>
 		<li><a href="//dwm.suckless.org/patches/save_floats/">save floats/</a></li>
 		<li><a href="//dwm.suckless.org/patches/scheme_switch/">scheme switch/</a></li>
@@ -371,6 +375,7 @@
 		<li><a href="//dwm.suckless.org/patches/windowmap/">windowmap/</a></li>
 		<li><a href="//dwm.suckless.org/patches/winicon/">winicon/</a></li>
 		<li><a href="//dwm.suckless.org/patches/winview/">winview/</a></li>
+		<li><a href="//dwm.suckless.org/patches/workspaces/">workspaces/</a></li>
 		<li><a href="//dwm.suckless.org/patches/xcursor/">xcursor/</a></li>
 		<li><a href="//dwm.suckless.org/patches/xfce4-panel/">xfce4 panel/</a></li>
 		<li><a href="//dwm.suckless.org/patches/xinerama-monitors-xorder/">xinerama monitors xorder/</a></li>
@@ -392,32 +397,36 @@
 <div id="main">
 
 <h1>Xresources</h1>
+<p>Runtime configuration using X resources.</p>
 <h2>Description</h2>
-<p>This patch allows to handle settings from Xresources. It differs from xrdb patch in that it can handle any kind of setting as opposed to only color settings.</p>
-<p>The -20210314 patch adds an example on how you could set a custom font.</p>
-<h2>Settings in config.h</h2>
-<p>In <code>resources</code> struct is written the name, the type, and the address of the setting.</p>
-<pre><code> Name                    Type                 Address
---------------------------------------------------------
- "nmaster"               INTEGER              &amp;nmaster
- "mfact"                 FLOAT                &amp;mfact
- "color1"                STRING               &amp;color1
+<p>This patch adds X resources support to dwm. At startup, dwm reads the configured
+X resources and applies them.</p>
+<p>This patch also adds a hotkey (<code>Modkey</code> + <code>F5</code> by default) which reloads the
+configured resources during runtime.</p>
+<h2>Configuration</h2>
+<p>The <code>resources</code> array contains list of settings to load from X resources:</p>
+<pre><code>/* X resources to update */
+static const XResPref resources[] = {
+    /* name                type     address */
+    { "dwm.font",          STRING,  &amp;fonts[0] },
+    { "dwm.foreground",    STRING,  &amp;colors[SchemeNorm][ColFg] },
+    { "dwm.borderpx",      INTEGER, &amp;borderpx },
+    { "dwm.mfact",         FLOAT,   &amp;mfact },
+};
 </code></pre>
-<p>In Xresources file setting names shoud be prefixed with "dwm."</p>
-<pre><code>dwm.nmaster:
-dwm.mfact:
-dwm.color1:
-</code></pre>
-<p>This patch is a port of the st patch of the same name, it also borrows some code from dwm's xrdb patch, so a thank is in order for the authors of those patches.</p>
+<p>Each entry contains the name of resource, the variable type, and the variable
+address.</p>
 <h2>Download</h2>
 <ul>
-<li><a href="dwm-xresources-6.2.diff">dwm-xresources-6.2.diff</a> (11/06/2020)</li>
-<li><a href="dwm-xresources-20210314.diff">dwm-xresources-20210314.diff</a> (14/03/2021)</li>
-<li><a href="dwm-xresources-20210827-138b405.diff">dwm-xresources-20210827-138b405.diff</a></li>
+<li><a href="./dwm-xresources-6.2.diff">dwm-xresources-6.2.diff</a> (11/06/2020)</li>
+<li><a href="./dwm-xresources-20210314.diff">dwm-xresources-20210314.diff</a></li>
+<li><a href="./dwm-xresources-20210827-138b405.diff">dwm-xresources-20210827-138b405.diff</a></li>
+<li><a href="./dwm-xresources-20260524-44dbc68.diff">dwm-xresources-20260524-44dbc68.diff</a></li>
 </ul>
 <h2>Author</h2>
 <ul>
 <li>MLquest8 (miskuzius at gmail.com)</li>
+<li>Justinas Grigas <a href="&#x6D;&#x61;i&#x6C;&#x74;&#x6F;:&#100;&#101;&#118;&#64;&#106;&#115;&#116;&#110;&#97;&#115;&#46;&#99;&#111;&#109;">&#100;&#101;&#118;&#64;&#106;&#115;&#116;&#110;&#97;&#115;&#46;&#99;&#111;&#109;</a> (20260524)</li>
 </ul>
 </div>
 

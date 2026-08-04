@@ -1,0 +1,69 @@
+From 26a6205515ee7504e1f11e08aaf7d9de94ebc121 Mon Sep 17 00:00:00 2001
+From: Vedant Sule <sulevedant@gmail.com>
+Date: Sat, 25 Jul 2026 00:35:28 +0100
+Subject: [PATCH] Set initial previous layout
+
+Initialize the previous layout to switch to (default keybind:
+Mod+Shift). This fixes a bug with the patch which caused dwm to crash
+when attempting to switch to the previous layout without selecting one
+first.
+---
+ config.def.h |  1 +
+ dwm.c        | 17 ++++++++++++-----
+ 2 files changed, 13 insertions(+), 5 deletions(-)
+
+diff --git a/config.def.h b/config.def.h
+index 81c3fc0..ca54ad7 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -20,6 +20,7 @@ static const char *colors[][3]      = {
+ 
+ /* tagging */
+ static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
++static const int taglayouts[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+ 
+ static const Rule rules[] = {
+ 	/* xprop(1):
+diff --git a/dwm.c b/dwm.c
+index 53b9d4a..3179361 100644
+--- a/dwm.c
++++ b/dwm.c
+@@ -652,9 +652,6 @@ createmon(void)
+ 	m->nmaster = nmaster;
+ 	m->showbar = showbar;
+ 	m->topbar = topbar;
+-	m->lt[0] = &layouts[0];
+-	m->lt[1] = &layouts[1 % LENGTH(layouts)];
+-	strncpy(m->ltsymbol, layouts[0].symbol, sizeof m->ltsymbol);
+ 	m->pertag = ecalloc(1, sizeof(Pertag));
+ 	m->pertag->curtag = m->pertag->prevtag = 1;
+ 
+@@ -662,13 +659,23 @@ createmon(void)
+ 		m->pertag->nmasters[i] = m->nmaster;
+ 		m->pertag->mfacts[i] = m->mfact;
+ 
+-		m->pertag->ltidxs[i][0] = m->lt[0];
+-		m->pertag->ltidxs[i][1] = m->lt[1];
++		if (i >= 1) {
++			m->pertag->ltidxs[i][0] = &layouts[taglayouts[i - 1]];
++			m->pertag->ltidxs[i][1] = &layouts[(taglayouts[i - 1] + 1) % LENGTH(layouts)];
++		}
++		else {
++			m->pertag->ltidxs[i][0] = &layouts[0];
++			m->pertag->ltidxs[i][1] = &layouts[1 % LENGTH(layouts)];
++		}
+ 		m->pertag->sellts[i] = m->sellt;
+ 
+ 		m->pertag->showbars[i] = m->showbar;
+ 	}
+ 
++	m->lt[0] = m->pertag->ltidxs[1][0];
++	m->lt[1] = m->pertag->ltidxs[1][1];
++	strncpy(m->ltsymbol, m->pertag->ltidxs[1][0]->symbol, sizeof m->ltsymbol);
++
+ 	return m;
+ }
+ 
+-- 
+2.54.0
+

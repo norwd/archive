@@ -1,0 +1,88 @@
+From e8b312c6e3035560a14789db1a7d47410b62a710 Mon Sep 17 00:00:00 2001
+From: Noah Osterholz <osterholznoah@gmail.com>
+Date: Fri, 6 Mar 2026 11:32:03 +0100
+Subject: [PATCH] Adding conditional keybinding support.
+
+This patch adds the conditional function to change the behaviour
+of a keymap depending on the return value of another function.
+---
+ config.def.h |  9 ++++++++-
+ dwm.c        | 21 +++++++++++++++++++++
+ 2 files changed, 29 insertions(+), 1 deletion(-)
+
+diff --git a/config.def.h b/config.def.h
+index 81c3fc0..c1112c9 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -61,6 +61,13 @@ static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn()
+ static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_cyan, "-sf", col_gray4, NULL };
+ static const char *termcmd[]  = { "st", NULL };
+ 
++/* condition functions */
++static int 
++isrootwindow(void)
++{
++  return (selmon->sel == NULL); /* selmon->sel == NULL -> root window focused */
++}
++
+ static const Key keys[] = {
+ 	/* modifier                     key        function        argument */
+ 	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },
+@@ -74,7 +81,7 @@ static const Key keys[] = {
+ 	{ MODKEY,                       XK_l,      setmfact,       {.f = +0.05} },
+ 	{ MODKEY,                       XK_Return, zoom,           {0} },
+ 	{ MODKEY,                       XK_Tab,    view,           {0} },
+-	{ MODKEY|ShiftMask,             XK_c,      killclient,     {0} },
++  { MODKEY|ShiftMask,             XK_c,      conditional,    {.v = &(CondFuncPtr){isrootwindow, quit, killclient, {0}, {0} } } },
+ 	{ MODKEY,                       XK_t,      setlayout,      {.v = &layouts[0]} },
+ 	{ MODKEY,                       XK_f,      setlayout,      {.v = &layouts[1]} },
+ 	{ MODKEY,                       XK_m,      setlayout,      {.v = &layouts[2]} },
+diff --git a/dwm.c b/dwm.c
+index 0a67103..a2dc2f1 100644
+--- a/dwm.c
++++ b/dwm.c
+@@ -140,6 +140,14 @@ typedef struct {
+ 	int monitor;
+ } Rule;
+ 
++typedef struct {
++  int (*condition)(void);
++  void (*func_true)(const Arg *arg);
++  void (*func_false)(const Arg *arg);
++  const Arg arg_true;
++  const Arg arg_false;
++} CondFuncPtr;
++
+ /* function declarations */
+ static void applyrules(Client *c);
+ static int applysizehints(Client *c, int *x, int *y, int *w, int *h, int interact);
+@@ -152,6 +160,7 @@ static void checkotherwm(void);
+ static void cleanup(void);
+ static void cleanupmon(Monitor *mon);
+ static void clientmessage(XEvent *e);
++static void conditional(const Arg *arg);
+ static void configure(Client *c);
+ static void configurenotify(XEvent *e);
+ static void configurerequest(XEvent *e);
+@@ -977,6 +986,18 @@ grabkeys(void)
+ 	}
+ }
+ 
++void
++conditional(const Arg *arg)
++{
++	CondFuncPtr *conditional = (CondFuncPtr*)arg->v;
++	if (conditional->condition() && conditional->func_true != NULL) {
++		conditional->func_true(&(conditional->arg_true));
++		return;
++	} else if (conditional->func_false != NULL) {
++	  conditional->func_false(&(conditional->arg_false));
++  }
++}
++
+ void
+ incnmaster(const Arg *arg)
+ {
+-- 
+2.53.0
+

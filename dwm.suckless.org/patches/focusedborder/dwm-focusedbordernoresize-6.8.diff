@@ -1,0 +1,51 @@
+From 913756bfedac67db497656d5bb740b2cc75bc5c9 Mon Sep 17 00:00:00 2001
+From: venus brock <venus@brock-v.dev>
+Date: Sun, 15 Feb 2026 16:05:11 -0600
+Subject: [PATCH] only display border on focused window, with no resizing
+
+This patch removes the borders on all unfocused windows, leaving the
+space which would be taken by the border empty.
+---
+ dwm.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/dwm.c b/dwm.c
+index 53b393e..cf04e21 100644
+--- a/dwm.c
++++ b/dwm.c
+@@ -788,6 +788,7 @@ expose(XEvent *e)
+ void
+ focus(Client *c)
+ {
++	Client *prev;
+ 	if (!c || !ISVISIBLE(c))
+ 		for (c = selmon->stack; c && !ISVISIBLE(c); c = c->snext);
+ 	if (selmon->sel && selmon->sel != c)
+@@ -806,7 +807,12 @@ focus(Client *c)
+ 		XSetInputFocus(dpy, root, RevertToPointerRoot, CurrentTime);
+ 		XDeleteProperty(dpy, root, netatom[NetActiveWindow]);
+ 	}
++	prev = selmon->sel;
+ 	selmon->sel = c;
++	if (prev)
++		resizeclient(prev, prev->x, prev->y, prev->w, prev->h);
++	if (c)
++		resizeclient(c, c->x, c->y, c->w, c->h);
+ 	drawbars();
+ }
+ 
+@@ -1292,6 +1298,11 @@ resizeclient(Client *c, int x, int y, int w, int h)
+ 	c->oldw = c->w; c->w = wc.width = w;
+ 	c->oldh = c->h; c->h = wc.height = h;
+ 	wc.border_width = c->bw;
++	if (c != selmon->sel) {
++		wc.border_width = 0;
++		wc.x += borderpx;
++		wc.y += borderpx;
++	}
+ 	XConfigureWindow(dpy, c->win, CWX|CWY|CWWidth|CWHeight|CWBorderWidth, &wc);
+ 	configure(c);
+ 	XSync(dpy, False);
+-- 
+2.53.0
+
