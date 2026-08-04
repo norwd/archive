@@ -1,0 +1,91 @@
+From 2e73de23551224fe114b7e26131d8c620c1270d7 Mon Sep 17 00:00:00 2001
+From: Lukas Lynch <madi@mxdi.xyz>
+Date: Wed, 18 Feb 2026 16:40:30 -0800
+Subject: [PATCH] Displays the Japanese kanji for the current day of the week.
+
+---
+ Makefile           |  1 +
+ components/kanji.c | 30 ++++++++++++++++++++++++++++++
+ config.def.h       |  1 +
+ slstatus.h         |  3 +++
+ 4 files changed, 35 insertions(+)
+ create mode 100644 components/kanji.c
+
+diff --git a/Makefile b/Makefile
+index 7a18274..305ab91 100644
+--- a/Makefile
++++ b/Makefile
+@@ -14,6 +14,7 @@ COM =\
+ 	components/entropy\
+ 	components/hostname\
+ 	components/ip\
++	components/kanji\
+ 	components/kernel_release\
+ 	components/keyboard_indicators\
+ 	components/keymap\
+diff --git a/components/kanji.c b/components/kanji.c
+new file mode 100644
+index 0000000..80228ee
+--- /dev/null
++++ b/components/kanji.c
+@@ -0,0 +1,30 @@
++/* Written by Lukas Lynch <madi@mxdi.xyz> */
++#include <time.h>
++#define LEN(x) sizeof(x) / sizeof(*x)
++
++static const char *symbols[] = {
++        "日", // Sunday
++        "月", // Monday
++        "火", // Tuesday
++        "水", // Wednesday
++        "木", // Thursday
++        "金", // Friday
++        "土"  // Saturday
++};
++
++/**
++* Returns the appropriate Japanese Kanji character correlating with the current
++* day of the week.
++*
++* @param  unused (NULL)
++* @return the appropriate Kanji character (char *)
++*/
++const char *
++kanji(const char *unused) {
++    const time_t current_time = time(NULL);
++    const unsigned int weekday = localtime(
++        &current_time
++    )->tm_wday; // We don't need anything else from returned tm structure
++
++    return (weekday < LEN(symbols)) ? symbols[weekday] : "?";
++}
+\ No newline at end of file
+diff --git a/config.def.h b/config.def.h
+index 100093e..1187100 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -31,6 +31,7 @@ static const char unknown_str[] = "n/a";
+  * hostname            hostname                        NULL
+  * ipv4                IPv4 address                    interface name (eth0)
+  * ipv6                IPv6 address                    interface name (eth0)
++ * kanji               current day of week kanji       NULL
+  * kernel_release      `uname -r`                      NULL
+  * keyboard_indicators caps/num lock indicators        format string (c?n?)
+  *                                                     see keyboard_indicators.c
+diff --git a/slstatus.h b/slstatus.h
+index 394281c..85c7f98 100644
+--- a/slstatus.h
++++ b/slstatus.h
+@@ -32,6 +32,9 @@ const char *ipv4(const char *interface);
+ const char *ipv6(const char *interface);
+ const char *up(const char *interface);
+ 
++/* kanji */
++const char *kanji(const char *unused);
++
+ /* kernel_release */
+ const char *kernel_release(const char *unused);
+ 
+-- 
+2.53.0
+

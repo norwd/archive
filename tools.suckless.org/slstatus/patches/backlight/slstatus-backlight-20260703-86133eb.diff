@@ -1,0 +1,156 @@
+From 86133eb0523849ab11b2802abd5715ee2517668b Mon Sep 17 00:00:00 2001
+From: c2ny <c2ny@proton.me>
+Date: Fri, 3 Jul 2026 00:14:09 -0400
+Subject: [PATCH] Add backlight component
+
+This is an update to the patch that adds BSD support.
+This fixes the fd leak on OpenBSD and FreeBSD.
+---
+ Makefile               |  1 +
+ components/backlight.c | 93 ++++++++++++++++++++++++++++++++++++++++++
+ config.def.h           |  3 ++
+ slstatus.h             |  3 ++
+ 4 files changed, 100 insertions(+)
+ create mode 100644 components/backlight.c
+
+diff --git a/Makefile b/Makefile
+index 7a18274..a7eacfa 100644
+--- a/Makefile
++++ b/Makefile
+@@ -6,6 +6,7 @@ include config.mk
+ 
+ REQ = util
+ COM =\
++	components/backlight\
+ 	components/battery\
+ 	components/cat\
+ 	components/cpu\
+diff --git a/components/backlight.c b/components/backlight.c
+new file mode 100644
+index 0000000..4c8af53
+--- /dev/null
++++ b/components/backlight.c
+@@ -0,0 +1,93 @@
++/* See LICENSE file for copyright and license details. */
++
++#include <stddef.h>
++
++#include "../util.h"
++
++#if defined(__linux__)
++	#include <limits.h>
++
++	#define BRIGHTNESS_MAX "/sys/class/backlight/%s/max_brightness"
++	#define BRIGHTNESS_CUR "/sys/class/backlight/%s/brightness"
++
++	const char *
++	backlight_perc(const char *card)
++	{
++		char path[PATH_MAX];
++		int max, cur;
++
++		if (esnprintf(path, sizeof (path), BRIGHTNESS_MAX, card) < 0 ||
++			pscanf(path, "%d", &max) != 1) {
++			return NULL;
++		}
++
++		if (esnprintf(path, sizeof (path), BRIGHTNESS_CUR, card) < 0 ||
++			pscanf(path, "%d", &cur) != 1) {
++			return NULL;
++		}
++
++		if (max == 0) {
++			return NULL;
++		}
++
++		return bprintf("%d%%", cur * 100 / max);
++	}
++#elif defined(__OpenBSD__)
++	#include <fcntl.h>
++	#include <sys/ioctl.h>
++	#include <sys/time.h>
++	#include <dev/wscons/wsconsio.h>
++	#include <unistd.h>
++
++	const char *
++	backlight_perc(const char *unused)
++	{
++		int fd, err;
++		struct wsdisplay_param wsd_param = {
++			.param = WSDISPLAYIO_PARAM_BRIGHTNESS
++		};
++
++		if ((fd = open("/dev/ttyC0", O_RDONLY)) < 0) {
++			warn("could not open /dev/ttyC0");
++			return NULL;
++		}
++		if ((err = ioctl(fd, WSDISPLAYIO_GETPARAM, &wsd_param)) < 0) {
++			warn("ioctl 'WSDISPLAYIO_GETPARAM' failed");
++			close(fd);
++			return NULL;
++		}
++
++		close(fd);
++		return bprintf("%d", wsd_param.curval * 100 / wsd_param.max);
++	}
++#elif defined(__FreeBSD__)
++	#include <fcntl.h>
++	#include <stdio.h>
++	#include <sys/ioctl.h>
++	#include <sys/backlight.h>
++	#include <unistd.h>
++
++	#define FBSD_BACKLIGHT_DEV "/dev/backlight/%s"
++
++	const char *
++	backlight_perc(const char *card)
++	{
++		char buf[256];
++		struct backlight_props props;
++		int fd;
++		
++		snprintf(buf, sizeof(buf), FBSD_BACKLIGHT_DEV, card);
++		if ((fd = open(buf, O_RDWR)) == -1) {
++			warn("could not open %s", card);
++			return NULL;
++		}
++		if (ioctl(fd, BACKLIGHTGETSTATUS, &props) == -1){
++			warn("Cannot query the backlight device");
++			close(fd);
++			return NULL;
++		}
++
++		close(fd);
++		return bprintf("%d", props.brightness);
++	}
++#endif
+diff --git a/config.def.h b/config.def.h
+index 100093e..69e1624 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -12,6 +12,9 @@ static const char unknown_str[] = "n/a";
+ /*
+  * function            description                     argument (example)
+  *
++ * backlight_perc      backlight percentage            device name
++ *                                                     (intel_backlight, numbered on FreeBSD)
++ *                                                     NULL on OpenBSD
+  * battery_perc        battery percentage              battery name (BAT0)
+  *                                                     NULL on OpenBSD/FreeBSD
+  * battery_remaining   battery remaining HH:MM         battery name (BAT0)
+diff --git a/slstatus.h b/slstatus.h
+index 394281c..29d3b01 100644
+--- a/slstatus.h
++++ b/slstatus.h
+@@ -1,5 +1,8 @@
+ /* See LICENSE file for copyright and license details. */
+ 
++/* backlight */
++const char *backlight_perc(const char *);
++
+ /* battery */
+ const char *battery_perc(const char *);
+ const char *battery_remaining(const char *);
+-- 
+2.53.0
+

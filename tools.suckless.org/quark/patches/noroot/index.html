@@ -66,17 +66,34 @@
 <h2>Description</h2>
 <p>This patch removes the necessity and ability to run quark as root. quark
 will neither chroot(2) into the serving directory nor change the UID,
-GID or ownership of the UNIX-domain socket file.</p>
-<p>As this patch removes security features from quark, it should not be
-used for serving content to untrusted parties.</p>
+GID or ownership of the UNIX-domain socket file. It will only serve
+files under its current working directory; absolute paths and ".." are
+normalized into relative ones to the current working directory or
+vhost ones.</p>
+<p>Process related functions, like 'setpgrp(2)' and 'setrlimit(2)', are also
+removed because your system already has better tools to manage process
+credentials and capabilities. For example, to bind quark on tcp port
+80, you can set ambient capability <code>CAP_NET_BIND_SERVICE</code> from root,
+cd into www-root, setuid into unpriviliged user and exec into quark.</p>
+<p>quark already normalizes URL paths for ".." directories, thus internal
+path that is passed to filesystem-operating functions can safely be
+constructed with "./" or vhost prefix.</p>
+<p>The only way to leave the working directory is through symbolic links,
+but quark doesn't create any new files, so it's safe.  Besides, symbolic
+links are usefull for pointing to the files outside of www-root without
+a need to bind-mount other directories, hardlinks or copy all the
+files. chroot(2) limits you from doing all that, besides creating more
+problems from changing process root directory.</p>
 <p>This patch has not been tested with a UNIX-domain socket file.</p>
 <h2>Download</h2>
 <ul>
 <li><a href="quark-noroot-20191003-3c7049e.diff">quark-noroot-20191003-3c7049e.diff</a></li>
+<li><a href="quark-noroot-20260211-5ad0df9.diff">quark-noroot-20260211-5ad0df9.diff</a></li>
 </ul>
 <h2>Author</h2>
 <ul>
 <li>Richard Ulmer &lt;codesoap AT mailbox DOT org&gt;</li>
+<li>Rogo <a href="&#x6D;&#x61;i&#x6C;&#x74;&#x6F;:&#103;&#111;&#114;&#121;&#97;&#99;&#104;&#101;&#118;&#46;&#114;&#111;&#109;&#111;&#99;&#104;&#107;&#97;&#64;&#103;&#109;&#97;&#105;&#108;&#46;&#99;&#111;&#109;">&#103;&#111;&#114;&#121;&#97;&#99;&#104;&#101;&#118;&#46;&#114;&#111;&#109;&#111;&#99;&#104;&#107;&#97;&#64;&#103;&#109;&#97;&#105;&#108;&#46;&#99;&#111;&#109;</a></li>
 </ul>
 </div>
 

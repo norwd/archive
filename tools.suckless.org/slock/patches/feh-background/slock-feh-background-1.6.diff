@@ -1,0 +1,99 @@
+diff --color -up a/config.def.h b/config.def.h
+--- a/config.def.h
++++ b/config.def.h
+@@ -1,6 +1,6 @@
+ /* user and group to drop privileges to */
+ static const char *user  = "nobody";
+-static const char *group = "nobody";
++static const char *group = "nogroup";
+ 
+ static const char *colorname[NUMCOLS] = {
+ 	[INIT] =   "black",     /* after initialization */
+@@ -13,3 +13,6 @@ static const int failonclear = 1;
+ 
+ /* Background image path, should be available to the user above */
+ static const char* background_image = "";
++
++/* Path to .fehbg (default: /home/user/.fehbg), should be available to the user above */
++static const char *fehbg_home_path = "";
+diff --color -up a/slock.c b/slock.c
+--- a/slock.c
++++ b/slock.c
+@@ -129,6 +129,40 @@ gethash(void)
+ 	return hash;
+ }
+ 
++static char *
++get_fehbg_path(const char *fehbg_file) 
++{
++  FILE *file = fopen(fehbg_file, "r");
++  if (file == NULL) {
++    return NULL;
++  }
++
++  char buffer[500];
++  char *path = NULL;
++
++  while (fgets(buffer, sizeof(buffer), file) != NULL) {
++    /* Look for the first single quote */
++    char *start = strchr(buffer, '\'');
++    if (start != NULL) {
++      /* Look for the closing single quote */
++      char *end = strchr(start + 1, '\'');
++      if (end != NULL) {
++        size_t len = end - start - 1;
++        path = (char *)malloc(len + 1);
++        if (path != NULL) {
++          strncpy(path, start + 1, len);
++          path[len] = '\0';
++        }
++        break;
++      }
++    }
++  }
++
++  fclose(file);
++  return path;
++}
++
++
+ static void
+ readpw(Display *dpy, struct xrandr *rr, struct lock **locks, int nscreens,
+        const char *hash)
+@@ -378,6 +412,7 @@ main(int argc, char **argv) {
+ 		die("slock: setuid: %s\n", strerror(errno));
+ 
+ 	/* Load picture */
++    background_image = get_fehbg_path(fehbg_home_path);
+         Imlib_Image buffer = imlib_load_image(background_image);
+ 	imlib_context_set_image(buffer);
+         int background_image_width = imlib_image_get_width();
+@@ -395,7 +430,27 @@ main(int argc, char **argv) {
+ 
+         int i;
+         for (i = 0; i < number_of_monitors; i++) {
+-            imlib_blend_image_onto_image(buffer, 0, 0, 0, background_image_width, background_image_height, monitors[i].x, monitors[i].y, monitors[i].width, monitors[i].height);
++            int m_x = monitors[i].x;
++            int m_y = monitors[i].y;
++            int m_w = monitors[i].width;
++            int m_h = monitors[i].height;
++
++            int s_x = 0;
++            int s_y = 0;
++            int s_w = background_image_width;
++            int s_h = background_image_height;
++
++            /* This implements a stretching behaviour for the given image,
++             * it should not be hard to modify and achieve different effects */
++            if ((double)m_w / m_h > (double)s_w / s_h) {
++              s_h = (s_w * m_h) / m_w;
++              s_y = (background_image_height - s_h) / 2;
++            } else {
++              s_w = (s_h * m_w) / m_h;
++              s_x = (background_image_width - s_w) / 2;
++            }
++            
++            imlib_blend_image_onto_image(buffer, 0, s_x, s_y, s_w, s_h, m_x, m_y, m_w, m_h);
+         }
+ 
+         /* Clean up */

@@ -1,0 +1,141 @@
+From 5f04140fe8c73a96bae2a4eba899f2b114849673 Mon Sep 17 00:00:00 2001
+From: Lukas Lynch <madi@mxdi.xyz>
+Date: Wed, 18 Feb 2026 16:20:25 -0800
+Subject: [PATCH] Displays status/capacity for a dynamic # of batteries
+
+---
+ Makefile                 |  1 +
+ components/dyn_battery.c | 80 ++++++++++++++++++++++++++++++++++++++++
+ config.def.h             |  1 +
+ slstatus.h               |  3 ++
+ 4 files changed, 85 insertions(+)
+ create mode 100644 components/dyn_battery.c
+
+diff --git a/Makefile b/Makefile
+index 7a18274..d1b24dd 100644
+--- a/Makefile
++++ b/Makefile
+@@ -11,6 +11,7 @@ COM =\
+ 	components/cpu\
+ 	components/datetime\
+ 	components/disk\
++	components/dyn_battery\
+ 	components/entropy\
+ 	components/hostname\
+ 	components/ip\
+diff --git a/components/dyn_battery.c b/components/dyn_battery.c
+new file mode 100644
+index 0000000..7f49122
+--- /dev/null
++++ b/components/dyn_battery.c
+@@ -0,0 +1,80 @@
++/* Written by Lukas Lynch <madi@mxdi.xyz> */
++/* Only Linux is supported */
++#include <stdio.h>
++#include <string.h>
++#include <dirent.h>
++
++/* extern char buf[n] */
++#include "../util.h"
++
++/* See components/battery.c */
++const char *battery_state(const char *);
++const char *battery_perc(const char *);
++
++/*
++* This output buffer is global so we can just return its address, instead of
++* copying its contents to 'buf' (declared in slstatus.c) with bprintf().
++*/
++char out[sizeof(buf)];
++
++#if defined(__linux__)
++#define BAT_PREFIX "BAT"
++#define BAT_PREFIX_LEN sizeof(BAT_PREFIX)-1 // NULL byte included in sizeof()
++#define BAT_DIR "/sys/class/power_supply/"
++
++/**
++* Displays the status and capacity of a dynamic amount of batteries (i.e.
++* laptops with external/secondary batteries).
++*
++* @param  fmt format string to use for each battery display. ordered key:
++*             %u: battery number || %s: battery state || %s battery capacity
++* @return address of the output buffer, which contains the status and
++*         capacities of all detected batteries
++*/
++const char *
++dyn_battery(const char *fmt) {
++    *out = '\0'; // Functionally "clears" the buffer after last run
++
++    DIR *dirp = opendir(BAT_DIR);
++    if(!dirp) {
++        fprintf(stderr, "dyn_battery: Failed to open %s\n", BAT_DIR);
++        return "err";
++    }
++
++    unsigned int outp = 0, // Next free position in 'out'
++                 batn = 0; // Battery # (i.e. BAT0, BAT1, ...)
++    struct dirent *fp;     // Current file in 'dirp' readout
++
++    while((fp = readdir(dirp))) {
++        char *bat = fp->d_name; // Makes following code less ugly
++
++        if(
++            strlen(bat) > BAT_PREFIX_LEN &&
++            strncmp(bat, BAT_PREFIX, BAT_PREFIX_LEN) == 0
++        ) {
++            outp += sprintf(
++                out + outp,         // Starts after previous writes
++                fmt,                // Format string specified in config.h
++                batn++,             // 'batn' is decoupled from OS BAT#
++                battery_state(bat), // See components/battery.c
++                battery_perc(bat)   // See components/battery.c
++            );
++
++            // Add space between battery entries
++            out[outp++] = ' ';
++        }
++    } // end while
++
++    if(closedir(dirp) != 0) {
++        fprintf(stderr, "dyn_battery: Failed to close %s.\n", BAT_DIR);
++        return "err";
++    }
++
++    if(*out) {
++        out[--outp] = '\0'; // Remove extra space after last write
++        return out;
++    } else return NULL;
++}
++#else // #if defined(__linux__)
++# error "dyn_battery: Only Linux is currently supported."
++#endif
+\ No newline at end of file
+diff --git a/config.def.h b/config.def.h
+index 100093e..7f26909 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -26,6 +26,7 @@ static const char unknown_str[] = "n/a";
+  * disk_perc           disk usage in percent           mountpoint path (/)
+  * disk_total          total disk space in GB          mountpoint path (/)
+  * disk_used           used disk space in GB           mountpoint path (/)
++ * dyn_battery         displays the name, state and    format string (%u, %s, %s)
+  * entropy             available entropy               NULL
+  * gid                 GID of current user             NULL
+  * hostname            hostname                        NULL
+diff --git a/slstatus.h b/slstatus.h
+index 394281c..6beeaec 100644
+--- a/slstatus.h
++++ b/slstatus.h
+@@ -21,6 +21,9 @@ const char *disk_perc(const char *path);
+ const char *disk_total(const char *path);
+ const char *disk_used(const char *path);
+ 
++/* dyn_battery */
++const char *dyn_battery(const char *fmt);
++
+ /* entropy */
+ const char *entropy(const char *unused);
+ 
+-- 
+2.53.0
+
