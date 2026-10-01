@@ -1,0 +1,79 @@
+From 587abc8a7b8c22b6de83e64c0679ba15be973b1c Mon Sep 17 00:00:00 2001
+From: Niky Kovalski <nikykovalski@gmail.com>
+Date: Tue, 15 Sep 2026 22:47:16 -0400
+Subject: [PATCH] switchtotags
+
+- add switchtotags tags mask field to rule
+- view switchtotags tags on matching window spawn
+---
+ config.def.h | 6 +++---
+ dwm.c        | 8 ++++++++
+ 2 files changed, 11 insertions(+), 3 deletions(-)
+
+diff --git a/config.def.h b/config.def.h
+index 81c3fc0..c2cb5c1 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -26,9 +26,9 @@ static const Rule rules[] = {
+ 	 *	WM_CLASS(STRING) = instance, class
+ 	 *	WM_NAME(STRING) = title
+ 	 */
+-	/* class      instance    title       tags mask     isfloating   monitor */
+-	{ "Gimp",     NULL,       NULL,       0,            1,           -1 },
+-	{ "Firefox",  NULL,       NULL,       1 << 8,       0,           -1 },
++	/* class      instance    title       tags mask     switchtotags   isfloating   monitor */
++	{ "Gimp",     NULL,       NULL,       0,            0,             1,           -1 },
++	{ "Firefox",  NULL,       NULL,       1 << 8,       1 << 8,        0,           -1 },
+ };
+ 
+ /* layout(s) */
+diff --git a/dwm.c b/dwm.c
+index ab3a84c..801c597 100644
+--- a/dwm.c
++++ b/dwm.c
+@@ -91,6 +91,7 @@ struct Client {
+ 	int basew, baseh, incw, inch, maxw, maxh, minw, minh, hintsvalid;
+ 	int bw, oldbw;
+ 	unsigned int tags;
++    unsigned int switchtotags;
+ 	int isfixed, isfloating, isurgent, neverfocus, oldstate, isfullscreen;
+ 	Client *next;
+ 	Client *snext;
+@@ -136,6 +137,7 @@ typedef struct {
+ 	const char *instance;
+ 	const char *title;
+ 	unsigned int tags;
++    unsigned int switchtotags;
+ 	int isfloating;
+ 	int monitor;
+ } Rule;
+@@ -286,6 +288,7 @@ applyrules(Client *c)
+ 	/* rule matching */
+ 	c->isfloating = 0;
+ 	c->tags = 0;
++    c->switchtotags = 0;
+ 	XGetClassHint(dpy, c->win, &ch);
+ 	class    = ch.res_class ? ch.res_class : broken;
+ 	instance = ch.res_name  ? ch.res_name  : broken;
+@@ -298,6 +301,7 @@ applyrules(Client *c)
+ 		{
+ 			c->isfloating = r->isfloating;
+ 			c->tags |= r->tags;
++            c->switchtotags |= r->switchtotags;
+ 			for (m = mons; m && m->num != r->monitor; m = m->next);
+ 			if (m)
+ 				c->mon = m;
+@@ -308,6 +312,10 @@ applyrules(Client *c)
+ 	if (ch.res_name)
+ 		XFree(ch.res_name);
+ 	c->tags = c->tags & TAGMASK ? c->tags & TAGMASK : c->mon->tagset[c->mon->seltags];
++    if (c->switchtotags) {
++        Arg a = { .ui = c->switchtotags };
++        view(&a);
++    }
+ }
+ 
+ int
+-- 
+2.55.0
+
