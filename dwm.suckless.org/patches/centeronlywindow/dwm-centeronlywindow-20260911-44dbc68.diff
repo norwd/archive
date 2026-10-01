@@ -1,0 +1,78 @@
+From 71c84fd35126ffdaa64bf79b55b0b984476d9a75 Mon Sep 17 00:00:00 2001
+From: Niky Kovalski <nikykovalski@gmail.com>
+Date: Fri, 11 Sep 2026 17:25:04 -0400
+Subject: [PATCH] centeronlywindow
+
+add a rule to center a window in tiled mode when it is the only window
+---
+ config.def.h | 7 ++++---
+ dwm.c        | 7 +++++++
+ 2 files changed, 11 insertions(+), 3 deletions(-)
+
+diff --git a/config.def.h b/config.def.h
+index 81c3fc0..84f36c1 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -26,9 +26,10 @@ static const Rule rules[] = {
+ 	 *	WM_CLASS(STRING) = instance, class
+ 	 *	WM_NAME(STRING) = title
+ 	 */
+-	/* class      instance    title       tags mask     isfloating   monitor */
+-	{ "Gimp",     NULL,       NULL,       0,            1,           -1 },
+-	{ "Firefox",  NULL,       NULL,       1 << 8,       0,           -1 },
++	/* class      instance    title       tags mask     isfloating   iscenteredalone   monitor */
++	{ "st",       NULL,       NULL,       0,            1,           1,                -1 },
++	{ "Gimp",     NULL,       NULL,       0,            1,           0,                -1 },
++	{ "Firefox",  NULL,       NULL,       1 << 8,       0,           0,                -1 },
+ };
+ 
+ /* layout(s) */
+diff --git a/dwm.c b/dwm.c
+index ab3a84c..2710c1f 100644
+--- a/dwm.c
++++ b/dwm.c
+@@ -92,6 +92,7 @@ struct Client {
+ 	int bw, oldbw;
+ 	unsigned int tags;
+ 	int isfixed, isfloating, isurgent, neverfocus, oldstate, isfullscreen;
++    int iscenteredalone;
+ 	Client *next;
+ 	Client *snext;
+ 	Monitor *mon;
+@@ -137,6 +138,7 @@ typedef struct {
+ 	const char *title;
+ 	unsigned int tags;
+ 	int isfloating;
++    int iscenteredalone;
+ 	int monitor;
+ } Rule;
+ 
+@@ -285,6 +287,7 @@ applyrules(Client *c)
+ 
+ 	/* rule matching */
+ 	c->isfloating = 0;
++    c->iscenteredalone = 0;
+ 	c->tags = 0;
+ 	XGetClassHint(dpy, c->win, &ch);
+ 	class    = ch.res_class ? ch.res_class : broken;
+@@ -297,6 +300,7 @@ applyrules(Client *c)
+ 		&& (!r->instance || strstr(instance, r->instance)))
+ 		{
+ 			c->isfloating = r->isfloating;
++            c->iscenteredalone = r->iscenteredalone;
+ 			c->tags |= r->tags;
+ 			for (m = mons; m && m->num != r->monitor; m = m->next);
+ 			if (m)
+@@ -1710,6 +1714,9 @@ tile(Monitor *m)
+ 			if (ty + HEIGHT(c) < m->wh)
+ 				ty += HEIGHT(c);
+ 		}
++
++    if (n == 1 && (c = nexttiled(m->clients))->iscenteredalone)
++        resizeclient(c, m->mw / 4, m->mh / 4, m->mw / 2, m->mh / 2);
+ }
+ 
+ void
+-- 
+2.55.0
+

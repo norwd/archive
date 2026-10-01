@@ -1,0 +1,233 @@
+diff -urN dwm-6.8/config.def.h dwm-autopage/config.def.h
+--- dwm-6.8/config.def.h	2026-08-07 00:23:50.492927886 -0500
++++ dwm-autopage/config.def.h	2026-08-12 19:37:15.854223459 -0500
+@@ -39,10 +39,12 @@
+ static const int refreshrate = 120;  /* refresh rate (per second) for client move/resize */
+ 
+ static const Layout layouts[] = {
+-	/* symbol     arrange function */
+-	{ "[]=",      tile },    /* first entry is default */
+-	{ "><>",      NULL },    /* no layout function means floating behavior */
+-	{ "[M]",      monocle },
++	/* symbol     arrange 	page capacity  follow*/
++	{ "[T]=",     tile,			0,			0 },    /* unlimited clients per tag */
++	{ "[A]=",     tile,			3,			0 },    /* 3 clients allowed per tag */
++	{ "[AF]=",    tile,			3,			1 },    /* 3 clients allowed per tag and follow autopaged clients */
++	{ "><>",      NULL,			0,			0 },    /* no layout function means floating behavior */
++	{ "[M]",      monocle,		0,			0 },	/* unlimited clients per tag */
+ };
+ 
+ /* key definitions */
+@@ -76,8 +78,10 @@
+ 	{ MODKEY,                       XK_Tab,    view,           {0} },
+ 	{ MODKEY|ShiftMask,             XK_c,      killclient,     {0} },
+ 	{ MODKEY,                       XK_t,      setlayout,      {.v = &layouts[0]} },
+-	{ MODKEY,                       XK_f,      setlayout,      {.v = &layouts[1]} },
+-	{ MODKEY,                       XK_m,      setlayout,      {.v = &layouts[2]} },
++	{ MODKEY,                       XK_s,      setlayout,      {.v = &layouts[1]} },
++	{ MODKEY,                       XK_a,      setlayout,      {.v = &layouts[2]} },
++	{ MODKEY,                       XK_f,      setlayout,      {.v = &layouts[3]} },
++	{ MODKEY,                       XK_m,      setlayout,      {.v = &layouts[4]} },
+ 	{ MODKEY,                       XK_space,  setlayout,      {0} },
+ 	{ MODKEY|ShiftMask,             XK_space,  togglefloating, {0} },
+ 	{ MODKEY,                       XK_0,      view,           {.ui = ~0 } },
+diff -urN dwm-6.8/dwm.c dwm-autopage/dwm.c
+--- dwm-6.8/dwm.c	2026-08-07 00:23:50.493927886 -0500
++++ dwm-autopage/dwm.c	2026-08-12 14:05:36.940616192 -0500
+@@ -91,6 +91,7 @@
+ 	int basew, baseh, incw, inch, maxw, maxh, minw, minh, hintsvalid;
+ 	int bw, oldbw;
+ 	unsigned int tags;
++	int isautopaged;
+ 	int isfixed, isfloating, isurgent, neverfocus, oldstate, isfullscreen;
+ 	Client *next;
+ 	Client *snext;
+@@ -108,6 +109,8 @@
+ typedef struct {
+ 	const char *symbol;
+ 	void (*arrange)(Monitor *);
++	unsigned int pagecapacity;
++	int followautopage;
+ } Layout;
+ 
+ struct Monitor {
+@@ -184,6 +187,8 @@
+ static void motionnotify(XEvent *e);
+ static void movemouse(const Arg *arg);
+ static Client *nexttiled(Client *c);
++static Client *oldestautopagedclient(Monitor *m, unsigned int tag);
++static void autopagemove(Client *c, unsigned int tag);
+ static void pop(Client *c);
+ static void propertynotify(XEvent *e);
+ static void quit(const Arg *arg);
+@@ -208,6 +213,7 @@
+ static void tag(const Arg *arg);
+ static void tagmon(const Arg *arg);
+ static void tile(Monitor *m);
++static int nclientstag(Monitor *m, unsigned int tag);
+ static void togglebar(const Arg *arg);
+ static void togglefloating(const Arg *arg);
+ static void toggletag(const Arg *arg);
+@@ -298,6 +304,11 @@
+ 		{
+ 			c->isfloating = r->isfloating;
+ 			c->tags |= r->tags;
++
++			if (r->tags) {
++				c->isautopaged = 0;
++			}
++
+ 			for (m = mons; m && m->num != r->monitor; m = m->next);
+ 			if (m)
+ 				c->mon = m;
+@@ -1028,15 +1039,43 @@
+ 	}
+ }
+ 
+-void
+-manage(Window w, XWindowAttributes *wa)
++static unsigned int
++nexttag(unsigned int tag)
++{
++	if (tag >= (1U << (LENGTH(tags) - 1)))
++		return 0;
++	return tag << 1;
++}
++
++static int
++nclientstag(Monitor *m, unsigned int tag)
++{
++	int n = 0;
++	Client *c;
++	if (!tag)
++		return 0;
++	for (c = m->clients; c; c = c->next)
++		if (!c->isfloating && (c->tags & tag))
++			n++;
++	return n;
++}
++
++static void
++autopagemove(Client *c, unsigned int tag)
+ {
++	c->tags = tag;
++	c->isautopaged = 1;
++}
++
++void
++manage(Window w, XWindowAttributes *wa) {
+ 	Client *c, *t = NULL;
+ 	Window trans = None;
+ 	XWindowChanges wc;
+ 
+ 	c = ecalloc(1, sizeof(Client));
+ 	c->win = w;
++	c->isautopaged = 1;
+ 	/* geometry */
+ 	c->x = c->oldx = wa->x;
+ 	c->y = c->oldy = wa->y;
+@@ -1051,6 +1090,19 @@
+ 	} else {
+ 		c->mon = selmon;
+ 		applyrules(c);
++
++		if (c->isfloating)
++			c->isautopaged = 0;
++	}
++
++	unsigned int cap = c->mon->lt[c->mon->sellt]->pagecapacity;
++	if (cap && c->isautopaged && nclientstag(c->mon, c->tags) >= (int)cap) {
++		unsigned int nt = nexttag(c->tags);
++		if (nt) {
++			autopagemove(c, nt);
++			if (c->mon->lt[c->mon->sellt]->followautopage)	
++				view(&(Arg){ .ui = nt });
++		}
+ 	}
+ 
+ 	if (c->x + WIDTH(c) > c->mon->wx + c->mon->ww)
+@@ -1671,6 +1723,7 @@
+ {
+ 	if (selmon->sel && arg->ui & TAGMASK) {
+ 		selmon->sel->tags = arg->ui & TAGMASK;
++		selmon->sel->isautopaged = 0;
+ 		focus(NULL);
+ 		arrange(selmon);
+ 	}
+@@ -1712,6 +1765,48 @@
+ 		}
+ }
+ 
++static Client *
++oldestautopagedclient(Monitor *m, unsigned int tag)
++{
++	Client *c, *oldest = NULL;
++
++	for (c = m->clients; c; c = c->next)
++		if (!c->isfloating &&
++			c->isautopaged &&
++			(c->tags & tag))
++			oldest = c;
++	
++	return oldest;
++}
++
++static void
++collapse(Monitor *m, unsigned int tag)
++{
++	unsigned int cap, nt;
++	Client *c;
++
++	cap = m->lt[m->sellt]->pagecapacity;
++
++	if (!cap)
++		return;
++
++	while (nclientstag(m, tag) < (int)cap) {
++		nt = nexttag(tag);
++	
++		if (!nt)
++			break;
++	
++		c = oldestautopagedclient(m, nt);
++
++		if (!c)
++			break;
++
++		autopagemove(c, tag);
++
++		tag = nt;
++	}
++}
++
+ void
+ togglebar(const Arg *arg)
+ {
+@@ -1745,6 +1840,7 @@
+ 	newtags = selmon->sel->tags ^ (arg->ui & TAGMASK);
+ 	if (newtags) {
+ 		selmon->sel->tags = newtags;
++		selmon->sel->isautopaged = 0;
+ 		focus(NULL);
+ 		arrange(selmon);
+ 	}
+@@ -1780,6 +1876,8 @@
+ {
+ 	Monitor *m = c->mon;
+ 	XWindowChanges wc;
++	unsigned int tag = c->tags;
++	unsigned int t;
+ 
+ 	detach(c);
+ 	detachstack(c);
+@@ -1796,6 +1894,10 @@
+ 		XUngrabServer(dpy);
+ 	}
+ 	free(c);
++	for (t = 1; t <= TAGMASK; t <<= 1) {
++		if (tag & t)
++			collapse(m, t);
++	}
+ 	focus(NULL);
+ 	updateclientlist();
+ 	arrange(m);
