@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="generator" content="hypermail 2.3.0, see http://www.hypermail-project.org/" />
+<title>[scc-dev] [PATCH] libc: add strdup from soeren_at_soeren-tempel.net on 2026-10-24 (scc-dev)</title>
+<meta name="Author" content="soeren_at_soeren-tempel.net (soeren_at_soeren-tempel.net)" />
+<meta name="Subject" content="[scc-dev] [PATCH] libc: add strdup" />
+<meta name="Date" content="2026-10-24" />
+<style type="text/css">
+/*<![CDATA[*/
+/* To be incorporated in the main stylesheet, don't code it in hypermail! */
+body {color: black; background: #ffffff}
+dfn {font-weight: bold;}
+pre { background-color:inherit;}
+.head { border-bottom:1px solid black;}
+.foot { border-top:1px solid black;}
+th {font-style:italic;}
+table { margin-left:2em;}map ul {list-style:none;}
+#mid { font-size:0.9em;}
+#received { float:right;}
+address { font-style:inherit ;}
+/*]]>*/
+.quotelev1 {color : #990099}
+.quotelev2 {color : #ff7700}
+.quotelev3 {color : #007799}
+.quotelev4 {color : #95c500}
+.period {font-weight: bold}
+</style>
+</head>
+<body>
+<div class="head">
+<h1>[scc-dev] [PATCH] libc: add strdup</h1>
+<!-- received="Sat, 24 Oct 2026 11:41:03 +0200" -->
+<!-- isoreceived="20261024094103" -->
+<!-- sent="Sat, 24 Oct 2026 11:41:03 +0200" -->
+<!-- isosent="20261024094103" -->
+<!-- name="soeren_at_soeren-tempel.net" -->
+<!-- email="soeren_at_soeren-tempel.net" -->
+<!-- subject="[scc-dev] [PATCH] libc: add strdup" -->
+<!-- id="20261024094102.3460-2-soeren_at_soeren-tempel.net" -->
+<!-- charset="UTF-8" -->
+<!-- inreplyto="soeren+git&#64;soeren-tempel.net" -->
+<!-- expires="-1" -->
+<map id="navbar" name="navbar">
+<ul class="links">
+<li>
+<dfn>This message</dfn>:
+[ <a href="0129.html#start129" name="options1" id="options1" tabindex="1">Message body</a> ]
+ [ More options (<a href="0129.html#options2">top</a>, <a href="0129.html#options3">bottom</a>) ]
+</li>
+<li>
+<dfn>Related messages</dfn>:
+<!-- unext="start" -->
+[ <a href="0128.html" title="soeren_at_soeren-tempel.net: &quot;[scc-dev] [PATCH] scc-cc: Make the -S option respect the -o option&quot;">Previous message</a> ]
+<!-- unextthread="start" -->
+<!-- ureply="end" -->
+</li>
+</ul>
+</map>
+<ul class="links">
+<li><a name="options2" id="options2"></a><dfn>Contemporary messages sorted</dfn>: [ <a href="date.html#msg129" title="Contemporary messages by date">by date</a> ] [ <a href="index.html#msg129" title="Contemporary discussion threads">by thread</a> ] [ <a href="subject.html#msg129" title="Contemporary messages by subject">by subject</a> ] [ <a href="author.html#msg129" title="Contemporary messages by author">by author</a> ] [ <a href="attachment.html" title="Contemporary messages by attachment">by messages with attachments</a> ]</li>
+</ul>
+</div>
+<!-- body="start" -->
+<div class="mail">
+<address class="headers">
+<span id="from">
+<dfn>From</dfn>: &lt;<a href="mailto:soeren_at_soeren-tempel.net?Subject=Re%3A%20%5Bscc-dev%5D%20%5BPATCH%5D%20libc%3A%20add%20strdup">soeren_at_soeren-tempel.net</a>&gt;
+</span><br />
+<span id="date"><dfn>Date</dfn>: Sat, 24 Oct 2026 11:41:03 +0200</span><br />
+</address>
+<br />
+From: Sören Tempel &lt;soeren+git_at_soeren-tempel.net&gt;
+<br />
+<br /><pre>
+---
+ src/libc/objs/common-objs.mk |  1 +
+ src/libc/string/strdup.c     | 15 +++++++++++++++
+ 2 files changed, 16 insertions(+)
+ create mode 100644 src/libc/string/strdup.c
+diff --git a/src/libc/objs/common-objs.mk b/src/libc/objs/common-objs.mk
+index e26f8bc2..4aa05c0e 100644
+--- a/src/libc/objs/common-objs.mk
++++ b/src/libc/objs/common-objs.mk
+_at_&#64; -100,6 +100,7 &#64;&#64; COMMON_OBJS =\
+ 	string/strcat.$O\
+ 	string/strcoll.$O\
+ 	string/strcspn.$O\
++	string/strdup.$O\
+ 	string/strerror.$O\
+ 	string/strncat.$O\
+ 	string/strncmp.$O\
+diff --git a/src/libc/string/strdup.c b/src/libc/string/strdup.c
+new file mode 100644
+index 00000000..a9c88ffc
+--- /dev/null
++++ b/src/libc/string/strdup.c
+_at_&#64; -0,0 +1,15 &#64;&#64;
++#include &lt;string.h&gt;
++#include &lt;stdlib.h&gt;
++
++#undef strdup
++
++char *
++strdup(const char *s)
++{
++	char *newstr;
++	size_t len = strlen(s);
++
++	if ((newstr = malloc(len + 1)) == NULL)
++		return NULL;
++	return memcpy(newstr, s, len + 1);
++}
+--
+To unsubscribe send a mail to scc-dev+unsubscribe_at_simple-cc.org
+</pre>
+<span id="received"><dfn>Received on</dfn> Sat 24 Oct 2026 - 11:41:03 CEST</span>
+</div>
+<!-- body="end" -->
+<div class="foot">
+<map id="navbarfoot" name="navbarfoot" title="Related messages">
+<ul class="links">
+<li><dfn>This message</dfn>: [ <a href="0129.html#start129">Message body</a> ]</li>
+<!-- lnext="start" -->
+<li><dfn>Previous message</dfn>: <a href="0128.html" title="Previous message in the list">soeren_at_soeren-tempel.net: "[scc-dev] [PATCH] scc-cc: Make the -S option respect the -o option"</a></li>
+<!-- lnextthread="start" -->
+<!-- lreply="end" -->
+</ul>
+<ul class="links">
+<li><a name="options3" id="options3"></a><dfn>Contemporary messages sorted</dfn>: [ <a href="date.html#msg129" title="Contemporary messages by date">by date</a> ] [ <a href="index.html#msg129" title="Contemporary discussion threads">by thread</a> ] [ <a href="subject.html#msg129" title="Contemporary messages by subject">by subject</a> ] [ <a href="author.html#msg129" title="Contemporary messages by author">by author</a> ] [ <a href="attachment.html" title="Contemporary messages by attachment">by messages with attachments</a> ]</li>
+</ul>
+</map>
+</div>
+<!-- trailer="footer" -->
+<p><small><em>
+This archive was generated by <a href="http://www.hypermail-project.org/">hypermail 2.3.0</a>
+: Sat 24 Oct 2026 - 11:50:01 CEST
+</em></small></p>
+</body>
+</html>
